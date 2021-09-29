@@ -32,31 +32,31 @@ namespace expr
   {
     namespace node
     {
-      unary_t::unary_t (const token::type & _token, const type & _child)
+      unary_t::unary_t (token::type const& _token, type const& _child)
         : token (_token), child (_child)
       {}
 
-      binary_t::binary_t ( const token::type & _token
-                         , const type & _l
-                         , const type & _r
+      binary_t::binary_t ( token::type const& _token
+                         , type const& _l
+                         , type const& _r
                          )
           : token (_token), l (_l), r (_r)
       {}
 
-      ternary_t::ternary_t ( const token::type & _token
-                           , const type & _child0
-                           , const type & _child1
-                           , const type & _child2
+      ternary_t::ternary_t ( token::type const& _token
+                           , type const& _child0
+                           , type const& _child1
+                           , type const& _child2
                            )
         : token (_token), child0 (_child0), child1 (_child1), child2 (_child2)
       {}
 
       namespace {
-        std::string show_key_vec (const Key& key_vec)
+        std::string show_key_vec (Key const& key_vec)
         {
           std::string s;
 
-          for (const std::string& k : key_vec)
+          for (std::string const& k : key_vec)
           {
             if (!s.empty())
             {
@@ -79,22 +79,22 @@ namespace expr
         public:
           visitor_show (std::ostream & _s) : s (_s) {}
 
-          void operator () (const pnet::type::value::value_type & v) const
+          void operator () (pnet::type::value::value_type const& v) const
           {
             s << pnet::type::value::show (v);
           }
 
-          void operator () (const Key& key) const
+          void operator () (Key const& key) const
           {
             s << "${" << show_key_vec (key) << "}";
           }
 
-          void operator () (const unary_t & u) const
+          void operator () (unary_t const& u) const
           {
             s << u.token << "(" << u.child << ")";
           }
 
-          void operator () (const binary_t & b) const
+          void operator () (binary_t const& b) const
           {
             if (token::is_prefix (b.token))
               {
@@ -106,7 +106,7 @@ namespace expr
               }
           }
 
-          void operator () (const ternary_t & t) const
+          void operator () (ternary_t const& t) const
           {
             switch (t.token)
               {
@@ -128,7 +128,7 @@ namespace expr
         };
       }
 
-      std::ostream& operator << (std::ostream & s, const type & node)
+      std::ostream& operator << (std::ostream & s, type const& node)
       {
         boost::apply_visitor (visitor_show (s), node);
 
@@ -138,22 +138,22 @@ namespace expr
       namespace
       {
         class visitor_get_value
-          : public boost::static_visitor<const pnet::type::value::value_type &>
+          : public boost::static_visitor<pnet::type::value::value_type const&>
         {
         public:
-          const pnet::type::value::value_type & operator () (const pnet::type::value::value_type & v) const
+          pnet::type::value::value_type const& operator () (pnet::type::value::value_type const& v) const
           {
             return v;
           }
           template<typename T>
-          const pnet::type::value::value_type & operator () (const T &) const
+          pnet::type::value::value_type const& operator () (T const&) const
           {
             throw exception::eval::type_error ("get: node is not an value");
           }
         };
       }
 
-      const pnet::type::value::value_type& get (const type & node)
+      pnet::type::value::value_type const& get (type const& node)
       {
         return boost::apply_visitor (visitor_get_value(), node);
       }
@@ -163,15 +163,15 @@ namespace expr
         class visitor_is_value : public boost::static_visitor<bool>
         {
         public:
-          bool operator () (const pnet::type::value::value_type &) const { return true; }
-          bool operator () (const Key&) const { return false; }
-          bool operator () (const unary_t &) const { return false; }
-          bool operator () (const binary_t &) const { return false; }
-          bool operator () (const ternary_t &) const { return false; }
+          bool operator () (pnet::type::value::value_type const&) const { return true; }
+          bool operator () (Key const&) const { return false; }
+          bool operator () (unary_t const&) const { return false; }
+          bool operator () (binary_t const&) const { return false; }
+          bool operator () (ternary_t const&) const { return false; }
         };
       }
 
-      bool is_value (const type& node)
+      bool is_value (type const& node)
       {
         return boost::apply_visitor (visitor_is_value(), node);
       }
@@ -181,15 +181,15 @@ namespace expr
         class visitor_is_ref : public boost::static_visitor<bool>
         {
         public:
-          bool operator () (const pnet::type::value::value_type &) const { return false; }
-          bool operator () (const Key&) const { return true; }
-          bool operator () (const unary_t &) const { return false; }
-          bool operator () (const binary_t &) const { return false; }
-          bool operator () (const ternary_t &) const { return false; }
+          bool operator () (pnet::type::value::value_type const&) const { return false; }
+          bool operator () (Key const&) const { return true; }
+          bool operator () (unary_t const&) const { return false; }
+          bool operator () (binary_t const&) const { return false; }
+          bool operator () (ternary_t const&) const { return false; }
         };
       }
 
-      bool is_ref (const type& node)
+      bool is_ref (type const& node)
       {
         return boost::apply_visitor (visitor_is_ref(), node);
       }
@@ -199,7 +199,7 @@ namespace expr
         class visitor_rename : public boost::static_visitor<void>
         {
         public:
-          visitor_rename (const std::string& _from, const std::string& _to)
+          visitor_rename (std::string const& _from, std::string const& _to)
             : from (_from), to (_to)
           {}
 
@@ -240,7 +240,7 @@ namespace expr
         };
       }
 
-      void rename (type& t, const std::string& from, const std::string& to)
+      void rename (type& t, std::string const& from, std::string const& to)
       {
         boost::apply_visitor (visitor_rename (from, to), t);
       }

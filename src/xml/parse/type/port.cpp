@@ -24,6 +24,11 @@
 #include <we/type/signature/is_literal.hpp>
 
 #include <fhg/assert.hpp>
+#include <fhg/util/boost/variant.hpp>
+
+#include <boost/format.hpp>
+
+#include <tuple>
 
 namespace xml
 {
@@ -31,12 +36,33 @@ namespace xml
   {
     namespace type
     {
-      port_type::port_type ( const util::position_type& position_of_definition
-                           , const std::string & name
-                           , const std::string & type
-                           , const boost::optional<std::string> & _place
-                           , const we::type::PortDirection& direction
-                           , const we::type::property::type& properties
+      port_type::unique_key_type::unique_key_type
+        ( std::string name
+        , we::type::PortDirection port_direction
+        )
+          : _name (name)
+          , _port_direction (port_direction)
+      {}
+      bool operator== ( port_type::unique_key_type const& lhs
+                      , port_type::unique_key_type const& rhs
+                      )
+      {
+#define ESSENCE(x) std::tie (x._name, x._port_direction)
+        return ESSENCE (lhs) == ESSENCE (rhs);
+#undef ESSENCE
+      }
+      std::size_t port_type::unique_key_type::hash_value() const
+      {
+        return std::hash<std::string>{}
+          (str (boost::format ("%1%%2%") % _name % _port_direction));
+      }
+
+      port_type::port_type ( util::position_type const& position_of_definition
+                           , std::string const& name
+                           , std::string const& type
+                           , boost::optional<std::string> const& _place
+                           , we::type::PortDirection const& direction
+                           , we::type::property::type const& properties
                            , boost::optional<pnet::type::signature::signature_type> signature
                            )
         : with_position_of_definition (position_of_definition)
@@ -48,12 +74,12 @@ namespace xml
         , _properties (properties)
       {}
 
-      const std::string& port_type::name() const
+      std::string const& port_type::name() const
       {
         return _name;
       }
 
-      const std::string& port_type::type() const
+      std::string const& port_type::type() const
       {
         return _type;
       }
@@ -82,8 +108,8 @@ namespace xml
         }
       }
 
-      port_type port_type::specialized ( const type::type_map_type & map_in
-                                       , const state::type &
+      port_type port_type::specialized ( type::type_map_type const& map_in
+                                       , state::type const&
                                        ) const
       {
         const type::type_map_type::const_iterator
@@ -104,14 +130,14 @@ namespace xml
         class type_checker : public boost::static_visitor<void>
         {
         private:
-          const port_type& _port;
-          const boost::filesystem::path& _path;
-          const state::type& _state;
+          port_type const& _port;
+          boost::filesystem::path const& _path;
+          state::type const& _state;
 
         public:
-          type_checker ( const port_type& port
-                       , const boost::filesystem::path& path
-                       , const state::type& state
+          type_checker ( port_type const& port
+                       , boost::filesystem::path const& path
+                       , state::type const& state
                        )
             : _port (port)
             , _path (path)
@@ -122,7 +148,7 @@ namespace xml
           {
             if (not _port.place)
             {
-              if (_port.direction() == we::type::PORT_IN)
+              if (_port.is_input())
               {
                 _state.warn (warning::port_not_connected (_port, _path));
               }
@@ -146,7 +172,7 @@ namespace xml
                 throw error::port_connected_type_error (_port, *place, _path);
               }
 
-              if (_port.direction() == we::type::PORT_TUNNEL)
+              if (_port.is_tunnel())
               {
                 if (not place->is_virtual())
                 {
@@ -162,7 +188,7 @@ namespace xml
             }
           }
 
-          void operator() (const expression_type&) const
+          void operator() (expression_type const&) const
           {
             if (_port.place)
             {
@@ -170,7 +196,7 @@ namespace xml
             }
           }
 
-          void operator() (const module_type&) const
+          void operator() (module_type const&) const
           {
             if (_port.place)
             {
@@ -178,7 +204,7 @@ namespace xml
             }
           }
 
-          void operator() (const multi_module_type&) const
+          void operator() (multi_module_type const&) const
           {
             if (_port.place)
             {
@@ -188,8 +214,8 @@ namespace xml
         };
       }
 
-      void port_type::type_check ( const boost::filesystem::path& path
-                                 , const state::type& state
+      void port_type::type_check ( boost::filesystem::path const& path
+                                 , state::type const& state
                                  , function_type const& parent
                                  ) const
       {
@@ -197,7 +223,7 @@ namespace xml
           (type_checker (*this, path, state), parent.content());
       }
 
-      const we::type::PortDirection& port_type::direction() const
+      we::type::PortDirection const& port_type::direction() const
       {
         return _direction;
       }
@@ -213,21 +239,34 @@ namespace xml
         return parent.places().get (*place);
       }
 
-      const we::type::property::type& port_type::properties() const
+      we::type::property::type const& port_type::properties() const
       {
         return _properties;
       }
 
       port_type::unique_key_type port_type::unique_key() const
       {
-        return std::make_pair (name(), direction());
+        return {name(), direction()};
+      }
+
+      bool port_type::is_input() const
+      {
+        return fhg::util::boost::is_of_type<we::type::port::direction::In> (_direction);
+      }
+      bool port_type::is_output() const
+      {
+        return fhg::util::boost::is_of_type<we::type::port::direction::Out> (_direction);
+      }
+      bool port_type::is_tunnel() const
+      {
+        return fhg::util::boost::is_of_type<we::type::port::direction::Tunnel> (_direction);
       }
 
       namespace dump
       {
-        void dump (::fhg::util::xml::xmlstream& s, const port_type& p)
+        void dump (::fhg::util::xml::xmlstream& s, port_type const& p)
         {
-          s.open (we::type::enum_to_string (p.direction()));
+          s.open (str (boost::format ("%1%") % p.direction()));
           s.attr ("name", p.name());
           s.attr ("type", p.type());
           s.attr ("place", p.place);

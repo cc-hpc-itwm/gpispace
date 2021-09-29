@@ -30,34 +30,34 @@ namespace expr
       {
       public:
         const std::size_t eaten;
-        exception (const std::string&, const std::size_t);
+        exception (std::string const&, std::size_t);
       };
 
       class expected : public exception
       {
       public:
-        expected (const std::string&, const std::size_t);
+        expected (std::string const&, std::size_t);
       };
 
       class misplaced : public exception
       {
       public:
-        misplaced (const std::string&, const std::size_t);
+        misplaced (std::string const&, std::size_t);
       };
 
       class unterminated : public exception
       {
       public:
-        unterminated ( const std::string&
-                     , const std::size_t open
-                     , const std::size_t k
+        unterminated ( std::string const&
+                     , std::size_t open
+                     , std::size_t k
                      );
       };
 
       class missing : public exception
       {
       public:
-        missing (const std::string&, const std::size_t);
+        missing (std::string const&, std::size_t);
       };
     }
 
@@ -72,8 +72,8 @@ namespace expr
       class type_error : public std::runtime_error
       {
       public:
-        type_error (const std::string&);
-        type_error (const boost::format&);
+        type_error (std::string const&);
+        type_error (boost::format const&);
       };
 
       class negative_exponent : public std::runtime_error
@@ -115,6 +115,16 @@ namespace expr
 
       private:
         T _value;
+      };
+    }
+
+    namespace type
+    {
+      class error : public std::runtime_error
+      {
+      public:
+        error (std::string const&);
+        error (boost::format const&);
       };
     }
   }

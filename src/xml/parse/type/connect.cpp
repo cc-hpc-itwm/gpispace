@@ -26,11 +26,11 @@ namespace xml
   {
     namespace type
     {
-      connect_type::connect_type ( const util::position_type& pod
-                                 , const std::string& place
-                                 , const std::string& port
+      connect_type::connect_type ( util::position_type const& pod
+                                 , std::string const& place
+                                 , std::string const& port
                                  , const ::we::edge::type& direction
-                                 , const we::type::property::type& properties
+                                 , we::type::property::type const& properties
                                  )
         : with_position_of_definition (pod)
         , _place (place)
@@ -39,11 +39,11 @@ namespace xml
         , _properties (properties)
       {}
 
-      const std::string& connect_type::place() const
+      std::string const& connect_type::place() const
       {
         return _place;
       }
-      const std::string& connect_type::port() const
+      std::string const& connect_type::port() const
       {
         return _port;
       }
@@ -53,7 +53,7 @@ namespace xml
         return _direction;
       }
 
-      connect_type connect_type::with_place (const std::string& place) const
+      connect_type connect_type::with_place (std::string const& place) const
       {
         return connect_type ( position_of_definition()
                             , place
@@ -63,7 +63,7 @@ namespace xml
                             );
       }
 
-      const we::type::property::type& connect_type::properties() const
+      we::type::property::type const& connect_type::properties() const
       {
         return _properties;
       }
@@ -76,7 +76,7 @@ namespace xml
 
       namespace dump
       {
-        void dump (::fhg::util::xml::xmlstream& s, const connect_type& c)
+        void dump (::fhg::util::xml::xmlstream& s, connect_type const& c)
         {
           s.open ("connect-" + we::edge::enum_to_string (c.direction()));
           s.attr ("port", c.port());

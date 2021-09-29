@@ -27,7 +27,7 @@ namespace pnet
   {
     namespace value
     {
-#define NAME(_name) const std::string& _name()
+#define NAME(_name) std::string const& _name()
 
       NAME (CONTROL);
       NAME (BOOL);

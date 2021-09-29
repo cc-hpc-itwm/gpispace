@@ -27,7 +27,7 @@ namespace fhg
     class indenter : public ostream::modifier
     {
     public:
-      indenter (const unsigned int = 0);
+      indenter (unsigned int = 0);
       indenter& operator++();
       indenter operator++ (int);
       indenter& operator--();

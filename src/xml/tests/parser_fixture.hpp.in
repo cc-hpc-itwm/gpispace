@@ -19,7 +19,7 @@
 #include <xml/parse/parser.hpp>
 #include <xml/parse/state.hpp>
 
-#include <we/type/activity.hpp>
+#include <we/type/Activity.hpp>
 #include <we/type/net.hpp>
 
 #include <util-generic/testing/printer/generic.hpp>
@@ -29,7 +29,7 @@
 #include <boost/optional.hpp>
 #include <boost/test/unit_test.hpp>
 
-FHG_BOOST_TEST_LOG_VALUE_PRINTER (we::type::activity_t, os, activity)
+FHG_BOOST_TEST_LOG_VALUE_PRINTER (we::type::Activity, os, activity)
 {
   os << activity.to_string();
 }
@@ -45,13 +45,13 @@ namespace
       path_to_xpnets = "@XML_PARSE_TEST_XPNETS_DIR@";
     }
 
-    void parse (const boost::filesystem::path& path)
+    void parse (boost::filesystem::path const& path)
     {
       set_parse_input (path);
       parse();
     }
 
-    void set_parse_input (const boost::filesystem::path& path)
+    void set_parse_input (boost::filesystem::path const& path)
     {
       xpnet = path_to_xpnets / path;
     }

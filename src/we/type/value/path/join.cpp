@@ -26,7 +26,7 @@ namespace pnet
     {
       namespace path
       {
-        std::string join (const std::list<std::string>& path)
+        std::string join (std::list<std::string> const& path)
         {
           return fhg::util::join (path, '.').string();
         }

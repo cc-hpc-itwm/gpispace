@@ -27,8 +27,8 @@ namespace fhg
         namespace
         {
           bool fall_back_to_id ( const QAbstractProxyModel* const model
-                               , const int& section
-                               , const Qt::Orientation& orientation
+                               , int const& section
+                               , Qt::Orientation const& orientation
                                )
           {
             return orientation == Qt::Horizontal
@@ -51,7 +51,7 @@ namespace fhg
           return QAbstractProxyModel::headerData (section, orientation, role);
         }
         bool abstract_proxy::setHeaderData
-          (int section, Qt::Orientation ori, const QVariant& val, int role)
+          (int section, Qt::Orientation ori, QVariant const& val, int role)
         {
           if (fall_back_to_id (this, section, ori))
           {
@@ -61,12 +61,12 @@ namespace fhg
         }
 
         QMap<int, QVariant>
-          abstract_proxy::itemData (const QModelIndex& index) const
+          abstract_proxy::itemData (QModelIndex const& index) const
         {
           return sourceModel()->itemData (mapToSource (index));
         }
         bool abstract_proxy::setItemData
-          (const QModelIndex& index, const QMap<int, QVariant>& item_data)
+          (QModelIndex const& index, QMap<int, QVariant> const& item_data)
         {
           return sourceModel()->setItemData (mapToSource (index), item_data);
         }
@@ -82,18 +82,18 @@ namespace fhg
           return sourceModel()->headerData (section, orientation, role);
         }
         bool id_proxy::setHeaderData
-          (int section, Qt::Orientation ori, const QVariant& val, int role)
+          (int section, Qt::Orientation ori, QVariant const& val, int role)
         {
           return sourceModel()->setHeaderData (section, ori, val, role);
         }
 
         QMap<int, QVariant>
-          id_proxy::itemData (const QModelIndex& index) const
+          id_proxy::itemData (QModelIndex const& index) const
         {
           return sourceModel()->itemData (mapToSource (index));
         }
         bool id_proxy::setItemData
-          (const QModelIndex& index, const QMap<int, QVariant>& item_data)
+          (QModelIndex const& index, QMap<int, QVariant> const& item_data)
         {
           return sourceModel()->setItemData (mapToSource (index), item_data);
         }
@@ -113,7 +113,7 @@ namespace fhg
           return QSortFilterProxyModel::headerData (section, orientation, role);
         }
         bool sort_filter_proxy::setHeaderData
-          (int section, Qt::Orientation ori, const QVariant& val, int role)
+          (int section, Qt::Orientation ori, QVariant const& val, int role)
         {
           if (fall_back_to_id (this, section, ori))
           {
@@ -123,12 +123,12 @@ namespace fhg
         }
 
         QMap<int, QVariant>
-          sort_filter_proxy::itemData (const QModelIndex& index) const
+          sort_filter_proxy::itemData (QModelIndex const& index) const
         {
           return sourceModel()->itemData (mapToSource (index));
         }
         bool sort_filter_proxy::setItemData
-          (const QModelIndex& index, const QMap<int, QVariant>& item_data)
+          (QModelIndex const& index, QMap<int, QVariant> const& item_data)
         {
           return sourceModel()->setItemData (mapToSource (index), item_data);
         }

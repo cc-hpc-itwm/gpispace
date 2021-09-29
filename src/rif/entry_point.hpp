@@ -16,13 +16,10 @@
 
 #pragma once
 
-#include <boost/serialization/split_free.hpp>
-
 #include <util-generic/ostream/modifier.hpp>
+#include <util-generic/hash/combined_hash.hpp>
 
 #include <string>
-#include <stdexcept>
-#include <sstream>
 #include <tuple>
 
 #include <unistd.h>
@@ -37,86 +34,28 @@ namespace fhg
       unsigned short port;
       pid_t pid;
 
+      entry_point (std::string const& hostname, unsigned short port, pid_t pid);
+
+      //! parse input
+      entry_point (std::string const& input);
+
+      virtual std::ostream& operator() (std::ostream&) const override;
+
+      bool operator== (entry_point const&) const;
+
       //! \note Serialization only.
-      entry_point() = default;
-
-      entry_point (std::string const& hostname_, unsigned short port_, pid_t pid_)
-        : hostname (hostname_)
-        , port (port_)
-        , pid (pid_)
-      {}
-
-      entry_point (std::string const& input)
-      {
-        std::istringstream iss (input);
-        if (!(iss >> hostname >> port >> pid))
-        {
-          throw std::runtime_error
-            ("parse error: expected 'host port pid': got '" + input + "'");
-        }
-      }
-      virtual std::ostream& operator() (std::ostream& os) const override
-      {
-        return os << hostname << ' ' << port << ' ' << pid;
-      }
-
-      bool operator== (entry_point const& other) const
-      {
-        return std::tie (hostname, port, pid)
-          == std::tie (other.hostname, other.port, other.pid);
-      }
+      entry_point();
+      template<typename Archive> void serialize (Archive&, unsigned int);
     };
   }
 }
 
-namespace std
-{
-  template<>
-    struct hash<fhg::rif::entry_point>
-  {
-    std::size_t operator() (const fhg::rif::entry_point& ep) const
-    {
-      return std::hash<std::string>() (ep.string());
-    }
-  };
-}
+FHG_UTIL_MAKE_COMBINED_STD_HASH
+  ( fhg::rif::entry_point
+  , ep
+  , ep.hostname
+  , ep.port
+  , ep.pid
+  )
 
-namespace boost
-{
-  namespace serialization
-  {
-    template<typename Archive>
-      void load ( Archive& ar
-                , fhg::rif::entry_point& entry_point
-                , const unsigned int
-                )
-    {
-      std::string hostname;
-      unsigned short port;
-      pid_t pid;
-      ar & hostname;
-      ar & port;
-      ar & pid;
-      entry_point = fhg::rif::entry_point (hostname, port, pid);
-    }
-    template<typename Archive>
-      void save ( Archive& ar
-                , fhg::rif::entry_point const& entry_point
-                , const unsigned int
-                )
-    {
-      ar & entry_point.hostname;
-      ar & entry_point.port;
-      ar & entry_point.pid;
-    }
-
-    template<typename Archive>
-      void serialize ( Archive& ar
-                     , fhg::rif::entry_point& entry_point
-                     , const unsigned int version
-                     )
-    {
-      boost::serialization::split_free (ar, entry_point, version);
-    }
-  }
-}
+#include <rif/entry_point.ipp>

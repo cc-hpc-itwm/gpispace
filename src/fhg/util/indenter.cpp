@@ -22,7 +22,7 @@ namespace fhg
 {
   namespace util
   {
-    indenter::indenter (const unsigned int depth)
+    indenter::indenter (unsigned int depth)
       : _depth (depth)
     {}
     indenter& indenter::operator++()

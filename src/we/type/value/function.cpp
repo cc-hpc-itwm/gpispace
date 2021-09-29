@@ -35,7 +35,7 @@ namespace pnet
         class visitor_unary : public boost::static_visitor<value_type>
         {
         public:
-          visitor_unary (const expr::token::type& token)
+          visitor_unary (expr::token::type const& token)
             : _token (token)
           {}
 
@@ -136,8 +136,19 @@ namespace pnet
             switch (_token)
             {
             case expr::token::_stack_empty: return x.empty();
-            case expr::token::_stack_top: return x.back();
-            case expr::token::_stack_pop: x.pop_back(); return std::move (x);
+            case expr::token::_stack_top:
+              if (x.empty())
+              {
+                throw exception::eval (_token, x);
+              }
+              return x.back();
+            case expr::token::_stack_pop:
+              if (x.empty())
+              {
+                throw exception::eval (_token, x);
+              }
+              x.pop_back();
+              return std::move (x);
             case expr::token::_stack_size: return x.size();
             default: throw exception::eval (_token, x);
             }
@@ -146,8 +157,19 @@ namespace pnet
           {
             switch (_token)
             {
-            case expr::token::_set_pop: x.erase (x.begin()); return std::move (x);
-            case expr::token::_set_top: return *(x.begin());
+            case expr::token::_set_pop:
+              if (x.empty())
+              {
+                throw exception::eval (_token, x);
+              }
+              x.erase (x.begin());
+              return std::move (x);
+            case expr::token::_set_top:
+              if (x.empty())
+              {
+                throw exception::eval (_token, x);
+              }
+              return *(x.begin());
             case expr::token::_set_empty: return x.empty();
             case expr::token::_set_size: return x.size();
             default: throw exception::eval (_token, x);
@@ -169,10 +191,10 @@ namespace pnet
           }
 
         private:
-          const expr::token::type& _token;
+          expr::token::type const& _token;
 
           template<typename T>
-            value_type integral_signed (const T& x) const
+            value_type integral_signed (T const& x) const
           {
             switch (_token)
             {
@@ -206,7 +228,7 @@ namespace pnet
             }
           }
           template<typename T>
-            value_type integral_unsigned (const T& x) const
+            value_type integral_unsigned (T const& x) const
           {
             switch (_token)
             {
@@ -232,7 +254,7 @@ namespace pnet
         class visitor_binary : public boost::static_visitor<value_type>
         {
         public:
-          visitor_binary (const expr::token::type& token)
+          visitor_binary (expr::token::type const& token)
             : _token (token)
           {}
 
@@ -340,6 +362,15 @@ namespace pnet
             default: throw exception::eval (_token, l, r);
             }
           }
+          template<typename T>
+            value_type list_any (std::list<value_type> l, T r) const
+          {
+            switch (_token)
+            {
+            case expr::token::_stack_push: l.push_back (r); return std::move (l);
+            default: throw exception::eval (_token, l, r);
+            }
+          }
           value_type operator() ( std::list<value_type> l
                                 , std::list<value_type> r
                                 ) const
@@ -352,15 +383,22 @@ namespace pnet
                 l.push_back (r.front()); r.pop_front();
               }
               return std::move (l);
-            default: throw exception::eval (_token, l, r);
+            default: return list_any (l, r);
             }
           }
           template<typename T>
             value_type operator() (std::list<value_type> l, T r) const
           {
+            return list_any (l, r);
+          }
+          template<typename T>
+            value_type set_any (std::set<value_type> l, T r) const
+          {
             switch (_token)
             {
-            case expr::token::_stack_push: l.push_back (r); return std::move (l);
+            case expr::token::_set_insert: l.insert (r); return std::move (l);
+            case expr::token::_set_erase: l.erase (r); return std::move (l);
+            case expr::token::_set_is_element: return l.find (r) != l.end();
             default: throw exception::eval (_token, l, r);
             }
           }
@@ -371,7 +409,7 @@ namespace pnet
             switch (_token)
             {
             case expr::token::_set_is_subset:
-              for (const value_type& lv : l)
+              for (value_type const& lv : l)
               {
                 if (!r.count (lv))
                 {
@@ -379,19 +417,13 @@ namespace pnet
                 }
               }
               return true;
-            default: throw exception::eval (_token, l, r);
+            default: return set_any (l, r);
             }
           }
           template<typename T>
             value_type operator() (std::set<value_type> l, T r) const
           {
-            switch (_token)
-            {
-            case expr::token::_set_insert: l.insert (r); return std::move (l);
-            case expr::token::_set_erase: l.erase (r); return std::move (l);
-            case expr::token::_set_is_element: return l.find (r) != l.end();
-            default: throw exception::eval (_token, l, r);
-            }
+            return set_any (l, r);
           }
           template<typename T>
             value_type operator() (std::map<value_type,value_type> l, T r) const
@@ -400,7 +432,12 @@ namespace pnet
             {
             case expr::token::_map_unassign: l.erase (r); return std::move (l);
             case expr::token::_map_is_assigned: return l.find (r) != l.end();
-            case expr::token::_map_get_assignment: return l.at (r);
+            case expr::token::_map_get_assignment:
+              if (l.find (r) == l.end())
+              {
+                throw exception::eval (_token, l, r);
+              }
+              return l.at (r);
             default: throw exception::eval (_token, l, r);
             }
           }
@@ -443,13 +480,13 @@ namespace pnet
             }
           }
           template<typename L, typename R>
-            value_type operator() (const L& l, const R& r) const
+            value_type operator() (L const& l, R const& r) const
           {
             throw exception::eval (_token, l, r);
           }
 
         private:
-          const expr::token::type& _token;
+          expr::token::type const& _token;
 
           template<typename T>
             value_type integral_signed (const T l, const T r) const
@@ -552,13 +589,13 @@ namespace pnet
         };
       }
 
-      value_type unary (const expr::token::type& t, const value_type& x)
+      value_type unary (expr::token::type const& t, value_type const& x)
       {
         return boost::apply_visitor (visitor_unary (t), x);
       }
-      value_type binary ( const expr::token::type& t
-                        , const value_type& l
-                        , const value_type& r
+      value_type binary ( expr::token::type const& t
+                        , value_type const& l
+                        , value_type const& r
                         )
       {
         return boost::apply_visitor (visitor_binary (t), l, r);

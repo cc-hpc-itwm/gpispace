@@ -40,15 +40,15 @@ namespace expr
       , _ref()
     {}
 
-    const pnet::type::value::value_type& tokenizer::value() const
+    pnet::type::value::value_type const& tokenizer::value() const
     {
       return _tokval;
     }
-    const token::type& tokenizer::token() const
+    token::type const& tokenizer::token() const
     {
       return _token;
     }
-    const std::list<std::string>& tokenizer::get_ref() const
+    std::list<std::string> const& tokenizer::get_ref() const
     {
       return _ref;
     }
@@ -66,9 +66,9 @@ namespace expr
 
       typedef std::map<char, node_type> child_type;
 
-      void put ( const std::string::const_iterator pos
-               , const std::string::const_iterator end
-               , const std::function<void (tokenizer&)> f
+      void put ( std::string::const_iterator pos
+               , std::string::const_iterator end
+               , std::function<void (tokenizer&)> f
                , child_type& m
                )
       {
@@ -98,8 +98,8 @@ namespace expr
         }
       }
 
-      void put ( const std::string& key
-               , const std::function<void (tokenizer&)> f
+      void put ( std::string const& key
+               , std::function<void (tokenizer&)> f
                , child_type& m
                )
       {
@@ -111,7 +111,7 @@ namespace expr
         put (key.begin(), key.end(), f, m);
       }
 
-      const child_type& create_description()
+      child_type const& create_description()
       {
         static child_type ts;
 
@@ -219,7 +219,7 @@ namespace expr
         return ts;
       }
 
-      const node_type& description()
+      node_type const& description()
       {
         static node_type m (create_description());
 
@@ -229,12 +229,12 @@ namespace expr
       class visitor_names : public boost::static_visitor<void>
       {
       public:
-        visitor_names (std::string& names, const std::string& prefix = "")
+        visitor_names (std::string& names, std::string const& prefix = "")
           : _names (names)
           , _prefix (prefix)
         {}
 
-        void operator() (const child_type& m) const
+        void operator() (child_type const& m) const
         {
           for (auto const& cn : m)
           {
@@ -244,7 +244,7 @@ namespace expr
               );
           }
         }
-        void operator() (const std::function<void (tokenizer&)>&) const
+        void operator() (std::function<void (tokenizer&)> const&) const
         {
           if (!_names.empty())
           {
@@ -258,7 +258,7 @@ namespace expr
         const std::string _prefix;
       };
 
-      std::string names (const node_type& node)
+      std::string names (node_type const& node)
       {
         std::string names;
 
@@ -270,11 +270,11 @@ namespace expr
       class visitor_tokenize : public boost::static_visitor<void>
       {
       public:
-        visitor_tokenize (tokenizer& t, const bool& first = true)
+        visitor_tokenize (tokenizer& t, bool const& first = true)
           : _tokenizer (t)
           , _first (first)
         {}
-        void operator() (const child_type& m) const
+        void operator() (child_type const& m) const
         {
           if (_tokenizer.is_eof())
           {
@@ -304,7 +304,7 @@ namespace expr
           }
         }
 
-        void operator() (const std::function<void (tokenizer&)>& f) const
+        void operator() (std::function<void (tokenizer&)> const& f) const
         {
           f (_tokenizer);
         }
@@ -315,11 +315,11 @@ namespace expr
       };
     }
 
-    void tokenizer::set_token (const token::type& t)
+    void tokenizer::set_token (token::type const& t)
     {
       _token = t;
     }
-    void tokenizer::set_value (const pnet::type::value::value_type& v)
+    void tokenizer::set_value (pnet::type::value::value_type const& v)
     {
       set_token (val);
       _tokval = v;
@@ -330,7 +330,7 @@ namespace expr
       return _pos.end() || *_pos == ';';
     }
 
-    void tokenizer::cmp (const token::type& t, const token::type& e)
+    void tokenizer::cmp (token::type const& t, token::type const& e)
     {
       if (!is_eof() && *_pos == '=')
       {
@@ -446,7 +446,7 @@ namespace expr
       }
     }
 
-    void tokenizer::unary (const token::type& t, const std::string& descr)
+    void tokenizer::unary (token::type const& t, std::string const& descr)
     {
       if (next_can_be_unary (_token))
       {
@@ -458,7 +458,7 @@ namespace expr
       }
     }
 
-    void tokenizer::skip_comment (const std::size_t open)
+    void tokenizer::skip_comment (std::size_t open)
     {
       while (!_pos.end())
         switch (*_pos)

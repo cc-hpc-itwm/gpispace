@@ -27,7 +27,7 @@ namespace pnet
     {
       namespace path
       {
-        std::list<std::string> split (const std::string&);
+        std::list<std::string> split (std::string const&);
       }
     }
   }

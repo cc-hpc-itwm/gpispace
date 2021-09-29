@@ -21,13 +21,13 @@
 
 namespace pnet
 {
-  const type::value::value_type& require_type
-    ( const type::value::value_type&
-    , const type::signature::signature_type&
+  type::value::value_type const& require_type
+    ( type::value::value_type const&
+    , type::signature::signature_type const&
     );
-  const type::value::value_type& require_type
-    ( const type::value::value_type&
-    , const type::signature::signature_type&
-    , const std::string& field
+  type::value::value_type const& require_type
+    ( type::value::value_type const&
+    , type::signature::signature_type const&
+    , std::string const& field
     );
 }

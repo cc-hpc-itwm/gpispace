@@ -25,6 +25,6 @@ namespace xml
 {
   namespace parse
   {
-    std::string name_element (xml_node_type*&, const state::type&);
+    std::string name_element (xml_node_type*&, state::type const&);
   }
 }

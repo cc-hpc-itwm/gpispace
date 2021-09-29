@@ -19,6 +19,7 @@
 #include <rpc/function_description.hpp>
 
 #include <drts/drts.fwd.hpp>
+#include <rif/execute_and_get_startup_messages.hpp>
 
 #include <util-generic/serialization/boost/filesystem/path.hpp>
 #include <util-generic/serialization/exception.hpp>
@@ -32,7 +33,6 @@
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/split_free.hpp>
 #include <boost/serialization/string.hpp>
-#include <boost/serialization/utility.hpp>
 #include <boost/serialization/vector.hpp>
 
 #include <chrono>
@@ -53,7 +53,7 @@ namespace fhg
     {
       FHG_RPC_FUNCTION_DESCRIPTION
         ( execute_and_get_startup_messages
-        , std::pair<pid_t, std::vector<std::string>>
+        , StartupResult
             ( boost::filesystem::path command
             , std::vector<std::string> arguments
             , std::unordered_map<std::string, std::string> environment
@@ -135,8 +135,8 @@ namespace boost
     template<class Archive>
       inline void save
         ( Archive& ar
-        , const std::unordered_map<pid_t, std::exception_ptr>& t
-        , const unsigned int
+        , std::unordered_map<pid_t, std::exception_ptr> const& t
+        , unsigned int
         )
     {
       std::size_t const size (t.size());
@@ -154,7 +154,7 @@ namespace boost
       inline void load
         ( Archive& ar
         , std::unordered_map<pid_t, std::exception_ptr>& t
-        , const unsigned int
+        , unsigned int
         )
     {
       std::size_t size;
@@ -172,11 +172,22 @@ namespace boost
       }
     }
 
+    template<typename Archive>
+      inline void serialize
+        ( Archive& ar
+        , fhg::rif::StartupResult& result
+        , unsigned int
+        )
+    {
+      ar & result.pid;
+      ar & result.messages;
+    }
+
     template<class Archive, class Compare, class Allocator>
       inline void serialize
         ( Archive& ar
         , std::unordered_map<pid_t, std::exception_ptr>& t
-        , const unsigned int file_version
+        , unsigned int file_version
         )
     {
       boost::serialization::split_free (ar, t, file_version);

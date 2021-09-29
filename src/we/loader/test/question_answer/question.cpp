@@ -19,7 +19,7 @@
 #include <we/loader/test/question_answer/answer.hpp>
 
 static void question ( drts::worker::context*
-                     , const expr::eval::context&
+                     , expr::eval::context const&
                      , expr::eval::context& output
                      , std::map<std::string, void*> const&
                      )

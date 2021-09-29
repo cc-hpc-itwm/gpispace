@@ -27,9 +27,9 @@ namespace xml
     namespace type
     {
       tmpl_type::tmpl_type
-        ( const util::position_type& pod
-        , const boost::optional<std::string>& name
-        , const names_type& tmpl_parameter
+        ( util::position_type const& pod
+        , boost::optional<std::string> const& name
+        , names_type const& tmpl_parameter
         , function_type const& function
         )
           : with_position_of_definition (pod)
@@ -38,12 +38,12 @@ namespace xml
           , _function (function)
       {}
 
-      const boost::optional<std::string>& tmpl_type::name() const
+      boost::optional<std::string> const& tmpl_type::name() const
       {
         return _name;
       }
 
-      const tmpl_type::names_type&
+      tmpl_type::names_type const&
       tmpl_type::tmpl_parameter () const
       {
         return _tmpl_parameter;
@@ -66,7 +66,7 @@ namespace xml
         _function.resolve_types_recursive (known);
       }
 
-      const tmpl_type::unique_key_type& tmpl_type::unique_key() const
+      tmpl_type::unique_key_type const& tmpl_type::unique_key() const
       {
         //! \note Anonymous templates can't be stored in unique, thus
         //! just indirect.
@@ -75,12 +75,12 @@ namespace xml
 
       namespace dump
       {
-        void dump (fhg::util::xml::xmlstream & s, const tmpl_type & t)
+        void dump (fhg::util::xml::xmlstream & s, tmpl_type const& t)
         {
           s.open ("template");
           s.attr ("name", t.name());
 
-          for (const std::string& tn : t.tmpl_parameter())
+          for (std::string const& tn : t.tmpl_parameter())
             {
               s.open ("template-parameter");
               s.attr ("type", tn);
@@ -91,7 +91,7 @@ namespace xml
 
           s.close ();
         }
-      } // namespace dump
+      }
     }
   }
 }

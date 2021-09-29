@@ -49,7 +49,7 @@
 
 	<transition name="run_task_requiring_capability_A">
       <defun>
-        <require key="A" mandatory="true"/>
+        <require key="A"/>
         <in name="trigger_A" type="bool"/>
         <in name="host" type="string"/>
         <in name="port" type="unsigned int"/>
@@ -84,7 +84,7 @@
 
 	<transition name="run_task_requiring_capability_B">
       <defun>
-        <require key="B" mandatory="true"/>
+        <require key="B"/>
         <in name="trigger_B" type="bool"/>
         <in name="host" type="string"/>
         <in name="port" type="unsigned int"/>
@@ -113,7 +113,7 @@
 
 	<transition name="run_task_requiring_capability_C">
       <defun>
-        <require key="C" mandatory="true"/>
+        <require key="C"/>
         <in name="trigger_C" type="bool"/>
         <in name="host" type="string"/>
         <in name="port" type="unsigned int"/>

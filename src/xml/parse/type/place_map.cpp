@@ -27,10 +27,10 @@ namespace xml
   {
     namespace type
     {
-      place_map_type::place_map_type ( const util::position_type& pod
-                                     , const std::string & place_virtual
-                                     , const std::string & place_real
-                                     , const we::type::property::type& prop
+      place_map_type::place_map_type ( util::position_type const& pod
+                                     , std::string const& place_virtual
+                                     , std::string const& place_real
+                                     , we::type::property::type const& prop
                                      )
         : with_position_of_definition (pod)
         , _place_virtual (place_virtual)
@@ -38,11 +38,11 @@ namespace xml
         , _properties (prop)
       {}
 
-      const std::string& place_map_type::place_virtual() const
+      std::string const& place_map_type::place_virtual() const
       {
         return _place_virtual;
       }
-      const std::string& place_map_type::place_real() const
+      std::string const& place_map_type::place_real() const
       {
         return _place_real;
       }
@@ -56,7 +56,7 @@ namespace xml
                               );
       }
 
-      const we::type::property::type& place_map_type::properties() const
+      we::type::property::type const& place_map_type::properties() const
       {
         return _properties;
       }
@@ -69,7 +69,7 @@ namespace xml
       namespace dump
       {
         void dump ( ::fhg::util::xml::xmlstream & s
-                  , const place_map_type & p
+                  , place_map_type const& p
                   )
         {
           s.open ("place-map");

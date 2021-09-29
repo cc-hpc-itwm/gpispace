@@ -174,47 +174,47 @@ namespace
                               )
               )
   {
-    we::type::transition_t trans_io
+    we::type::Transition trans_io
       ( "put_many_list_typecheck"
-      , we::type::expression_t ("")
+      , we::type::Expression ("")
       , boost::none
       , no_properties()
       , we::priority_type()
       , boost::optional<we::type::eureka_id_type>{}
-      , std::list<we::type::preference_t>{}
+      , std::list<we::type::Preference>{}
       );
 
     we::port_id_type const port_id_in
       ( trans_io.add_port
-          (we::type::port_t ("in", we::type::PORT_IN, "list"))
+          (we::type::Port ("in", we::type::port::direction::In{}, "list", we::type::property::type{}))
       );
     we::port_id_type const port_id_out
       ( trans_io.add_port
-          (we::type::port_t ("in", we::type::PORT_OUT, "list"))
+          (we::type::Port ("in", we::type::port::direction::Out{}, "list", we::type::property::type{}))
       );
 
     we::transition_id_type const tid (net.add_transition (trans_io));
     net.add_connection (we::edge::PT, tid, pid_in, port_id_in, {});
     net.add_connection (we::edge::TP_MANY, tid, pid_tp_many, port_id_out, {});
 
-    we::type::transition_t trans_out
+    we::type::Transition trans_out
       ( "put_many_list_out"
-      , we::type::expression_t ("")
+      , we::type::Expression ("")
       , boost::none
       , no_properties()
       , we::priority_type()
       , boost::optional<we::type::eureka_id_type>{}
-      , std::list<we::type::preference_t>{}
+      , std::list<we::type::Preference>{}
       );
 
     signature::signature_type const& type = name_to_signature (out_type_str);
     we::port_id_type const pport_id_in
       ( trans_out.add_port
-          (we::type::port_t ("out", we::type::PORT_IN, type))
+          (we::type::Port ("out", we::type::port::direction::In{}, type, we::type::property::type{}))
       );
     we::port_id_type const pport_id_out
       ( trans_out.add_port
-          (we::type::port_t ("out", we::type::PORT_OUT, type))
+          (we::type::Port ("out", we::type::port::direction::Out{}, type, we::type::property::type{}))
       );
 
     we::transition_id_type const tid_out (net.add_transition (trans_out));

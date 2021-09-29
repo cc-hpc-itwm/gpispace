@@ -20,7 +20,7 @@
 
 #include <fhg/assert.hpp>
 
-#include <fhgcom/header.hpp>
+#include <fhgcom/address.hpp>
 
 #include <util-generic/make_optional.hpp>
 
@@ -64,11 +64,11 @@ namespace sdpa
       return submitted_or_ack_workers;
     }
 
-    void WorkerManager::add_worker ( const worker_id_t& workerId
-                                   , const capabilities_set_t& cpbSet
+    void WorkerManager::add_worker ( worker_id_t const& workerId
+                                   , capabilities_set_t const& cpbSet
                                    , unsigned long allocated_shared_memory_size
-                                   , const std::string& hostname
-                                   , const fhg::com::p2p::address_t& address
+                                   , std::string const& hostname
+                                   , fhg::com::p2p::address_t const& address
                                    )
     {
       if (worker_map_.count (workerId) != 0)
@@ -95,7 +95,7 @@ namespace sdpa
       _num_free_workers++;
     }
 
-    void WorkerManager::delete_worker (const worker_id_t& workerId)
+    void WorkerManager::delete_worker (worker_id_t const& workerId)
     {
       auto const worker (worker_map_.find (workerId));
       fhg_assert (worker != worker_map_.end(), "Worker not found when deletion was requested!");
@@ -127,8 +127,8 @@ namespace sdpa
     }
 
     void WorkerManager::assign_job_to_worker
-      ( const job_id_t& job_id
-      , const worker_id_t& worker_id
+      ( job_id_t const& job_id
+      , worker_id_t const& worker_id
       , double cost
       , Preferences const& preferences
       )
@@ -139,8 +139,8 @@ namespace sdpa
     }
 
     void WorkerManager::assign_job_to_worker
-      ( const job_id_t& job_id
-      , const worker_iterator worker
+      ( job_id_t const& job_id
+      , worker_iterator worker
       , double cost
       , Preferences const& preferences
       )
@@ -157,7 +157,7 @@ namespace sdpa
         (worker_equiv_classes_, preferences);
     }
 
-    void WorkerManager::submit_job_to_worker (const job_id_t& job_id, const worker_id_t& worker_id)
+    void WorkerManager::submit_job_to_worker (job_id_t const& job_id, worker_id_t const& worker_id)
     {
       auto worker (worker_map_.find (worker_id));
       worker->second.submit (job_id);
@@ -172,15 +172,15 @@ namespace sdpa
       _num_free_workers--;
     }
 
-    void WorkerManager::acknowledge_job_sent_to_worker ( const job_id_t& job_id
-                                                       , const worker_id_t& worker_id
+    void WorkerManager::acknowledge_job_sent_to_worker ( job_id_t const& job_id
+                                                       , worker_id_t const& worker_id
                                                        )
     {
       worker_map_.at (worker_id).acknowledge (job_id);
     }
 
-    void WorkerManager::delete_job_from_worker ( const job_id_t &job_id
-                                               , const worker_id_t& worker_id
+    void WorkerManager::delete_job_from_worker ( job_id_t const& job_id
+                                               , worker_id_t const& worker_id
                                                , double cost
                                                )
     {
@@ -189,8 +189,8 @@ namespace sdpa
     }
 
     void WorkerManager::delete_job_from_worker
-      ( const job_id_t &job_id
-      , const worker_iterator worker
+      ( job_id_t const& job_id
+      , worker_iterator worker
       , double cost
       )
     {
@@ -419,7 +419,7 @@ namespace sdpa
               ( richest->first
               , thief->first
               , FHG_UTIL_MAKE_OPTIONAL (!preferences.empty(), *preference)
-              , [&thief] (const std::string& cpb)
+              , [&thief] (std::string const& cpb)
                 {
                   return thief->second.hasCapability (cpb);
                 }

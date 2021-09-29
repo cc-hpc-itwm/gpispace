@@ -25,7 +25,7 @@ namespace pnet
     namespace value
     {
       template<typename T>
-        inline value_type to_value (const T& x)
+        inline value_type to_value (T const& x)
       {
         return x;
       }

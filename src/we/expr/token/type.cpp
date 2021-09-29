@@ -24,7 +24,7 @@ namespace expr
 {
   namespace token
   {
-    show::show (const type& token)
+    show::show (type const& token)
       : _token (token)
     {}
     std::ostream& show::operator() (std::ostream& os) const
@@ -106,11 +106,11 @@ namespace expr
         }
       FHG_UTIL_UNREACHABLE();
     }
-    std::ostream& operator<< (std::ostream& os, const show& s)
+    std::ostream& operator<< (std::ostream& os, show const& s)
     {
       return s (os);
     }
-    std::ostream& operator<< (std::ostream& os, const type& x)
+    std::ostream& operator<< (std::ostream& os, type const& x)
     {
       return os << show (x);
     }

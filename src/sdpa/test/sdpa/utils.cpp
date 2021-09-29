@@ -20,7 +20,6 @@
 #include <sdpa/events/ErrorEvent.hpp>
 
 #include <util-generic/connectable_to_address_string.hpp>
-#include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/testing/printer/generic.hpp>
 #include <util-generic/testing/random.hpp>
 
@@ -38,14 +37,13 @@
 void boost::test_tools::tt_detail::print_log_value<fhg::com::p2p::address_t>
   ::operator() (std::ostream& os, fhg::com::p2p::address_t const& address) const
 {
-  os << fhg::com::p2p::to_string (address);
+  os << fhg::com::p2p::to_string_TESTING_ONLY (address);
 }
 
 void boost::test_tools::tt_detail::print_log_value<sdpa::Capability>
   ::operator() (std::ostream& os, sdpa::Capability const& capability) const
 {
-  os << "capability {name = " << capability.name()
-     << ", owner = " << capability.owner() << "}";
+  os << "capability {name = " << capability.name() << "}";
 }
 
 namespace utils
@@ -63,14 +61,14 @@ namespace utils
   }
 
   //! \todo unify with test/layer
-  we::type::activity_t module_call (std::string name)
+  we::type::Activity module_call (std::string name)
   {
-    we::type::transition_t transition
+    we::type::Transition transition
       ( name
-      , we::type::module_call_t
+      , we::type::ModuleCall
           ( fhg::util::testing::random_string()
           , fhg::util::testing::random_string()
-          , std::unordered_map<std::string, we::type::memory_buffer_info_t>()
+          , std::unordered_map<std::string, we::type::MemoryBufferInfo>()
           , std::list<we::type::memory_transfer>()
           , std::list<we::type::memory_transfer>()
           , true
@@ -80,16 +78,16 @@ namespace utils
       , we::type::property::type()
       , we::priority_type()
       , boost::optional<we::type::eureka_id_type>{}
-      , std::list<we::type::preference_t>{}
+      , std::list<we::type::Preference>{}
       );
     auto const port_name (fhg::util::testing::random_string());
-    transition.add_port ( we::type::port_t ( port_name
-                                           , we::type::PORT_IN
+    transition.add_port ( we::type::Port ( port_name
+                                           , we::type::port::direction::In{}
                                            , std::string ("string")
                                            , we::type::property::type()
                                            )
                         );
-    we::type::activity_t act (transition);
+    we::type::Activity act (transition);
     act.add_input ( port_name
                   //! \todo Investigate why we can't take a random
                   //! string with \\ or \": parse error on deserialization
@@ -98,23 +96,23 @@ namespace utils
     return act;
   }
 
-  we::type::activity_t module_call()
+  we::type::Activity module_call()
   {
     return module_call (fhg::util::testing::random_string());
   }
 
-  we::type::activity_t net_with_one_child_requiring_workers (unsigned long count)
+  we::type::Activity net_with_one_child_requiring_workers (unsigned long count)
   {
     we::type::property::type props;
     props.set ( {"fhg", "drts", "schedule", "num_worker"}
               , boost::lexical_cast<std::string> (count) + "UL"
               );
-    we::type::transition_t transition
+    we::type::Transition transition
       ( fhg::util::testing::random_string()
-      , we::type::module_call_t
+      , we::type::ModuleCall
           ( fhg::util::testing::random_string()
           , fhg::util::testing::random_string()
-          , std::unordered_map<std::string, we::type::memory_buffer_info_t>()
+          , std::unordered_map<std::string, we::type::MemoryBufferInfo>()
           , std::list<we::type::memory_transfer>()
           , std::list<we::type::memory_transfer>()
           , true
@@ -124,12 +122,12 @@ namespace utils
       , props
       , we::priority_type()
       , boost::optional<we::type::eureka_id_type>{}
-      , std::list<we::type::preference_t>{}
+      , std::list<we::type::Preference>{}
       );
     auto const port_name (fhg::util::testing::random_string());
     auto const port_id_in
-      ( transition.add_port ( we::type::port_t ( port_name
-                                               , we::type::PORT_IN
+      ( transition.add_port ( we::type::Port ( port_name
+                                               , we::type::port::direction::In{}
                                                , std::string ("string")
                                                , we::type::property::type()
                                                )
@@ -155,19 +153,19 @@ namespace utils
                        , we::type::property::type()
                        );
 
-    return we::type::activity_t
-      ( we::type::transition_t ( fhg::util::testing::random_string()
+    return we::type::Activity
+      ( we::type::Transition ( fhg::util::testing::random_string()
                                , net
                                , boost::none
                                , we::type::property::type()
                                , we::priority_type()
                                , boost::optional<we::type::eureka_id_type>{}
-                               , std::list<we::type::preference_t>{}
+                               , std::list<we::type::Preference>{}
                                )
       );
   }
 
-  we::type::activity_t net_with_two_children_requiring_n_workers (unsigned long n)
+  we::type::Activity net_with_two_children_requiring_n_workers (unsigned long n)
   {
     fhg::util::testing::unique_random<std::string> transition_names;
 
@@ -175,12 +173,12 @@ namespace utils
     props.set ( {"fhg", "drts", "schedule", "num_worker"}
               , std::to_string (n) + "UL"
               );
-    we::type::transition_t transition_0
+    we::type::Transition transition_0
       ( transition_names()
-      , we::type::module_call_t
+      , we::type::ModuleCall
           ( fhg::util::testing::random_string()
           , fhg::util::testing::random_string()
-          , std::unordered_map<std::string, we::type::memory_buffer_info_t>()
+          , std::unordered_map<std::string, we::type::MemoryBufferInfo>()
           , std::list<we::type::memory_transfer>()
           , std::list<we::type::memory_transfer>()
           , true
@@ -190,14 +188,14 @@ namespace utils
       , props
       , we::priority_type()
       , boost::optional<we::type::eureka_id_type>{}
-      , std::list<we::type::preference_t>{}
+      , std::list<we::type::Preference>{}
       );
-    we::type::transition_t transition_1
+    we::type::Transition transition_1
       ( transition_names()
-      , we::type::module_call_t
+      , we::type::ModuleCall
           ( fhg::util::testing::random_string()
           , fhg::util::testing::random_string()
-          , std::unordered_map<std::string, we::type::memory_buffer_info_t>()
+          , std::unordered_map<std::string, we::type::MemoryBufferInfo>()
           , std::list<we::type::memory_transfer>()
           , std::list<we::type::memory_transfer>()
           , true
@@ -207,20 +205,20 @@ namespace utils
       , props
       , we::priority_type()
       , boost::optional<we::type::eureka_id_type>{}
-      , std::list<we::type::preference_t>{}
+      , std::list<we::type::Preference>{}
       );
     auto const port_name (fhg::util::testing::random_string());
     auto const port_id_in_0
-      ( transition_0.add_port ( we::type::port_t ( port_name
-                                                 , we::type::PORT_IN
+      ( transition_0.add_port ( we::type::Port ( port_name
+                                                 , we::type::port::direction::In{}
                                                  , std::string ("string")
                                                  , we::type::property::type()
                                                  )
                               )
       );
     auto const port_id_in_1
-      ( transition_1.add_port ( we::type::port_t ( port_name
-                                                 , we::type::PORT_IN
+      ( transition_1.add_port ( we::type::Port ( port_name
+                                                 , we::type::port::direction::In{}
                                                  , std::string ("string")
                                                  , we::type::property::type()
                                                  )
@@ -259,14 +257,14 @@ namespace utils
                        , we::type::property::type()
                        );
 
-    return we::type::activity_t
-      ( we::type::transition_t ( fhg::util::testing::random_string()
+    return we::type::Activity
+      ( we::type::Transition ( fhg::util::testing::random_string()
                                , net
                                , boost::none
                                , we::type::property::type()
                                , we::priority_type()
                                , boost::optional<we::type::eureka_id_type>{}
-                               , std::list<we::type::preference_t>{}
+                               , std::list<we::type::Preference>{}
                                )
       );
   }
@@ -283,7 +281,7 @@ namespace utils
 
   agent::agent (fhg::com::Certificates const& certificates)
     :  _ ( random_peer_name(), "127.0.0.1"
-         , fhg::util::cxx14::make_unique<boost::asio::io_service>()
+         , std::make_unique<boost::asio::io_service>()
          , boost::none
          , true
          , certificates
@@ -305,20 +303,6 @@ namespace utils
     return fhg::com::port_t (std::to_string (_.peer_local_endpoint().port()));
   }
 
-  namespace
-  {
-    sdpa::capabilities_set_t annotate_with_owner
-      (CapabilityNames capabilities, sdpa::worker_id_t owner)
-    {
-      sdpa::capabilities_set_t result;
-      for (auto& capability : capabilities)
-      {
-        result.emplace (capability, owner);
-      }
-      return result;
-    }
-  }
-
   basic_drts_component_no_logic::basic_drts_component_no_logic
       (fhg::com::Certificates const& certificates)
     : basic_drts_component_no_logic
@@ -334,7 +318,7 @@ namespace utils
                  {
                    _event_queue.put (source, std::move (e));
                  }
-               , fhg::util::cxx14::make_unique<boost::asio::io_service>()
+               , std::make_unique<boost::asio::io_service>()
                , fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
                , certificates
                )
@@ -382,21 +366,25 @@ namespace utils
     , _parent (boost::none)
   {}
 
-  // \todo Deduplicate: duplicated because annotate_with_owner needs
-  // _name, which won't be initialized yet when calling the next ctor.
   basic_drts_component::basic_drts_component
       ( agent const& parent
-      , CapabilityNames capabilities
+      , CapabilityNames capability_names
       , fhg::com::Certificates const& certificates
       )
     : basic_drts_component (certificates)
   {
     _parent = _network.connect_to_TESTING_ONLY (parent.host(), parent.port());
 
+    sdpa::capabilities_set_t capabilities;
+    for (auto& capability_name : capability_names)
+    {
+      capabilities.emplace (capability_name);
+    }
+
     _network.perform<sdpa::events::WorkerRegistrationEvent>
       ( _parent.get()
       , _name
-      , annotate_with_owner (capabilities, _name)
+      , capabilities
       , fhg::util::testing::random<unsigned long>{}()
       , fhg::util::testing::random_string()
       );
@@ -594,7 +582,7 @@ namespace utils
     }
 
     std::string fake_drts_worker_notifying_module_call_submission::add_job
-      ( we::type::activity_t const& activity
+      ( we::type::Activity const& activity
       , sdpa::job_id_t const& job_id
       , fhg::com::p2p::address_t const& owner
       )
@@ -777,12 +765,12 @@ namespace utils
                  )
     : _ ( parent_agent.host()
         , parent_agent.port()
-        , fhg::util::cxx14::make_unique<boost::asio::io_service>()
+        , std::make_unique<boost::asio::io_service>()
         , certificates
         )
   {}
 
-  sdpa::job_id_t client::submit_job (we::type::activity_t workflow)
+  sdpa::job_id_t client::submit_job (we::type::Activity workflow)
   {
     return _.submitJob (workflow);
   }

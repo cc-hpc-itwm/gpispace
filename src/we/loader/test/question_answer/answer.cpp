@@ -26,7 +26,7 @@ long get_answer ()
 }
 
 static void answer ( drts::worker::context*
-                   , const expr::eval::context&
+                   , expr::eval::context const&
                    , expr::eval::context& output
                    , std::map<std::string, void*> const&
                    )

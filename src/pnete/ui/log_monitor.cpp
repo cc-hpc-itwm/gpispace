@@ -16,7 +16,7 @@
 
 #include <pnete/ui/log_monitor.hpp>
 
-#include <we/type/activity.hpp>
+#include <we/type/Activity.hpp>
 
 #include <util-generic/ostream/put_time.hpp>
 #include <util-generic/this_bound_mem_fn.hpp>
@@ -150,13 +150,13 @@ namespace detail
     , _mutex_data (QMutex::Recursive)
   { }
 
-  int log_table_model::rowCount (const QModelIndex&) const
+  int log_table_model::rowCount (QModelIndex const&) const
   {
     QMutexLocker lock (&_mutex_data);
     return _data.size();
   }
 
-  int log_table_model::columnCount (const QModelIndex&) const
+  int log_table_model::columnCount (QModelIndex const&) const
   {
     return TABLE_COLUMN_COUNT;
   }
@@ -183,11 +183,11 @@ namespace detail
     return QVariant();
   }
 
-  QVariant log_table_model::data (const QModelIndex& index, int role) const
+  QVariant log_table_model::data (QModelIndex const& index, int role) const
   {
     QMutexLocker lock (&_mutex_data);
 
-    const formatted_log_event& event (_data[index.row()]);
+    formatted_log_event const& event (_data[index.row()]);
 
     switch (role)
     {
@@ -220,7 +220,7 @@ namespace detail
 
     std::vector<fhg::logging::message> result;
 
-    for (const formatted_log_event& event : _data)
+    for (formatted_log_event const& event : _data)
     {
       result.push_back (event._raw);
     }
@@ -309,7 +309,7 @@ namespace detail
     }
 
   protected:
-    virtual bool filterAcceptsRow (int row, const QModelIndex& parent) const override
+    virtual bool filterAcceptsRow (int row, QModelIndex const& parent) const override
     {
       return sourceModel()->data
         (sourceModel()->index (row, 0, parent), Qt::UserRole).toInt()
@@ -383,11 +383,11 @@ log_monitor::log_monitor()
     , std::bind (&detail::log_filter_proxy::minimum_severity, _log_filter, std::placeholders::_1)
     );
 
-  connect ( filter_level_dial, SIGNAL (valueChanged(int))
-          , filter_level_combobox, SLOT (setCurrentIndex(int))
+  connect ( filter_level_dial, SIGNAL (valueChanged (int))
+          , filter_level_combobox, SLOT (setCurrentIndex (int))
           );
-  connect ( filter_level_combobox, SIGNAL (currentIndexChanged(int))
-          , filter_level_dial, SLOT (setValue(int))
+  connect ( filter_level_combobox, SIGNAL (currentIndexChanged (int))
+          , filter_level_dial, SLOT (setValue (int))
           );
 
   filter_level_combobox->setCurrentIndex (_filter_level);
@@ -515,7 +515,7 @@ void log_monitor::save ()
     }
     _last_saved_filename = fname;
   }
-  catch (std::exception const & ex)
+  catch (std::exception const& ex)
   {
     QMessageBox::critical (this, "Could not save file", ex.what ());
   }

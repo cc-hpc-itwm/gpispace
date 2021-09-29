@@ -33,10 +33,10 @@ namespace fhg
         class generic : public std::runtime_error
         {
         public:
-          generic (const std::string& msg, const position& inp)
+          generic (std::string const& msg, position const& inp)
             : std::runtime_error (inp.error_message (msg))
           {}
-          generic (const boost::format& msg, const position& inp)
+          generic (boost::format const& msg, position const& inp)
             : std::runtime_error (inp.error_message (msg.str()))
           {}
         };
@@ -44,14 +44,14 @@ namespace fhg
         class expected : public generic
         {
         public:
-          expected (const std::string&, const position&);
+          expected (std::string const&, position const&);
         };
 
         template<typename From, typename To>
           class value_too_big : public generic
         {
         public:
-          value_too_big (const From& f, const position& pos)
+          value_too_big (From const& f, position const& pos)
             : generic ( boost::format ("value %1% larger than maximum %2%")
                       % f
                       % std::numeric_limits<To>::max()
@@ -64,7 +64,7 @@ namespace fhg
           class unexpected_digit : public generic
         {
         public:
-          unexpected_digit (const position& pos)
+          unexpected_digit (position const& pos)
             : generic ( boost::format
                         ( "unexpected digit"
                         " (parsed value would be larger than %1%)"

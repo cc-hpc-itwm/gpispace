@@ -18,13 +18,12 @@
 
 #include <test/certificates_data.hpp>
 
-#include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/testing/printer/generic.hpp>
 #include <util-generic/testing/printer/list.hpp>
 #include <util-generic/testing/printer/optional.hpp>
 #include <util-generic/testing/random.hpp>
 
-#include <we/type/activity.hpp>
+#include <we/type/Activity.hpp>
 
 #include <fhg/util/next.hpp>
 
@@ -43,7 +42,7 @@
 #include <utility>
 #include <vector>
 
-FHG_BOOST_TEST_LOG_VALUE_PRINTER (we::type::activity_t, os, activity)
+FHG_BOOST_TEST_LOG_VALUE_PRINTER (we::type::Activity, os, activity)
 {
   os << activity.to_string();
 }
@@ -81,23 +80,23 @@ namespace
     utils::basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
 
-  we::type::transition_t transition_with_multiple_implementations
+  we::type::Transition transition_with_multiple_implementations
     ( Preferences const& preferences
     , fhg::util::testing::unique_random<std::string>& unique_names
     )
   {
     fhg::util::testing::random<std::string> random_string;
 
-    we::type::multi_module_call_t multi_mod;
+    we::type::MultiModuleCall multi_mod;
 
     for (auto const& target : preferences)
     {
       using buffers
-        = std::unordered_map<std::string, we::type::memory_buffer_info_t>;
+        = std::unordered_map<std::string, we::type::MemoryBufferInfo>;
 
       multi_mod.emplace
         ( target
-        , we::type::module_call_t
+        , we::type::ModuleCall
             (random_string(), random_string(), buffers{}, {}, {}, true, true)
         );
     }
@@ -105,7 +104,7 @@ namespace
     return {unique_names(), multi_mod, {}, {}, {}, {}, preferences};
   }
 
-  we::type::activity_t activity_with_preferences
+  we::type::Activity activity_with_preferences
     ( std::list<std::string> const& preferences
     , boost::optional<unsigned long> worker_count = boost::none
     )
@@ -125,16 +124,16 @@ namespace
 
     const std::string port_name (random_string());
     transition.add_port
-      ({port_name, we::type::PORT_IN, std::string ("string")});
+      ({port_name, we::type::port::direction::In{}, std::string ("string"), we::type::property::type{}});
 
-    we::type::activity_t activity (transition);
+    we::type::Activity activity (transition);
     activity.add_input
       (port_name, fhg::util::testing::random_string_without ("\\\""));
 
     return activity;
   }
 
-  we::type::activity_t net_with_n_children_and_preferences
+  we::type::Activity net_with_n_children_and_preferences
     (unsigned int n, Preferences const& preferences)
   {
     fhg::util::testing::unique_random<std::string> place_names;
@@ -158,7 +157,7 @@ namespace
         );
 
       auto const port_id
-        (transition.add_port ({random_string(), we::type::PORT_IN, type}));
+        (transition.add_port ({random_string(), we::type::port::direction::In{}, type, we::type::property::type{}}));
       net.add_connection
         ( we::edge::PT
         , net.add_transition (std::move (transition))
@@ -168,10 +167,10 @@ namespace
         );
     }
 
-    return we::type::activity_t
-      (we::type::transition_t (random_string(), net, {}, {}, {}
+    return we::type::Activity
+      (we::type::Transition (random_string(), net, {}, {}, {}
                               , boost::optional<we::type::eureka_id_type>{}
-                              , std::list<we::type::preference_t>{}
+                              , std::list<we::type::Preference>{}
                               ));
   }
 }
@@ -180,7 +179,7 @@ BOOST_AUTO_TEST_CASE
   (preferences_are_properly_stored_in_requirements_and_preferences)
 {
   auto const preferences
-    ( fhg::util::testing::unique_randoms<std::list<we::type::preference_t>>
+    ( fhg::util::testing::unique_randoms<std::list<we::type::Preference>>
         (fhg::util::testing::random<std::size_t>{} (10, 1))
     );
 

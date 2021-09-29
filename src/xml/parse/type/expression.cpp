@@ -27,7 +27,7 @@ namespace xml
   {
     namespace type
     {
-      expression_type::expression_type ( const util::position_type& pod
+      expression_type::expression_type ( util::position_type const& pod
                                        , expressions_type const& expressions
                                        )
         : with_position_of_definition (pod)
@@ -42,7 +42,7 @@ namespace xml
       namespace dump
       {
         void dump ( ::fhg::util::xml::xmlstream & s
-                  , const expression_type & e
+                  , expression_type const& e
                   )
         {
           s.open ("expression");

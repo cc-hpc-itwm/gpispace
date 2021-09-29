@@ -27,7 +27,7 @@
 #include <fhg/util/thread/event.hpp>
 #include <util-generic/threadsafe_queue.hpp>
 
-#include <we/type/activity.hpp>
+#include <we/type/Activity.hpp>
 
 #include <boost/optional.hpp>
 #include <boost/test/unit_test.hpp>
@@ -65,14 +65,14 @@ namespace utils
   std::string random_peer_name();
 
   //! \todo unify with test/layer
-  we::type::activity_t module_call (std::string name);
+  we::type::Activity module_call (std::string name);
 
-  we::type::activity_t module_call();
+  we::type::Activity module_call();
 
-  we::type::activity_t net_with_one_child_requiring_workers
+  we::type::Activity net_with_one_child_requiring_workers
     (unsigned long count);
 
-  we::type::activity_t net_with_two_children_requiring_n_workers
+  we::type::Activity net_with_two_children_requiring_n_workers
     (unsigned long n);
 
   struct log_to_stdout
@@ -251,7 +251,7 @@ namespace utils
 
       sdpa::job_id_t job_id (std::string name);
 
-      std::string add_job ( we::type::activity_t const& activity
+      std::string add_job ( we::type::Activity const& activity
                           , sdpa::job_id_t const&
                           , fhg::com::p2p::address_t const& owner
                           );
@@ -263,7 +263,7 @@ namespace utils
       {
         sdpa::job_id_t _id;
         fhg::com::p2p::address_t _owner;
-        we::type::activity_t _activity;
+        we::type::Activity _activity;
       };
       std::map<std::string, job_t> _jobs;
       void delete_job (sdpa::job_id_t const& job_id);
@@ -409,7 +409,7 @@ namespace utils
     client& operator= (client&) = delete;
     ~client() = default;
 
-    sdpa::job_id_t submit_job (we::type::activity_t);
+    sdpa::job_id_t submit_job (we::type::Activity);
 
     sdpa::status::code wait_for_terminal_state (sdpa::job_id_t const&);
     sdpa::status::code wait_for_terminal_state

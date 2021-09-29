@@ -24,7 +24,7 @@ namespace pnet
   {
     namespace value
     {
-      template<typename T> inline const std::string& name_of (const T&);
+      template<typename T> inline std::string const& name_of (T const&);
     }
   }
 }

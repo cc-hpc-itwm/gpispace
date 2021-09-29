@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <fhgcom/header.hpp>
+#include <fhgcom/address.hpp>
 #include <fhgcom/message.hpp>
 
 #include <fhg/util/thread/event.hpp>
@@ -75,7 +75,7 @@ namespace fhg
     public:
       typedef boost::shared_ptr<connection_t> ptr_t;
 
-      typedef std::function <void (boost::system::error_code const &)> completion_handler_t;
+      typedef std::function <void (boost::system::error_code const&)> completion_handler_t;
 
       explicit
       connection_t
@@ -84,7 +84,7 @@ namespace fhg
         , boost::asio::io_service::strand const& strand
         , std::function<void (ptr_t connection, std::unique_ptr<message_t>)> handle_hello_message
         , std::function<void (ptr_t connection, std::unique_ptr<message_t>)> handle_user_data
-        , std::function<void (ptr_t connection, const boost::system::error_code&)> handle_error
+        , std::function<void (ptr_t connection, boost::system::error_code const&)> handle_error
         , peer_t* peer
         );
 
@@ -95,7 +95,7 @@ namespace fhg
       void async_send (message_t msg, completion_handler_t hdl);
 
       template <typename SettableSocketOption>
-      void set_option(const SettableSocketOption & o)
+      void set_option (SettableSocketOption const& o)
       {
         socket().set_option (o);
       }
@@ -103,11 +103,11 @@ namespace fhg
       void start ();
       void stop ();
 
-      const p2p::address_t & local_address () const { return m_local_addr; }
-      const p2p::address_t & remote_address () const { return m_remote_addr; }
+      p2p::address_t const& local_address () const { return m_local_addr; }
+      p2p::address_t const& remote_address () const { return m_remote_addr; }
 
-      void local_address  (const p2p::address_t & a) { m_local_addr = a; }
-      void remote_address (const p2p::address_t & a)
+      void local_address  (p2p::address_t const& a) { m_local_addr = a; }
+      void remote_address (p2p::address_t const& a)
       {
         m_remote_addr = a;
       }
@@ -135,14 +135,14 @@ namespace fhg
       void start_read ();
       void start_send ();
 
-      void handle_read_header ( const boost::system::error_code & ec
+      void handle_read_header ( boost::system::error_code const& ec
                               , std::size_t bytes_transferred
                               );
-      void handle_read_data ( const boost::system::error_code & ec
+      void handle_read_data ( boost::system::error_code const& ec
                             , std::size_t bytes_transferred
                             );
 
-      void handle_write ( const boost::system::error_code & ec );
+      void handle_write ( boost::system::error_code const& ec );
 
       peer_t* _peer;
 
@@ -151,7 +151,7 @@ namespace fhg
       tcp_socket_t& _raw_socket;
       std::function<void (ptr_t connection, std::unique_ptr<message_t>)> _handle_hello_message;
       std::function<void (ptr_t connection, std::unique_ptr<message_t>)> _handle_user_data;
-      std::function<void (ptr_t connection, const boost::system::error_code&)> _handle_error;
+      std::function<void (ptr_t connection, boost::system::error_code const&)> _handle_error;
       std::unique_ptr<message_t> in_message_;
 
       std::list <to_send_t> to_send_;

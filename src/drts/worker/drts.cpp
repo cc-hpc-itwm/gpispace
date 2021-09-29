@@ -35,7 +35,7 @@
 
 #include <we/loader/exceptions.hpp>
 #include <we/loader/module_call.hpp>
-#include <we/type/activity.hpp>
+#include <we/type/Activity.hpp>
 
 #include <fhg/util/macros.hpp>
 #include <util-generic/hostname.hpp>
@@ -62,12 +62,12 @@ struct wfe_task_t
 
   std::string id;
   state_t state;
-  we::type::activity_t activity;
+  we::type::Activity activity;
   boost::optional<std::string> const target_impl;
   drts::worker::context context;
 
   wfe_task_t ( std::string id_
-             , we::type::activity_t const& activity_
+             , we::type::Activity const& activity_
              , boost::optional<std::string> const& target_impl_
              , std::string worker_name
              , std::set<std::string> workers
@@ -97,20 +97,6 @@ DRTSImpl::mark_remaining_tasks_as_canceled_helper::~mark_remaining_tasks_as_canc
   for (auto& job : _jobs | boost::adaptors::map_values)
   {
     job->state = Job::state_t::CANCELED_DUE_TO_WORKER_SHUTDOWN;
-  }
-}
-
-namespace
-{
-  std::set<sdpa::Capability> make_capabilities
-    (std::vector<std::string> const& capabilities, std::string worker_name)
-  {
-    std::set<sdpa::Capability> result;
-    for (std::string const& cap : capabilities)
-    {
-      result.emplace (cap, worker_name);
-    }
-    return result;
   }
 }
 
@@ -149,15 +135,18 @@ DRTSImpl::DRTSImpl
 {
   start_receiver();
 
-  std::set<sdpa::Capability> const capabilities
-    (make_capabilities (capability_names, m_my_name));
+  std::set<sdpa::Capability> capabilities;
+  for (std::string const& cpb_name : capability_names)
+  {
+    capabilities.emplace (cpb_name);
+  }
 
-    send_event_to_parent<sdpa::events::WorkerRegistrationEvent>
-      ( m_my_name
-      , capabilities
-      , (_shared_memory != nullptr) ? _shared_memory->size() : 0
-      , fhg::util::hostname()
-      );
+  send_event_to_parent<sdpa::events::WorkerRegistrationEvent>
+    ( m_my_name
+    , capabilities
+    , (_shared_memory != nullptr) ? _shared_memory->size() : 0
+    , fhg::util::hostname()
+    );
 
   _registration_response.get_future().wait();
 
@@ -221,7 +210,7 @@ void DRTSImpl::handleCancelJobEvent
   (fhg::com::p2p::address_t const&, const sdpa::events::CancelJobEvent *e)
 {
   std::lock_guard<std::mutex> const _ (m_job_map_mutex);
-  map_of_jobs_t::iterator job_it (m_jobs.find(e->job_id()));
+  map_of_jobs_t::iterator job_it (m_jobs.find (e->job_id()));
 
   _log_emitter.emit ( "got cancelation request for job: " + e->job_id()
                     , fhg::logging::legacy::category_level_trace
@@ -248,7 +237,7 @@ void DRTSImpl::handleCancelJobEvent
     std::lock_guard<std::mutex> const _lock_currently_executed_tasks
       (_currently_executed_tasks_mutex);
     std::map<std::string, wfe_task_t *>::iterator task_it
-      (_currently_executed_tasks.find(e->job_id()));
+      (_currently_executed_tasks.find (e->job_id()));
     if (task_it != _currently_executed_tasks.end())
     {
       task_it->second->state = wfe_task_t::CANCELED;
@@ -279,7 +268,7 @@ void DRTSImpl::handleJobFailedAckEvent
   (fhg::com::p2p::address_t const&, const sdpa::events::JobFailedAckEvent *e)
 {
   std::lock_guard<std::mutex> const _ (m_job_map_mutex);
-  map_of_jobs_t::iterator job_it (m_jobs.find(e->job_id()));
+  map_of_jobs_t::iterator job_it (m_jobs.find (e->job_id()));
 
   if (job_it == m_jobs.end())
   {
@@ -293,7 +282,7 @@ void DRTSImpl::handleJobFinishedAckEvent
   (fhg::com::p2p::address_t const&, const sdpa::events::JobFinishedAckEvent *e)
 {
   std::lock_guard<std::mutex> const _ (m_job_map_mutex);
-  map_of_jobs_t::iterator job_it (m_jobs.find(e->job_id()));
+  map_of_jobs_t::iterator job_it (m_jobs.find (e->job_id()));
 
   if (job_it == m_jobs.end())
   {
@@ -370,7 +359,7 @@ try
 
     try
     {
-      job->result = we::type::activity_t();
+      job->result = we::type::Activity();
 
       wfe_task_t task
         (job->id, job->activity, job->target_impl, m_my_name, job->workers, _log_emitter);

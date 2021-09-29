@@ -17,12 +17,12 @@
 #include <boost/test/unit_test.hpp>
 
 #include <we/layer.hpp>
-#include <we/type/activity.hpp>
+#include <we/type/Activity.hpp>
 #include <we/test/operator_equal.hpp>
-#include <we/type/expression.hpp>
-#include <we/type/module_call.hpp>
+#include <we/type/Expression.hpp>
+#include <we/type/ModuleCall.hpp>
 #include <we/type/signature.hpp>
-#include <we/type/transition.hpp>
+#include <we/type/Transition.hpp>
 #include <we/type/value/read.hpp>
 #include <we/type/value/poke.hpp>
 #include <we/type/value/show.hpp>
@@ -182,16 +182,16 @@ struct daemon
 
   DECLARE_EXPECT_CLASS ( submit
                        , we::layer::id_type* id
-        BOOST_PP_COMMA() we::type::activity_t act
+        BOOST_PP_COMMA() we::type::Activity act
                        , _id (id)
         BOOST_PP_COMMA() _act (act)
                        , we::layer::id_type* _id
-                       ; we::type::activity_t _act
+                       ; we::type::Activity _act
                        , id != nullptr && _act == act
                        );
 
   void submit
-    (we::layer::id_type id, we::type::activity_t act)
+    (we::layer::id_type id, we::type::Activity act)
   {
     INC_IN_PROGRESS (jobs_rts);
 
@@ -235,16 +235,16 @@ struct daemon
 
   DECLARE_EXPECT_CLASS ( finished
                        , we::layer::id_type id
-        BOOST_PP_COMMA() we::type::activity_t act
+        BOOST_PP_COMMA() we::type::Activity act
                        , _id (id)
         BOOST_PP_COMMA() _act (act)
                        , we::layer::id_type _id
-                       ; we::type::activity_t _act
+                       ; we::type::Activity _act
                        , _id == id && _act == act
                        );
 
   void finished ( we::layer::id_type id
-                , we::type::activity_t act
+                , we::type::Activity act
                 )
   {
     std::list<expect_finished*>::iterator const e
@@ -366,7 +366,7 @@ struct daemon
   }
 
   void do_submit ( we::layer::id_type id
-                 , we::type::activity_t act
+                 , we::type::Activity act
                  )
   {
     INC_IN_PROGRESS (jobs_layer);
@@ -375,7 +375,7 @@ struct daemon
   }
 
   void do_finished ( we::layer::id_type id
-                   , we::type::activity_t act
+                   , we::type::Activity act
                    )
   {
     DEC_IN_PROGRESS (jobs_rts);
@@ -450,37 +450,37 @@ struct daemon
 BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE (expressions_shall_not_be_sumitted_to_rts, daemon)
 {
-  we::type::transition_t transition
+  we::type::Transition transition
     ( "expression"
-    , we::type::expression_t ("${out} := ${in} + 1L")
+    , we::type::Expression ("${out} := ${in} + 1L")
     , boost::none
     , we::type::property::type()
     , we::priority_type()
     , boost::optional<we::type::eureka_id_type>{}
-    , std::list<we::type::preference_t>{}
+    , std::list<we::type::Preference>{}
     );
   transition.add_port
-    (we::type::port_t ( "in"
-                      , we::type::PORT_IN
+    (we::type::Port ( "in"
+                      , we::type::port::direction::In{}
                       , signature::LONG
                       , we::type::property::type()
                       )
     );
   transition.add_port
-    (we::type::port_t ( "out"
-                      , we::type::PORT_OUT
+    (we::type::Port ( "out"
+                      , we::type::port::direction::Out{}
                       , signature::LONG
                       , we::type::property::type()
                       )
     );
 
-  we::type::activity_t activity (transition);
+  we::type::Activity activity (transition);
   activity.add_input ("in", pnet::type::value::read ("1L"));
 
   we::layer::id_type const id (generate_id());
 
   {
-    we::type::activity_t activity_expected (transition);
+    we::type::Activity activity_expected (transition);
     activity_expected.add_output_TESTING_ONLY
       ( "out"
       , pnet::type::value::read ("2L")
@@ -495,12 +495,12 @@ BOOST_FIXTURE_TEST_CASE (expressions_shall_not_be_sumitted_to_rts, daemon)
 BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
 {
-  we::type::transition_t transition
+  we::type::Transition transition
     ( "module call"
-    , we::type::module_call_t
+    , we::type::ModuleCall
       ( "m"
       , "f"
-      , std::unordered_map<std::string, we::type::memory_buffer_info_t>()
+      , std::unordered_map<std::string, we::type::MemoryBufferInfo>()
       , std::list<we::type::memory_transfer>()
       , std::list<we::type::memory_transfer>()
       , true
@@ -510,31 +510,31 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
     , we::type::property::type()
     , we::priority_type()
     , boost::optional<we::type::eureka_id_type>{}
-    , std::list<we::type::preference_t>{}
+    , std::list<we::type::Preference>{}
     );
-  transition.add_port ( we::type::port_t ( "in"
-                                         , we::type::PORT_IN
+  transition.add_port ( we::type::Port ( "in"
+                                         , we::type::port::direction::In{}
                                          , signature::CONTROL
                                          , we::type::property::type()
                                          )
                       );
-  transition.add_port ( we::type::port_t ( "out"
-                                         , we::type::PORT_OUT
+  transition.add_port ( we::type::Port ( "out"
+                                         , we::type::port::direction::Out{}
                                          , signature::CONTROL
                                          , we::type::property::type()
                                          )
                       );
 
-  we::type::activity_t activity_output (transition);
+  we::type::Activity activity_output (transition);
   activity_output.add_output_TESTING_ONLY ("out", value::CONTROL);
 
-  we::type::activity_t activity_input (transition);
+  we::type::Activity activity_input (transition);
   activity_input.add_input ("in", value::CONTROL);
 
-  we::type::activity_t activity_child (transition);
+  we::type::Activity activity_child (transition);
   activity_child.add_input ("in", value::CONTROL);
 
-  we::type::activity_t activity_result
+  we::type::Activity activity_result
     (we::type::TESTING_ONLY{}, transition, we::transition_id_type (0));
   activity_result.add_output_TESTING_ONLY ("out", value::CONTROL);
 
@@ -558,10 +558,10 @@ BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (finished_shall_be_called_after_finished_one_child, daemon)
 {
-  we::type::activity_t activity_input;
-  we::type::activity_t activity_output;
-  we::type::activity_t activity_child;
-  we::type::activity_t activity_result;
+  we::type::Activity activity_input;
+  we::type::Activity activity_output;
+  we::type::Activity activity_child;
+  we::type::Activity activity_result;
   std::tie (activity_input, activity_output, activity_child, activity_result)
     = activity_with_child (1);
 
@@ -586,10 +586,10 @@ BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (finished_shall_be_called_after_finished_two_childs, daemon)
 {
-  we::type::activity_t activity_input;
-  we::type::activity_t activity_output;
-  we::type::activity_t activity_child;
-  we::type::activity_t activity_result;
+  we::type::Activity activity_input;
+  we::type::Activity activity_output;
+  we::type::Activity activity_child;
+  we::type::Activity activity_result;
   std::tie (activity_input, activity_output, activity_child, activity_result)
     = activity_with_child (2);
 
@@ -623,10 +623,10 @@ BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (two_sequential_jobs_shall_be_properly_handled, daemon)
 {
-  we::type::activity_t activity_input;
-  we::type::activity_t activity_output;
-  we::type::activity_t activity_child;
-  we::type::activity_t activity_result;
+  we::type::Activity activity_input;
+  we::type::Activity activity_output;
+  we::type::Activity activity_child;
+  we::type::Activity activity_result;
   std::tie (activity_input, activity_output, activity_child, activity_result)
     = activity_with_child (1);
 
@@ -670,10 +670,10 @@ BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (two_interleaving_jobs_shall_be_properly_handled, daemon)
 {
-  we::type::activity_t activity_input;
-  we::type::activity_t activity_output;
-  we::type::activity_t activity_child;
-  we::type::activity_t activity_result;
+  we::type::Activity activity_input;
+  we::type::Activity activity_output;
+  we::type::Activity activity_child;
+  we::type::Activity activity_result;
   std::tie (activity_input, activity_output, activity_child, activity_result)
     = activity_with_child (2);
 
@@ -719,10 +719,10 @@ BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (canceled_shall_be_called_after_cancel_one_child, daemon)
 {
-  we::type::activity_t activity_input;
-  we::type::activity_t activity_output;
-  we::type::activity_t activity_child;
-  we::type::activity_t activity_result;
+  we::type::Activity activity_input;
+  we::type::Activity activity_output;
+  we::type::Activity activity_child;
+  we::type::Activity activity_result;
   std::tie (activity_input, activity_output, activity_child, activity_result)
     = activity_with_child (1);
 
@@ -763,10 +763,10 @@ namespace
 
     void test_routine (method first_child, method second_child)
     {
-      we::type::activity_t activity_input;
-      we::type::activity_t activity_output;
-      we::type::activity_t activity_child;
-      we::type::activity_t activity_result;
+      we::type::Activity activity_input;
+      we::type::Activity activity_output;
+      we::type::Activity activity_child;
+      we::type::Activity activity_result;
       std::tie (activity_input, activity_output, activity_child, activity_result)
         = activity_with_child (2);
 
@@ -847,10 +847,10 @@ BOOST_FIXTURE_TEST_CASE
   , daemon
   )
 {
-  we::type::activity_t activity_input;
-  we::type::activity_t activity_output;
-  we::type::activity_t activity_child;
-  we::type::activity_t activity_result;
+  we::type::Activity activity_input;
+  we::type::Activity activity_output;
+  we::type::Activity activity_child;
+  we::type::Activity activity_result;
   std::tie (activity_input, activity_output, activity_child, activity_result)
     = activity_with_child (2);
 
@@ -887,10 +887,10 @@ BOOST_FIXTURE_TEST_CASE
 BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE (child_failure_shall_fail_parent, daemon)
 {
-  we::type::activity_t activity_input;
-  we::type::activity_t activity_output;
-  we::type::activity_t activity_child;
-  we::type::activity_t activity_result;
+  we::type::Activity activity_input;
+  we::type::Activity activity_output;
+  we::type::Activity activity_child;
+  we::type::Activity activity_result;
   std::tie (activity_input, activity_output, activity_child, activity_result)
     = activity_with_child (1);
 
@@ -917,10 +917,10 @@ BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (sibling_jobs_shall_be_canceled_on_child_failure, daemon)
 {
-  we::type::activity_t activity_input;
-  we::type::activity_t activity_output;
-  we::type::activity_t activity_child;
-  we::type::activity_t activity_result;
+  we::type::Activity activity_input;
+  we::type::Activity activity_output;
+  we::type::Activity activity_child;
+  we::type::Activity activity_result;
   std::tie (activity_input, activity_output, activity_child, activity_result)
     = activity_with_child (2);
 
@@ -959,10 +959,10 @@ BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (sibling_jobs_shall_be_canceled_on_child_failure_and_any_termination_is_okay, daemon)
 {
-  we::type::activity_t activity_input;
-  we::type::activity_t activity_output;
-  we::type::activity_t activity_child;
-  we::type::activity_t activity_result;
+  we::type::Activity activity_input;
+  we::type::Activity activity_output;
+  we::type::Activity activity_child;
+  we::type::Activity activity_result;
   std::tie (activity_input, activity_output, activity_child, activity_result)
     = activity_with_child (3);
 
@@ -1007,10 +1007,10 @@ BOOST_FIXTURE_TEST_CASE
 {
   const std::size_t N (10);
 
-  we::type::activity_t activity_input;
-  we::type::activity_t activity_output;
-  we::type::activity_t activity_child;
-  we::type::activity_t activity_result;
+  we::type::Activity activity_input;
+  we::type::Activity activity_output;
+  we::type::Activity activity_child;
+  we::type::Activity activity_result;
   std::tie (activity_input, activity_output, activity_child, activity_result)
     = activity_with_child (N);
 
@@ -1044,10 +1044,10 @@ BOOST_FIXTURE_TEST_CASE
 BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE (layer_properly_puts_token, daemon)
 {
-  we::type::activity_t activity_input;
-  we::type::activity_t activity_output;
-  we::type::activity_t activity_child;
-  we::type::activity_t activity_result;
+  we::type::Activity activity_input;
+  we::type::Activity activity_output;
+  we::type::Activity activity_child;
+  we::type::Activity activity_result;
   std::tie (activity_input, std::ignore, activity_child, activity_result)
     = activity_with_child (1);
   std::tie (std::ignore, activity_output, std::ignore, std::ignore)
@@ -1084,8 +1084,8 @@ BOOST_FIXTURE_TEST_CASE (layer_properly_puts_token, daemon)
 
 namespace
 {
-  std::tuple< we::type::transition_t
-            , we::type::transition_t
+  std::tuple< we::type::Transition
+            , we::type::Transition
             , we::transition_id_type
             >
     wfr_net_with_childs (bool put_on_input)
@@ -1119,12 +1119,12 @@ namespace
       (net.add_place (place::type ("request", request_t, true)));
 
 
-    we::type::transition_t trans_a
+    we::type::Transition trans_a
       ( "trans_a"
-      , we::type::module_call_t
+      , we::type::ModuleCall
         ( "m"
         , "f"
-        , std::unordered_map<std::string, we::type::memory_buffer_info_t>()
+        , std::unordered_map<std::string, we::type::MemoryBufferInfo>()
         , std::list<we::type::memory_transfer>()
         , std::list<we::type::memory_transfer>()
         , true
@@ -1134,62 +1134,62 @@ namespace
       , we::type::property::type()
       , we::priority_type()
       , boost::optional<we::type::eureka_id_type>{}
-      , std::list<we::type::preference_t>{}
+      , std::list<we::type::Preference>{}
       );
     we::port_id_type const trans_a_port_id_in
-      ( trans_a.add_port ( we::type::port_t ( "in"
-                                            , we::type::PORT_IN
+      ( trans_a.add_port ( we::type::Port ( "in"
+                                            , we::type::port::direction::In{}
                                             , signature::CONTROL
                                             , we::type::property::type()
                                             )
                          )
       );
     we::port_id_type const trans_a_port_id_out
-      ( trans_a.add_port ( we::type::port_t ( "out"
-                                            , we::type::PORT_OUT
+      ( trans_a.add_port ( we::type::Port ( "out"
+                                            , we::type::port::direction::Out{}
                                             , signature::CONTROL
                                             , we::type::property::type()
                                             )
                          )
       );
 
-    we::type::transition_t trans_b
+    we::type::Transition trans_b
       ( "trans_b"
-      , we::type::expression_t
+      , we::type::Expression
           ("${response} := ${request.value} + 1L; ${out} := ${in};")
       , boost::none
       , we::type::property::type()
       , we::priority_type()
       , boost::optional<we::type::eureka_id_type>{}
-      , std::list<we::type::preference_t>{}
+      , std::list<we::type::Preference>{}
       );
     we::port_id_type const trans_b_port_id_in
-      ( trans_b.add_port ( we::type::port_t ( "in"
-                                            , we::type::PORT_IN
+      ( trans_b.add_port ( we::type::Port ( "in"
+                                            , we::type::port::direction::In{}
                                             , signature::CONTROL
                                             , we::type::property::type()
                                             )
                          )
       );
     we::port_id_type const trans_b_port_id_out
-      ( trans_b.add_port ( we::type::port_t ( "out"
-                                            , we::type::PORT_OUT
+      ( trans_b.add_port ( we::type::Port ( "out"
+                                            , we::type::port::direction::Out{}
                                             , signature::CONTROL
                                             , we::type::property::type()
                                             )
                          )
       );
     we::port_id_type const trans_b_port_id_request
-      ( trans_b.add_port ( we::type::port_t ( "request"
-                                            , we::type::PORT_IN
+      ( trans_b.add_port ( we::type::Port ( "request"
+                                            , we::type::port::direction::In{}
                                             , request_t
                                             , we::type::property::type()
                                             )
                          )
       );
     we::port_id_type const trans_b_port_id_response
-      ( trans_b.add_port ( we::type::port_t ( "response"
-                                            , we::type::PORT_OUT
+      ( trans_b.add_port ( we::type::Port ( "response"
+                                            , we::type::port::direction::Out{}
                                             , signature::LONG
                                             , we::type::property::type()
                                             )
@@ -1224,42 +1224,42 @@ namespace
     }
 
     return std::make_tuple
-      ( we::type::transition_t ( "net"
+      ( we::type::Transition ( "net"
                                , net
                                , boost::none
                                , we::type::property::type()
                                , we::priority_type()
                                , boost::optional<we::type::eureka_id_type>{}
-                               , std::list<we::type::preference_t>{}
+                               , std::list<we::type::Preference>{}
                                )
       , trans_a
       , trans_a_id
       );
   }
 
-  std::tuple< we::type::activity_t
-            , we::type::activity_t
-            , we::type::activity_t
-            , we::type::activity_t
+  std::tuple< we::type::Activity
+            , we::type::Activity
+            , we::type::Activity
+            , we::type::Activity
             >
     wfr_activity_with_child()
   {
     we::transition_id_type transition_id_child;
-    we::type::transition_t transition_in;
-    we::type::transition_t transition_out;
-    we::type::transition_t transition_child;
+    we::type::Transition transition_in;
+    we::type::Transition transition_out;
+    we::type::Transition transition_child;
     std::tie (transition_in, transition_child, transition_id_child) =
       wfr_net_with_childs (true);
     std::tie (transition_out, std::ignore, std::ignore) =
       wfr_net_with_childs (false);
 
-    we::type::activity_t activity_input (transition_in);
-    we::type::activity_t activity_output (transition_out);
+    we::type::Activity activity_input (transition_in);
+    we::type::Activity activity_output (transition_out);
 
-    we::type::activity_t activity_child (transition_child);
+    we::type::Activity activity_child (transition_child);
     activity_child.add_input ("in", value::CONTROL);
 
-    we::type::activity_t activity_result
+    we::type::Activity activity_result
       (we::type::TESTING_ONLY{}, transition_child, transition_id_child);
     activity_result.add_output_TESTING_ONLY ("out", value::CONTROL);
 
@@ -1271,10 +1271,10 @@ namespace
 BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE (workflow_response_works, daemon)
 {
-  we::type::activity_t activity_input;
-  we::type::activity_t activity_output;
-  we::type::activity_t activity_child;
-  we::type::activity_t activity_result;
+  we::type::Activity activity_input;
+  we::type::Activity activity_output;
+  we::type::Activity activity_child;
+  we::type::Activity activity_result;
   std::tie (activity_input, activity_output, activity_child, activity_result)
     = wfr_activity_with_child();
 
@@ -1356,8 +1356,8 @@ BOOST_FIXTURE_TEST_CASE (workflow_response_works, daemon)
 BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE (workflow_response_fails_when_workflow_fails, daemon)
 {
-  we::type::activity_t activity_input;
-  we::type::activity_t activity_child;
+  we::type::Activity activity_input;
+  we::type::Activity activity_child;
   std::tie (activity_input, std::ignore, activity_child, std::ignore)
     = wfr_activity_with_child();
 
@@ -1391,13 +1391,12 @@ BOOST_FIXTURE_TEST_CASE (workflow_response_fails_when_workflow_fails, daemon)
 
 namespace std
 {
-  template<> struct hash<we::type::requirement_t>
+  template<> struct hash<we::type::Requirement>
   {
-    size_t operator()(we::type::requirement_t const& requirement) const
+    size_t operator()(we::type::Requirement const& requirement) const
     {
       size_t seed (0);
       boost::hash_combine (seed, requirement.value());
-      boost::hash_combine (seed, requirement.is_mandatory());
       return seed;
     }
   };
@@ -1406,14 +1405,14 @@ namespace std
 namespace
 {
   we::place_id_type add_transition_with_requirement_and_input_place
-    (we::type::net_type& net, we::type::requirement_t const& requirement)
+    (we::type::net_type& net, we::type::Requirement const& requirement)
   {
-    we::type::transition_t transition
+    we::type::Transition transition
       ( fhg::util::testing::random_string()
-      , we::type::module_call_t ( fhg::util::testing::random_string()
+      , we::type::ModuleCall ( fhg::util::testing::random_string()
                                 , fhg::util::testing::random_string()
                                 , std::unordered_map< std::string
-                                                    , we::type::memory_buffer_info_t
+                                                    , we::type::MemoryBufferInfo
                                                     >()
                                 , std::list<we::type::memory_transfer>()
                                 , std::list<we::type::memory_transfer>()
@@ -1424,14 +1423,14 @@ namespace
       , we::type::property::type()
       , we::priority_type()
       , boost::optional<we::type::eureka_id_type>{}
-      , std::list<we::type::preference_t>{}
+      , std::list<we::type::Preference>{}
       );
     transition.add_requirement (requirement);
 
     const std::string port_name (fhg::util::testing::random_string());
     we::port_id_type const port_id
-      ( transition.add_port ( we::type::port_t ( port_name
-                                               , we::type::PORT_IN
+      ( transition.add_port ( we::type::Port ( port_name
+                                               , we::type::port::direction::In{}
                                                , std::string ("control")
                                                , we::type::property::type()
                                                )
@@ -1454,10 +1453,10 @@ namespace
     return place_id;
   }
 
-  we::type::activity_t net_with_two_childs_that_require_capabilities
-    ( we::type::requirement_t const& capability_a
+  we::type::Activity net_with_two_childs_that_require_capabilities
+    ( we::type::Requirement const& capability_a
     , std::size_t num_worker_with_capability_a
-    , we::type::requirement_t const& capability_b
+    , we::type::Requirement const& capability_b
     , std::size_t num_worker_with_capability_b
     )
   {
@@ -1483,14 +1482,14 @@ namespace
       }
     }
 
-    return we::type::activity_t
-      ( we::type::transition_t ( fhg::util::testing::random_string()
+    return we::type::Activity
+      ( we::type::Transition ( fhg::util::testing::random_string()
                                , net
                                , boost::none
                                , we::type::property::type()
                                , we::priority_type()
                                , boost::optional<we::type::eureka_id_type>{}
-                               , std::list<we::type::preference_t>{}
+                               , std::list<we::type::Preference>{}
                                )
       );
   }
@@ -1522,9 +1521,9 @@ namespace
                )
     {}
 
-    void submit (we::type::activity_t activity)
+    void submit (we::type::Activity activity)
     {
-      const std::list<we::type::requirement_t> list_req
+      const std::list<we::type::Requirement> list_req
         (activity.requirements_and_preferences (nullptr).requirements());
 
       BOOST_REQUIRE_EQUAL (list_req.size(), 1);
@@ -1547,7 +1546,7 @@ namespace
     unsigned int _expected_activities;
 
   public:
-    std::unordered_map<we::type::requirement_t, unsigned int>
+    std::unordered_map<we::type::Requirement, unsigned int>
       _received_requirements;
 
   private:
@@ -1571,8 +1570,8 @@ BOOST_AUTO_TEST_CASE (layer_properly_forwards_requirements)
 {
   wfe_and_counter_of_submitted_requirements helper (30);
 
-  const we::type::requirement_t req_a ("A", true);
-  const we::type::requirement_t req_b ("B", true);
+  const we::type::Requirement req_a ("A");
+  const we::type::Requirement req_b ("B");
 
   helper._layer.submit
     ( fhg::util::testing::random_string()
@@ -1587,19 +1586,19 @@ BOOST_AUTO_TEST_CASE (layer_properly_forwards_requirements)
 
 namespace
 {
-  we::type::multi_module_call_t create_dummy_multi_mod
-    (std::list<we::type::preference_t> const& preferences)
+  we::type::MultiModuleCall create_dummy_multi_mod
+    (std::list<we::type::Preference> const& preferences)
   {
-    we::type::multi_module_call_t multi_mod;
+    we::type::MultiModuleCall multi_mod;
 
     for (auto const& target : preferences)
     {
       multi_mod.emplace
         ( target
-        , we::type::module_call_t
+        , we::type::ModuleCall
           ( fhg::util::testing::random_string()
           , fhg::util::testing::random_string()
-          , std::unordered_map<std::string, we::type::memory_buffer_info_t>()
+          , std::unordered_map<std::string, we::type::MemoryBufferInfo>()
           , std::list<we::type::memory_transfer>()
           , std::list<we::type::memory_transfer>()
           , true
@@ -1611,10 +1610,10 @@ namespace
     return multi_mod;
   }
 
-  we::type::activity_t activity_with_preferences
-   (std::list<we::type::preference_t> const& preferences)
+  we::type::Activity activity_with_preferences
+   (std::list<we::type::Preference> const& preferences)
   {
-    we::type::transition_t transition
+    we::type::Transition transition
       ( fhg::util::testing::random_string()
       , create_dummy_multi_mod (preferences)
       , boost::none
@@ -1625,14 +1624,14 @@ namespace
       );
 
    const std::string port_name (fhg::util::testing::random_string());
-   transition.add_port ( we::type::port_t ( port_name
-                                          , we::type::PORT_IN
+   transition.add_port ( we::type::Port ( port_name
+                                          , we::type::port::direction::In{}
                                           , std::string ("string")
                                           , we::type::property::type()
                                           )
                        );
 
-   we::type::activity_t activity (transition);
+   we::type::Activity activity (transition);
    activity.add_input ( port_name
                       , fhg::util::testing::random_string_without ("\\\"")
                       );
@@ -1661,7 +1660,7 @@ namespace
                )
     {}
 
-    void submit (const we::type::activity_t& activity)
+    void submit (we::type::Activity const& activity)
     {
       _received_preferences = activity.preferences_TESTING_ONLY();
       std::lock_guard<std::mutex> const _ (_mtx_submitted);
@@ -1675,7 +1674,7 @@ namespace
       _cond_submitted.wait (lock, [&] { return _submitted; });
     }
 
-    std::list<we::type::preference_t> received_preferences()
+    std::list<we::type::Preference> received_preferences()
     {
       return _received_preferences;
     }
@@ -1684,7 +1683,7 @@ namespace
     std::mutex _mtx_submitted;
     std::condition_variable _cond_submitted;
     bool _submitted {false};
-    std::list<we::type::preference_t> _received_preferences;
+    std::list<we::type::Preference> _received_preferences;
 
   private:
     std::mt19937 _random_extraction_engine;
@@ -1708,7 +1707,7 @@ BOOST_AUTO_TEST_CASE (layer_properly_forwards_preferences)
   wfe_remembering_submitted_preferences wfe;
 
   auto const preferences
-    ( fhg::util::testing::unique_randoms<std::list<we::type::preference_t>>
+    ( fhg::util::testing::unique_randoms<std::list<we::type::Preference>>
         (fhg::util::testing::random<std::size_t>{} (10, 1))
     );
 
@@ -1732,12 +1731,12 @@ namespace
 
   struct child_activity_with_eureka
   {
-    we::type::activity_t child;
-    we::type::activity_t result_eureka;
-    we::type::activity_t result_no_eureka;
+    we::type::Activity child;
+    we::type::Activity result_eureka;
+    we::type::Activity result_no_eureka;
 
     child_activity_with_eureka
-      ( we::type::transition_t const& t
+      ( we::type::Transition const& t
       , we::transition_id_type const& t_id
       , std::set<we::type::eureka_id_type> const& h_set
       )
@@ -1760,8 +1759,8 @@ namespace
   {
     we::type::net_type net;
 
-    we::type::activity_t input;
-    we::type::activity_t output;
+    we::type::Activity input;
+    we::type::Activity output;
 
     std::unordered_map < std::string
                        , child_activity_with_eureka
@@ -1777,12 +1776,12 @@ namespace
     {
       std::ostringstream oss;
       oss << pnet::type::value::show (pnet::type::value::value_type (eureka_id));
-      we::type::transition_t transition
+      we::type::Transition transition
         ( "module_call"
-        , we::type::module_call_t
+        , we::type::ModuleCall
           ( "m"
           , "f"
-          , std::unordered_map<std::string, we::type::memory_buffer_info_t>()
+          , std::unordered_map<std::string, we::type::MemoryBufferInfo>()
           , std::list<we::type::memory_transfer>()
           , std::list<we::type::memory_transfer>()
           , true
@@ -1792,20 +1791,20 @@ namespace
         , we::type::property::type()
         , we::priority_type()
         , oss.str()
-        , std::list<we::type::preference_t>{}
+        , std::list<we::type::Preference>{}
         );
 
       we::port_id_type const port_id_in
-        ( transition.add_port ( we::type::port_t ( "in"
-                                                 , we::type::PORT_IN
+        ( transition.add_port ( we::type::Port ( "in"
+                                                 , we::type::port::direction::In{}
                                                  , signature::CONTROL
                                                  , we::type::property::type()
                                                  )
                               )
         );
       we::port_id_type const port_id_out
-        ( transition.add_port ( we::type::port_t ( "out"
-                                                 , we::type::PORT_OUT
+        ( transition.add_port ( we::type::Port ( "out"
+                                                 , we::type::port::direction::Out{}
                                                  , signature::SET
                                                  , we::type::property::type()
                                                  )
@@ -1846,14 +1845,14 @@ namespace
     {
       we::type::net_type copy_of_net_without_inputs (net);
 
-      output = we::type::activity_t
-        ( we::type::transition_t ( "net"
+      output = we::type::Activity
+        ( we::type::Transition ( "net"
                                  , copy_of_net_without_inputs
                                  , boost::none
                                  , we::type::property::type()
                                  , we::priority_type()
                                  , boost::optional<we::type::eureka_id_type>{}
-                                 , std::list<we::type::preference_t>{}
+                                 , std::list<we::type::Preference>{}
                                  )
         );
 
@@ -1865,19 +1864,19 @@ namespace
         }
       }
 
-      input = we::type::activity_t
-        ( we::type::transition_t ( "net"
+      input = we::type::Activity
+        ( we::type::Transition ( "net"
                                  , net
                                  , boost::none
                                  , we::type::property::type()
                                  , we::priority_type()
                                  , boost::optional<we::type::eureka_id_type>{}
-                                 , std::list<we::type::preference_t>{}
+                                 , std::list<we::type::Preference>{}
                                  )
         );
     }
 
-    we::type::activity_t const& get_activity ( std::string name
+    we::type::Activity const& get_activity ( std::string name
                                              , activity_type type
                                              )
     {

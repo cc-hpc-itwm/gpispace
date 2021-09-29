@@ -19,7 +19,7 @@
 #include <fhg/util/xml.fwd.hpp>
 
 #include <string>
-#include <unordered_map>
+#include <unordered_set>
 
 namespace xml
 {
@@ -32,30 +32,28 @@ namespace xml
       struct requirements_type
       {
       private:
-        typedef std::unordered_map<require_key_type,bool> map_type;
+        typedef std::unordered_set<require_key_type> set_type;
 
       public:
-        requirements_type();
+        requirements_type() = default;
 
-        void set ( const require_key_type & key
-                 , const bool & mandatory = true
-                 );
+        void set (require_key_type const& key);
 
-        typedef map_type::const_iterator const_iterator;
+        typedef set_type::const_iterator const_iterator;
 
         const_iterator begin () const;
         const_iterator end () const;
 
-        void join (const requirements_type& reqs);
+        void join (requirements_type const& reqs);
 
       private:
-        map_type _map;
+        set_type _set;
       };
 
       namespace dump
       {
         void dump ( ::fhg::util::xml::xmlstream & s
-                  , const requirements_type & cs
+                  , requirements_type const& cs
                   );
       }
     }

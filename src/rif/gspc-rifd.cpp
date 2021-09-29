@@ -189,16 +189,14 @@ try
            , std::unordered_map<std::string, std::string> environment
            )
         {
-          std::pair<pid_t, std::vector<std::string>> const
-            pid_and_startup_messages
-              ( fhg::rif::execute_and_get_startup_messages
-                  (command, arguments, environment)
-              );
+          auto const startup_result
+            ( fhg::rif::execute_and_get_startup_messages
+                (command, arguments, environment)
+            );
 
-          wait_for_pid_returned_with_exit_status_zero
-            (pid_and_startup_messages.first);
+          wait_for_pid_returned_with_exit_status_zero (startup_result.pid);
 
-          return pid_and_startup_messages.second;
+          return startup_result.messages;
         }
       , fhg::rpc::not_yielding
       );
@@ -254,14 +252,14 @@ try
             arguments.emplace_back (certificates->string());
           }
 
-          auto const pid_and_startup_messages
+          auto const startup_result
             ( fhg::rif::execute_and_get_startup_messages
                 ( command
                 , arguments
                 , std::unordered_map<std::string, std::string>()
                 )
             );
-          auto const& messages (pid_and_startup_messages.second);
+          auto const& messages (startup_result.messages);
 
           if (messages.size() != 3)
           {
@@ -271,7 +269,7 @@ try
           }
 
           fhg::rif::protocol::start_scheduler_result result;
-          result.pid = pid_and_startup_messages.first;
+          result.pid = startup_result.pid;
           result.hostinfo
             = {messages[0], boost::lexical_cast<unsigned short> (messages[1])};
           result.logger_registration_endpoint = messages[2];
@@ -292,11 +290,11 @@ try
           arguments.emplace_back ("-n");
           arguments.emplace_back (name);
 
-          auto const pid_and_startup_messages
+          auto const startup_result
             ( fhg::rif::execute_and_get_startup_messages
                 (command, arguments, environment)
             );
-          auto const& messages (pid_and_startup_messages.second);
+          auto const& messages (startup_result.messages);
 
           if (messages.size() != 1)
           {
@@ -306,7 +304,7 @@ try
           }
 
           fhg::rif::protocol::start_worker_result result;
-          result.pid = pid_and_startup_messages.first;
+          result.pid = startup_result.pid;
           result.logger_registration_endpoint = messages[0];
           return result;
         }
@@ -325,11 +323,11 @@ try
       , [&add_emitters_endpoints, &io_service]
           (boost::asio::yield_context yield, boost::filesystem::path exe)
         {
-          auto const pid_and_startup_messages
+          auto const startup_result
             ( fhg::rif::execute_and_get_startup_messages
                 (exe, {}, std::unordered_map<std::string, std::string>())
             );
-          auto const& messages (pid_and_startup_messages.second);
+          auto const& messages (startup_result.messages);
 
           if (messages.size() != 2)
           {
@@ -339,7 +337,7 @@ try
           }
 
           fhg::rif::protocol::start_logging_demultiplexer_result result;
-          result.pid = pid_and_startup_messages.first;
+          result.pid = startup_result.pid;
           result.sink_endpoint = messages[0];
 
           add_emitters_endpoints.emplace

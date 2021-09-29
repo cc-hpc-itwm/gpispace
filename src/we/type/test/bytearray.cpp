@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE (ba_assign_from_alien)
 
   float f;
 
-  BOOST_CHECK_EQUAL (ba.copy (&f), sizeof(float));
+  BOOST_CHECK_EQUAL (ba.copy (&f), sizeof (float));
   BOOST_CHECK_EQUAL (f, 1.0f);
 }
 
@@ -133,18 +133,18 @@ namespace
     BOOST_REQUIRE_EQUAL (x, y);
   }
 
-  struct pod_t
+  struct Pod
   {
     int x;
     int y;
   };
-  bool operator== (pod_t const& lhs, pod_t const& rhs)
+  bool operator== (Pod const& lhs, Pod const& rhs)
   {
     return lhs.x == rhs.x && lhs.y == rhs.y;
   }
 }
 
-FHG_BOOST_TEST_LOG_VALUE_PRINTER (pod_t, os, pod)
+FHG_BOOST_TEST_LOG_VALUE_PRINTER (Pod, os, pod)
 {
   os << pod.x << ", " << pod.y;
 }
@@ -152,6 +152,6 @@ FHG_BOOST_TEST_LOG_VALUE_PRINTER (pod_t, os, pod)
 BOOST_AUTO_TEST_CASE (ctor_from_T)
 {
   use_ctor_and_copy_and_require_equal (1.0f);
-  use_ctor_and_copy_and_require_equal (pod_t {1, 15});
+  use_ctor_and_copy_and_require_equal (Pod {1, 15});
   use_ctor_and_copy_and_require_equal (std::make_tuple (false, 8.0, 'a'));
 }

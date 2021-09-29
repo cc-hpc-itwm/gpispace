@@ -29,8 +29,8 @@ namespace sdpa
     public:
       typedef boost::shared_ptr<JobStatusReplyEvent> Ptr;
 
-      JobStatusReplyEvent ( const sdpa::job_id_t& a_job_id
-                          , const sdpa::status::code& a_status
+      JobStatusReplyEvent ( sdpa::job_id_t const& a_job_id
+                          , sdpa::status::code const& a_status
                           , std::string const& error_message
                           )
         : sdpa::events::JobEvent (a_job_id)

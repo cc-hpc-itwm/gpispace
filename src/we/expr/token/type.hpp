@@ -67,15 +67,15 @@ namespace expr
     , eof
     };
 
-    GSPC_DLLEXPORT std::ostream& operator<< (std::ostream&, const type&);
+    GSPC_DLLEXPORT std::ostream& operator<< (std::ostream&, type const&);
     class GSPC_DLLEXPORT show
     {
     public:
-      show (const type&);
+      show (type const&);
       std::ostream& operator() (std::ostream&) const;
     private:
-      const type& _token;
+      type const& _token;
     };
-    GSPC_DLLEXPORT std::ostream& operator<< (std::ostream&, const show&);
+    GSPC_DLLEXPORT std::ostream& operator<< (std::ostream&, show const&);
   }
 }

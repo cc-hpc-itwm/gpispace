@@ -71,60 +71,60 @@ namespace gpi
             , std::shared_ptr<shm_area_t> area
             , iml::MemorySize size
             );
-        void unregister_memory ( const gpi::pc::type::process_id_t pid
+        void unregister_memory ( gpi::pc::type::process_id_t pid
                                , iml::SharedMemoryAllocationHandle handle
                                );
 
         void
-        remote_alloc ( const iml::SegmentHandle
-                     , const iml::AllocationHandle
-                     , const iml::MemoryOffset
-                     , const iml::MemorySize size
-                     , const iml::MemorySize local_size
+        remote_alloc ( iml::SegmentHandle
+                     , iml::AllocationHandle
+                     , iml::MemoryOffset
+                     , iml::MemorySize size
+                     , iml::MemorySize local_size
                      );
 
         iml::AllocationHandle
-        alloc ( const iml::SegmentHandle seg_id
-              , const iml::MemorySize size
-              , const gpi::pc::type::flags_t flags
+        alloc ( iml::SegmentHandle seg_id
+              , iml::MemorySize size
+              , gpi::pc::type::flags_t flags
               );
 
-        void remote_free(const iml::AllocationHandle hdl);
-        void free (const iml::AllocationHandle hdl);
-        gpi::pc::type::handle::descriptor_t info (const iml::AllocationHandle hdl) const;
-        std::unordered_map<std::string, double> get_transfer_costs (const std::list<iml::MemoryRegion>&) const;
+        void remote_free (iml::AllocationHandle hdl);
+        void free (iml::AllocationHandle hdl);
+        gpi::pc::type::handle::descriptor_t info (iml::AllocationHandle hdl) const;
+        std::unordered_map<std::string, double> get_transfer_costs (std::list<iml::MemoryRegion> const&) const;
 
         void remove_shm_segments_of (gpi::pc::type::process_id_t);
 
-        type::memcpy_id_t memcpy ( iml::MemoryLocation const & dst
-                                 , iml::MemoryLocation const & src
-                                 , const iml::MemorySize amount
+        type::memcpy_id_t memcpy ( iml::MemoryLocation const& dst
+                                 , iml::MemoryLocation const& src
+                                 , iml::MemorySize amount
                                  );
         void wait (type::memcpy_id_t const&);
 
         void
-        remote_add_memory ( const iml::SegmentHandle seg_id
+        remote_add_memory ( iml::SegmentHandle seg_id
                           , iml::SegmentDescription const& description
                           , unsigned long total_size
                           , global::topology_t& topology
                           );
 
         iml::SegmentHandle
-        add_memory ( const gpi::pc::type::process_id_t proc_id
+        add_memory ( gpi::pc::type::process_id_t proc_id
                    , iml::SegmentDescription const& description
                    , unsigned long total_size
                    , global::topology_t& topology
                    );
 
         void
-        remote_del_memory ( const iml::SegmentHandle seg_id
+        remote_del_memory ( iml::SegmentHandle seg_id
                           , global::topology_t& topology
                           );
 
         // Not called with shm areas, those use unregister_memory().
         void
-        del_memory ( const gpi::pc::type::process_id_t proc_id
-                   , const iml::SegmentHandle seg_id
+        del_memory ( gpi::pc::type::process_id_t proc_id
+                   , iml::SegmentHandle seg_id
                    , global::topology_t& topology
                    );
 
@@ -139,14 +139,14 @@ namespace gpi
                                   > handle_to_segment_t;
 
         void add_area (iml::SegmentHandle seg_id, area_ptr area);
-        area_ptr get_area (const iml::SegmentHandle);
-        area_ptr get_area (const iml::SegmentHandle) const;
-        area_ptr get_area_by_handle (const iml::AllocationHandle);
-        area_ptr get_area_by_handle (const iml::AllocationHandle) const;
-        void add_handle ( const iml::AllocationHandle
-                        , const iml::SegmentHandle
+        area_ptr get_area (iml::SegmentHandle);
+        area_ptr get_area (iml::SegmentHandle) const;
+        area_ptr get_area_by_handle (iml::AllocationHandle);
+        area_ptr get_area_by_handle (iml::AllocationHandle) const;
+        void add_handle ( iml::AllocationHandle
+                        , iml::SegmentHandle
                         );
-        void del_handle (const iml::AllocationHandle);
+        void del_handle (iml::AllocationHandle);
 
         mutable mutex_type m_mutex;
         area_map_t m_areas;

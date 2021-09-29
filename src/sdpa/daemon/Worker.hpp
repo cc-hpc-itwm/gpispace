@@ -35,24 +35,24 @@ namespace sdpa
     private:
       friend class WorkerManager;
 
-      explicit Worker ( const capabilities_set_t&
+      explicit Worker ( capabilities_set_t const&
                       , unsigned long allocated_shared_memory_size
-                      , const std::string& hostname
+                      , std::string const& hostname
                       );
 
-      void assign (const job_id_t&, double);
-      void submit(const job_id_t&);
+      void assign (job_id_t const&, double);
+      void submit (job_id_t const&);
 
-      void acknowledge(const job_id_t&);
+      void acknowledge (job_id_t const&);
 
       // capabilities
-      bool hasCapability(const std::string& cpbName) const;
+      bool hasCapability (std::string const& cpbName) const;
 
       bool has_pending_jobs() const;
       bool has_running_jobs() const;
 
-      void delete_submitted_job (const job_id_t job_id, double);
-      void delete_pending_job (const job_id_t job_id, double);
+      void delete_submitted_job (job_id_t job_id, double);
+      void delete_pending_job (job_id_t job_id, double);
 
       // methods related to reservation
       bool isReserved() const;

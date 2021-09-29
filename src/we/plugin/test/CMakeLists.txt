@@ -45,7 +45,7 @@ if (BUILD_TESTING)
   )
 endif()
 
-fhg_add_test (NAME Plugins
+fhg_add_test (NAME we_Plugins
   SOURCES test.cpp
   USE_BOOST
   ARGS $<TARGET_FILE:PluginTest::A>
@@ -58,4 +58,20 @@ fhg_add_test (NAME Plugins
           PluginTest::B
           PluginTest::C
           PluginTest::D
+)
+
+fhg_add_test (NAME "we_plugin_exception_from_plugin_ctor_is_transported_to_users"
+  SOURCES "exception_from_plugin_ctor_is_transported_to_users/test.cpp"
+  USE_BOOST
+  ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
+       --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
+       --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
+       --plugin-path "$<TARGET_FILE:PluginTest::D>"
+  LIBRARIES gspc
+            test-utilities
+            Util::Generic
+            Boost::filesystem
+            Boost::program_options
+  REQUIRES_INSTALLATION
+  START_SCOPED_RIF
 )

@@ -40,7 +40,7 @@ namespace gpi
       class manager_t : boost::noncopyable
       {
       public:
-        manager_t ( std::string const & p
+        manager_t ( std::string const& p
                   , fhg::iml::vmem::gaspi_context&
                   , std::unique_ptr<fhg::rpc::service_tcp_provider_with_deferred_dispatcher> topology_rpc_server
                   );
@@ -51,8 +51,8 @@ namespace gpi
         void listener_thread_main();
         void process_communication_thread (gpi::pc::type::process_id_t, int socket);
 
-        void close_socket (const int fd);
-        void safe_unlink(std::string const & path);
+        void close_socket (int fd);
+        void safe_unlink (std::string const& path);
 
         std::string m_path;
         int m_socket;

@@ -43,7 +43,7 @@
 #include <logging/stream_emitter.hpp>
 
 #include <we/layer.hpp>
-#include <we/type/activity.hpp>
+#include <we/type/Activity.hpp>
 #include <we/type/net.hpp>
 #include <we/type/schedule_data.hpp>
 
@@ -73,8 +73,8 @@ namespace sdpa {
                               , boost::noncopyable
     {
     public:
-      Agent( const std::string name
-                   , const std::string url
+      Agent( std::string name
+                   , std::string url
                    , std::unique_ptr<boost::asio::io_service> peer_io_service
                    , boost::optional<boost::filesystem::path> const& vmem_socket
                    , bool create_wfe
@@ -82,18 +82,18 @@ namespace sdpa {
                    );
       virtual ~Agent() override = default;
 
-      const std::string& name() const;
+      std::string const& name() const;
       boost::asio::ip::tcp::endpoint peer_local_endpoint() const;
       fhg::logging::endpoint logger_registration_endpoint() const;
       fhg::logging::stream_emitter& log_emitter();
 
     public:
       // WE interface
-      void submit( const we::layer::id_type & id, we::type::activity_t);
-      void cancel(const we::layer::id_type & id);
-      void finished(const we::layer::id_type & id, const we::type::activity_t& result);
-      void failed( const we::layer::id_type& wfId, std::string const& reason);
-      void canceled(const we::layer::id_type& id);
+      void submit( we::layer::id_type const& id, we::type::Activity);
+      void cancel (we::layer::id_type const& id);
+      void finished (we::layer::id_type const& id, we::type::Activity const& result);
+      void failed( we::layer::id_type const& wfId, std::string const& reason);
+      void canceled (we::layer::id_type const& id);
       void token_put
         (std::string put_token_id, boost::optional<std::exception_ptr>);
       void workflow_response_response
@@ -101,11 +101,11 @@ namespace sdpa {
         , boost::variant<std::exception_ptr, pnet::type::value::value_type>
         );
 
-      void addCapability(const capability_t& cpb);
+      void addCapability (capability_t const& cpb);
 
     private:
       // parents and subscribers
-      void unsubscribe(const fhg::com::p2p::address_t&);
+      void unsubscribe (fhg::com::p2p::address_t const&);
       virtual void handleSubscribeEvent (fhg::com::p2p::address_t const& source, const sdpa::events::SubscribeEvent*) override;
 
       bool isSubscriber (fhg::com::p2p::address_t const&, job_id_t const&);
@@ -203,7 +203,7 @@ namespace sdpa {
       void delay (std::function<void()>);
 
       // workflow engine
-      const std::unique_ptr<we::layer>& workflowEngine() const { return ptr_workflow_engine_; }
+      std::unique_ptr<we::layer> const& workflowEngine() const { return ptr_workflow_engine_; }
       bool hasWorkflowEngine() const { return !!ptr_workflow_engine_;}
 
       bool workflow_engine_submit (job_id_t, Job*);
@@ -211,7 +211,7 @@ namespace sdpa {
       void handle_job_termination (Job*);
 
       void workflow_finished
-        (we::layer::id_type const&, we::type::activity_t const&);
+        (we::layer::id_type const&, we::type::Activity const&);
       void workflow_failed
         (we::layer::id_type const&, std::string const&);
       void workflow_canceled (we::layer::id_type const&);
@@ -223,7 +223,7 @@ namespace sdpa {
         );
 
       //! \todo aggregated results for coallocation jobs and sub jobs
-      void job_finished (Job*, we::type::activity_t const&);
+      void job_finished (Job*, we::type::Activity const&);
       void job_failed (Job*, std::string const& reason);
       void job_canceled (Job*);
 
@@ -238,26 +238,26 @@ namespace sdpa {
       // jobs
       std::string gen_id();
 
-      Job* addJob ( const sdpa::job_id_t& job_id
-                  , we::type::activity_t
+      Job* addJob ( sdpa::job_id_t const& job_id
+                  , we::type::Activity
                   , job_source
                   , job_handler
                   );
-      Job* addJob ( const sdpa::job_id_t& job_id
-                  , we::type::activity_t
+      Job* addJob ( sdpa::job_id_t const& job_id
+                  , we::type::Activity
                   , job_source
                   , job_handler
                   , Requirements_and_preferences
                   );
-      Job* addJobWithNoPreferences ( const sdpa::job_id_t&
-                                   , we::type::activity_t
+      Job* addJobWithNoPreferences ( sdpa::job_id_t const&
+                                   , we::type::Activity
                                    , job_source
                                    , job_handler
                                    );
 
-      Job* findJob(const sdpa::job_id_t& job_id ) const;
+      Job* findJob (sdpa::job_id_t const& job_id ) const;
       Job* require_job (job_id_t const&, std::string const& error) const;
-      void deleteJob(const sdpa::job_id_t& job_id);
+      void deleteJob (sdpa::job_id_t const& job_id);
 
       void cancel_worker_handled_job (we::layer::id_type const&);
 
@@ -303,7 +303,7 @@ namespace sdpa {
 
       fhg::logging::stream_emitter _log_emitter;
       void emit_gantt ( job_id_t const&
-                      , we::type::activity_t const&
+                      , we::type::Activity const&
                       , NotificationEvent::state_t
                       );
 
@@ -341,7 +341,7 @@ namespace sdpa {
 
         void submit_job
           ( boost::optional<job_id_t>
-          , we::type::activity_t
+          , we::type::Activity
           , boost::optional<std::string> const&
           , std::set<worker_id_t> const&
           ) const;

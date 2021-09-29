@@ -28,7 +28,7 @@ namespace fhg
 {
   namespace util
   {
-    bool read_bool (const std::string& _inp)
+    bool read_bool (std::string const& _inp)
     {
       std::string inp;
 

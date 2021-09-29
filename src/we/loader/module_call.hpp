@@ -18,7 +18,7 @@
 
 #include <we/expr/eval/context.hpp>
 #include <we/loader/loader.hpp>
-#include <we/type/module_call.hpp>
+#include <we/type/ModuleCall.hpp>
 
 namespace iml
 {
@@ -36,7 +36,7 @@ namespace we
       , iml::SharedMemoryAllocation /*const*/*
       , drts::worker::context* context
       , expr::eval::context const& input
-      , const we::type::module_call_t& module_call
+      , we::type::ModuleCall const& module_call
       );
   }
 }

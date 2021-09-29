@@ -28,14 +28,14 @@ namespace xml
   {
     namespace util
     {
-      expr::parse::parser generic_we_parse ( const std::string& input
-                                           , const std::string& descr
+      expr::parse::parser generic_we_parse ( std::string const& input
+                                           , std::string const& descr
                                            );
-      expr::parse::parser we_parse ( const std::string& input
-                                   , const std::string& descr
-                                   , const std::string& type
-                                   , const std::string& name
-                                   , const boost::filesystem::path&
+      expr::parse::parser we_parse ( std::string const& input
+                                   , std::string const& descr
+                                   , std::string const& type
+                                   , std::string const& name
+                                   , boost::filesystem::path const&
                                    );
    }
   }

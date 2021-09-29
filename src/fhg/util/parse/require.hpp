@@ -29,8 +29,8 @@ namespace fhg
       namespace require
       {
         //! \note require the given value or throw
-        void require (position&, const char&);
-        void require (position&, const std::string&);
+        void require (position&, char const&);
+        void require (position&, std::string const&);
 
         //! \note skip all white space characters
         void skip_spaces (position&);
@@ -41,7 +41,7 @@ namespace fhg
         //! \note return all characters until <until>, while
         //! 'escape''until' is ignored. 'until' will be consumed.
         std::string plain_string
-          (position&, const char until, const char escape = '\\');
+          (position&, char until, char escape = '\\');
 
         //! \note a c-style identifier ([a-zA-Z_][a-zA-Z_0-9]*)
         std::string identifier (position&);
@@ -70,10 +70,10 @@ namespace fhg
         //!       the function is expected to consume everything up to
         //!       the list seperator.
         void list ( position&
-                  , const char open, const char sep, const char close
-                  , const std::function<void (position&)>&
-                  , const bool skip_space_before_element = true
-                  , const bool skip_space_after_element = true
+                  , char open, char sep, char close
+                  , std::function<void (position&)> const&
+                  , bool skip_space_before_element = true
+                  , bool skip_space_after_element = true
                   );
 
         //! \note everything until pos.end()

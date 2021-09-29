@@ -40,26 +40,26 @@ namespace fhg
         namespace
         {
           int locale_aware_compare_proxy
-            (const QString& l, const QString& r, const Qt::CaseSensitivity)
+            (QString const& l, QString const& r, Qt::CaseSensitivity)
           {
             //! \note case sensitivity ignored on purpose: Qt does not support it.
             return l.localeAwareCompare (r);
           }
           int compare_proxy
-            (const QString& l, const QString& r, const Qt::CaseSensitivity cs)
+            (QString const& l, QString const& r, Qt::CaseSensitivity cs)
           {
             return l.compare (r, cs);
           }
 
           //! \note This is a variation of fhg/util/alphanum.hpp,
           //! adapted for QString
-          int alphanum_compare ( const QString& lhs
-                               , const QString& rhs
-                               , const Qt::CaseSensitivity case_sensitivity
-                               , const bool locale_aware
+          int alphanum_compare ( QString const& lhs
+                               , QString const& rhs
+                               , Qt::CaseSensitivity case_sensitivity
+                               , bool locale_aware
                                )
           {
-            const std::function<int (const QString&, const QString&)> compare
+            const std::function<int (QString const&, QString const&)> compare
               ( std::bind ( locale_aware
                           ? &locale_aware_compare_proxy
                           : &compare_proxy
@@ -124,7 +124,7 @@ namespace fhg
         //! \note This is 90% copied from the base class, as there is
         //! no way to extend the QString/default case only.
         bool alphanum_sort_proxy::lessThan
-          (const QModelIndex& lhs, const QModelIndex& rhs) const
+          (QModelIndex const& lhs, QModelIndex const& rhs) const
         {
           const QVariant l (lhs.data (sortRole()));
           const QVariant r (rhs.data (sortRole()));

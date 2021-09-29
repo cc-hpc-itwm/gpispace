@@ -44,22 +44,22 @@ namespace xml
         //! \note          place,       port,        PT||PT_READ
         typedef std::tuple<std::string, std::string, bool> unique_key_type;
 
-        connect_type ( const util::position_type&
-                     , const std::string& place
-                     , const std::string& port
+        connect_type ( util::position_type const&
+                     , std::string const& place
+                     , std::string const& port
                      , const ::we::edge::type& direction
-                     , const we::type::property::type& properties
+                     , we::type::property::type const& properties
                      = we::type::property::type()
                      );
 
-        const std::string& place() const;
-        const std::string& port() const;
+        std::string const& place() const;
+        std::string const& port() const;
 
         const ::we::edge::type& direction() const;
 
         connect_type with_place (std::string const& new_place) const;
 
-        const we::type::property::type& properties() const;
+        we::type::property::type const& properties() const;
 
         unique_key_type unique_key() const;
 
@@ -74,7 +74,7 @@ namespace xml
 
       namespace dump
       {
-        void dump (::fhg::util::xml::xmlstream&, const connect_type&);
+        void dump (::fhg::util::xml::xmlstream&, connect_type const&);
       }
     }
   }

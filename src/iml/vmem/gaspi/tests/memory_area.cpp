@@ -25,7 +25,6 @@
 #include <util-generic/testing/random.hpp>
 
 #include <boost/test/unit_test.hpp>
-#include <boost/lexical_cast.hpp>
 
 #include <iostream>
 
@@ -44,7 +43,7 @@ BOOST_AUTO_TEST_CASE ( memory_area_alloc_free )
 
   auto const hdl (fhg::util::testing::random<iml::AllocationHandle>{}());
   auto const segment_id (fhg::util::testing::random<iml::SegmentHandle>{}());
-  area.alloc(alloc_size, gpi::pc::is_global::no, segment_id, hdl);
+  area.alloc (alloc_size, gpi::pc::is_global::no, segment_id, hdl);
   BOOST_CHECK_NE (hdl, iml::AllocationHandle());
 
   std::cout << "    handle = " << hdl << std::endl;

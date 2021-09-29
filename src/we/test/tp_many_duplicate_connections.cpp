@@ -17,7 +17,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/test/data/test_case.hpp>
 
-#include <we/type/transition.hpp>
+#include <we/type/Transition.hpp>
 #include <we/type/net.hpp>
 
 #include <util-generic/testing/require_exception.hpp>
@@ -30,14 +30,14 @@ BOOST_DATA_TEST_CASE ( add_connection_only_allows_a_tp_or_tp_many
   we::type::net_type net;
   we::type::property::type empty;
 
-  we::type::transition_t trans_io
+  we::type::Transition trans_io
     ( "put_many_dup_test"
-      , we::type::expression_t ("")
+      , we::type::Expression ("")
       , boost::none
       , {}
       , we::priority_type()
     , boost::optional<we::type::eureka_id_type>{}
-    , std::list<we::type::preference_t>{}
+    , std::list<we::type::Preference>{}
     );
   we::transition_id_type const tid (net.add_transition (trans_io));
 
@@ -48,7 +48,7 @@ BOOST_DATA_TEST_CASE ( add_connection_only_allows_a_tp_or_tp_many
 
   we::port_id_type const port_out_list
     ( trans_io.add_port
-      (we::type::port_t ("out", we::type::PORT_OUT, "list"))
+      (we::type::Port ("out", we::type::port::direction::Out{}, "list", we::type::property::type{}))
     );
 
   auto const edge_first (many_first ? we::edge::TP_MANY : we::edge::TP);

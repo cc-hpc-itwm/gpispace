@@ -55,20 +55,20 @@ namespace gpi
                    );
 
 
-        virtual void alloc ( const iml::SegmentHandle segment
-                           , const iml::AllocationHandle
-                           , const iml::MemoryOffset
-                           , const iml::MemorySize size
-                           , const iml::MemorySize local_size
+        virtual void alloc ( iml::SegmentHandle segment
+                           , iml::AllocationHandle
+                           , iml::MemoryOffset
+                           , iml::MemorySize size
+                           , iml::MemorySize local_size
                            ) override;
 
-        virtual void free (const iml::AllocationHandle) override;
+        virtual void free (iml::AllocationHandle) override;
 
-        virtual void add_memory ( const iml::SegmentHandle seg_id
+        virtual void add_memory ( iml::SegmentHandle seg_id
                                 , iml::SegmentDescription const& description
                                 , unsigned long total_size
                                 ) override;
-        virtual void del_memory (const iml::SegmentHandle seg_id) override;
+        virtual void del_memory (iml::SegmentHandle seg_id) override;
 
       private:
         std::mutex m_global_alloc_mutex;

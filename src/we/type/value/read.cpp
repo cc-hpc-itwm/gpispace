@@ -228,7 +228,7 @@ namespace pnet
         }
       }
 
-      value_type read (const std::string& input)
+      value_type read (std::string const& input)
       {
         fhg::util::parse::position pos (input);
 

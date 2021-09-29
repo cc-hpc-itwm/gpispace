@@ -22,7 +22,7 @@ namespace fhg
   {
     namespace cpp
     {
-      include::include (const std::string& fname)
+      include::include (std::string const& fname)
         : _fname (fname)
       {}
       std::ostream& include::operator() (std::ostream& os) const

@@ -32,7 +32,7 @@ namespace pnet
   {
 #define MEMBER(_name, _type...)                           \
     public:                                               \
-      const _type& _name() const { return _ ## _name; }   \
+      _type const& _name() const { return _ ## _name; }   \
     private:                                              \
       _type _ ## _name
 
@@ -46,7 +46,7 @@ namespace pnet
     class GSPC_DLLEXPORT type_error : public std::runtime_error
     {
     public:
-      type_error (const std::string&);
+      type_error (std::string const&);
 
       DTOR_COPY_MOVE_ASSIGN (type_error);
     };
@@ -54,9 +54,9 @@ namespace pnet
     class GSPC_DLLEXPORT type_mismatch : public type_error
     {
     public:
-      type_mismatch ( const type::signature::signature_type&
-                    , const type::value::value_type&
-                    , const std::list<std::string>&
+      type_mismatch ( type::signature::signature_type const&
+                    , type::value::value_type const&
+                    , std::list<std::string> const&
                     );
 
       DTOR_COPY_MOVE_ASSIGN (type_mismatch);
@@ -69,9 +69,9 @@ namespace pnet
     class GSPC_DLLEXPORT missing_field : public type_error
     {
     public:
-      missing_field ( const type::signature::signature_type&
-                    , const type::value::value_type&
-                    , const std::list<std::string>&
+      missing_field ( type::signature::signature_type const&
+                    , type::value::value_type const&
+                    , std::list<std::string> const&
                     );
 
       DTOR_COPY_MOVE_ASSIGN (missing_field);
@@ -84,8 +84,8 @@ namespace pnet
     class GSPC_DLLEXPORT unknown_field : public type_error
     {
     public:
-      unknown_field ( const type::value::value_type&
-                    , const std::list<std::string>&
+      unknown_field ( type::value::value_type const&
+                    , std::list<std::string> const&
                     );
 
       DTOR_COPY_MOVE_ASSIGN (unknown_field);
@@ -97,10 +97,10 @@ namespace pnet
     class GSPC_DLLEXPORT eval : public type_error
     {
     public:
-      eval (const ::expr::token::type&, const type::value::value_type&);
+      eval (const ::expr::token::type&, type::value::value_type const&);
       eval ( const ::expr::token::type&
-           , const type::value::value_type&
-           , const type::value::value_type&
+           , type::value::value_type const&
+           , type::value::value_type const&
            );
 
       DTOR_COPY_MOVE_ASSIGN (eval);
@@ -112,7 +112,7 @@ namespace pnet
     class GSPC_DLLEXPORT missing_binding : public std::runtime_error
     {
     public:
-      missing_binding (const std::string&);
+      missing_binding (std::string const&);
 
       DTOR_COPY_MOVE_ASSIGN (missing_binding);
 
@@ -122,7 +122,7 @@ namespace pnet
     class GSPC_DLLEXPORT could_not_resolve : public std::runtime_error
     {
     public:
-      could_not_resolve (const std::string&, const std::list<std::string>&);
+      could_not_resolve (std::string const&, std::list<std::string> const&);
 
       DTOR_COPY_MOVE_ASSIGN (could_not_resolve);
 
@@ -135,8 +135,8 @@ namespace pnet
       class GSPC_DLLEXPORT unknown : public std::runtime_error
       {
       public:
-        unknown ( const std::string& transition_name
-                , const std::string& port_name
+        unknown ( std::string const& transition_name
+                , std::string const& port_name
                 );
 
         DTOR_COPY_MOVE_ASSIGN (unknown);

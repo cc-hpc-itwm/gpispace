@@ -36,10 +36,10 @@ namespace sdpa
         };
 
       ErrorEvent
-        ( const error_code_t &a_error_code
-        , const std::string& a_reason
+        ( error_code_t const& a_error_code
+        , std::string const& a_reason
         //! \todo This should not be in _every_ ErrorEvent!
-        , const boost::optional<sdpa::job_id_t>& jobId = boost::none
+        , boost::optional<sdpa::job_id_t> const& jobId = boost::none
         )
           : MgmtEvent()
           , error_code_ (a_error_code)
@@ -47,15 +47,15 @@ namespace sdpa
           , job_id_ (jobId)
       {}
 
-      const std::string&reason() const
+      std::string const& reason() const
       {
         return reason_;
       }
-      const error_code_t &error_code() const
+      error_code_t const& error_code() const
       {
         return error_code_;
       }
-      const boost::optional<sdpa::job_id_t>& job_id() const
+      boost::optional<sdpa::job_id_t> const& job_id() const
       {
         return job_id_;
       }

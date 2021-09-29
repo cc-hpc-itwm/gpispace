@@ -32,8 +32,8 @@ namespace pnet
         class visitor_peek : public boost::static_visitor<boost::optional<V&>>
         {
         public:
-          visitor_peek ( const std::list<std::string>::const_iterator& key
-                       , const std::list<std::string>::const_iterator& end
+          visitor_peek ( std::list<std::string>::const_iterator const& key
+                       , std::list<std::string>::const_iterator const& end
                        , V& node
                        )
             : _key (key)
@@ -81,16 +81,16 @@ namespace pnet
           }
 
         private:
-          const std::list<std::string>::const_iterator& _key;
-          const std::list<std::string>::const_iterator& _end;
+          std::list<std::string>::const_iterator const& _key;
+          std::list<std::string>::const_iterator const& _end;
           V& _node;
         };
       }
 
-      boost::optional<const value_type&>
-      peek ( const std::list<std::string>::const_iterator& key
-           , const std::list<std::string>::const_iterator& end
-           , const value_type& node
+      boost::optional<value_type const&>
+      peek ( std::list<std::string>::const_iterator const& key
+           , std::list<std::string>::const_iterator const& end
+           , value_type const& node
            )
       {
         return boost::apply_visitor
@@ -101,20 +101,20 @@ namespace pnet
           , node
           );
       }
-      boost::optional<const value_type&>
-      peek (const std::list<std::string>& path, const value_type& node)
+      boost::optional<value_type const&>
+      peek (std::list<std::string> const& path, value_type const& node)
       {
         return peek (path.begin(), path.end(), node);
       }
-      boost::optional<const value_type&>
-      peek (const std::string& path, const value_type& node)
+      boost::optional<value_type const&>
+      peek (std::string const& path, value_type const& node)
       {
         return peek (path::split (path), node);
       }
 
       boost::optional<value_type&>
-      peek ( const std::list<std::string>::const_iterator& key
-           , const std::list<std::string>::const_iterator& end
+      peek ( std::list<std::string>::const_iterator const& key
+           , std::list<std::string>::const_iterator const& end
            , value_type& node
            )
       {
@@ -127,12 +127,12 @@ namespace pnet
           );
       }
       boost::optional<value_type&>
-      peek (const std::list<std::string>& path, value_type& node)
+      peek (std::list<std::string> const& path, value_type& node)
       {
         return peek (path.begin(), path.end(), node);
       }
       boost::optional<value_type&>
-      peek (const std::string& path, value_type& node)
+      peek (std::string const& path, value_type& node)
       {
         return peek (path::split (path), node);
       }

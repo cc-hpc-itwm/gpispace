@@ -18,8 +18,8 @@
 
 #include <drts/certificates.hpp>
 
+#include <fhgcom/address.hpp>
 #include <fhgcom/connection.hpp>
-#include <fhgcom/header.hpp>
 #include <fhgcom/message.hpp>
 #include <fhgcom/peer_info.hpp>
 
@@ -66,7 +66,7 @@ namespace fhg
     class peer_t : private boost::noncopyable
     {
     public:
-      typedef std::function <void (boost::system::error_code const &)> handler_t;
+      typedef std::function <void (boost::system::error_code const&)> handler_t;
 
       peer_t ( std::unique_ptr<boost::asio::io_service>
              , host_t const& host
@@ -76,7 +76,7 @@ namespace fhg
 
       virtual ~peer_t ();
 
-      p2p::address_t const & address () const { return my_addr_.get(); }
+      p2p::address_t const& address () const { return my_addr_.get(); }
       boost::asio::ip::tcp::endpoint local_endpoint() const
       {
         return acceptor_.local_endpoint();
@@ -85,11 +85,11 @@ namespace fhg
       p2p::address_t connect_to (host_t const&, port_t const&);
 
       void async_send ( p2p::address_t const& addr
-                      , std::string const & data
+                      , std::string const& data
                       , handler_t h
                       );
       void send ( p2p::address_t const& addr
-                , std::string const & data
+                , std::string const& data
                 );
 
       void async_recv
@@ -105,7 +105,7 @@ namespace fhg
     protected:
       void handle_hello_message (connection_t::ptr_t, std::unique_ptr<message_t> m);
       void handle_user_data   (connection_t::ptr_t, std::unique_ptr<message_t> m);
-      void handle_error       (connection_t::ptr_t, const boost::system::error_code & error);
+      void handle_error       (connection_t::ptr_t, boost::system::error_code const& error);
 
     private:
       struct to_send_t
@@ -146,9 +146,9 @@ namespace fhg
       typedef std::unique_lock<mutex_type> lock_type;
 
       void accept_new ();
-      void handle_accept (const boost::system::error_code &);
+      void handle_accept (boost::system::error_code const&);
       void connection_established (lock_type const&, connection_data_t&);
-      void handle_send (const p2p::address_t, const boost::system::error_code &);
+      void handle_send (p2p::address_t, boost::system::error_code const&);
       void start_sender (lock_type const&, connection_data_t&);
 
       friend class connection_t;

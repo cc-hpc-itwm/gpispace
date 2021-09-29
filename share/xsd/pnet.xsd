@@ -166,8 +166,6 @@
 
   <xsd:complexType name="require_type">
     <xsd:attribute name="key" type="xsd:string" use="required"/>
-    <xsd:attribute name="mandatory" type="xsd:boolean" use="optional"
-                   default="true"/>
   </xsd:complexType>
 
   <xsd:complexType name="template_parameter_type">

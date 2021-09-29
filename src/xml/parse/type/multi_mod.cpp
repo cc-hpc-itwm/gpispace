@@ -66,33 +66,33 @@ namespace xml
       namespace dump
       {
         void dump ( ::fhg::util::xml::xmlstream& s
-                  , const multi_module_type& m_map
+                  , multi_module_type const& m_map
                   )
         {
           for (auto const& m_loc : m_map.modules())
           {
-            const module_type& m = m_loc.second;
+            module_type const& m = m_loc.second;
 
             s.open ("module");
             s.attr ("name", m.name());
             s.attr ("function", dump_fun (m));
             s.attr ("target", m.target());
 
-            for (const std::string& inc : m.cincludes())
+            for (std::string const& inc : m.cincludes())
             {
               s.open ("cinclude");
               s.attr ("href", inc);
               s.close ();
             }
 
-            for (const std::string& flag : m.ldflags())
+            for (std::string const& flag : m.ldflags())
             {
               s.open ("ld");
               s.attr ("flag", flag);
               s.close ();
             }
 
-            for (const std::string& flag : m.cxxflags())
+            for (std::string const& flag : m.cxxflags())
             {
               s.open ("cxx");
               s.attr ("flag", flag);

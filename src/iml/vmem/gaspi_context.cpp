@@ -48,7 +48,7 @@ namespace fhg
         }
 
         template <typename Fun, typename... T>
-        void fail_on_non_zero ( const std::string& function_name
+        void fail_on_non_zero ( std::string const& function_name
                               , Fun&& f
                               , T&&... arguments
                               )

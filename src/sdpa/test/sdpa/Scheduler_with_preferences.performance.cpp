@@ -19,7 +19,7 @@
 #include <sdpa/test/sdpa/utils.hpp>
 #include <sdpa/types.hpp>
 
-#include <we/type/requirement.hpp>
+#include <we/type/Requirement.hpp>
 #include <we/type/schedule_data.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
@@ -59,7 +59,7 @@ namespace
     , Preferences const& preferences
     )
   {
-    return { {we::type::requirement_t (capability, true)}
+    return { {we::type::Requirement (capability)}
            , we::type::schedule_data()
            , null_transfer_cost
            , computational_cost
@@ -82,8 +82,8 @@ struct fixture_add_new_workers
 
   sdpa::daemon::CoallocationScheduler _scheduler;
 
-  void add_job ( const sdpa::job_id_t& job_id
-               , const Requirements_and_preferences& reqs
+  void add_job ( sdpa::job_id_t const& job_id
+               , Requirements_and_preferences const& reqs
                )
   {
     if (!_requirements_and_preferences.emplace (job_id, reqs).second)
@@ -108,7 +108,7 @@ struct fixture_add_new_workers
       sdpa::capabilities_set_t cpbset;
       for (std::string const& capability_name : cpbnames)
       {
-        cpbset.emplace (capability_name, worker);
+        cpbset.emplace (capability_name);
       }
 
       _scheduler.add_worker ( worker

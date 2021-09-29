@@ -26,17 +26,17 @@ namespace fhg
     class remove_prefix_failed : public std::runtime_error
     {
     public:
-      remove_prefix_failed (const std::string word, const std::string prefix);
+      remove_prefix_failed (std::string word, std::string prefix);
 
-      const std::string& word() const { return _word; }
-      const std::string& prefix() const { return _prefix; }
+      std::string const& word() const { return _word; }
+      std::string const& prefix() const { return _prefix; }
     private:
       const std::string _word;
       const std::string _prefix;
     };
 
-    std::string remove_prefix ( const std::string& prefix
-                              , const std::string& word
+    std::string remove_prefix ( std::string const& prefix
+                              , std::string const& word
                               );
   }
 }

@@ -16,10 +16,10 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <we/type/activity.hpp>
-#include <we/type/expression.hpp>
+#include <we/type/Activity.hpp>
+#include <we/type/Expression.hpp>
 #include <we/type/net.hpp>
-#include <we/type/transition.hpp>
+#include <we/type/Transition.hpp>
 #include <we/type/value/boost/test/printer.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
@@ -41,34 +41,34 @@ namespace we
       pnet::type::signature::signature_type const signature
         (std::string ("unsigned long"));
 
-      transition_t dec ( "dec"
-                       , expression_t ("${out} := ${in} - 1UL")
-                       , expression_t ("${in} :gt: 0UL")
+      Transition dec ( "dec"
+                       , Expression ("${out} := ${in} - 1UL")
+                       , Expression ("${in} :gt: 0UL")
                        , no_properties()
                        , priority_type()
                        , boost::optional<we::type::eureka_id_type>{}
-                       , std::list<we::type::preference_t>{}
+                       , std::list<we::type::Preference>{}
                        );
       port_id_type const in
         ( dec.add_port
-            (port_t (std::string ("in"), PORT_IN, signature, no_properties()))
+            (Port (std::string ("in"), port::direction::In{}, signature, no_properties()))
         );
       port_id_type const out
         ( dec.add_port
-            (port_t (std::string ("out"), PORT_OUT, signature, no_properties()))
+            (Port (std::string ("out"), port::direction::Out{}, signature, no_properties()))
         );
 
-      transition_t eat ( "eat"
-                       , expression_t()
-                       , expression_t ("${x} :le: 0UL")
+      Transition eat ( "eat"
+                       , Expression()
+                       , Expression ("${x} :le: 0UL")
                        , no_properties()
                        , priority_type()
                        , boost::optional<we::type::eureka_id_type>{}
-                       , std::list<we::type::preference_t>{}
+                       , std::list<we::type::Preference>{}
                        );
       port_id_type const x
         ( eat.add_port
-            (port_t (std::string ("x"), PORT_IN, signature, no_properties()))
+            (Port (std::string ("x"), port::direction::In{}, signature, no_properties()))
         );
 
       net_type net;
@@ -169,13 +169,13 @@ namespace we
         auto const pid_x (add_place ("x", "bool"));
         auto const pid_y (add_place ("y", "control"));
 
-        transition_t transition ( "t"
-                                , type::expression_t{}
-                                , expression_t {"${x}"}
+        Transition transition ( "t"
+                                , type::Expression{}
+                                , Expression {"${x}"}
                                 , no_properties()
                                 , we::priority_type{}
                                 , boost::optional<we::type::eureka_id_type>{}
-                                , std::list<we::type::preference_t>{}
+                                , std::list<we::type::Preference>{}
                                 );
 
         auto add_in_port
@@ -184,7 +184,7 @@ namespace we
                 )
             {
               return transition.add_port
-                ({name, PORT_IN, signature, no_properties()});
+                ({name, port::direction::In{}, signature, no_properties()});
             }
           );
 

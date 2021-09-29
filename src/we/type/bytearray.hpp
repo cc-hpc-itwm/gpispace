@@ -38,9 +38,9 @@ namespace we
 
       bytearray();
       bytearray (std::vector<char> v) : _v (std::move (v)) {}
-      bytearray (const char* const, const std::size_t);
+      bytearray (const char* const, std::size_t);
       bytearray (std::string const&);
-      std::size_t copy (char* const buf, const std::size_t size) const;
+      std::size_t copy (char* const buf, std::size_t size) const;
 
       template<typename T>
       explicit bytearray (const T* const x)
@@ -68,16 +68,16 @@ namespace we
       std::vector<char> const& v() const { return _v; }
 
       GSPC_DLLEXPORT
-        friend std::ostream& operator<< (std::ostream&, const bytearray&);
+        friend std::ostream& operator<< (std::ostream&, bytearray const&);
       GSPC_DLLEXPORT
-        friend std::size_t hash_value (const bytearray&);
+        friend std::size_t hash_value (bytearray const&);
       GSPC_DLLEXPORT
-        friend bool operator== (const bytearray&, const bytearray&);
+        friend bool operator== (bytearray const&, bytearray const&);
       GSPC_DLLEXPORT
-        friend bool operator< (const bytearray&, const bytearray&);
+        friend bool operator< (bytearray const&, bytearray const&);
 
       template<typename T>
-      bytearray& operator= (const T& other)
+      bytearray& operator= (T const& other)
       {
         _v = std::vector<char>
           ( static_cast<const char*> (static_cast<const void*> (&other))

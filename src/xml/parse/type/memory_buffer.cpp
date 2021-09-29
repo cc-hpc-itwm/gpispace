@@ -27,12 +27,12 @@ namespace xml
     namespace type
     {
       memory_buffer_type::memory_buffer_type
-        ( const util::position_type& position_of_definition
-        , const std::string& name
-        , const std::string& size
-        , const std::string& alignment
-        , const boost::optional<bool>& read_only
-        , const we::type::property::type& properties
+        ( util::position_type const& position_of_definition
+        , std::string const& name
+        , std::string const& size
+        , std::string const& alignment
+        , boost::optional<bool> const& read_only
+        , we::type::property::type const& properties
         )
         : with_position_of_definition (position_of_definition)
         , _name (name)
@@ -42,24 +42,24 @@ namespace xml
         , _properties (properties)
       {}
 
-      const std::string& memory_buffer_type::name() const
+      std::string const& memory_buffer_type::name() const
       {
         return _name;
       }
-      const std::string& memory_buffer_type::size() const
+      std::string const& memory_buffer_type::size() const
       {
         return _size;
       }
-      const std::string& memory_buffer_type::alignment() const
+      std::string const& memory_buffer_type::alignment() const
       {
         return _alignment;
       }
-      const boost::optional<bool>& memory_buffer_type::read_only() const
+      boost::optional<bool> const& memory_buffer_type::read_only() const
       {
         return _read_only;
       }
 
-      const we::type::property::type& memory_buffer_type::properties() const
+      we::type::property::type const& memory_buffer_type::properties() const
       {
         return _properties;
       }
@@ -74,7 +74,7 @@ namespace xml
       {
         void dump
           ( ::fhg::util::xml::xmlstream& s
-          , const memory_buffer_type& memory_buffer
+          , memory_buffer_type const& memory_buffer
           )
         {
           s.open ("memory-buffer");

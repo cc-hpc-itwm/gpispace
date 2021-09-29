@@ -30,26 +30,26 @@ namespace place
   struct type
   {
   public:
-    const std::string& name() const
+    std::string const& name() const
     {
       return _name;
     }
 
-    const pnet::type::signature::signature_type& signature() const
+    pnet::type::signature::signature_type const& signature() const
     {
       return _signature;
     }
-    const we::type::property::type& property() const
+    we::type::property::type const& property() const
     {
       return _prop;
     }
 
     //! \todo eliminate the need for the default constructor
     type () = default;
-    type ( const std::string& name
-         , const pnet::type::signature::signature_type& signature
+    type ( std::string const& name
+         , pnet::type::signature::signature_type const& signature
          , boost::optional<bool> put_token
-         , const we::type::property::type& prop = we::type::property::type ()
+         , we::type::property::type const& prop = we::type::property::type ()
 	 )
       : _name (name)
       , _signature (signature)
@@ -72,7 +72,7 @@ namespace place
 
     friend class boost::serialization::access;
     template<typename Archive>
-    void serialize (Archive& ar, const unsigned int)
+    void serialize (Archive& ar, unsigned int)
     {
       ar & BOOST_SERIALIZATION_NVP(_name);
       ar & BOOST_SERIALIZATION_NVP(_signature);

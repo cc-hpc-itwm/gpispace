@@ -30,7 +30,7 @@ namespace gpi
       {
       public:
         shm_area_t ( type::name_t const&
-                   , const iml::MemorySize size
+                   , iml::MemorySize size
                    );
 
         virtual ~shm_area_t () override;
@@ -42,17 +42,17 @@ namespace gpi
       private:
         virtual void *raw_ptr (iml::MemoryOffset off) override;
 
-        virtual bool is_range_local ( const gpi::pc::type::handle::descriptor_t &
-                            , const iml::MemoryOffset a
-                            , const iml::MemoryOffset b
+        virtual bool is_range_local ( gpi::pc::type::handle::descriptor_t const&
+                            , iml::MemoryOffset a
+                            , iml::MemoryOffset b
                             ) const override;
-        virtual iml::MemorySize get_local_size ( const iml::MemorySize size
-                                             , const gpi::pc::type::flags_t flgs
+        virtual iml::MemorySize get_local_size ( iml::MemorySize size
+                                             , gpi::pc::type::flags_t flgs
                                              ) const override;
 
 
-        double get_transfer_costs ( const iml::MemoryRegion&
-                                  , const gpi::rank_t
+        double get_transfer_costs ( iml::MemoryRegion const&
+                                  , gpi::rank_t
                                   ) const override;
 
         void *m_ptr;

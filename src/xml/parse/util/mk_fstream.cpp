@@ -27,8 +27,8 @@ namespace xml
     namespace util
     {
       check_no_change_fstream::check_no_change_fstream
-      ( const state::type& state
-      , const boost::filesystem::path& file
+      ( state::type const& state
+      , boost::filesystem::path const& file
       , std::function<bool (std::string const&, std::string const&)> equal
       )
         : _state (state)

@@ -32,10 +32,10 @@ namespace fhg
       class include : public ostream::modifier
       {
       public:
-        include (const std::string&);
+        include (std::string const&);
         virtual std::ostream& operator() (std::ostream&) const override;
       private:
-        const std::string& _fname;
+        std::string const& _fname;
       };
     }
   }

@@ -66,12 +66,12 @@ namespace fhg
           return _model->setHeaderData (_section, _orientation, val, role);
         }
 
-        bool section_index::operator< (const section_index& other) const
+        bool section_index::operator< (section_index const& other) const
         {
           return std::tie (_model, _orientation, _section)
                < std::tie (other._model, other._orientation, other._section);
         }
-        bool section_index::operator== (const section_index& other) const
+        bool section_index::operator== (section_index const& other) const
         {
           return std::tie (_model, _orientation, _section)
               == std::tie (other._model, other._orientation, other._section);

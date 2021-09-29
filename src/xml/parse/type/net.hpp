@@ -49,7 +49,7 @@ namespace xml
         using templates_type = fhg::pnet::util::unique<tmpl_type>;
         using transitions_type = fhg::pnet::util::unique<transition_type>;
 
-        net_type ( const util::position_type&
+        net_type ( util::position_type const&
                  , functions_type
                  , places_type
                  , specializes_type
@@ -59,46 +59,46 @@ namespace xml
                  , we::type::property::type
                  );
 
-        const we::type::property::type& properties() const;
+        we::type::property::type const& properties() const;
 
         // ***************************************************************** //
 
-        const functions_type& functions() const;
-        const places_type& places() const;
-        const specializes_type& specializes() const;
-        const templates_type& templates() const;
-        const transitions_type& transitions() const;
+        functions_type const& functions() const;
+        places_type const& places() const;
+        specializes_type const& specializes() const;
+        templates_type const& templates() const;
+        transitions_type const& transitions() const;
         //! \note find_module_calls needs to modify transitions when diving
         transitions_type& transitions();
 
         // ***************************************************************** //
 
         boost::optional<tmpl_type const&>
-          get_template (const std::string& name) const;
+          get_template (std::string const& name) const;
 
         // ***************************************************************** //
 
-        void type_map_apply ( const type::type_map_type & outer_map
+        void type_map_apply ( type::type_map_type const& outer_map
                             , type::type_map_type & inner_map
                             );
 
-        void specialize ( const type::type_map_type & map
-                        , const type::type_get_type & get
-                        , const xml::parse::structure_type_util::set_type & known_structs
+        void specialize ( type::type_map_type const& map
+                        , type::type_get_type const& get
+                        , xml::parse::structure_type_util::set_type const& known_structs
                         , state::type & state
                         );
 
         // ***************************************************************** //
 
-        void type_check (const state::type & state) const;
+        void type_check (state::type const& state) const;
 
         void resolve_function_use_recursive
           (std::unordered_map<std::string, function_type const&> known);
         void resolve_types_recursive
           (std::unordered_map<std::string, pnet::type::signature::signature_type> known);
 
-        void set_prefix (const std::string & prefix);
-        void remove_prefix (const std::string & prefix);
+        void set_prefix (std::string const& prefix);
+        void remove_prefix (std::string const& prefix);
 
       private:
         functions_type _functions;
@@ -120,17 +120,17 @@ namespace xml
 
       std::unordered_map<std::string, we::place_id_type>
       net_synthesize ( we::type::net_type& we_net
-                     , const place_map_map_type & place_map_map
-                     , const net_type & net
-                     , const state::type & state
+                     , place_map_map_type const& place_map_map
+                     , net_type const& net
+                     , state::type const& state
                      );
 
       namespace dump
       {
         void dump ( ::fhg::util::xml::xmlstream & s
-                  , const net_type & net
+                  , net_type const& net
                   );
-      } // namespace dump
+      }
     }
   }
 }

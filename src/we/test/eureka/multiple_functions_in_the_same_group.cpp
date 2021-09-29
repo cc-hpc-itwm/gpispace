@@ -42,6 +42,7 @@ BOOST_FIXTURE_TEST_CASE
   TasksByEurekaGroup expected_cancelled;
 
   auto const eureka_group (random.unique_eureka_group());
+  WE_TEST_EUREKA_PUT_TOKEN ("eureka_group", eureka_group);
 
   unsigned int total_number_of_tasks (0);
   unsigned int const number_of_tasks_per_function
@@ -59,7 +60,6 @@ BOOST_FIXTURE_TEST_CASE
       expected_exited_or_cancelled[eureka_group].emplace (task);
 
       WE_TEST_EUREKA_PUT_TOKEN ("task", task);
-      WE_TEST_EUREKA_PUT_TOKEN ("eureka_group", eureka_group);
       WE_TEST_EUREKA_PUT_TOKEN (place, random.sleep_time());
     }
 
@@ -73,7 +73,6 @@ BOOST_FIXTURE_TEST_CASE
       expected_cancelled[eureka_group].emplace (task);
 
       WE_TEST_EUREKA_PUT_TOKEN ("task", task);
-      WE_TEST_EUREKA_PUT_TOKEN ("eureka_group", eureka_group);
       WE_TEST_EUREKA_PUT_TOKEN (place, we::type::literal::control());
     }
   }
@@ -84,7 +83,6 @@ BOOST_FIXTURE_TEST_CASE
   auto const eureka_value (random.eureka_value());
 
   WE_TEST_EUREKA_PUT_TOKEN ("eureka", eureka_value);
-  WE_TEST_EUREKA_PUT_TOKEN ("eureka_group", eureka_group);
 
   jobserver.wait
     ( 2 * number_of_tasks_per_function

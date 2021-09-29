@@ -20,7 +20,7 @@
 #include <sdpa/requirements_and_preferences.hpp>
 #include <sdpa/types.hpp>
 
-#include <we/type/activity.hpp>
+#include <we/type/Activity.hpp>
 #include <we/type/net.hpp>
 
 #include <fhg/assert.hpp>
@@ -44,9 +44,9 @@ namespace sdpa
       struct s_running : public boost::msm::front::state<>{};
       struct s_finished : public boost::msm::front::state<>
       {
-        we::type::activity_t result;
+        we::type::Activity result;
         s_finished() = default;
-        s_finished (we::type::activity_t result_)
+        s_finished (we::type::Activity result_)
           : result (std::move (result_))
         {}
       };
@@ -121,12 +121,12 @@ namespace sdpa
       }
 
       template <class FSM, class Event>
-      void no_transition(Event const& e, FSM&, int state)
+      void no_transition (Event const& e, FSM&, int state)
       {
         throw std::runtime_error ( "no transition from state "
-                                 + status::show(state_code(state))
+                                 + status::show (state_code (state))
                                  + " on event "
-                                 + typeid(e).name()
+                                 + typeid (e).name()
                                  );
       }
     };
@@ -160,24 +160,24 @@ namespace sdpa
     class Job : public boost::msm::back::state_machine<JobFSM_>
     {
     public:
-      Job ( const job_id_t id
-          , we::type::activity_t
+      Job ( job_id_t id
+          , we::type::Activity
           , job_source
           , job_handler
           , Requirements_and_preferences
           );
 
-      we::type::activity_t const& activity() const
+      we::type::Activity const& activity() const
       {
         return _activity;
       }
-      const job_id_t& id() const;
+      job_id_t const& id() const;
       job_source const& source() const;
       job_handler const& handler() const { return _handler; }
       Requirements_and_preferences requirements_and_preferences() const;
 
       std::string error_message () const;
-      const we::type::activity_t& result() const;
+      we::type::Activity const& result() const;
 
       status::code getStatus() const;
 
@@ -185,18 +185,18 @@ namespace sdpa
       void CancelJobAck();
       void Dispatch();
       void JobFailed (std::string error_message);
-      void JobFinished (we::type::activity_t);
+      void JobFinished (we::type::Activity);
       void Reschedule();
 
     private:
       mutable std::mutex mtx_;
-      we::type::activity_t _activity;
+      we::type::Activity _activity;
       job_id_t id_;
       job_source _source;
       job_handler _handler;
       Requirements_and_preferences _requirements_and_preferences;
 
       std::string m_error_message;
-      we::type::activity_t result_;
+      we::type::Activity result_;
     };
 }}

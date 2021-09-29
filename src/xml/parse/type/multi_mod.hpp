@@ -48,7 +48,7 @@ namespace xml
 
       namespace dump
       {
-        void dump (::fhg::util::xml::xmlstream&, const multi_module_type&);
+        void dump (::fhg::util::xml::xmlstream&, multi_module_type const&);
       }
     }
   }

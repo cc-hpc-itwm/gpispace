@@ -38,12 +38,6 @@ fhg_add_test (NAME util_event
   LIBRARIES Boost::thread Boost::system fhg-util
 )
 
-fhg_add_test (NAME util_queue
-  SOURCES queue.cpp
-  USE_BOOST
-  LIBRARIES Boost::thread Boost::system fhg-util
-)
-
 fhg_add_test (NAME util_assert
   SOURCES assert.cpp
   USE_BOOST

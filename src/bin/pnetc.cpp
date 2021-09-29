@@ -14,9 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <we/type/transition.hpp>
+#include <we/type/Transition.hpp>
 #include <we/type/net.hpp>
-#include <we/type/activity.hpp>
+#include <we/type/Activity.hpp>
 
 #include <xml/parse/parser.hpp>
 
@@ -25,7 +25,7 @@
 #include <fhg/project_info.hpp>
 #include <util-generic/print_exception.hpp>
 
-#include <we/type/activity.hpp>
+#include <we/type/Activity.hpp>
 
 #include <iostream>
 
@@ -42,13 +42,13 @@ namespace
     std::ostream& _stream;
 
   public:
-    wrapping_word_stream (std::ostream& stream, const std::size_t max = 75)
+    wrapping_word_stream (std::ostream& stream, std::size_t max = 75)
       : _max_len (max)
       , _len (0)
       , _stream (stream)
     {}
 
-    void put (const std::string& w) const
+    void put (std::string const& w) const
     {
       if (_len + w.size() > _max_len)
       {
@@ -62,7 +62,7 @@ namespace
       append (w);
     }
 
-    void append (const std::string& s) const
+    void append (std::string const& s) const
     {
       _stream << s;
 
@@ -77,7 +77,7 @@ namespace
     }
   };
 
-  std::string quote_for_make (const std::string& s)
+  std::string quote_for_make (std::string const& s)
   {
     std::string quoted;
     std::string::const_iterator pos (s.begin());
@@ -98,7 +98,7 @@ namespace
     return quoted;
   }
 
-  std::string quote_for_list (const std::string& s)
+  std::string quote_for_list (std::string const& s)
   {
     std::string quoted;
     std::string::const_iterator pos (s.begin());
@@ -118,8 +118,8 @@ namespace
     return quoted;
   }
 
-  void write_dependencies ( const xml::parse::state::type& state
-                          , const std::string& input
+  void write_dependencies ( xml::parse::state::type const& state
+                          , std::string const& input
                           , std::ostream& stream
                           )
   {
@@ -127,7 +127,7 @@ namespace
 
     if (state.dependencies_target().size() > 0)
     {
-      for (const std::string& target : state.dependencies_target())
+      for (std::string const& target : state.dependencies_target())
       {
         wrapping_stream.put (target);
       }
@@ -135,7 +135,7 @@ namespace
 
     if (state.dependencies_target_quoted().size() > 0)
     {
-      for (const std::string& target : state.dependencies_target_quoted())
+      for (std::string const& target : state.dependencies_target_quoted())
       {
         wrapping_stream.put (quote_for_make (target));
       }
@@ -150,9 +150,9 @@ namespace
 
     wrapping_stream.append (":");
 
-    for (const boost::filesystem::path& path : state.dependencies())
+    for (boost::filesystem::path const& path : state.dependencies())
     {
-      const std::string& dep (path.string());
+      std::string const& dep (path.string());
 
       if (dep != input)
       {
@@ -164,9 +164,9 @@ namespace
 
     if (state.dependencies_add_phony_targets())
     {
-      for (const boost::filesystem::path& path : state.dependencies())
+      for (boost::filesystem::path const& path : state.dependencies())
       {
-        const std::string& dep (path.string());
+        std::string const& dep (path.string());
 
         if (dep != input)
         {
@@ -179,11 +179,11 @@ namespace
     }
   }
 
-  void dump_dependencies ( const xml::parse::state::type& state
-                         , const std::string& input
+  void dump_dependencies ( xml::parse::state::type const& state
+                         , std::string const& input
                          )
   {
-    const std::string& file (state.dump_dependencies());
+    std::string const& file (state.dump_dependencies());
 
     std::ofstream stream (file.c_str());
     if (!stream)
@@ -194,11 +194,11 @@ namespace
     write_dependencies (state, input, stream);
   }
 
-  void list_dependencies ( const xml::parse::state::type& state
-                         , const std::string& input
+  void list_dependencies ( xml::parse::state::type const& state
+                         , std::string const& input
                          )
   {
-    const std::string& file (state.list_dependencies());
+    std::string const& file (state.list_dependencies());
 
     std::ofstream stream (file.c_str());
     if (!stream)
@@ -208,9 +208,9 @@ namespace
 
     stream << quote_for_list (input) << std::endl;
 
-    for (const boost::filesystem::path& p : state.dependencies())
+    for (boost::filesystem::path const& p : state.dependencies())
     {
-      stream << quote_for_list(p.string()) << std::endl;
+      stream << quote_for_list (p.string()) << std::endl;
     }
   }
 }
@@ -228,11 +228,11 @@ int main (int argc, char** argv)
     ( "help,h", "this message")
     ( "version,V", "print version information")
     ( "input,i"
-    , po::value<std::string>(&input)->default_value(input)
+    , po::value<std::string>(&input)->default_value (input)
     , "input file name, - for stdin, first positional parameter"
     )
     ( "output,o"
-    , po::value<std::string>(&output)->default_value(output)
+    , po::value<std::string>(&output)->default_value (output)
     , "output file name, - for stdout, second positional parameter, empty for no output (syntax check + generate only)"
     )
     ;
@@ -250,8 +250,8 @@ int main (int argc, char** argv)
 
     try
     {
-      po::store ( po::command_line_parser(argc, argv)
-                . options(desc).positional(p)
+      po::store ( po::command_line_parser (argc, argv)
+                . options (desc).positional (p)
                 . extra_parser (xml::parse::state::reg_M)
                 . run()
                 , vm
@@ -322,7 +322,7 @@ int main (int argc, char** argv)
     if (!output.empty())
     {
       std::ofstream out (output.c_str());
-      out << we::type::activity_t (xml::parse::xml_to_we (function, state)).to_string();
+      out << we::type::Activity (xml::parse::xml_to_we (function, state)).to_string();
     }
 
     return EXIT_SUCCESS;

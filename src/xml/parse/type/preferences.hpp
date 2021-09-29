@@ -48,7 +48,7 @@ namespace xml
       namespace dump
       {
         void dump ( ::fhg::util::xml::xmlstream& s
-                  , const preferences_type& cs
+                  , preferences_type const& cs
                   );
       }
     }

@@ -15,9 +15,9 @@
 <!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
 
 <defun name="require_propagation">
-  <require key="GPU" mandatory="false"/>
-  <require key="I/O" mandatory="false"/>
-  <require key="LOG" mandatory="false"/>
+  <require key="GPU"/>
+  <require key="I/O"/>
+  <require key="LOG"/>
   <in name="trigger" type="control" place="trigger"/>
   <out name="done" type="control" place="done"/>
   <net>
@@ -28,10 +28,10 @@
       <defun>
         <require key="GPI"/>
         <require key="GPU"/>
-        <require key="I/O" mandatory="false"/>
-        <require key="LOG" mandatory="false"/>
-        <require key="cap23" mandatory="false"/>
-        <require key="cap2818" mandatory="false"/>
+        <require key="I/O"/>
+        <require key="LOG"/>
+        <require key="cap23"/>
+        <require key="cap2818"/>
         <in name="trigger" type="control"/>
         <out name="done" type="control"/>
         <expression/>
@@ -47,7 +47,7 @@
 
     <transition name="run" inline="false">
       <defun>
-        <require key="cap42" mandatory="false"/>
+        <require key="cap42"/>
         <in name="trigger" type="control" place="trigger"/>
         <out name="done" type="control" place="done"/>
         <net>
@@ -56,12 +56,12 @@
 
           <transition name="run">
             <defun>
-              <require key="cap23" mandatory="true"/>
-              <require key="cap3141" mandatory="false"/>
+              <require key="cap23"/>
+              <require key="cap3141"/>
               <require key="GPI"/>
-              <require key="GPU" mandatory="false"/>
+              <require key="GPU"/>
               <require key="I/O"/>
-              <require key="LOG" mandatory="false"/>
+              <require key="LOG"/>
               <in name="trigger" type="control"/>
               <out name="done" type="control"/>
               <expression/>

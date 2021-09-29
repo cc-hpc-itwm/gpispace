@@ -20,7 +20,7 @@
 #include <sdpa/events/EventHandler.hpp>
 #include <sdpa/types.hpp>
 
-#include <we/type/activity.hpp>
+#include <we/type/Activity.hpp>
 #include <we/type/net.hpp>
 
 namespace sdpa
@@ -33,8 +33,8 @@ namespace sdpa
       typedef boost::shared_ptr<SubmitJobEvent> Ptr;
 
       SubmitJobEvent
-        ( const boost::optional<sdpa::job_id_t>& a_job_id
-        , we::type::activity_t activity
+        ( boost::optional<sdpa::job_id_t> const& a_job_id
+        , we::type::Activity activity
         , boost::optional<std::string> const& implementation
         , std::set<worker_id_t> const& workers = {}
         )
@@ -45,15 +45,15 @@ namespace sdpa
           , _workers (workers)
       {}
 
-      const boost::optional<sdpa::job_id_t>& job_id() const
+      boost::optional<sdpa::job_id_t> const& job_id() const
       {
         return _job_id;
       }
-      const we::type::activity_t& activity() const
+      we::type::Activity const& activity() const
       {
         return _activity;
       }
-      const boost::optional<std::string>& implementation() const
+      boost::optional<std::string> const& implementation() const
       {
         return _implementation;
       }
@@ -70,7 +70,7 @@ namespace sdpa
 
     private:
       boost::optional<sdpa::job_id_t> _job_id;
-      we::type::activity_t _activity;
+      we::type::Activity _activity;
       boost::optional<std::string> _implementation;
       std::set<worker_id_t> _workers;
     };
@@ -88,7 +88,7 @@ namespace sdpa
     {
       LOAD_SDPAEVENT_CONSTRUCT_DATA();
       LOAD_FROM_ARCHIVE (boost::optional<sdpa::job_id_t>, job_id);
-      LOAD_FROM_ARCHIVE (we::type::activity_t, activity);
+      LOAD_FROM_ARCHIVE (we::type::Activity, activity);
       LOAD_FROM_ARCHIVE (boost::optional<std::string>, implementation);
       LOAD_FROM_ARCHIVE (std::set<sdpa::worker_id_t>, workers);
 

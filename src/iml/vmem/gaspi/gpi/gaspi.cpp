@@ -53,7 +53,7 @@ namespace gpi
       }
 
       template <typename Fun, typename... T>
-      void fail_on_non_zero ( const std::string& function_name
+      void fail_on_non_zero ( std::string const& function_name
                             , Fun&& f
                             , T&&... arguments
                             )
@@ -80,7 +80,7 @@ namespace gpi
     }
 
     gaspi_t::gaspi_t ( fhg::iml::vmem::gaspi_context& gaspi_context
-                     , const unsigned long long per_node_size
+                     , unsigned long long per_node_size
                      , fhg::iml::vmem::gaspi_timeout& time_left
                      )
       : _gaspi_context (gaspi_context)

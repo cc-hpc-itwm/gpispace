@@ -23,10 +23,10 @@ namespace xml
 {
   namespace parse
   {
-    std::string required ( const std::string& pre
+    std::string required ( std::string const& pre
                          , const xml_node_type* node
                          , const Ch* attr
-                         , const state::type& state
+                         , state::type const& state
                          )
     {
       if (!node->first_attribute (attr))

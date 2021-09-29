@@ -54,7 +54,7 @@ namespace pnet
           return tn;
         }
 
-        const std::string typename_complete (const std::string& tname)
+        const std::string typename_complete (std::string const& tname)
         {
           static map_type tn (init_typenames_complete());
 
@@ -69,14 +69,14 @@ namespace pnet
         }
       }
 
-      complete::complete (const std::string& tname)
+      complete::complete (std::string const& tname)
         : _tname (tname)
       {}
-      const std::string& complete::tname() const
+      std::string const& complete::tname() const
       {
         return _tname;
       }
-      std::ostream& operator<< (std::ostream& os, const complete& c)
+      std::ostream& operator<< (std::ostream& os, complete const& c)
       {
         return os << typename_complete (c.tname());
       }

@@ -86,6 +86,10 @@ install (FILES
   DESTINATION include/we/type/value
 )
 install (FILES
+  type/signature/show.hpp
+  DESTINATION include/we/type/signature
+)
+install (FILES
   type/value/path/append.hpp
   type/value/path/join.hpp
   DESTINATION include/we/type/value/path

@@ -41,14 +41,14 @@ namespace we
              , boost::filesystem::path const& path
              );
 
-      void call ( const std::string& f
+      void call ( std::string const& f
                 , drts::worker::context *context
-                , const expr::eval::context& in
+                , expr::eval::context const& in
                 , expr::eval::context& out
                 , std::map<std::string, void*> const& memory_buffer
                 ) const;
 
-      virtual void add_function (const std::string&, WrapperFunction) override;
+      virtual void add_function (std::string const&, WrapperFunction) override;
 
     private:
       boost::filesystem::path path_;

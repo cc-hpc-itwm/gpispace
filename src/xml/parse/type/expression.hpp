@@ -38,7 +38,7 @@ namespace xml
       struct expression_type : with_position_of_definition
       {
       public:
-        expression_type (const util::position_type&, const expressions_type&);
+        expression_type (util::position_type const&, expressions_type const&);
 
         std::string expression() const;
 
@@ -49,7 +49,7 @@ namespace xml
       namespace dump
       {
         void dump ( ::fhg::util::xml::xmlstream & s
-                  , const expression_type & e
+                  , expression_type const& e
                   );
       }
     }

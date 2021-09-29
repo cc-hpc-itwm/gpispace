@@ -55,7 +55,7 @@
 #include <we/type/id.hpp>
 #include <we/type/property.hpp>
 #include <we/type/signature.hpp>
-#include <we/type/transition.hpp>
+#include <we/type/Transition.hpp>
 #include <we/type/value.hpp>
 #include <we/type/value/show.hpp>
 
@@ -88,8 +88,8 @@ namespace xml
         ( std::function<T (const xml_node_type*, state::type&)> parse
         , std::istream& f
         , state::type& state
-        , const std::string& name_wanted
-        , const std::string& pre
+        , std::string const& name_wanted
+        , std::string const& pre
         )
       {
         xml_document_type doc;
@@ -102,7 +102,7 @@ namespace xml
                     | rapidxml::parse_non_destructive
                     > (inp.data());
         }
-        catch (const rapidxml::parse_error& e)
+        catch (rapidxml::parse_error const& e)
         {
           throw std::runtime_error
             ( ( boost::format ("Parse error: %1%: %2%")
@@ -168,11 +168,11 @@ namespace xml
 
       template<typename return_type>
         return_type generic_include
-        ( const std::string& file
+        ( std::string const& file
         , state::type& state
         , std::function<return_type (const xml_node_type*, state::type&)> fun
-        , const std::string& wanted
-        , const std::string& pre
+        , std::string const& wanted
+        , std::string const& pre
         )
       {
         return state.generic_include<return_type>
@@ -182,28 +182,28 @@ namespace xml
       }
 
       type::function_type function_include
-        (const std::string& file, state::type& state)
+        (std::string const& file, state::type& state)
       {
         return generic_include<type::function_type>
           (file, state, function_type, "defun", "parse_function");
       }
 
       type::tmpl_type template_include
-        (const std::string& file, state::type& state)
+        (std::string const& file, state::type& state)
       {
         return generic_include<type::tmpl_type>
           (file, state, tmpl_type, "template", "parse_template");
       }
 
       type::structs_type structs_include
-        (const std::string& file, state::type& state)
+        (std::string const& file, state::type& state)
       {
         return generic_include<type::structs_type>
           (file, state, structs_type, "structs", "parse_structs");
       }
 
       we::type::property::type properties_include
-        (const std::string& file, state::type& state)
+        (std::string const& file, state::type& state)
       {
         return generic_include<we::type::property::type>
           (file, state, property_maps_type, "props", "parse_props");
@@ -217,17 +217,10 @@ namespace xml
                         )
       {
         const std::string key (required ("require_type", node, "key", state));
-        const boost::optional<bool> mmandatory
-          ( fhg::util::boost::fmap<std::string, bool>( fhg::util::read_bool
-                                                     , optional (node, "mandatory")
-                                                     )
-          );
-        const bool mandatory (mmandatory ? *mmandatory : true);
-
-        requirements.set (key, mandatory);
+        requirements.set (key);
 
         // collect all the requirements for the top level function
-        state.set_requirement (key, mandatory);
+        state.set_requirement (key);
       }
 
       // ******************************************************************* //
@@ -350,7 +343,7 @@ namespace xml
       // ******************************************************************* //
 
       void set_type_map ( const xml_node_type* node
-                        , const state::type& state
+                        , state::type const& state
                         , type::type_map_type& map
                         )
       {
@@ -384,7 +377,7 @@ namespace xml
       // ******************************************************************* //
 
       void set_type_get ( const xml_node_type* node
-                        , const state::type& state
+                        , state::type const& state
                         , type::type_get_type& set
                         )
       {
@@ -407,7 +400,7 @@ namespace xml
 
       type::connect_type connect_type ( const xml_node_type* node
                                       , state::type& state
-                                      , const we::edge::type& direction
+                                      , we::edge::type const& direction
                                       )
       {
         we::type::property::type properties;
@@ -807,7 +800,7 @@ namespace xml
 
       type::port_type port_type ( const xml_node_type* node
                                 , state::type& state
-                                , const we::type::PortDirection& direction
+                                , we::type::PortDirection const& direction
                                 )
       {
         we::type::property::type properties;
@@ -1367,9 +1360,9 @@ namespace xml
                   , std::list<std::string>
                   >
         parse_function_signature
-          ( const std::string& input
-          , const std::string& _name
-          , const util::position_type& pod
+          ( std::string const& input
+          , std::string const& _name
+          , util::position_type const& pod
           , std::string const& module_name
           , type::function_type::ports_type const& ports
           , fhg::pnet::util::unique<type::memory_buffer_type> const& memory_buffers
@@ -1379,8 +1372,8 @@ namespace xml
           auto&& is_known_port
             ( [&ports] (std::string const& name)
               {
-                return ports.has ({name, we::type::PORT_IN})
-                  || ports.has ({name, we::type::PORT_OUT});
+                return ports.has ({name, we::type::port::direction::In{}})
+                  || ports.has ({name, we::type::port::direction::Out{}});
               }
             );
           auto&& is_known_memory_buffer
@@ -1531,7 +1524,7 @@ namespace xml
         , state::type& state
         , type::function_type::ports_type const& ports
         , fhg::pnet::util::unique<type::memory_buffer_type> const& memory_buffers
-        , const bool is_target_required
+        , bool is_target_required
         , boost::filesystem::path const& path
         )
       {
@@ -1762,7 +1755,7 @@ namespace xml
           );
 
         if (  place.is_virtual()
-           && !ports.has ({place.name(), we::type::PORT_TUNNEL})
+           && !ports.has ({place.name(), we::type::port::direction::Tunnel{}})
            )
         {
           state.warn
@@ -2012,24 +2005,24 @@ namespace xml
             if (child_name == "in")
             {
               ports.push<error::duplicate_port>
-                (port_type (child, state, we::type::PORT_IN));
+                (port_type (child, state, we::type::port::direction::In{}));
             }
             else if (child_name == "out")
             {
               ports.push<error::duplicate_port>
-                (port_type (child, state, we::type::PORT_OUT));
+                (port_type (child, state, we::type::port::direction::Out{}));
             }
             else if (child_name == "inout")
             {
               ports.push<error::duplicate_port>
-                (port_type (child, state, we::type::PORT_IN));
+                (port_type (child, state, we::type::port::direction::In{}));
               ports.push<error::duplicate_port>
-                (port_type (child, state, we::type::PORT_OUT));
+                (port_type (child, state, we::type::port::direction::Out{}));
             }
             else if (child_name == "tunnel")
             {
               ports.push<error::duplicate_port>
-                (port_type (child, state, we::type::PORT_TUNNEL));
+                (port_type (child, state, we::type::port::direction::Tunnel{}));
             }
             else if (child_name == "memory-buffer")
             {
@@ -2263,7 +2256,7 @@ namespace xml
     }
 
     type::function_type just_parse
-      (state::type& state, const boost::filesystem::path& input)
+      (state::type& state, boost::filesystem::path const& input)
     {
       state.set_input (input);
 
@@ -2300,8 +2293,8 @@ namespace xml
       function.type_check (*state);
     }
 
-    void generate_cpp ( const type::function_type& function_in
-                      , const state::type& state
+    void generate_cpp ( type::function_type const& function_in
+                      , state::type const& state
                       )
     {
       type::fun_info_map m;
@@ -2318,11 +2311,11 @@ namespace xml
       type::mk_makefile (state, m, structnames);
     }
 
-    void dump_xml ( const type::function_type& function
-                  , const state::type& state
+    void dump_xml ( type::function_type const& function
+                  , state::type const& state
                   )
     {
-      const std::string& file (state.dump_xml_file());
+      std::string const& file (state.dump_xml_file());
 
       std::ofstream stream (file.c_str());
       if (!stream)
@@ -2335,9 +2328,9 @@ namespace xml
       type::dump::dump (s, function);
     }
 
-    we::type::transition_t xml_to_we
-      ( const xml::parse::type::function_type& function
-      , const xml::parse::state::type& state
+    we::type::Transition xml_to_we
+      ( xml::parse::type::function_type const& function
+      , xml::parse::state::type const& state
       )
     {
       if (not function.name())
@@ -2363,5 +2356,5 @@ namespace xml
           )
         ;
     }
-  } // namespace parse
-} // namespace xml
+  }
+}

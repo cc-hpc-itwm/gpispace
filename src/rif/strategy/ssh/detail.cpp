@@ -100,7 +100,6 @@ namespace libssh2
       wrap::cant_fail<REF (libssh2_exit), void> exit;
 
       wrap::NULL_fails_with_unknown_error<REF (libssh2_session_init_ex), LIBSSH2_SESSION> session_init_ex;
-      wrap::cant_fail<REF (libssh2_session_set_blocking), void> session_set_blocking;
       wrap::negative_fails_via_session_state<REF (libssh2_session_handshake), void> session_handshake;
       wrap::negative_fails_via_session_state<REF (libssh2_session_disconnect_ex), void> session_disconnect_ex;
       wrap::negative_fails_via_return_value<REF (libssh2_session_free), void> session_free;

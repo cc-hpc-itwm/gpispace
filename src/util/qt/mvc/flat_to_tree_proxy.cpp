@@ -39,7 +39,7 @@ namespace fhg
         { }
 
         QVariant transform_functions_model::data
-          (const QModelIndex& index, int role) const
+          (QModelIndex const& index, int role) const
         {
           if (index.isValid() && index.row() < _items.size())
           {
@@ -56,7 +56,7 @@ namespace fhg
           return QVariant();
         }
         bool transform_functions_model::setData
-          (const QModelIndex& index, const QVariant& variant, int role)
+          (QModelIndex const& index, QVariant const& variant, int role)
         {
           if (!index.isValid() || index.row() >= _items.size())
           {
@@ -82,14 +82,14 @@ namespace fhg
         }
 
         QMap<int, QVariant>
-          transform_functions_model::itemData (const QModelIndex& index) const
+          transform_functions_model::itemData (QModelIndex const& index) const
         {
           QMap<int, QVariant> roles (QAbstractListModel::itemData (index));
           roles[function_role] = data (index, function_role);
           return roles;
         }
 
-        int transform_functions_model::rowCount (const QModelIndex& index) const
+        int transform_functions_model::rowCount (QModelIndex const& index) const
         {
           return index.isValid() ? 0 : _items.size();
         }
@@ -117,7 +117,7 @@ namespace fhg
         { }
 
         bool transform_functions_model::insertRows
-          (int row, int count, const QModelIndex& parent)
+          (int row, int count, QModelIndex const& parent)
         {
           fhg_assert (!parent.isValid(), "there are no rows on non-top-level");
 
@@ -131,7 +131,7 @@ namespace fhg
         }
 
         bool transform_functions_model::removeRows
-          (int row, int count, const QModelIndex& parent)
+          (int row, int count, QModelIndex const& parent)
         {
           fhg_assert (!parent.isValid(), "there are no rows on non-top-level");
 
@@ -148,7 +148,7 @@ namespace fhg
         {
         public:
           //! \note Branch
-          index_tree_item (const QString& name, index_tree_item* parent)
+          index_tree_item (QString const& name, index_tree_item* parent)
             : _parent (parent)
             , _data (std::make_pair (name, QVector<index_tree_item*>()))
           {
@@ -156,7 +156,7 @@ namespace fhg
           }
 
           //! \note Leaf
-          index_tree_item (const QPersistentModelIndex& index, index_tree_item* parent)
+          index_tree_item (QPersistentModelIndex const& index, index_tree_item* parent)
             : _parent (parent)
             , _data (index)
           {
@@ -188,12 +188,12 @@ namespace fhg
             fhg_assert (is_branch(), "children() only to be called on branch");
             return boost::get<name_and_child_type> (_data).second;
           }
-          const QString& name() const
+          QString const& name() const
           {
             fhg_assert (is_branch(), "name() only to be called on branch");
             return boost::get<name_and_child_type> (_data).first;
           }
-          const QPersistentModelIndex& index() const
+          QPersistentModelIndex const& index() const
           {
             fhg_assert (is_leaf(), "index() only to be called on leaf");
             return boost::get<index_type> (_data);
@@ -366,7 +366,7 @@ namespace fhg
         }
 
         void flat_to_tree_proxy::source_dataChanged
-          (const QModelIndex& topLeft, const QModelIndex& bottomRight)
+          (QModelIndex const& topLeft, QModelIndex const& bottomRight)
         {
 #ifdef collect_and_combine
           QMap<QModelIndex, std::set<int>> changed_child_rows;
@@ -385,9 +385,9 @@ namespace fhg
             }
           }
 
-          for (const QModelIndex& parent : changed_child_rows.keys())
+          for (QModelIndex const& parent : changed_child_rows.keys())
           {
-            const std::set<int>& rows (changed_child_rows[parent]);
+            std::set<int> const& rows (changed_child_rows[parent]);
             std::set<int>::iterator it (rows.begin());
 
             int last (*it);
@@ -442,8 +442,8 @@ namespace fhg
         {
           template<typename T>
             QList<T> value_of_all_rows ( const QAbstractItemModel* const model
-                                       , const int role
-                                       , const int column
+                                       , int role
+                                       , int column
                                        )
           {
             QList<T> ret;
@@ -501,7 +501,7 @@ namespace fhg
 
             index_tree_item* last_item (_invisible_root.get());
             QModelIndex last_parent;
-            for (const QString& segment : path)
+            for (QString const& segment : path)
             {
               index_tree_item* branch (last_item->find_branch (segment));
               if (!branch)
@@ -570,19 +570,19 @@ namespace fhg
         }
 
         flat_to_tree_proxy::index_tree_item*
-          flat_to_tree_proxy::item_for (const QModelIndex& index) const
+          flat_to_tree_proxy::item_for (QModelIndex const& index) const
         {
           return index.isValid()
             ? static_cast<index_tree_item*> (index.internalPointer())
             : _invisible_root.get();
         }
 
-        int flat_to_tree_proxy::rowCount (const QModelIndex& index) const
+        int flat_to_tree_proxy::rowCount (QModelIndex const& index) const
         {
           index_tree_item* item (item_for (index));
           return item->is_leaf() ? 0 : item->children().size();
         }
-        int flat_to_tree_proxy::columnCount (const QModelIndex& index) const
+        int flat_to_tree_proxy::columnCount (QModelIndex const& index) const
         {
           index_tree_item* item (item_for (index));
           return _source->columnCount ( item->is_leaf()
@@ -609,17 +609,17 @@ namespace fhg
           return QModelIndex();
         }
 
-        QModelIndex flat_to_tree_proxy::index_for (const QModelIndex& source) const
+        QModelIndex flat_to_tree_proxy::index_for (QModelIndex const& source) const
         {
           return _source_to_tree[source];
         }
 
         QModelIndex flat_to_tree_proxy::index
-          (int row, int column, const QModelIndex& parent) const
+          (int row, int column, QModelIndex const& parent) const
         {
           return createIndex (row, column, item_for (parent)->children()[row]);
         }
-        QModelIndex flat_to_tree_proxy::parent (const QModelIndex& index) const
+        QModelIndex flat_to_tree_proxy::parent (QModelIndex const& index) const
         {
           return index_for
             ( static_cast<index_tree_item*> (index.internalPointer())->parent()
@@ -627,7 +627,7 @@ namespace fhg
             );
         }
 
-        QVariant flat_to_tree_proxy::data (const QModelIndex& index, int role) const
+        QVariant flat_to_tree_proxy::data (QModelIndex const& index, int role) const
         {
           index_tree_item* item (item_for (index));
           if (item->is_leaf())
@@ -674,7 +674,7 @@ namespace fhg
         }
 
         bool flat_to_tree_proxy::removeRows
-          (int row, int count, const QModelIndex& parent)
+          (int row, int count, QModelIndex const& parent)
         {
           for (const int max (row + count); row < max; ++row)
           {

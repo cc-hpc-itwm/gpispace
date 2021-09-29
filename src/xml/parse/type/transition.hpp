@@ -51,62 +51,62 @@ namespace xml
         typedef boost::variant <function_type, use_type>
           function_or_use_type;
 
-        transition_type ( const util::position_type&
-                        , const function_or_use_type&
-                        , const std::string& name
-                        , const connections_type& connections
+        transition_type ( util::position_type const&
+                        , function_or_use_type const&
+                        , std::string const& name
+                        , connections_type const& connections
                         , responses_type const&
                         , eurekas_type const&
-                        , const place_maps_type& place_map
-                        , const structs_type& structs
-                        , const conditions_type&
-                        , const requirements_type& requirements
-                        , const boost::optional<we::priority_type>& priority
-                        , const boost::optional<bool>& finline
-                        , const we::type::property::type& properties
+                        , place_maps_type const& place_map
+                        , structs_type const& structs
+                        , conditions_type const&
+                        , requirements_type const& requirements
+                        , boost::optional<we::priority_type> const& priority
+                        , boost::optional<bool> const& finline
+                        , we::type::property::type const& properties
                         );
         transition_type add_prefix (std::string const&) const;
         transition_type remove_prefix (std::string const&) const;
 
-        const function_or_use_type& function_or_use() const;
+        function_or_use_type const& function_or_use() const;
         function_or_use_type& function_or_use();
 
         function_type const& resolved_function() const;
 
-        const std::string& name() const;
+        std::string const& name() const;
 
-        const connections_type& connections() const;
+        connections_type const& connections() const;
         responses_type const& responses() const;
         eurekas_type const& eurekas() const;
-        const place_maps_type& place_map() const;
+        place_maps_type const& place_map() const;
 
         // ***************************************************************** //
 
-        const conditions_type& conditions() const;
+        conditions_type const& conditions() const;
 
         // ***************************************************************** //
 
-        void resolve ( const state::type & state
-                     , const xml::parse::structure_type_util::forbidden_type & forbidden
+        void resolve ( state::type const& state
+                     , xml::parse::structure_type_util::forbidden_type const& forbidden
                      );
-        void resolve ( const xml::parse::structure_type_util::set_type & global
-                     , const state::type & state
-                     , const xml::parse::structure_type_util::forbidden_type & forbidden
+        void resolve ( xml::parse::structure_type_util::set_type const& global
+                     , state::type const& state
+                     , xml::parse::structure_type_util::forbidden_type const& forbidden
                      );
 
         // ***************************************************************** //
 
-        void specialize ( const type::type_map_type & map
-                        , const type::type_get_type & get
-                        , const xml::parse::structure_type_util::set_type & known_structs
+        void specialize ( type::type_map_type const& map
+                        , type::type_get_type const& get
+                        , xml::parse::structure_type_util::set_type const& known_structs
                         , state::type & state
                         );
 
         // ***************************************************************** //
 
         void type_check (response_type const&, state::type const&) const;
-        void type_check (const connect_type&, const state::type&, net_type const& parent) const;
-        void type_check (const state::type & state, net_type const& parent) const;
+        void type_check (connect_type const&, state::type const&, net_type const& parent) const;
+        void type_check (state::type const& state, net_type const& parent) const;
         void type_check (eureka_type const&, state::type const&) const;
 
         void resolve_function_use_recursive
@@ -114,10 +114,10 @@ namespace xml
         void resolve_types_recursive
           (std::unordered_map<std::string, pnet::type::signature::signature_type> known);
 
-        const we::type::property::type& properties() const;
+        we::type::property::type const& properties() const;
         we::type::property::type& properties();
 
-        const unique_key_type& unique_key() const;
+        unique_key_type const& unique_key() const;
 
       private:
         function_or_use_type _function_or_use;
@@ -131,7 +131,7 @@ namespace xml
         eurekas_type _eurekas;
         place_maps_type _place_map;
 
-        bool is_connect_tp_many (const we::edge::type, const std::string &) const;
+        bool is_connect_tp_many (we::edge::type, std::string const&) const;
         //! \todo All below should be private with accessors.
       public:
         structs_type structs;
@@ -153,9 +153,9 @@ namespace xml
 
       void transition_synthesize
         ( transition_type const&
-        , const state::type & state
+        , state::type const& state
         , we::type::net_type& we_net
-        , const place_map_map_type & pids
+        , place_map_map_type const& pids
         );
 
       // ******************************************************************* //
@@ -163,7 +163,7 @@ namespace xml
       namespace dump
       {
         void dump ( ::fhg::util::xml::xmlstream & s
-                  , const transition_type & t
+                  , transition_type const& t
                   );
       }
     }

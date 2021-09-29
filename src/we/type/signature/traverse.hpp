@@ -32,11 +32,11 @@ namespace pnet
           : _p (p)
         {}
 
-        void operator() (const std::pair<std::string, std::string>& f) const
+        void operator() (std::pair<std::string, std::string> const& f) const
         {
           _p._field (f);
         }
-        void operator() (const structured_type& s) const
+        void operator() (structured_type const& s) const
         {
           _p._field_struct (s);
         }
@@ -45,12 +45,12 @@ namespace pnet
       };
 
       template<typename P>
-        void traverse (P p, const field_type& field)
+        void traverse (P p, field_type const& field)
       {
         boost::apply_visitor (traverse_field<P> (p), field);
       }
       template<typename P>
-        void traverse (P p, const structured_type& s)
+        void traverse (P p, structured_type const& s)
       {
         p._struct (s);
       }

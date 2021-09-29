@@ -42,7 +42,7 @@ namespace gspc
   public:
     void write (std::string const&);
 
-    static void mark_free ( const char old_flag_value
+    static void mark_free ( char old_flag_value
                           , std::pair<void*, unsigned long> ptr_to_flag
                           );
 

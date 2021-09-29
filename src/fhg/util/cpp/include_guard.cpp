@@ -26,7 +26,7 @@ namespace fhg
     {
       namespace include_guard
       {
-        open::open (const std::string& name)
+        open::open (std::string const& name)
           : _name (name)
         {}
         std::ostream& open::operator() (std::ostream& os) const

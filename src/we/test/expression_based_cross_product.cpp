@@ -17,7 +17,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <we/test/net.common.hpp>
-#include <we/type/activity.hpp>
+#include <we/type/Activity.hpp>
 #include <we/type/net.hpp>
 #include <we/type/value/poke.hpp>
 
@@ -43,19 +43,19 @@ BOOST_AUTO_TEST_CASE (create_and_execute_cross_product)
   we::place_id_type const pid_store
     (net.add_place (place::type ("store", sig_store, boost::none)));
 
-  we::type::transition_t trans_inner
+  we::type::Transition trans_inner
     ( "trans_inner"
-    , we::type::expression_t
+    , we::type::Expression
       ( "${store.seen} := bitset_insert (${store.seen}, ${vid});"
         "${store.bid}  := ${store.bid}                         ;"
         "${pair.bid}   := ${store.bid}                         ;"
         "${pair.vid}   := ${vid}                               "
       )
-    , we::type::expression_t ("!bitset_is_element (${store.seen}, ${vid})")
+    , we::type::Expression ("!bitset_is_element (${store.seen}, ${vid})")
     , we::type::property::type()
     , we::priority_type()
     , boost::optional<we::type::eureka_id_type>{}
-    , std::list<we::type::preference_t>{}
+    , std::list<we::type::Preference>{}
     );
 
   pnet::type::signature::structure_type sig_pair_fields;
@@ -73,19 +73,19 @@ BOOST_AUTO_TEST_CASE (create_and_execute_cross_product)
 
   we::port_id_type const port_id_vid
     ( trans_inner.add_port
-        (we::type::port_t ("vid", we::type::PORT_IN, std::string("unsigned long")))
+        (we::type::Port ("vid", we::type::port::direction::In{}, std::string("unsigned long"), we::type::property::type{}))
     );
   we::port_id_type const port_id_store_out
     ( trans_inner.add_port
-        (we::type::port_t ("store", we::type::PORT_OUT, sig_store))
+        (we::type::Port ("store", we::type::port::direction::Out{}, sig_store, we::type::property::type{}))
     );
   we::port_id_type const port_id_store_in
     ( trans_inner.add_port
-        (we::type::port_t ("store", we::type::PORT_IN, sig_store))
+        (we::type::Port ("store", we::type::port::direction::In{}, sig_store, we::type::property::type{}))
     );
   we::port_id_type const& port_id_pair
     ( trans_inner.add_port
-        (we::type::port_t ("pair", we::type::PORT_OUT, sig_pair))
+        (we::type::Port ("pair", we::type::port::direction::Out{}, sig_pair, we::type::property::type{}))
     );
 
   we::transition_id_type const tid (net.add_transition (trans_inner));
@@ -120,25 +120,25 @@ BOOST_AUTO_TEST_CASE (create_and_execute_cross_product)
     net.put_value (pid_store, m);
   }
 
-  we::type::transition_t tnet ( "tnet"
+  we::type::Transition tnet ( "tnet"
                               , net
                               , boost::none
                               , we::type::property::type()
                               , we::priority_type()
                               , boost::optional<we::type::eureka_id_type>{}
-                              , std::list<we::type::preference_t>{}
+                              , std::list<we::type::Preference>{}
                               );
   tnet.add_port
-    (we::type::port_t ("vid", we::type::PORT_IN, std::string ("unsigned long"), pid_vid));
+    (we::type::Port ("vid", we::type::port::direction::In{}, std::string ("unsigned long"), pid_vid, we::type::property::type{}));
   tnet.add_port
-    (we::type::port_t ("store", we::type::PORT_IN, sig_store, pid_store));
+    (we::type::Port ("store", we::type::port::direction::In{}, sig_store, pid_store, we::type::property::type{}));
   we::port_id_type const port_id_store_out_net
     (tnet.add_port
-      (we::type::port_t ("store", we::type::PORT_OUT, sig_store, pid_store))
+      (we::type::Port ("store", we::type::port::direction::Out{}, sig_store, pid_store, we::type::property::type{}))
     );
   we::port_id_type const port_id_pair_net
     (tnet.add_port
-      (we::type::port_t ("pair", we::type::PORT_OUT, sig_pair, pid_pair))
+      (we::type::Port ("pair", we::type::port::direction::Out{}, sig_pair, pid_pair, we::type::property::type{}))
     );
 
   std::mt19937 engine;

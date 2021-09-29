@@ -17,7 +17,6 @@
 #include <we/layer.hpp>
 
 #include <fhg/assert.hpp>
-#include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_exception.hpp>
 #include <util-generic/functor_visitor.hpp>
@@ -31,9 +30,9 @@
 namespace we
 {
     layer::layer
-        ( std::function<void (id_type, type::activity_t)> rts_submit
+        ( std::function<void (id_type, type::Activity)> rts_submit
         , std::function<void (id_type)> rts_cancel
-        , std::function<void (id_type, type::activity_t)> rts_finished
+        , std::function<void (id_type, type::Activity)> rts_finished
         , std::function<void (id_type, std::string)> rts_failed
         , std::function<void (id_type)> rts_canceled
         , std::function<void (std::string, boost::optional<std::exception_ptr>)> rts_token_put
@@ -54,18 +53,18 @@ namespace we
       , _stop_extracting ([this] { _nets_to_extract_from.interrupt(); })
     {}
 
-    void layer::submit (id_type id, type::activity_t act)
+    void layer::submit (id_type id, type::Activity act)
     {
       _nets_to_extract_from.put
         ( activity_data_type ( id
-                             , fhg::util::cxx14::make_unique<type::activity_t>
+                             , std::make_unique<type::Activity>
                                  (std::move (act).wrap())
                              )
         , true
         );
     }
 
-    void layer::finished (id_type id, type::activity_t result)
+    void layer::finished (id_type id, type::Activity result)
     {
       boost::optional<id_type> const parent (_running_jobs.parent (id));
       fhg_assert (parent);
@@ -289,7 +288,7 @@ namespace we
         //! fire_expression_and_extract_activity_random (endless loop
         //! in expressions)?
 
-        boost::optional<type::activity_t> activity;
+        boost::optional<type::Activity> activity;
         try
         {
           fhg::util::nest_exceptions<std::runtime_error>
@@ -400,21 +399,21 @@ namespace we
     {
     }
 
-    void layer::rts_finished_and_forget (id_type id, type::activity_t activity)
+    void layer::rts_finished_and_forget (id_type id, type::Activity activity)
     {
-      _nets_to_extract_from.forget (id);
+      _nets_to_extract_from.forget (id, "workflow finished");
       cancel_outstanding_responses (id, "workflow finished");
       _rts_finished (id, std::move (activity));
     }
     void layer::rts_failed_and_forget (id_type id, std::string message)
     {
-      _nets_to_extract_from.forget (id);
+      _nets_to_extract_from.forget (id, message);
       cancel_outstanding_responses (id, message);
       _rts_failed (id, message);
     }
     void layer::rts_canceled_and_forget (id_type id)
     {
-      _nets_to_extract_from.forget (id);
+      _nets_to_extract_from.forget (id, "workflow was canceled");
       cancel_outstanding_responses (id, "workflow was canceled");
       _rts_canceled (id);
     }
@@ -489,7 +488,7 @@ namespace we
       : _function (std::move (to_finish))
   {}
   layer::async_remove_queue::RemovalFunction::ToFinish::ToFinish
-    (layer* that, id_type parent, type::activity_t result, id_type id)
+    (layer* that, id_type parent, type::Activity result, id_type id)
       : _that (that)
       , _parent (std::move (parent))
       , _result (std::move (result))
@@ -700,7 +699,7 @@ namespace we
       }
     }
 
-    void layer::async_remove_queue::forget (id_type id)
+    void layer::async_remove_queue::forget (id_type id, std::string reason)
     {
       std::lock_guard<std::recursive_mutex> const _ (_container_mutex);
 
@@ -715,7 +714,7 @@ namespace we
           {
             std::get<1> (info)
               ( std::make_exception_ptr
-                  (std::runtime_error ("activity was terminated"))
+                  (std::runtime_error (reason))
               );
           }
           catch (...)
@@ -742,7 +741,7 @@ namespace we
     // activity_data_type
 
     void layer::activity_data_type::child_finished
-      ( type::activity_t child
+      ( type::Activity child
       , we::workflow_response_callback const& workflow_response
       , we::eureka_response_callback const& eureka_response
       )

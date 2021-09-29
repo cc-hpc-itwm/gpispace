@@ -27,7 +27,7 @@ namespace pnet
   {
     namespace signature
     {
-      std::unordered_set<std::string> names (const signature_type&);
+      std::unordered_set<std::string> names (signature_type const&);
     }
   }
 }

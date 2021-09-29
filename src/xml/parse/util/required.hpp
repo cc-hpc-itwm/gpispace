@@ -26,6 +26,6 @@ namespace xml
   namespace parse
   {
     std::string required
-      (const std::string&, const xml_node_type*, const Ch*, const state::type&);
+      (std::string const&, const xml_node_type*, const Ch*, state::type const&);
   }
 }

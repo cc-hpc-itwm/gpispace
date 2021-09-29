@@ -15,7 +15,7 @@
 <!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
 
 <defun>
-  <require key="produce" mandatory="true"/>
+  <require key="produce"/>
   <in name="memory" type="global_memory_range"/>
   <in name="block_size" type="unsigned long"/>
   <in name="tag" type="unsigned long"/>

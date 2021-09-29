@@ -121,7 +121,7 @@ namespace
   }
 }
 
-int main(int ac, char **av)
+int main (int ac, char **av)
 {
   fhg::rif::started_process_promise promise (ac, av);
 
@@ -176,7 +176,7 @@ int main(int ac, char **av)
 
     po::variables_map vm;
 
-    po::store (po::command_line_parser (ac, av).options(desc).run(), vm);
+    po::store (po::command_line_parser (ac, av).options (desc).run(), vm);
     po::notify (vm);
 
     fhg::logging::stream_emitter log_emitter;

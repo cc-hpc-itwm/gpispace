@@ -38,12 +38,12 @@ namespace xml
       public:
         using unique_key_type = std::string;
 
-        memory_buffer_type ( const util::position_type&
-                           , const std::string& name
-                           , const std::string& size
-                           , const std::string& alignment
-                           , const boost::optional<bool>& read_only
-                           , const we::type::property::type& properties
+        memory_buffer_type ( util::position_type const&
+                           , std::string const& name
+                           , std::string const& size
+                           , std::string const& alignment
+                           , boost::optional<bool> const& read_only
+                           , we::type::property::type const& properties
                            );
         memory_buffer_type (memory_buffer_type const&) = default;
         memory_buffer_type (memory_buffer_type&&) = default;
@@ -51,12 +51,12 @@ namespace xml
         memory_buffer_type& operator= (memory_buffer_type&&) = delete;
         ~memory_buffer_type() = default;
 
-        const std::string& name() const;
-        const std::string& size() const;
-        const std::string& alignment() const;
-        const boost::optional<bool>& read_only() const;
+        std::string const& name() const;
+        std::string const& size() const;
+        std::string const& alignment() const;
+        boost::optional<bool> const& read_only() const;
 
-        const we::type::property::type& properties() const;
+        we::type::property::type const& properties() const;
 
         unique_key_type unique_key() const;
 
@@ -70,7 +70,7 @@ namespace xml
 
       namespace dump
       {
-        void dump (::fhg::util::xml::xmlstream&, const memory_buffer_type&);
+        void dump (::fhg::util::xml::xmlstream&, memory_buffer_type const&);
       }
     }
   }

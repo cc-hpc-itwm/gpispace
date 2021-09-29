@@ -25,7 +25,6 @@
 
 #include <fhg/util/thread/event.hpp>
 #include <util-generic/connectable_to_address_string.hpp>
-#include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/optional.hpp>
 #include <util-generic/testing/random.hpp>
@@ -51,7 +50,7 @@ namespace
           {
             _event_received.notify (e);
           }
-        , fhg::util::cxx14::make_unique<boost::asio::io_service>()
+        , std::make_unique<boost::asio::io_service>()
         , fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
         , certificates
         )
@@ -141,7 +140,7 @@ BOOST_DATA_TEST_CASE
   const sdpa::daemon::Agent agent
     ( agent_name
     , "localhost"
-    , fhg::util::cxx14::make_unique<boost::asio::io_service>()
+    , std::make_unique<boost::asio::io_service>()
     , boost::none
     , true
     , certificates

@@ -76,8 +76,8 @@ namespace sdpa
     }
 
     Agent::Agent
-        ( const std::string name
-        , const std::string url
+        ( std::string name
+        , std::string url
         , std::unique_ptr<boost::asio::io_service> peer_io_service
         , boost::optional<boost::filesystem::path> const& vmem_socket
         , bool create_wfe
@@ -159,7 +159,7 @@ namespace sdpa
       }
     }
 
-    const std::string& Agent::name() const
+    std::string const& Agent::name() const
     {
       return _name;
     }
@@ -172,7 +172,7 @@ namespace sdpa
     void Agent::serveJob
       ( WorkerSet const& workers
       , Implementation const& implementation
-      , const job_id_t& jobId
+      , job_id_t const& jobId
       , std::function<fhg::com::p2p::address_t (worker_id_t const&)> address
       )
     {
@@ -200,8 +200,8 @@ namespace sdpa
       return generator.next();
     }
 
-    Job* Agent::addJob ( const sdpa::job_id_t& job_id
-                               , we::type::activity_t activity
+    Job* Agent::addJob ( sdpa::job_id_t const& job_id
+                               , we::type::Activity activity
                                , job_source source
                                , job_handler handler
                                )
@@ -219,8 +219,8 @@ namespace sdpa
 
 
     Job* Agent::addJobWithNoPreferences
-      ( const sdpa::job_id_t& job_id
-      , we::type::activity_t activity
+      ( sdpa::job_id_t const& job_id
+      , we::type::Activity activity
       , job_source source
       , job_handler handler
       )
@@ -235,8 +235,8 @@ namespace sdpa
     }
 
     Job* Agent::addJob
-      ( const sdpa::job_id_t& job_id
-      , we::type::activity_t activity
+      ( sdpa::job_id_t const& job_id
+      , we::type::Activity activity
       , job_source source
       , job_handler handler
       , Requirements_and_preferences requirements_and_preferences
@@ -261,7 +261,7 @@ namespace sdpa
       return pJob;
     }
 
-    Job* Agent::findJob (const sdpa::job_id_t& job_id ) const
+    Job* Agent::findJob (sdpa::job_id_t const& job_id ) const
     {
       std::lock_guard<std::mutex> const _ (_job_map_mutex);
 
@@ -280,7 +280,7 @@ namespace sdpa
       return job;
     }
 
-    void Agent::deleteJob (const sdpa::job_id_t& job_id)
+    void Agent::deleteJob (sdpa::job_id_t const& job_id)
     {
       std::lock_guard<std::mutex> const _ (_job_map_mutex);
 
@@ -371,7 +371,7 @@ namespace sdpa
     }
 
     void Agent::emit_gantt ( job_id_t const& id
-                                   , we::type::activity_t const& activity
+                                   , we::type::Activity const& activity
                                    , NotificationEvent::state_t state
                                    )
     {
@@ -425,10 +425,10 @@ namespace sdpa
       , const events::SubmitJobEvent* evt
       )
     {
-      const events::SubmitJobEvent& e (*evt);
+      events::SubmitJobEvent const& e (*evt);
 
       // First, check if the job 'job_id' wasn't already submitted!
-      if(e.job_id() && findJob(*e.job_id()))
+      if (e.job_id() && findJob(*e.job_id()))
       {
         parent_proxy (this, source).submit_job_ack (*e.job_id());
         return;
@@ -493,7 +493,7 @@ namespace sdpa
       , const events::ErrorEvent* evt
       )
     {
-      const sdpa::events::ErrorEvent& error (*evt);
+      sdpa::events::ErrorEvent const& error (*evt);
 
       // if it'a communication error, inspect all jobs and
       // send results if they are in a terminal state
@@ -502,7 +502,7 @@ namespace sdpa
       {
         case events::ErrorEvent::SDPA_ENODE_SHUTDOWN:
         {
-          unsubscribe(source);
+          unsubscribe (source);
 
           std::lock_guard<std::mutex> const _ (_cancel_mutex);
           _scheduler.reschedule_worker_jobs_and_maybe_remove_worker
@@ -534,8 +534,8 @@ namespace sdpa
       }
     }
 
-    void Agent::submit ( const we::layer::id_type& job_id
-                               , we::type::activity_t activity
+    void Agent::submit ( we::layer::id_type const& job_id
+                               , we::type::Activity activity
                                )
     try
     {
@@ -561,7 +561,7 @@ namespace sdpa
         (job_id, fhg::util::current_exception_printer (": ").string());
     }
 
-    void Agent::cancel (const we::layer::id_type& job_id)
+    void Agent::cancel (we::layer::id_type const& job_id)
     {
       delay
         (std::bind (&Agent::cancel_worker_handled_job, this, job_id));
@@ -611,14 +611,14 @@ namespace sdpa
     }
 
     void Agent::finished ( we::layer::id_type const& id
-                         , we::type::activity_t const& result
+                         , we::type::Activity const& result
                          )
     {
       delay (std::bind (&Agent::workflow_finished, this, id, result));
     }
 
     void Agent::workflow_finished ( we::layer::id_type const& id
-                                  , we::type::activity_t const& result
+                                  , we::type::Activity const& result
                                   )
     {
       Job* const pJob (require_job (id, "got finished message for old/unknown Job " + id));
@@ -773,7 +773,7 @@ namespace sdpa
     }
 
     void Agent::job_finished
-      (Job* job, we::type::activity_t const& result)
+      (Job* job, we::type::Activity const& result)
     {
       job->JobFinished (result);
 
@@ -877,7 +877,7 @@ namespace sdpa
         );
     }
 
-    void Agent::unsubscribe(const fhg::com::p2p::address_t& id)
+    void Agent::unsubscribe (fhg::com::p2p::address_t const& id)
     {
       std::lock_guard<std::mutex> const _ (mtx_subscriber_);
 
@@ -889,7 +889,7 @@ namespace sdpa
       , const events::SubscribeEvent* pEvt
       )
     {
-      const job_id_t& jobId (pEvt->job_id());
+      job_id_t const& jobId (pEvt->job_id());
 
       std::lock_guard<std::mutex> const _ (mtx_subscriber_);
 
@@ -962,7 +962,7 @@ namespace sdpa
       // Only, now should be state of the job updated to RUNNING
       // since it was not rejected, no error occurred etc ....
       //find the job ptrJob and call
-      Job* const ptrJob = findJob(pEvent->job_id());
+      Job* const ptrJob = findJob (pEvent->job_id());
       if(!ptrJob)
       {
         _log_emitter.emit ( "job " + pEvent->job_id()
@@ -975,7 +975,7 @@ namespace sdpa
           ("Could not acknowledge job: " + pEvent->job_id() + " not found");
       }
 
-      if(ptrJob->getStatus() == sdpa:: status::CANCELING)
+      if (ptrJob->getStatus() == sdpa:: status::CANCELING)
         return;
 
       ptrJob->Dispatch();
@@ -988,13 +988,13 @@ namespace sdpa
     {
       // The result was successfully delivered by the worker and the WE was notified
       // therefore, I can delete the job from the job map
-      if (!findJob(pEvt->job_id()))
+      if (!findJob (pEvt->job_id()))
       {
         throw std::runtime_error ("Couldn't find the job!");
       }
 
       // delete it from the map when you receive a JobFinishedAckEvent!
-      deleteJob(pEvt->job_id());
+      deleteJob (pEvt->job_id());
     }
 
     // respond to a worker that the JobFailedEvent was received
@@ -1003,13 +1003,13 @@ namespace sdpa
       , const events::JobFailedAckEvent* pEvt
       )
     {
-      if (!findJob(pEvt->job_id()))
+      if (!findJob (pEvt->job_id()))
       {
         throw std::runtime_error ("Couldn't find the job!");
       }
 
       // delete it from the map when you receive a JobFailedAckEvent!
-      deleteJob(pEvt->job_id());
+      deleteJob (pEvt->job_id());
     }
 
     namespace
@@ -1038,10 +1038,15 @@ namespace sdpa
       auto const job_id (event->job_id());
       Job const* const job (findJob (job_id));
 
-      if (!job || job->getStatus() != sdpa::status::RUNNING)
+      if (!job)
       {
         throw std::runtime_error
-          ("unable to put token: " + event->job_id() + " unknown or not running");
+          ("unable to put token: " + event->job_id() + " unknown");
+      }
+      if (job->getStatus() != sdpa::status::RUNNING)
+      {
+        throw std::runtime_error
+          ("unable to put token: " + event->job_id() + " not running");
       }
 
       fhg::util::visit<void>
@@ -1117,11 +1122,18 @@ namespace sdpa
       auto const job_id (event->job_id());
       Job const* const job (findJob (job_id));
 
-      if (!job || job->getStatus() != sdpa::status::RUNNING)
+      if (!job)
       {
         throw std::runtime_error
           ( "unable to request workflow response: " + job_id
-          + " unknown or not running"
+          + " unknown"
+          );
+      }
+      if (job->getStatus() != sdpa::status::RUNNING)
+      {
+        throw std::runtime_error
+          ( "unable to request workflow response: " + job_id
+          + " not running"
           );
       }
 
@@ -1252,7 +1264,7 @@ namespace sdpa
 
     void Agent::child_proxy::submit_job
       ( boost::optional<job_id_t> id
-      , we::type::activity_t activity
+      , we::type::Activity activity
       , boost::optional<std::string> const& implementation
       , std::set<worker_id_t> const& workers
       ) const

@@ -35,10 +35,10 @@ namespace fhg
           virtual ~header_delegate() = default;
 
           virtual void paint
-            (QPainter*, const QRect&, const section_index&) = 0;
+            (QPainter*, QRect const&, section_index const&) = 0;
           virtual QWidget* create_editor
-            (const QRect&, delegating_header_view*, const section_index&) = 0;
-          virtual void release_editor (const section_index&, QWidget* editor) = 0;
+            (QRect const&, delegating_header_view*, section_index const&) = 0;
+          virtual void release_editor (section_index const&, QWidget* editor) = 0;
           virtual void update_editor (section_index, QWidget* editor) = 0;
           virtual bool can_edit_section (section_index) const = 0;
           virtual QMenu* menu_for_section (section_index) const = 0;

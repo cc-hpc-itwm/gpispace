@@ -57,8 +57,8 @@ using pnet::type::value::structured_type;
 namespace
 {
   template<typename T>
-  void test_show_and_read_showed ( const T& x
-                                 , const std::string& expected_show
+  void test_show_and_read_showed ( T const& x
+                                 , std::string const& expected_show
                                  )
   {
     using pnet::type::value::value_type;
@@ -314,7 +314,7 @@ BOOST_AUTO_TEST_CASE (peek_ref)
   BOOST_CHECK_NE (peek ("l", m), boost::none);
 
   {
-    const std::list<value_type>& g
+    std::list<value_type> const& g
       (boost::get<std::list<value_type>> (peek ("l", m).get()));
 
     BOOST_CHECK (g.empty());
@@ -332,7 +332,7 @@ BOOST_AUTO_TEST_CASE (peek_ref)
   }
 
   {
-    const std::list<value_type>& g
+    std::list<value_type> const& g
       (boost::get<std::list<value_type>> (peek ("l", m).get()));
 
     BOOST_CHECK_EQUAL (g.size(), 1U);
@@ -866,7 +866,7 @@ BOOST_AUTO_TEST_CASE (wrap_generated)
 
     BOOST_CHECK_EQUAL (ls.size(), lv.size());
 
-    for (const pnet::type::value::value_type& v : lv)
+    for (pnet::type::value::value_type const& v : lv)
     {
       BOOST_CHECK_EQUAL (pnet::type::value::to_value (s), v);
     }
@@ -883,7 +883,7 @@ BOOST_AUTO_TEST_CASE (wrap_generated)
 
     BOOST_CHECK_EQUAL (ss.size(), sv.size());
 
-    for (const pnet::type::value::value_type& v : sv)
+    for (pnet::type::value::value_type const& v : sv)
     {
       BOOST_CHECK_EQUAL (pnet::type::value::to_value (s), v);
     }

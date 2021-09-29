@@ -17,7 +17,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/test/data/test_case.hpp>
 
-#include <we/type/transition.hpp>
+#include <we/type/Transition.hpp>
 #include <we/type/net.hpp>
 
 #include <util-generic/testing/require_exception.hpp>
@@ -39,14 +39,14 @@ namespace {
 
   using data_type = typename std::remove_reference
                       <decltype
-                        ( std::declval <we::type::transition_t&>()
+                        ( std::declval <we::type::Transition&>()
                           .data()
                         )
                       >::type;
 
-  we::type::transition_t create_transition_with_preferences
-    ( const std::string transition_name
-    , const transition_type type
+  we::type::Transition create_transition_with_preferences
+    ( std::string transition_name
+    , transition_type type
     )
   {
     auto dtype = [&type]()
@@ -54,26 +54,26 @@ namespace {
       switch (type)
       {
       case transition_type::net:
-        return data_type(we::type::net_type());
+        return data_type (we::type::net_type());
       case transition_type::expression:
-        return data_type(we::type::expression_t (""));
+        return data_type (we::type::Expression (""));
       case transition_type::module:
-        return data_type(we::type::module_call_t());
+        return data_type (we::type::ModuleCall());
       case transition_type::multi_module:
-        return data_type(we::type::multi_module_call_t());
+        return data_type (we::type::MultiModuleCall());
       }
 
       FHG_UTIL_UNREACHABLE ("transition_type: all handled");
     };
 
-    return we::type::transition_t
+    return we::type::Transition
       ( transition_name
       , dtype()
       , boost::none
       , {}
       , we::priority_type()
       , boost::none
-      , std::list<we::type::preference_t> { "target1"
+      , std::list<we::type::Preference> { "target1"
                                           , "target2"
                                           }
       );
@@ -111,7 +111,7 @@ namespace we
   namespace type
   {
     static
-    std::ostream& operator<< (std::ostream& os, const transition_t& x)
+    std::ostream& operator<< (std::ostream& os, Transition const& x)
     {
       return os << x.name();
     }
@@ -127,6 +127,6 @@ BOOST_AUTO_TEST_CASE (we_transition_check_for_serialized_preferences)
 
   FHG_UTIL_TESTING_REQUIRE_SERIALIZED_TO_ID
     ( {transition_with_preferences_and_modules}
-    , we::type::transition_t
+    , we::type::Transition
     );
 }

@@ -53,15 +53,15 @@ namespace detail
   public:
     log_table_model (QObject* parent = nullptr);
 
-    virtual int rowCount (const QModelIndex& = QModelIndex()) const override;
-    virtual int columnCount (const QModelIndex& = QModelIndex()) const override;
+    virtual int rowCount (QModelIndex const& = QModelIndex()) const override;
+    virtual int columnCount (QModelIndex const& = QModelIndex()) const override;
 
     virtual QVariant headerData ( int section
                                 , Qt::Orientation orientation
                                 , int role = Qt::DisplayRole
                                 ) const override;
     virtual QVariant
-      data (const QModelIndex& index, int role = Qt::DisplayRole) const override;
+      data (QModelIndex const& index, int role = Qt::DisplayRole) const override;
 
     std::vector<fhg::logging::message> data() const;
     void add (fhg::logging::message);

@@ -19,13 +19,13 @@
 
 namespace pnet
 {
-  const type::value::value_type& field
-    ( const std::string& f
-    , const type::value::value_type& v
-    , const type::signature::signature_type& signature
+  type::value::value_type const& field
+    ( std::string const& f
+    , type::value::value_type const& v
+    , type::signature::signature_type const& signature
     )
   {
-    boost::optional<const type::value::value_type&> field
+    boost::optional<type::value::value_type const&> field
       (type::value::peek (f, v));
 
     if (!field)

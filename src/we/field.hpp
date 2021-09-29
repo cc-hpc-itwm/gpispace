@@ -27,19 +27,19 @@
 
 namespace pnet
 {
-  GSPC_DLLEXPORT const type::value::value_type& field
-    ( const std::string&
-    , const type::value::value_type&
-    , const type::signature::signature_type&
+  GSPC_DLLEXPORT type::value::value_type const& field
+    ( std::string const&
+    , type::value::value_type const&
+    , type::signature::signature_type const&
     );
 
   template<typename T>
-    const T& field_as ( const std::string& f
-                      , const type::value::value_type& v
-                      , const type::signature::signature_type& signature
+    T const& field_as ( std::string const& f
+                      , type::value::value_type const& v
+                      , type::signature::signature_type const& signature
                       )
   {
-    const type::value::value_type& value (field (f, v, signature));
+    type::value::value_type const& value (field (f, v, signature));
 
     const T* x (boost::get<T> (&value));
 

@@ -24,5 +24,5 @@
 namespace pnet
 {
   GSPC_DLLEXPORT type::signature::signature_type
-    signature_of (const type::value::value_type&);
+    signature_of (type::value::value_type const&);
 }

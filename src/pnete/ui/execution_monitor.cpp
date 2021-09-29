@@ -73,7 +73,7 @@ namespace fhg
           }
 
           template<class Archive>
-            void serialize (Archive&, const unsigned int)
+            void serialize (Archive&, unsigned int)
           {
             boost::serialization::void_cast_register
               ( static_cast<hostname_of_worker*> (nullptr)
@@ -93,7 +93,7 @@ namespace fhg
           }
 
           template<class Archive>
-            void serialize (Archive&, const unsigned int)
+            void serialize (Archive&, unsigned int)
           {
             boost::serialization::void_cast_register
               ( static_cast<worker_type_of_worker*> (nullptr)
@@ -110,7 +110,7 @@ BOOST_CLASS_EXPORT (fhg::pnete::ui::hostname_of_worker)
 BOOST_CLASS_EXPORT (fhg::pnete::ui::worker_type_of_worker)
 
 template<typename T>
-  QDataStream& operator<< (QDataStream& stream, const boost::shared_ptr<T>& ptr)
+  QDataStream& operator<< (QDataStream& stream, boost::shared_ptr<T> const& ptr)
 {
   std::ostringstream os;
   boost::archive::text_oarchive oa (os);
@@ -457,7 +457,7 @@ namespace fhg
         {
           QVBoxLayout* legend_box_layout (new QVBoxLayout (legend_box));
 
-          for ( const worker_model::state_type& state
+          for ( worker_model::state_type const& state
               : { sdpa::daemon::NotificationEvent::STATE_STARTED
                 , sdpa::daemon::NotificationEvent::STATE_FINISHED
                 , sdpa::daemon::NotificationEvent::STATE_FAILED

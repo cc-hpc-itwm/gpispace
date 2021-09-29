@@ -22,7 +22,6 @@
 #include <test/certificates_data.hpp>
 
 #include <util-generic/connectable_to_address_string.hpp>
-#include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/optional.hpp>
 
@@ -45,7 +44,7 @@ namespace
     {}
 
     void perform ( fhg::com::p2p::address_t const&
-                 , const boost::shared_ptr<sdpa::events::SDPAEvent>&
+                 , boost::shared_ptr<sdpa::events::SDPAEvent> const&
                  )
     {
       std::lock_guard<std::mutex> _ (_counter_mutex);
@@ -86,7 +85,7 @@ BOOST_DATA_TEST_CASE (test_strategy, certificates_data, certificates)
                 , std::placeholders::_1
                 , std::placeholders::_2
                 )
-    , fhg::util::cxx14::make_unique<boost::asio::io_service>()
+    , std::make_unique<boost::asio::io_service>()
     , fhg::com::host_t ("localhost")
     , fhg::com::port_t ("0")
     , certificates

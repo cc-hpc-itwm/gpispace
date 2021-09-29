@@ -144,16 +144,16 @@ namespace gpi
         fhg::util::wait_and_collect_exceptions (results);
       }
 
-      void topology_t::free (const iml::AllocationHandle hdl)
+      void topology_t::free (iml::AllocationHandle hdl)
       {
         request<free_desc> (hdl);
       }
 
-      void topology_t::alloc ( const iml::SegmentHandle seg
-                             , const iml::AllocationHandle hdl
-                             , const iml::MemoryOffset offset
-                             , const iml::MemorySize size
-                             , const iml::MemorySize local_size
+      void topology_t::alloc ( iml::SegmentHandle seg
+                             , iml::AllocationHandle hdl
+                             , iml::MemoryOffset offset
+                             , iml::MemorySize size
+                             , iml::MemorySize local_size
                              )
       {
         // lock, so that no other process can make a global alloc
@@ -170,7 +170,7 @@ namespace gpi
         }
       }
 
-      void topology_t::add_memory ( const iml::SegmentHandle seg_id
+      void topology_t::add_memory ( iml::SegmentHandle seg_id
                                   , iml::SegmentDescription const& description
                                   , unsigned long total_size
                                   )
@@ -178,7 +178,7 @@ namespace gpi
         request<add_memory_desc> (seg_id, description, total_size);
       }
 
-      void topology_t::del_memory (const iml::SegmentHandle seg_id)
+      void topology_t::del_memory (iml::SegmentHandle seg_id)
       {
         request<del_memory_desc> (seg_id);
       }

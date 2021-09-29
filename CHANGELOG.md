@@ -1,3 +1,239 @@
+# [21.09] - 2021-09-29
+
+## API CHANGE: Static check for expressions
+
+Traditionally the embedded expression language has been a source of wasted developer time because of its lazy and poor error reporting. In particular type checks were done at execution time an led to very late dynamic errors during execution time. Also missing bindings in `<expression>`-transitions were reported only at execution time when the transition fired.
+
+The release `21.09` improves the situation and `pnetc` introduces static checks for a couple of situations:
+
+- Type errors in `<expression>`-transitions
+- Missing bindings in `<expression>`-transitions
+- Type errors in outputs of `<expression>`-transitions
+- Type errors in `<size>`- and `<alignment>`-expressions in `<memory-buffer>`s
+- Type errors in `<local>`- and `<global>`-expressions in memory transfer descriptions `<memory-get>` and `<memory-put>`
+- Type errors and missing bindings in the plugin commands `gspc.we.plugin.create`, `gspc.we.plugin.call_before_eval`, `gspc.we.plugin.call_after_eval` and `gspc.we.plugin.destroy`
+- Type errors in `<eureka-group>`-expressions
+- Type errors in scheduling data `fhg.drts.schedule.num_worker` and `fhg.drts.schedule.dynamic_requirement`
+
+Existing applications continue to work without any change. With the exception of applications that contain type- or parse-errors in expression that are defined in dead code. Such application must remove the dead code.
+
+EXAMPLE: Look at this code:
+```
+<defun>
+  <struct name="State">
+    <field name="next" type="unsigned long"/>
+  </struct>
+  <net>
+    <transition name="step">
+      <defun>
+        <inout name="state" type="State"/>
+        <out name="id" type="long"/>
+        <expression>
+          ${Id} := ${state.next};
+          ${state.next} := ${state.next} - 1
+        </expression>
+        <condition>
+          ${state.next}
+        </condition>
+      </defun>
+    </transition>
+  </net>
+</defun>
+```
+This example code contains a number of errors (can you tell how many?) but `pnetc` in version `21.06` accepts it.
+
+Compiling the example code with `pnetc` from version `21.09` on produces the error:
+```
+pnetc: failed: In 'anonymous' defined at [XPNET:1:1].
+ In 'step' defined at [XPNET:7:7].
+  In the <condition> expression '(
+          ${state.next}
+        )'.
+   type error: Expression '(
+          ${state.next}
+        )' has incompatible type 'unsigned long'. Expected type 'bool'.
+    type error: At ${}: Can not assign a value of type 'unsigned long' to a value of type 'bool'
+```
+because the `<condition>` is not of type `bool`. After fixing it via
+```
+-          ${state.next}
++          ${state.next} :gt: 0UL
+```
+now `pnetc` produces another error:
+```
+pnetc: failed: In 'anonymous' defined at [XPNET:1:1].
+ In 'step' defined at [XPNET:7:7].
+  type error: In expression '${Id} := ${state.next};
+          ${state.next} := ${state.next} - 1'
+   type error: In '(${state.next} := (${state.next} - 1))'
+    type error: The left argument '${state.next}' of ' - ' has type 'unsigned long' and the right argument '1' of ' - ' has type 'int' but the types should be the same
+```
+Oh, yes, thanks. The fix is easy:
+```
+-          ${state.next} := ${state.next} - 1
++          ${state.next} := ${state.next} - 1UL
+```
+Now `pnetc` produces the error:
+```
+pnetc: failed: In 'anonymous' defined at [XPNET:1:1].
+ In 'step' defined at [XPNET:7:7].
+  type error: In expression '${Id} := ${state.next};
+          ${state.next} := ${state.next} - 1UL'
+   missing binding for: ${id}
+```
+which points to a typo and is fixed by
+```
+-          ${Id} := ${state.next};
++          ${id} := ${state.next};
+```
+And yet there is another error detected by `pnetc`:
+```
+pnetc: failed: In 'anonymous' defined at [XPNET:1:1].
+ In 'step' defined at [XPNET:7:7].
+  type error: In expression '${id} := ${state.next};
+          ${state.next} := ${state.next} - 1ul'
+   Output port 'id' expects type 'long'
+    type error: At ${id}: Can not assign a value of type 'unsigned long' to a value of type 'long'
+```
+which is fixed by either
+```
+-          ${id} := ${state.next};
++          ${id} := long (${state.next});
+```
+or by
+```
+-        <out name="id" type="long"/>
++        <out name="id" type="unsigned long"/>
+```
+
+## API CHANGE: Standalone Util-Generic
+
+GPISpace's `util-generic` is now a standalone project with its own CMake
+package configuration file. A few more things to note:
+
+- `util-generic` is currently installed alongside GPISpace which is including
+  it through its own CMake package configuration file.
+  `util-generic-config.cmake` has the same root directory as GPISpace (i.e.
+  util-generic_ROOT == GPISpace_ROOT)
+- A `util-generic` submodule can no longer exist in a GPISpace application.
+  Keeping it will result in CMake errors.
+- In addition to the `Util::Generic` target, there is now also a
+  `Util::Generic-Headers` target for the public headers.
+- Compilation now requires a C++14 capable compiler.
+- The following header files were removed and are no longer available:
+  - cxx11/cxx03_compat.hpp
+  - cxx14/enum_hash.hpp
+  - cxx14/get_by_type.hpp
+- In `GPISpace` `util-generic`'s tests are disabled by default, to enable them
+  `UTIL_GENERIC_BUILD_TESTING` needs to be set to `ON`.
+
+## API CHANGE: Fix: Allow recursive lists and sets in expressions
+
+The types "list" and "set" in the expression language now allow for
+recursion. For example those expressions:
+
+```
+stack_push (List (1), List (""))
+set_insert (Set {}, Set {})
+set_erase (Set {Set {1}}, Set {1})
+set_is_element (Set {Set {1}}, Set {""})
+```
+
+are now evaluating to the correct results
+
+```
+List (1, List (""))
+Set {Set {}}
+Set {}
+false
+```
+
+In earlier versions of GPI-Space all those expressions led to
+evaluation errors.
+
+## API CHANGE: More specific error message when trying to retrieve nonexisting keys from maps in expressions
+
+The attempt to retrieve a non-existing key from a map in an expression
+led to an exception 'map::at'. Now a more informative error is
+produced. For example
+
+map_get_assignment (Map[], 4)
+map_get_assignment (map_assign (Map[], "size", 1), "Size")
+
+are now producing the evaluation errors
+
+type error: eval map_get_assignment (Map [], 4)
+
+and
+
+type error: eval map_get_assignment (Map ["size" -> 1], "Size")
+
+respectively.
+
+## API CHANGE: More precise error messages when jobs are unknown or not running
+
+When a `drts::client` interacts with a workflow (e.g. to put a token
+or to get a response), then that workflow might be
+
+- unknown, for example if it was never submitted or has been forgotten
+  already, or
+
+- not running, for example if it has been submitted but has not yet
+  started or has already finished.
+
+Errors now distinguish between the two cases, unlike before when the
+same error would show up for both cases.
+
+## API CHANGE: Save exception message from plugin constructors
+
+Exception thrown by plugin constructors during workflow execution are
+created in the context of the dynamic library, which goes out of scope
+immediately and make the execution hang forever.
+
+This commit changes the behavior such that the exception messages are
+saved while the dynamic library is still loaded. This approach forgets
+about the _type_ of the exception, however, it allows the execution
+to continue and transports the exception message.
+
+## API CHANGE: Better transport failure reasons to users
+
+Failure reasons during workflow executions (for example from Plugins)
+are better transported to users and the unspecified message "activity
+was terminated" has gone.
+
+## API CHANGE: Turn undefined behavior into exceptions when evaluating expressions
+
+Some expressions led to undefined behavior, namely
+
+stack_top (List())
+stack_pop (List())
+set_top (Set{})
+set_pop (Set{})
+
+were all doing invalid accesses into their internal storage.
+
+All those cases now throw an `we::expr::exception::eval`.
+
+## Fixes
+
+- Added a missing dependency entry for `pkgconfig` in the README.md and
+  installation instructions.
+
+## Miscellaneous
+
+- In order to better meet the needs of our users, especially new users, we
+	decided to overhaul our `How-To-Use` webpage
+	(https://www.gpi-space.de/how-to-use).
+- Module call requirements are now always mandatory. Modules had been able to
+  require capabilities with `mandatory="false"`, which would prefer to execute
+	on a worker having the capability but could run on any random worker otherwise.<br/>This feature has been superseded by preferences and specific
+  implementations, which allows to specify the behavior with more
+  detail.
+
+## Meta
+
+- The minimal version of cmake has been bumped to 3.15.
+
 # [21.06] - 2021-06-25
 
 ## Optional Components

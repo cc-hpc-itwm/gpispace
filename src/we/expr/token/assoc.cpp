@@ -20,7 +20,7 @@ namespace expr
 {
   namespace associativity
   {
-    type associativity (const token::type & token)
+    type associativity (token::type const& token)
     {
       switch (token)
         {

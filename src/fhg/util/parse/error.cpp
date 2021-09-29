@@ -26,7 +26,7 @@ namespace fhg
     {
       namespace error
       {
-        expected::expected (const std::string& what, const position& inp)
+        expected::expected (std::string const& what, position const& inp)
           : generic (boost::format ("expected '%1%'") % what, inp)
         {}
       }

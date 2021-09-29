@@ -28,7 +28,7 @@ namespace fhg
     namespace qt
     {
       restricted_tree_column_sorter::restricted_tree_column_sorter
-        (QTreeView* tree, const QSet<int> allowed_columns, QObject* parent)
+        (QTreeView* tree, QSet<int> allowed_columns, QObject* parent)
           : QObject (parent)
           , _tree (tree)
           , _allowed_columns (allowed_columns)

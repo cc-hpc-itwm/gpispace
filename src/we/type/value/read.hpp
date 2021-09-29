@@ -40,7 +40,7 @@ namespace pnet
     namespace value
     {
       GSPC_DLLEXPORT value_type read (fhg::util::parse::position&);
-      GSPC_DLLEXPORT value_type read (const std::string&);
+      GSPC_DLLEXPORT value_type read (std::string const&);
     }
   }
 }

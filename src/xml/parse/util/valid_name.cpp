@@ -56,9 +56,9 @@ namespace xml
       return name;
     }
 
-    std::string validate_name ( const std::string & name
-                              , const std::string & type
-                              , const boost::filesystem::path & path
+    std::string validate_name ( std::string const& name
+                              , std::string const& type
+                              , boost::filesystem::path const& path
                               )
     {
       fhg::util::parse::position pos (name);

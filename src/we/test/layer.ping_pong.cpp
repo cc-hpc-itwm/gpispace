@@ -21,7 +21,7 @@
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 
 #include <we/layer.hpp>
-#include <we/type/activity.hpp>
+#include <we/type/Activity.hpp>
 
 #include <xml/parse/parser.hpp>
 #include <xml/parse/state.hpp>
@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE (emulate_share_example_ping_pong)
 
   std::mutex current_state_guard;
   std::condition_variable current_activity_changed;
-  boost::optional<std::pair<we::layer::id_type, we::type::activity_t>>
+  boost::optional<std::pair<we::layer::id_type, we::type::Activity>>
     current_activity;
 
   std::mutex finished_guard;
@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE (emulate_share_example_ping_pong)
 
   we::layer layer
     ( [&current_state_guard, &current_activity, &current_activity_changed]
-        (we::layer::id_type id, we::type::activity_t activity)
+        (we::layer::id_type id, we::type::Activity activity)
       {
         std::lock_guard<std::mutex> const _ (current_state_guard);
         current_activity
@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE (emulate_share_example_ping_pong)
       }
     , std::bind (&disallow, "cancel")
     , [&finished_guard, &finished_changed, &finished]
-        (we::layer::id_type, we::type::activity_t)
+        (we::layer::id_type, we::type::Activity)
       {
         std::lock_guard<std::mutex> const _ (finished_guard);
         finished = true;
@@ -109,7 +109,7 @@ BOOST_AUTO_TEST_CASE (emulate_share_example_ping_pong)
     xml::parse::type::function_type parsed
       (xml::parse::just_parse (parser_state, xpnet_path));
     xml::parse::post_processing_passes (parsed, &parser_state);
-    we::type::activity_t activity
+    we::type::Activity activity
       (xml::parse::xml_to_we (parsed, parser_state));
     activity.add_input ("n", N);
     layer.submit (we::layer::id_type(), activity);
@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE (emulate_share_example_ping_pong)
     std::unique_lock<std::mutex> lock (current_state_guard);
     current_activity_changed.wait (lock, [&] { return !!current_activity; });
 
-    we::type::activity_t activity (std::move (current_activity->second));
+    we::type::Activity activity (std::move (current_activity->second));
 
     BOOST_REQUIRE_EQUAL (activity.name(), names[current]);
     current = !current;

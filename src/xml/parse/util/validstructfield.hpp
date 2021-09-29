@@ -22,8 +22,8 @@ namespace xml
 {
   namespace parse
   {
-    std::string validate_field_name ( const std::string&
-                                    , const boost::filesystem::path&
+    std::string validate_field_name ( std::string const&
+                                    , boost::filesystem::path const&
                                     );
   }
 }

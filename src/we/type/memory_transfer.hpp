@@ -16,11 +16,12 @@
 
 #pragma once
 
+#include <we/expr/type/Context.hpp>
+
 #include <boost/optional/optional.hpp>
-#include <boost/serialization/nvp.hpp>
+#include <boost/serialization/access.hpp>
 
 #include <string>
-#include <unordered_map>
 
 namespace we
 {
@@ -30,35 +31,22 @@ namespace we
     {
     public:
       //! \note serialization only
-      memory_transfer() = default;
+      memory_transfer();
 
       memory_transfer
         ( std::string const& global
         , std::string const& local
         , boost::optional<bool> const& not_modified_in_module_call
         , bool allow_empty_ranges
-        )
-        : _global (global)
-        , _local (local)
-        , _not_modified_in_module_call (not_modified_in_module_call)
-        , _allow_empty_ranges (allow_empty_ranges)
-      {}
-      std::string const& global() const
-      {
-        return _global;
-      }
-      std::string const& local() const
-      {
-        return _local;
-      }
-      boost::optional<bool> const& not_modified_in_module_call() const
-      {
-        return _not_modified_in_module_call;
-      }
-      bool const& allow_empty_ranges() const
-      {
-        return _allow_empty_ranges;
-      }
+        );
+      std::string const& global() const;
+      std::string const& local() const;
+      boost::optional<bool> const& not_modified_in_module_call() const;
+      bool const& allow_empty_ranges() const;
+
+      void assert_correct_expression_types
+        (expr::type::Context const&) const;
+
     private:
       std::string _global;
       std::string _local;
@@ -66,14 +54,9 @@ namespace we
       bool _allow_empty_ranges;
 
       friend class boost::serialization::access;
-      template<class Archive>
-        void serialize (Archive& ar, const unsigned int)
-      {
-        ar & _global;
-        ar & _local;
-        ar & _not_modified_in_module_call;
-        ar & _allow_empty_ranges;
-      }
+      template<class Archive> void serialize (Archive&, unsigned int);
     };
   }
 }
+
+#include <we/type/memory_transfer.ipp>

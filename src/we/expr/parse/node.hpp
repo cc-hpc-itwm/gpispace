@@ -47,11 +47,11 @@ namespace expr
                              , boost::recursive_wrapper<ternary_t>
                              > type;
 
-      std::ostream & operator << (std::ostream &, const type&);
-      const pnet::type::value::value_type& get (const type&);
-      bool is_value (const type&);
-      bool is_ref (const type&);
-      void rename (type&, const std::string& from, const std::string& to);
+      std::ostream & operator << (std::ostream &, type const&);
+      pnet::type::value::value_type const& get (type const&);
+      bool is_value (type const&);
+      bool is_ref (type const&);
+      void rename (type&, std::string const& from, std::string const& to);
       void collect_key_roots (type const&, KeyRoots&);
 
       struct unary_t
@@ -59,7 +59,7 @@ namespace expr
         token::type token;
         type child;
 
-        unary_t (const token::type& token, const type& child);
+        unary_t (token::type const& token, type const& child);
       };
 
       struct binary_t
@@ -68,7 +68,7 @@ namespace expr
         type l;
         type r;
 
-        binary_t (const token::type& token, const type& l, const type& r);
+        binary_t (token::type const& token, type const& l, type const& r);
       };
 
       struct ternary_t
@@ -78,10 +78,10 @@ namespace expr
         type child1;
         type child2;
 
-        ternary_t ( const token::type& token
-                  , const type& child0
-                  , const type& child1
-                  , const type& child2
+        ternary_t ( token::type const& token
+                  , type const& child0
+                  , type const& child1
+                  , type const& child2
                   );
       };
     }

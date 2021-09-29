@@ -25,9 +25,9 @@ namespace xml
     class with_position_of_definition
     {
     public:
-      with_position_of_definition (const util::position_type&);
+      with_position_of_definition (util::position_type const&);
 
-      const util::position_type& position_of_definition() const;
+      util::position_type const& position_of_definition() const;
 
     protected:
       util::position_type _position_of_definition;

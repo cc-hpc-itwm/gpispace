@@ -22,6 +22,6 @@ namespace expr
 {
   namespace prec
   {
-    int prec (const token::type&);
+    int prec (token::type const&);
   }
 }

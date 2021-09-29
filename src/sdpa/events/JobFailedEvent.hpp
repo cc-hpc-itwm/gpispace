@@ -27,7 +27,7 @@ namespace sdpa
     public:
       typedef boost::shared_ptr<JobFailedEvent> Ptr;
 
-      JobFailedEvent ( const sdpa::job_id_t& a_job_id
+      JobFailedEvent ( sdpa::job_id_t const& a_job_id
                      , std::string error_message
                      )
         : sdpa::events::JobEvent (a_job_id)

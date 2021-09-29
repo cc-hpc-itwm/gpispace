@@ -43,7 +43,7 @@
 
     <transition name="ping">
       <defun>
-        <require key="ping" mandatory="true"/>
+        <require key="ping"/>
         <inout name="seq" type="unsigned long"/>
         <module name="ping_pong" function="ping()">
           <code><![CDATA[
@@ -59,7 +59,7 @@
 
     <transition name="pong">
       <defun>
-        <require key="pong" mandatory="true"/>
+        <require key="pong"/>
         <inout name="seq" type="unsigned long"/>
         <module name="ping_pong" function="pong()">
           <code><![CDATA[

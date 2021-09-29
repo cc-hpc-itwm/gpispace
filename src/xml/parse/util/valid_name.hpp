@@ -30,9 +30,9 @@ namespace xml
     std::string parse_name (fhg::util::parse::position& pos);
 
     //! \note parse_name (name) == name
-    std::string validate_name ( const std::string & name
-                              , const std::string & type
-                              , const boost::filesystem::path & path
+    std::string validate_name ( std::string const& name
+                              , std::string const& type
+                              , boost::filesystem::path const& path
                               );
   }
 }

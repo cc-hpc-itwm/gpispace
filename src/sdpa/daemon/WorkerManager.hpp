@@ -20,7 +20,7 @@
 #include <sdpa/daemon/scheduler/Reservation.hpp>
 #include <sdpa/requirements_and_preferences.hpp>
 
-#include <fhgcom/header.hpp>
+#include <fhgcom/address.hpp>
 
 #include <boost/bimap.hpp>
 #include <boost/bimap/unordered_set_of.hpp>
@@ -57,10 +57,10 @@ namespace sdpa
 
       public:
         WorkerEquivalenceClass();
-        WorkerEquivalenceClass (const WorkerEquivalenceClass&) = delete;
+        WorkerEquivalenceClass (WorkerEquivalenceClass const&) = delete;
         WorkerEquivalenceClass (WorkerEquivalenceClass&&) = delete;
-        WorkerEquivalenceClass& operator= (const WorkerEquivalenceClass&) = delete;
-        WorkerEquivalenceClass& operator= (const WorkerEquivalenceClass&&) = delete;
+        WorkerEquivalenceClass& operator= (WorkerEquivalenceClass const&) = delete;
+        WorkerEquivalenceClass& operator= (WorkerEquivalenceClass const&&) = delete;
         ~WorkerEquivalenceClass() = default;
 
         void inc_pending_jobs (unsigned int);
@@ -88,25 +88,25 @@ namespace sdpa
 
     public:
       std::unordered_set<worker_id_t> find_subm_or_ack_workers
-        (const sdpa::job_id_t&, std::set<worker_id_t> const&) const;
+        (sdpa::job_id_t const&, std::set<worker_id_t> const&) const;
 
       //! throws if workerId was not unique
-      void add_worker ( const worker_id_t& workerId
-                     , const capabilities_set_t& cpbset
+      void add_worker ( worker_id_t const& workerId
+                     , capabilities_set_t const& cpbset
                      , unsigned long allocated_shared_memory_size
-                     , const std::string& hostname
-                     , const fhg::com::p2p::address_t& address
+                     , std::string const& hostname
+                     , fhg::com::p2p::address_t const& address
                      );
 
-      void delete_worker (const worker_id_t& workerId);
+      void delete_worker (worker_id_t const& workerId);
 
       void steal_work (std::function<scheduler::Reservation* (job_id_t const&)> reservation);
 
       void assign_job_to_worker
-        (const job_id_t&, const worker_id_t&, double cost, Preferences const&);
-      void submit_job_to_worker (const job_id_t&, const worker_id_t&);
-      void acknowledge_job_sent_to_worker (const job_id_t&, const worker_id_t&);
-      void delete_job_from_worker (const job_id_t &job_id, const worker_id_t&, double);
+        (job_id_t const&, worker_id_t const&, double cost, Preferences const&);
+      void submit_job_to_worker (job_id_t const&, worker_id_t const&);
+      void acknowledge_job_sent_to_worker (job_id_t const&, worker_id_t const&);
+      void delete_job_from_worker (job_id_t const& job_id, worker_id_t const&, double);
 
       using worker_connections_t
         = boost::bimap < boost::bimaps::unordered_set_of<std::string>
@@ -134,10 +134,10 @@ namespace sdpa
         classes_and_workers() const;
     private:
       void assign_job_to_worker
-        (const job_id_t&, worker_iterator, double cost, Preferences const&);
+        (job_id_t const&, worker_iterator, double cost, Preferences const&);
       void delete_job_from_worker
-        (const job_id_t &job_id, const worker_iterator worker, double cost);
-      
+        (job_id_t const& job_id, worker_iterator worker, double cost);
+
       worker_map_t  worker_map_;
       worker_connections_t worker_connections_;
       std::map<std::set<std::string>, WorkerEquivalenceClass> worker_equiv_classes_;

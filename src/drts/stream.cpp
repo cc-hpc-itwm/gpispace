@@ -136,7 +136,7 @@ namespace gspc
       );
   }
 
-  void stream::mark_free ( const char old_flag_value
+  void stream::mark_free ( char old_flag_value
                          , std::pair<void*, unsigned long> ptr_to_flag
                          )
   {

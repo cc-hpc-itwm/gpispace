@@ -40,25 +40,25 @@ namespace
 {
   // \todo use rpc::
 
-  void close_socket (const int fd)
+  void close_socket (int fd)
   {
     fhg::util::syscall::shutdown (fd, SHUT_RDWR);
     fhg::util::syscall::close (fd);
   }
 
-  int open_socket (boost::filesystem::path const & path)
+  int open_socket (boost::filesystem::path const& path)
   {
     int const sfd = fhg::util::syscall::socket (AF_UNIX, SOCK_STREAM, 0);
 
     struct sockaddr_un addr;
 
-    memset (&addr, 0, sizeof(addr));
+    memset (&addr, 0, sizeof (addr));
     addr.sun_family = AF_UNIX;
-    strncpy (addr.sun_path, path.string().c_str(), sizeof(addr.sun_path) - 1);
+    strncpy (addr.sun_path, path.string().c_str(), sizeof (addr.sun_path) - 1);
 
     try
     {
-      fhg::util::syscall::connect (sfd, reinterpret_cast<struct sockaddr*> (&addr), sizeof(struct sockaddr_un));
+      fhg::util::syscall::connect (sfd, reinterpret_cast<struct sockaddr*> (&addr), sizeof (struct sockaddr_un));
     }
     catch (boost::system::system_error const&)
     {
@@ -74,7 +74,7 @@ namespace iml
 {
   using namespace gpi::pc;
 
-      Client::Client (boost::filesystem::path const & socket_path)
+      Client::Client (boost::filesystem::path const& socket_path)
       try
         : _socket (open_socket (socket_path))
       {}
@@ -176,7 +176,7 @@ namespace iml
         header.clear();
         header.length = data.size();
 
-        if ( (fhg::util::syscall::write (_socket, &header, sizeof(header)) <= 0)
+        if ( (fhg::util::syscall::write (_socket, &header, sizeof (header)) <= 0)
            || (fhg::util::syscall::write (_socket, data.c_str(), data.size()) <= 0)
            )
         {
@@ -201,7 +201,7 @@ namespace iml
         proto::message_t rply;
         // deserialize
         {
-          std::stringstream sstr2 (std::string(buffer.begin(), buffer.end()));
+          std::stringstream sstr2 (std::string (buffer.begin(), buffer.end()));
           boost::archive::text_iarchive ia (sstr2);
           ia & rply;
         }
@@ -227,7 +227,7 @@ namespace iml
 
       AllocationHandle
       Client::create_allocation ( SegmentHandle const& segment
-                   , MemorySize const total_size
+                   , MemorySize total_size
                    )
       {
         proto::memory::alloc_t alloc_msg;
@@ -243,7 +243,7 @@ namespace iml
           .handle;
       }
 
-      void Client::delete_allocation (AllocationHandle const allocation)
+      void Client::delete_allocation (AllocationHandle allocation)
       {
         proto::memory::free_t rqst;
         rqst.handle = allocation;
@@ -382,9 +382,9 @@ namespace iml
           );
       }
 
-      MemcpyID Client::async_memcpy ( MemoryLocation const & destination
-                                      , MemoryLocation const & source
-                                      , const MemorySize amount
+      MemcpyID Client::async_memcpy ( MemoryLocation const& destination
+                                      , MemoryLocation const& source
+                                      , MemorySize amount
                                       )
       {
         proto::memory::memcpy_t rqst;
@@ -416,14 +416,14 @@ namespace iml
 
       void Client::memcpy ( MemoryLocation const& destination
                                   , MemoryLocation const& source
-                                  , MemorySize const amount
+                                  , MemorySize amount
                                   )
       {
         wait (async_memcpy (destination, source, amount));
       }
 
       SharedMemoryAllocationHandle Client::create_shm_segment_and_allocate
-        (MemorySize const size)
+        (MemorySize size)
       {
         static std::uint64_t shm_allocation_counter = 0;
         auto const name
@@ -439,7 +439,7 @@ namespace iml
         {
           seg->unlink();
         }
-        catch (boost::system::system_error const &se)
+        catch (boost::system::system_error const& se)
         {
           if (se.code ().value () == ENOENT)
           {
@@ -489,7 +489,7 @@ namespace iml
       }
 
       void Client::free_and_delete_shm_segment
-        (SharedMemoryAllocationHandle const shared_memory_allocation)
+        (SharedMemoryAllocationHandle shared_memory_allocation)
       {
         proto::segment::unregister_t rqst;
         rqst.handle = shared_memory_allocation;

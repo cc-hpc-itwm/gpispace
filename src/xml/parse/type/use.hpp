@@ -33,11 +33,11 @@ namespace xml
       struct use_type : with_position_of_definition
       {
       public:
-        use_type ( const util::position_type&
-                 , const std::string& name
+        use_type ( util::position_type const&
+                 , std::string const& name
                  );
 
-        const std::string& name() const;
+        std::string const& name() const;
 
       private:
         std::string _name;
@@ -45,7 +45,7 @@ namespace xml
 
       namespace dump
       {
-        void dump (::fhg::util::xml::xmlstream& s, const use_type& u);
+        void dump (::fhg::util::xml::xmlstream& s, use_type const& u);
       }
     }
   }

@@ -30,24 +30,24 @@ namespace gpi
     class dummy_topology : public gpi::pc::global::itopology_t
     {
     public:
-      virtual void alloc ( const iml::SegmentHandle /* segment */
-                         , const iml::AllocationHandle /* handle */
-                , const iml::MemoryOffset /* offset */
-                , const iml::MemorySize /* size */
-                , const iml::MemorySize /* local_size */
+      virtual void alloc ( iml::SegmentHandle /* segment */
+                         , iml::AllocationHandle /* handle */
+                , iml::MemoryOffset /* offset */
+                , iml::MemorySize /* size */
+                , iml::MemorySize /* local_size */
                 ) override
       {}
 
-      virtual void free (const iml::AllocationHandle) override
+      virtual void free (iml::AllocationHandle) override
       {}
 
-      virtual void add_memory ( const iml::SegmentHandle
+      virtual void add_memory ( iml::SegmentHandle
                               , iml::SegmentDescription const&
                               , unsigned long
                      ) override
       {}
 
-      virtual void del_memory (const iml::SegmentHandle) override
+      virtual void del_memory (iml::SegmentHandle) override
       {}
     };
   }

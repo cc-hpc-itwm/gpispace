@@ -54,7 +54,7 @@ namespace gpi
         private:
           friend class boost::serialization::access;
           template<typename Archive>
-          void serialize (Archive & ar, const unsigned int /*version*/)
+          void serialize (Archive & ar, unsigned int /*version*/)
           {
             ar & BOOST_SERIALIZATION_NVP( segment );
             ar & BOOST_SERIALIZATION_NVP( size );
@@ -68,7 +68,7 @@ namespace gpi
         private:
           friend class boost::serialization::access;
           template<typename Archive>
-          void serialize (Archive & ar, const unsigned int /*version*/)
+          void serialize (Archive & ar, unsigned int /*version*/)
           {
             ar & BOOST_SERIALIZATION_NVP( handle );
           }
@@ -81,7 +81,7 @@ namespace gpi
         private:
           friend class boost::serialization::access;
           template<typename Archive>
-          void serialize (Archive & ar, const unsigned int /*version*/)
+          void serialize (Archive & ar, unsigned int /*version*/)
           {
             ar & BOOST_SERIALIZATION_NVP( handle );
           }
@@ -96,7 +96,7 @@ namespace gpi
         private:
           friend class boost::serialization::access;
           template<typename Archive>
-          void serialize (Archive & ar, const unsigned int /*version*/)
+          void serialize (Archive & ar, unsigned int /*version*/)
           {
             ar & BOOST_SERIALIZATION_NVP( dst );
             ar & BOOST_SERIALIZATION_NVP( src );
@@ -111,7 +111,7 @@ namespace gpi
         private:
           friend class boost::serialization::access;
           template<typename Archive>
-          void serialize (Archive & ar, const unsigned int /*version*/)
+          void serialize (Archive & ar, unsigned int /*version*/)
           {
             ar & BOOST_SERIALIZATION_NVP( memcpy_id );
           }
@@ -124,7 +124,7 @@ namespace gpi
         private:
           friend class boost::serialization::access;
           template<typename Archive>
-          void serialize (Archive & ar, const unsigned int /*version*/)
+          void serialize (Archive & ar, unsigned int /*version*/)
           {
             ar & BOOST_SERIALIZATION_NVP( memcpy_id );
           }
@@ -186,7 +186,7 @@ namespace gpi
         private:
           friend class boost::serialization::access;
           template<typename Archive>
-          void serialize (Archive & ar, const unsigned int /*version*/)
+          void serialize (Archive & ar, unsigned int /*version*/)
           {
             ar & BOOST_SERIALIZATION_NVP( handle );
           }
@@ -198,7 +198,7 @@ namespace gpi
         private:
           friend class boost::serialization::access;
           template<typename Archive>
-          void serialize (Archive & ar, const unsigned int /*version*/)
+          void serialize (Archive & ar, unsigned int /*version*/)
           {
             ar & BOOST_SERIALIZATION_NVP( descriptor );
           }
@@ -215,7 +215,7 @@ namespace gpi
         private:
           friend class boost::serialization::access;
           template<typename Archive>
-          void serialize (Archive & ar, const unsigned int /*version*/)
+          void serialize (Archive & ar, unsigned int /*version*/)
           {
             ar & BOOST_SERIALIZATION_NVP (transfers);
           }
@@ -232,7 +232,7 @@ namespace gpi
         private:
           friend class boost::serialization::access;
           template<typename Archive>
-          void serialize (Archive & ar, const unsigned int /*version*/)
+          void serialize (Archive & ar, unsigned int /*version*/)
           {
             ar & BOOST_SERIALIZATION_NVP (costs);
           }

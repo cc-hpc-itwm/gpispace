@@ -74,7 +74,7 @@ namespace sdpa
       _stopping = true;
     }
 
-    void Client::handle_recv ( boost::system::error_code const & ec
+    void Client::handle_recv ( boost::system::error_code const& ec
                              , boost::optional<fhg::com::p2p::address_t>
                              , fhg::com::message_t message
                              )
@@ -100,7 +100,7 @@ namespace sdpa
         if (message.header.src != m_peer.address())
         {
           sdpa::events::ErrorEvent::Ptr const
-            error(new sdpa::events::ErrorEvent ( sdpa::events::ErrorEvent::SDPA_EUNKNOWN
+            error (new sdpa::events::ErrorEvent ( sdpa::events::ErrorEvent::SDPA_EUNKNOWN
                                                , "receiving response failed: " + boost::lexical_cast<std::string>(ec)
                                                )
                  );
@@ -203,13 +203,13 @@ namespace sdpa
       handle_error_and_unexpected_event (reply);
     }
 
-    sdpa::job_id_t Client::submitJob (we::type::activity_t activity)
+    sdpa::job_id_t Client::submitJob (we::type::Activity activity)
     {
       return send_and_wait_for_reply<sdpa::events::SubmitJobAckEvent>
         (sdpa::events::SubmitJobEvent (boost::none, std::move (activity), boost::none)).job_id();
     }
 
-    void Client::cancelJob(const job_id_t &jid)
+    void Client::cancelJob (job_id_t const& jid)
     {
       send_and_wait_for_reply<sdpa::events::CancelJobAckEvent>
         (sdpa::events::CancelJobEvent (jid));
@@ -264,7 +264,7 @@ namespace sdpa
       return response.get();
     }
 
-    void Client::deleteJob(const job_id_t &jid)
+    void Client::deleteJob (job_id_t const& jid)
     {
       send_and_wait_for_reply<sdpa::events::DeleteJobAckEvent>
         (sdpa::events::DeleteJobEvent (jid));
@@ -272,7 +272,7 @@ namespace sdpa
       _job_results.erase (jid);
     }
 
-    we::type::activity_t Client::result (sdpa::job_id_t const& job) const
+    we::type::Activity Client::result (sdpa::job_id_t const& job) const
     {
       if (!_job_results.count (job))
       {

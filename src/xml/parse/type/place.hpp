@@ -46,18 +46,18 @@ namespace xml
 
         typedef std::string token_type;
 
-        place_type ( const util::position_type&
-                   , const std::string & name
-                   , const std::string & type
-                   , const boost::optional<bool> is_virtual
+        place_type ( util::position_type const&
+                   , std::string const& name
+                   , std::string const& type
+                   , boost::optional<bool> is_virtual
                    , boost::optional<bool> put_token
                    , std::list<token_type> tokens = {}
                    , we::type::property::type properties = {}
                    , boost::optional<pnet::type::signature::signature_type> = boost::none
                    );
 
-        const std::string& name() const;
-        const std::string& type() const;
+        std::string const& name() const;
+        std::string const& type() const;
 
         place_type with_name (std::string const& new_name) const;
 
@@ -65,23 +65,23 @@ namespace xml
         void resolve_types_recursive
           (std::unordered_map<std::string, pnet::type::signature::signature_type> known);
 
-        void push_token (const token_type & t);
+        void push_token (token_type const& t);
 
-        place_type specialized ( const type::type_map_type & map_in
-                               , const state::type &
+        place_type specialized ( type::type_map_type const& map_in
+                               , state::type const&
                                ) const;
 
-        const boost::optional<bool>& get_is_virtual (void) const;
+        boost::optional<bool> const& get_is_virtual (void) const;
         bool is_virtual (void) const;
         boost::optional<bool> const& put_token() const
         {
           return _put_token;
         }
 
-        const we::type::property::type& properties() const;
+        we::type::property::type const& properties() const;
         we::type::property::type& properties();
 
-        const unique_key_type& unique_key() const;
+        unique_key_type const& unique_key() const;
 
       private:
         boost::optional<bool> _is_virtual;
@@ -101,7 +101,7 @@ namespace xml
 
       namespace dump
       {
-        void dump (::fhg::util::xml::xmlstream & s, const place_type & p);
+        void dump (::fhg::util::xml::xmlstream & s, place_type const& p);
       }
     }
   }

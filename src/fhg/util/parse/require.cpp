@@ -30,7 +30,7 @@ namespace fhg
     {
       namespace require
       {
-        void require (position& pos, const char& what)
+        void require (position& pos, char const& what)
         {
           if (pos.end() || *pos != what)
           {
@@ -39,7 +39,7 @@ namespace fhg
 
           ++pos;
         }
-        void require (position& pos, const std::string& what)
+        void require (position& pos, std::string const& what)
         {
           std::string::const_iterator what_pos (what.begin());
           const std::string::const_iterator what_end (what.end());
@@ -81,7 +81,7 @@ namespace fhg
         }
 
         std::string plain_string
-          (position& pos, const char until, const char escape)
+          (position& pos, char until, char escape)
         {
           std::string s;
 
@@ -230,10 +230,10 @@ namespace fhg
         }
 
         void list ( position& pos
-                  , const char open, const char sep, const char close
-                  , const std::function<void (position&)>& f
-                  , const bool skip_space_before_element
-                  , const bool skip_space_after_element
+                  , char open, char sep, char close
+                  , std::function<void (position&)> const& f
+                  , bool skip_space_before_element
+                  , bool skip_space_after_element
                   )
         {
           skip_spaces (pos);

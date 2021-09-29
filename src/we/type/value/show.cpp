@@ -36,7 +36,7 @@ namespace pnet
             : _os (os)
           {}
 
-          std::ostream& operator() (const std::list<value_type>& l) const
+          std::ostream& operator() (std::list<value_type> const& l) const
           {
             return _os << fhg::util::print_container
               ( "List (", ", ", ")", l
@@ -46,7 +46,7 @@ namespace pnet
               );
           }
           std::ostream&
-          operator() (const std::map<value_type, value_type>& m) const
+          operator() (std::map<value_type, value_type> const& m) const
           {
             return _os << fhg::util::print_container
               ( "Map [", ", ", "]", m
@@ -55,7 +55,7 @@ namespace pnet
                           )
               );
           }
-          std::ostream& operator() (const std::set<value_type>& s) const
+          std::ostream& operator() (std::set<value_type> const& s) const
           {
             return _os << fhg::util::print_container
               ( "Set {", ", ", "}", s
@@ -64,7 +64,7 @@ namespace pnet
                           )
               );
           }
-          std::ostream& operator() (const structured_type& m) const
+          std::ostream& operator() (structured_type const& m) const
           {
             return _os << fhg::util::print_container
               ( "Struct [", ", ", "]", m
@@ -73,51 +73,51 @@ namespace pnet
                           )
               );
           }
-          std::ostream& operator() (const control& c) const
+          std::ostream& operator() (control const& c) const
           {
             return _os << c;
           }
-          std::ostream& operator() (const bool& b) const
+          std::ostream& operator() (bool const& b) const
           {
             return _os << b;
           }
-          std::ostream& operator() (const int& i) const
+          std::ostream& operator() (int const& i) const
           {
             return _os << i;
           }
-          std::ostream& operator() (const long& i) const
+          std::ostream& operator() (long const& i) const
           {
             return _os << i << "L";
           }
-          std::ostream& operator() (const unsigned int& i) const
+          std::ostream& operator() (unsigned int const& i) const
           {
             return _os << i << "U";
           }
-          std::ostream& operator() (const unsigned long& i) const
+          std::ostream& operator() (unsigned long const& i) const
           {
             return _os << i << "UL";
           }
-          std::ostream& operator() (const float& f) const
+          std::ostream& operator() (float const& f) const
           {
             return _os << f << "f";
           }
-          std::ostream& operator() (const double& d) const
+          std::ostream& operator() (double const& d) const
           {
             return _os << d;
           }
-          std::ostream& operator() (const char& c) const
+          std::ostream& operator() (char const& c) const
           {
             return _os << "'" << c << "'";
           }
-          std::ostream& operator() (const std::string& s) const
+          std::ostream& operator() (std::string const& s) const
           {
             return _os << "\"" << s << "\"";
           }
-          std::ostream& operator() (const bitsetofint::type& bs) const
+          std::ostream& operator() (bitsetofint::type const& bs) const
           {
             return _os << bs;
           }
-          std::ostream& operator() (const we::type::bytearray& ba) const
+          std::ostream& operator() (we::type::bytearray const& ba) const
           {
             return _os << ba;
           }
@@ -125,12 +125,12 @@ namespace pnet
         private:
           std::ostream& _os;
 
-          std::ostream& print_value (std::ostream& os, const value_type& x) const
+          std::ostream& print_value (std::ostream& os, value_type const& x) const
           {
             boost::apply_visitor (*this, x);
             return os;
           }
-          std::ostream& print_map_item (std::ostream& os, const std::pair<value_type, value_type>& x) const
+          std::ostream& print_map_item (std::ostream& os, std::pair<value_type, value_type> const& x) const
           {
             boost::apply_visitor (*this, x.first);
             os << " -> ";
@@ -138,7 +138,7 @@ namespace pnet
             return os;
           }
           std::ostream& print_struct_item
-          (std::ostream& os, const std::pair<std::string, value_type>& x) const
+          (std::ostream& os, std::pair<std::string, value_type> const& x) const
           {
             os << x.first << " := ";
             boost::apply_visitor (*this, x.second);
@@ -147,7 +147,7 @@ namespace pnet
         };
       }
 
-      show::show (const value_type& value)
+      show::show (value_type const& value)
         : _value (value)
       {}
       std::ostream& show::operator() (std::ostream& os) const
@@ -158,7 +158,7 @@ namespace pnet
         os.flags (ff);
         return os;
       }
-      std::ostream& operator<< (std::ostream& os, const show& s)
+      std::ostream& operator<< (std::ostream& os, show const& s)
       {
         return s (os);
       }

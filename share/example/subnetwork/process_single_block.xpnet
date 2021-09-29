@@ -73,7 +73,7 @@
 
     <transition name="process">
       <defun>
-        <require key="process" mandatory="true"/>
+        <require key="process"/>
         <in name="memory" type="global_memory_range"/>
         <in name="block_size" type="unsigned long"/>
         <in name="block_L" type="block"/>

@@ -20,5 +20,5 @@
 
 namespace fhg
 {
-  extern std::string project_info (const std::string&);
+  extern std::string project_info (std::string const&);
 }

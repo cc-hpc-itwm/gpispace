@@ -70,7 +70,7 @@ BOOST_AUTO_TEST_CASE (_uint)
 namespace
 {
   template<typename T>
-    void read_num_showed (const T& x)
+    void read_num_showed (T const& x)
   {
     using fhg::util::num_type;
     using fhg::util::read_num;

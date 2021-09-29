@@ -30,7 +30,7 @@ namespace xml
         std::string flatten() const;
       };
 
-      conditions_type operator+ (conditions_type, const conditions_type&);
+      conditions_type operator+ (conditions_type, conditions_type const&);
 
       struct function_type;
     }

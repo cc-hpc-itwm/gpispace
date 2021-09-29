@@ -36,23 +36,23 @@ namespace pnet
           printer (std::ostream& os)
             : _os (os)
           {}
-          void _struct (const std::pair<std::string, structure_type>& s) const
+          void _struct (std::pair<std::string, structure_type> const& s) const
           {
             _os << fhg::util::print_container
               ( s.first + " :: [", ", ", "]", s.second
-              , [this] (std::ostream& os, const field_type& f) -> std::ostream&
+              , [this] (std::ostream& os, field_type const& f) -> std::ostream&
                 {
                   traverse (*this, f);
                   return os;
                 }
               );
           }
-          void _field (const std::pair<std::string, std::string>& f) const
+          void _field (std::pair<std::string, std::string> const& f) const
           {
             _os << f.first << " :: " << f.second;
           }
           void _field_struct
-            (const std::pair<std::string, structure_type>& s) const
+            (std::pair<std::string, structure_type> const& s) const
           {
             traverse (*this, s);
           }
@@ -66,11 +66,11 @@ namespace pnet
           show_sig (std::ostream& os)
             : _os (os)
           {}
-          std::ostream& operator() (const std::string& tname) const
+          std::ostream& operator() (std::string const& tname) const
           {
             return _os << tname;
           }
-          std::ostream& operator() (const structured_type& s) const
+          std::ostream& operator() (structured_type const& s) const
           {
             traverse (printer (_os), s);
             return _os;
@@ -80,7 +80,7 @@ namespace pnet
         };
       }
 
-      show::show (const signature_type& signature)
+      show::show (signature_type const& signature)
         : _signature (signature)
       {}
       std::ostream& show::operator() (std::ostream& os) const

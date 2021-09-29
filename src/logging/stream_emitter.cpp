@@ -22,7 +22,6 @@
 #include <rpc/remote_tcp_endpoint.hpp>
 
 #include <util-generic/connectable_to_address_string.hpp>
-#include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/functor_visitor.hpp>
 #include <util-generic/hostname.hpp>
 #include <util-generic/this_bound_mem_fn.hpp>
@@ -115,14 +114,14 @@ namespace fhg
         , [&] (socket_endpoint const& as_socket)
           {
             _receivers.emplace_back
-              ( util::cxx14::make_unique<rpc::remote_socket_endpoint>
+              ( std::make_unique<rpc::remote_socket_endpoint>
                   (_io_service, yield, as_socket.socket)
               );
           }
         , [&] (tcp_endpoint const& as_tcp)
           {
             _receivers.emplace_back
-              ( util::cxx14::make_unique<rpc::remote_tcp_endpoint>
+              ( std::make_unique<rpc::remote_tcp_endpoint>
                   (_io_service, yield, as_tcp)
               );
           }

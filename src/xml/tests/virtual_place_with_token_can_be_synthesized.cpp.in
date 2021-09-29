@@ -19,7 +19,7 @@
 #include <xml/parse/parser.hpp>
 #include <xml/parse/state.hpp>
 
-#include <we/type/transition.hpp>
+#include <we/type/Transition.hpp>
 #include <we/type/net.hpp>
 
 #include <fhg/util/xml.hpp>
@@ -47,7 +47,7 @@ namespace xml
       auto function (just_parse (state, filename));
       post_processing_passes (function, &state);
 
-      ::we::type::transition_t transition;
+      ::we::type::Transition transition;
 
       BOOST_REQUIRE_NO_THROW (transition = xml_to_we (function, state));
 

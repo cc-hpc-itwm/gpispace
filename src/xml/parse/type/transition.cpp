@@ -27,7 +27,7 @@
 #include <xml/parse/type/dumps.hpp>
 
 #include <we/type/value/name.hpp>
-#include <we/type/expression.hpp>
+#include <we/type/Expression.hpp>
 #include <we/workflow_response.hpp>
 
 #include <fhg/assert.hpp>
@@ -46,19 +46,19 @@ namespace xml
     namespace type
     {
       transition_type::transition_type
-        ( const util::position_type& pod
-        , const function_or_use_type& fun_or_use
-        , const std::string& name
-        , const connections_type& connections
+        ( util::position_type const& pod
+        , function_or_use_type const& fun_or_use
+        , std::string const& name
+        , connections_type const& connections
         , responses_type const& responses
         , eurekas_type const& eurekas
-        , const place_maps_type& place_map
-        , const structs_type& structs_
-        , const conditions_type& conditions
-        , const requirements_type& requirements_
-        , const boost::optional<we::priority_type>& priority_
-        , const boost::optional<bool>& finline_
-        , const we::type::property::type& properties
+        , place_maps_type const& place_map
+        , structs_type const& structs_
+        , conditions_type const& conditions
+        , requirements_type const& requirements_
+        , boost::optional<we::priority_type> const& priority_
+        , boost::optional<bool> const& finline_
+        , we::type::property::type const& properties
         )
         : with_position_of_definition (pod)
         , _function_or_use (fun_or_use)
@@ -148,7 +148,7 @@ namespace xml
                };
       }
 
-      const transition_type::function_or_use_type&
+      transition_type::function_or_use_type const&
         transition_type::function_or_use() const
       {
         return _function_or_use;
@@ -165,12 +165,12 @@ namespace xml
         return boost::get<function_type> (_function_or_use);
       }
 
-      const std::string& transition_type::name() const
+      std::string const& transition_type::name() const
       {
         return _name;
       }
 
-      const transition_type::connections_type&
+      transition_type::connections_type const&
         transition_type::connections() const
       {
         return _connections;
@@ -183,7 +183,7 @@ namespace xml
       {
         return _eurekas;
       }
-      const transition_type::place_maps_type&
+      transition_type::place_maps_type const&
         transition_type::place_map() const
       {
         return _place_map;
@@ -191,7 +191,7 @@ namespace xml
 
       // ***************************************************************** //
 
-      const conditions_type& transition_type::conditions() const
+      conditions_type const& transition_type::conditions() const
       {
         return _conditions;
       }
@@ -203,16 +203,16 @@ namespace xml
         class transition_specialize : public boost::static_visitor<void>
         {
         private:
-          const type::type_map_type & map;
-          const type::type_get_type & get;
-          const xml::parse::structure_type_util::set_type & known_structs;
+          type::type_map_type const& map;
+          type::type_get_type const& get;
+          xml::parse::structure_type_util::set_type const& known_structs;
           state::type & state;
 
         public:
           transition_specialize
-            ( const type::type_map_type & _map
-            , const type::type_get_type & _get
-            , const xml::parse::structure_type_util::set_type & _known_structs
+            ( type::type_map_type const& _map
+            , type::type_get_type const& _get
+            , xml::parse::structure_type_util::set_type const& _known_structs
             , state::type & _state
             )
               : map (_map)
@@ -229,9 +229,9 @@ namespace xml
         };
       }
 
-      void transition_type::specialize ( const type::type_map_type & map
-                                       , const type::type_get_type & get
-                                       , const xml::parse::structure_type_util::set_type & known_structs
+      void transition_type::specialize ( type::type_map_type const& map
+                                       , type::type_get_type const& get
+                                       , xml::parse::structure_type_util::set_type const& known_structs
                                        , state::type & state
                                        )
       {
@@ -258,7 +258,7 @@ namespace xml
              ( std::begin (ports), std::end (ports)
              , [&response] (port_type const& port)
                {
-                 return (  port.direction() == we::type::PORT_OUT
+                 return (  port.is_output()
                         && port.name() == response.port()
                         );
                }
@@ -274,7 +274,7 @@ namespace xml
             ( std::begin (ports), std::end (ports)
             , [&response] (port_type const& port)
               {
-                return (  port.direction() == we::type::PORT_IN
+                return (  port.is_input()
                        && port.name() == response.to()
                        );
               }
@@ -306,7 +306,7 @@ namespace xml
             ( std::begin (ports), std::end (ports)
             , [&eureka] (port_type const& port)
               {
-                return (  port.direction() == we::type::PORT_OUT
+                return (  port.is_output()
                        && port.name() == eureka.port()
                        );
               }
@@ -327,8 +327,8 @@ namespace xml
 
       // ***************************************************************** //
 
-      bool transition_type::is_connect_tp_many ( const we::edge::type direction
-                                               , const std::string &port_type
+      bool transition_type::is_connect_tp_many ( we::edge::type direction
+                                               , std::string const& port_type
                                                ) const
       {
         return (  direction == we::edge::TP_MANY
@@ -337,12 +337,12 @@ namespace xml
       }
 
       //! \todo move to connect_type
-      void transition_type::type_check ( const connect_type & connect
-                                       , const state::type &
+      void transition_type::type_check ( connect_type const& connect
+                                       , state::type const&
                                        , net_type const& parent_net
                                        ) const
       {
-        const boost::optional<const place_type&> place
+        const boost::optional<place_type const&> place
           (parent_net.places().get (connect.place()));
 
         if (not place)
@@ -351,13 +351,14 @@ namespace xml
             (*this, connect);
         }
 
-        const boost::optional<const port_type&> port
+        const boost::optional<port_type const&> port
           ( resolved_function().ports().get
-              ( std::make_pair ( connect.port()
-                               , we::edge::is_PT (connect.direction())
-                               ? we::type::PORT_IN
-                               : we::type::PORT_OUT
-                               )
+              ( { connect.port()
+                , ( we::edge::is_PT (connect.direction())
+                  ? we::type::PortDirection {we::type::port::direction::In{}}
+                  : we::type::PortDirection {we::type::port::direction::Out{}}
+                  )
+                }
               )
           );
 
@@ -384,10 +385,10 @@ namespace xml
         class transition_type_check : public boost::static_visitor<void>
         {
         private:
-          const state::type & state;
+          state::type const& state;
 
         public:
-          transition_type_check (const state::type & _state)
+          transition_type_check (state::type const& _state)
             : state (_state)
           { }
 
@@ -400,9 +401,9 @@ namespace xml
       }
 
       void transition_type::type_check
-        (const state::type & state, net_type const& parent_net) const
+        (state::type const& state, net_type const& parent_net) const
       {
-        for (const connect_type& connect : connections())
+        for (connect_type const& connect : connections())
         {
           type_check (connect, state, parent_net);
         }
@@ -449,7 +450,7 @@ namespace xml
         }
       }
 
-      const we::type::property::type& transition_type::properties() const
+      we::type::property::type const& transition_type::properties() const
       {
         return _properties;
       }
@@ -460,7 +461,7 @@ namespace xml
 
       // ******************************************************************* //
 
-      const transition_type::unique_key_type&
+      transition_type::unique_key_type const&
         transition_type::unique_key() const
       {
         return name();
@@ -471,7 +472,7 @@ namespace xml
       namespace
       {
         place_map_map_type::mapped_type
-        get_pid (const place_map_map_type & pid_of_place, const std::string name)
+        get_pid (place_map_map_type const& pid_of_place, std::string name)
         {
           const place_map_map_type::const_iterator pos (pid_of_place.find (name));
 
@@ -489,9 +490,9 @@ namespace xml
 
       void transition_synthesize
         ( transition_type const& trans
-        , const state::type & state
+        , state::type const& state
         , we::type::net_type & we_net
-        , const place_map_map_type & pids
+        , place_map_map_type const& pids
         )
       {
         if (trans.connections().empty())
@@ -505,11 +506,11 @@ namespace xml
 
         function_type const& fun (trans.resolved_function());
 
-        for (const port_type& port_in : fun.ports())
+        for (port_type const& port_in : fun.ports())
         {
-          if (port_in.direction() == we::type::PORT_IN)
+          if (port_in.is_input())
           {
-            const boost::optional<const port_type&> port_out
+            const boost::optional<port_type const&> port_out
               (fun.get_port_out (port_in.name()));
 
             if (  port_out
@@ -542,7 +543,7 @@ namespace xml
                && !trans.place_map().empty()
                )
                || (  !state.no_inline()
-                  && trans.finline.get_value_or(false)
+                  && trans.finline.get_value_or (false)
                   )
               )
            )
@@ -553,7 +554,7 @@ namespace xml
 
             place_map_map_type place_map_map;
 
-            for ( const place_map_type& place_map : trans.place_map())
+            for ( place_map_type const& place_map : trans.place_map())
               {
                 const place_map_map_type::const_iterator pid
                   (pids.find (place_map.place_real()));
@@ -600,10 +601,10 @@ namespace xml
             //! \todo It seems like this should be getting the
             //! requirements of the inlined transition. Or all
             //! inlined transitions?
-            we::type::transition_t trans_in
+            we::type::Transition trans_in
               ( prefix + "IN"
-              , we::type::expression_t()
-              , we::type::expression_t (cond_in, parsed_condition_in)
+              , we::type::Expression()
+              , we::type::Expression (cond_in, parsed_condition_in)
               , properties
               , we::priority_type()
               , boost::none //! \todo eureka_id
@@ -616,15 +617,15 @@ namespace xml
               std::unordered_map<std::string, we::port_id_type>
                 port_id_out;
 
-              for (const port_type& port : fun.ports())
+              for (port_type const& port : fun.ports())
               {
-                if (port.direction() == we::type::PORT_IN)
+                if (port.is_input())
                 {
                   port_id_in.emplace
                     ( port.name()
                     , trans_in.add_port
-                      ( we::type::port_t ( port.name()
-                                         , we::type::PORT_IN
+                      ( we::type::Port ( port.name()
+                                         , we::type::port::direction::In{}
                                          , port.signature()
                                          , port.properties()
                                          )
@@ -634,8 +635,8 @@ namespace xml
                   port_id_out.emplace
                     ( port.name()
                     , trans_in.add_port
-                      ( we::type::port_t ( port.name()
-                                         , we::type::PORT_OUT
+                      ( we::type::Port ( port.name()
+                                         , we::type::port::direction::Out{}
                                          , port.signature()
                                          , port.properties()
                                          )
@@ -647,9 +648,9 @@ namespace xml
               const we::transition_id_type tid_in
                 (we_net.add_transition (trans_in));
 
-              for (const port_type& port : fun.ports())
+              for (port_type const& port : fun.ports())
               {
-                if (port.direction() == we::type::PORT_IN && port.place)
+                if (port.is_input() && port.place)
                 {
                   we_net.add_connection
                     ( we::edge::TP
@@ -661,7 +662,7 @@ namespace xml
                 }
               }
 
-              for (const connect_type& connect : trans.connections())
+              for (connect_type const& connect : trans.connections())
               {
                 if (we::edge::is_PT (connect.direction()))
                 {
@@ -677,9 +678,9 @@ namespace xml
             }
 
             // going out of the subnet
-            we::type::transition_t trans_out
+            we::type::Transition trans_out
               ( prefix + "OUT"
-              , we::type::expression_t()
+              , we::type::Expression()
               , boost::none
               , properties
               , we::priority_type()
@@ -693,15 +694,15 @@ namespace xml
               std::unordered_map<std::string, we::port_id_type>
                 port_id_out;
 
-              for (const port_type& port : fun.ports())
+              for (port_type const& port : fun.ports())
               {
-                if (port.direction() == we::type::PORT_OUT)
+                if (port.is_output())
                 {
                   port_id_in.emplace
                     ( port.name()
                     , trans_out.add_port
-                      ( we::type::port_t ( port.name()
-                                         , we::type::PORT_IN
+                      ( we::type::Port ( port.name()
+                                         , we::type::port::direction::In{}
                                          , port.signature()
                                          , port.properties()
                                          )
@@ -711,8 +712,8 @@ namespace xml
                   port_id_out.emplace
                     ( port.name()
                     , trans_out.add_port
-                      ( we::type::port_t ( port.name()
-                                         , we::type::PORT_OUT
+                      ( we::type::Port ( port.name()
+                                         , we::type::port::direction::Out{}
                                          , port.signature()
                                          , port.properties()
                                          )
@@ -726,9 +727,9 @@ namespace xml
               const we::transition_id_type tid_out
                 (we_net.add_transition (trans_out));
 
-              for (const port_type& port : fun.ports())
+              for (port_type const& port : fun.ports())
               {
-                if (port.direction() == we::type::PORT_OUT && port.place)
+                if (port.is_output() && port.place)
                 {
                   we_net.add_connection
                     ( we::edge::PT
@@ -740,7 +741,7 @@ namespace xml
                 }
               }
 
-              for (const connect_type& connect : trans.connections())
+              for (connect_type const& connect : trans.connections())
               {
                 if (!we::edge::is_PT (connect.direction()))
                 {
@@ -787,7 +788,7 @@ namespace xml
             std::unordered_map<we::port_id_type, std::string>
               real_place_names;
 
-            we::type::transition_t we_trans
+            we::type::Transition we_trans
               ( fun.synthesize ( trans.name()
                                , state
                                , port_id_in
@@ -805,7 +806,7 @@ namespace xml
             const we::transition_id_type tid
               (we_net.add_transition (we_trans));
 
-            for (const connect_type& connect : trans.connections())
+            for (connect_type const& connect : trans.connections())
             {
               if (we::edge::is_PT (connect.direction()))
               {
@@ -891,7 +892,7 @@ namespace xml
         }
 
         void dump ( ::fhg::util::xml::xmlstream & s
-                  , const transition_type & t
+                  , transition_type const& t
                   )
         {
           s.open ("transition");
@@ -909,7 +910,7 @@ namespace xml
           dumps (s, t.responses());
           dumps (s, t.eurekas());
 
-          for (const std::string& cond : t.conditions())
+          for (std::string const& cond : t.conditions())
           {
             s.open ("condition");
             s.content (cond);

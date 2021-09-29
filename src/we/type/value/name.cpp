@@ -25,7 +25,7 @@ namespace pnet
     namespace value
     {
 #define NAME(_name,_value)                      \
-      const std::string& _name()                \
+      std::string const& _name()                \
       {                                         \
         static const std::string x (_value);    \
                                                 \

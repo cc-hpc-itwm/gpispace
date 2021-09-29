@@ -24,21 +24,21 @@ namespace xml
   {
     namespace type
     {
-      use_type::use_type ( const util::position_type& pod
-                         , const std::string& name
+      use_type::use_type ( util::position_type const& pod
+                         , std::string const& name
                          )
         : with_position_of_definition (pod)
         , _name (name)
       {}
 
-      const std::string& use_type::name() const
+      std::string const& use_type::name() const
       {
         return _name;
       }
 
       namespace dump
       {
-        void dump (::fhg::util::xml::xmlstream& s, const use_type& u)
+        void dump (::fhg::util::xml::xmlstream& s, use_type const& u)
         {
           s.open ("use");
           s.attr ("name", u.name());

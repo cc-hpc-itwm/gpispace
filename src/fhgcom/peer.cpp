@@ -17,7 +17,6 @@
 #include <fhgcom/peer.hpp>
 
 #include <fhg/assert.hpp>
-#include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/hostname.hpp>
 
 #include <boost/asio/connect.hpp>
@@ -56,8 +55,8 @@ namespace fhg
     while (false)
 
     peer_t::peer_t ( std::unique_ptr<boost::asio::io_service> io_service
-                   , host_t const & host
-                   , port_t const & port
+                   , host_t const& host
+                   , port_t const& port
                    , Certificates const& certificates
                    )
       : stopping_ (false)
@@ -79,7 +78,7 @@ namespace fhg
         {
           std::lock_guard<std::mutex> lock_context
             (ssl_context_threadunsafety_guard);
-          ctx_ = fhg::util::cxx14::make_unique<boost::asio::ssl::context>
+          ctx_ = std::make_unique<boost::asio::ssl::context>
                    (*io_service_, boost::asio::ssl::context::sslv23);
 
           ctx_->set_options ( boost::asio::ssl::context::default_workarounds
@@ -108,27 +107,18 @@ namespace fhg
         }
 
         boost::asio::ip::tcp::resolver resolver(*io_service_);
-        boost::asio::ip::tcp::resolver::query query(host_, port_);
-        boost::asio::ip::tcp::endpoint endpoint = *resolver.resolve(query);
-
-        const bool prefer_ipv6 = false;
+        boost::asio::ip::tcp::resolver::query query (host_, port_);
+        boost::asio::ip::tcp::endpoint endpoint = *resolver.resolve (query);
 
         if (host_ == "*")
         {
-          if (prefer_ipv6)
-          {
-            endpoint.address(boost::asio::ip::address_v6::any());
-          }
-          else
-          {
-            endpoint.address(boost::asio::ip::address_v4::any());
-          }
+            endpoint.address (boost::asio::ip::address_v4::any());
         }
 
-        acceptor_.open(endpoint.protocol());
-        acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
+        acceptor_.open (endpoint.protocol());
+        acceptor_.set_option (boost::asio::ip::tcp::acceptor::reuse_address (true));
         acceptor_.set_option (boost::asio::ip::tcp::no_delay (true));
-        acceptor_.bind(endpoint);
+        acceptor_.bind (endpoint);
         acceptor_.listen();
 
         my_addr_ = p2p::address_t
@@ -287,7 +277,7 @@ namespace fhg
     }
 
     void peer_t::send ( p2p::address_t const& addr
-                      , const std::string & data
+                      , std::string const& data
                       )
     {
       typedef fhg::util::thread::event<boost::system::error_code> async_op_t;
@@ -305,7 +295,7 @@ namespace fhg
     }
 
     void peer_t::async_send ( p2p::address_t const& addr
-                            , const std::string & data
+                            , std::string const& data
                             , peer_t::handler_t completion_handler
                             )
     {
@@ -346,13 +336,14 @@ namespace fhg
     {
       fhg_assert (completion_handler);
 
-      lock_type lock(mutex_);
+      lock_type lock (mutex_);
 
       if (stopping_)
       {
         using namespace boost::system;
+        fhg::com::message_t empty_message;
         completion_handler
-          (errc::make_error_code (errc::network_down), boost::none, {});
+          (errc::make_error_code (errc::network_down), boost::none, empty_message);
       }
       else if (m_pending.empty())
       {
@@ -395,7 +386,7 @@ namespace fhg
       start_sender (lock, cd);
     }
 
-    void peer_t::handle_send (const p2p::address_t a, boost::system::error_code const & ec)
+    void peer_t::handle_send (p2p::address_t a, boost::system::error_code const& ec)
     {
       lock_type lock (mutex_);
 
@@ -475,7 +466,7 @@ namespace fhg
         );
     }
 
-    void peer_t::handle_accept (const boost::system::error_code & ec)
+    void peer_t::handle_accept (boost::system::error_code const& ec)
     {
       if (! ec && !stopping_)
       {
@@ -528,7 +519,7 @@ namespace fhg
           , this
           )
         );
-      listen_->local_address(my_addr_.get());
+      listen_->local_address (my_addr_.get());
       acceptor_.async_accept ( listen_->socket()
                              , strand_.wrap
                                  ( std::bind ( &peer_t::handle_accept
@@ -597,7 +588,7 @@ namespace fhg
       }
     }
 
-    void peer_t::handle_error (connection_t::ptr_t c, const boost::system::error_code & ec)
+    void peer_t::handle_error (connection_t::ptr_t c, boost::system::error_code const& ec)
     {
       REQUIRE_ON_STRAND();
 
@@ -651,7 +642,7 @@ namespace fhg
           lock.lock ();
         }
 
-        connections_.erase(c->remote_address());
+        connections_.erase (c->remote_address());
       }
       else if (backlog_.find (c) != backlog_.end ())
       {

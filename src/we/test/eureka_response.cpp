@@ -18,8 +18,8 @@
 #include <boost/test/data/test_case.hpp>
 #include <boost/optional/optional_io.hpp>
 
-#include <we/type/activity.hpp>
-#include <we/type/transition.hpp>
+#include <we/type/Activity.hpp>
+#include <we/type/Transition.hpp>
 #include <we/type/net.hpp>
 #include <we/type/signature.hpp>
 #include <we/type/value.hpp>
@@ -65,37 +65,37 @@ namespace
                      )
       )
   {
-    we::type::transition_t trans_eureka
+    we::type::Transition trans_eureka
       ( "generate_ids_on_eureka_port"
-        , we::type::expression_t ("${out} := set_insert (Set{}, ${id})")
-        , we::type::expression_t (eureka_condition)
+        , we::type::Expression ("${out} := set_insert (Set{}, ${id})")
+        , we::type::Expression (eureka_condition)
         , {}
         , we::priority_type()
       , boost::optional<we::type::eureka_id_type>{}
-      , std::list<we::type::preference_t>{}
+      , std::list<we::type::Preference>{}
       );
     we::port_id_type const port_id_eureka_gid
-      ( trans_eureka.add_port ( we::type::port_t
+      ( trans_eureka.add_port ( we::type::Port
                                  ( "id"
-                                 , we::type::PORT_IN
+                                 , we::type::port::direction::In{}
                                  , signature::signature_type ("string")
                                  , we::type::property::type()
                                  )
                                )
       );
     we::port_id_type const port_id_in
-      ( trans_eureka.add_port ( we::type::port_t
+      ( trans_eureka.add_port ( we::type::Port
                                  ( "in"
-                                 , we::type::PORT_IN
+                                 , we::type::port::direction::In{}
                                  , signature::signature_type ("long")
                                  , we::type::property::type()
                                  )
                                )
       );
     we::port_id_type const port_id_out
-      ( trans_eureka.add_port ( we::type::port_t
+      ( trans_eureka.add_port ( we::type::Port
                                  ( "out"
-                                 , we::type::PORT_OUT
+                                 , we::type::port::direction::Out{}
                                  , signature::signature_type ("set")
                                  , we::type::property::type()
                                  )

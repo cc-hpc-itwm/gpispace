@@ -34,7 +34,7 @@
 #include <xml/parse/type/transition.fwd.hpp>
 #include <xml/parse/util/position.hpp>
 
-#include <we/type/port.hpp>
+#include <we/type/Port.hpp>
 #include <we/type/property.hpp>
 #include <we/type/eureka.hpp>
 
@@ -61,15 +61,15 @@ namespace xml
       class generic : public std::runtime_error
       {
       public:
-        generic (const std::string & msg)
+        generic (std::string const& msg)
           : std::runtime_error ("ERROR: " + msg)
         { }
 
-        generic (const boost::format& bf)
+        generic (boost::format const& bf)
           : generic (bf.str())
         { }
 
-        generic (const std::string & msg, const std::string & pre)
+        generic (std::string const& msg, std::string const& pre)
           : generic (pre + ": " + msg)
         { }
 
@@ -91,15 +91,15 @@ namespace xml
       class wrong_node : public generic
       {
       public:
-        wrong_node ( const rapidxml::node_type&
-                   , const rapidxml::node_type& got
-                   , const util::position_type&
+        wrong_node ( rapidxml::node_type const&
+                   , rapidxml::node_type const& got
+                   , util::position_type const&
                    );
 
-        wrong_node ( const rapidxml::node_type&
-                   , const rapidxml::node_type&
-                   , const rapidxml::node_type& got
-                   , const util::position_type&
+        wrong_node ( rapidxml::node_type const&
+                   , rapidxml::node_type const&
+                   , rapidxml::node_type const& got
+                   , util::position_type const&
                    );
       };
 
@@ -108,9 +108,9 @@ namespace xml
      class missing_attr : public generic
      {
      public:
-       missing_attr ( const std::string& pre
-                    , const std::string& attr
-                    , const util::position_type&
+       missing_attr ( std::string const& pre
+                    , std::string const& attr
+                    , util::position_type const&
                     );
       };
 
@@ -119,7 +119,7 @@ namespace xml
       class no_elements_given : public generic
       {
       public:
-        no_elements_given (const std::string&, const boost::filesystem::path&);
+        no_elements_given (std::string const&, boost::filesystem::path const&);
       };
 
       // ******************************************************************* //
@@ -128,7 +128,7 @@ namespace xml
       {
       public:
         more_than_one_definition
-          (const std::string&, const util::position_type&);
+          (std::string const&, util::position_type const&);
       };
 
       // ******************************************************************* //
@@ -136,8 +136,8 @@ namespace xml
       class top_level_anonymous_function : public generic
       {
       public:
-        top_level_anonymous_function ( const std::string & file
-                                     , const std::string & pre
+        top_level_anonymous_function ( std::string const& file
+                                     , std::string const& pre
                                      )
           : generic ( "try to include top level anonymous function from "
                     + file
@@ -151,8 +151,8 @@ namespace xml
       class top_level_anonymous_template : public generic
       {
       public:
-        top_level_anonymous_template ( const std::string & file
-                                     , const std::string & pre
+        top_level_anonymous_template ( std::string const& file
+                                     , std::string const& pre
                                      )
           : generic ( "try to include top level anonymous template from "
                     + file
@@ -166,8 +166,8 @@ namespace xml
       class file_not_found : public generic
       {
       public:
-        file_not_found ( const std::string & pre
-                       , const std::string & file
+        file_not_found ( std::string const& pre
+                       , std::string const& file
                        )
           : generic (pre, "file not found: " + file)
         {}
@@ -178,7 +178,7 @@ namespace xml
       class file_already_there : public generic
       {
       public:
-        explicit file_already_there (const boost::filesystem::path& file)
+        explicit file_already_there (boost::filesystem::path const& file)
           : generic
             ( boost::format ("file %1% already there with a different content")
             % file
@@ -192,8 +192,8 @@ namespace xml
       class include_loop : public generic
       {
       public:
-        include_loop ( const std::string & pre
-                     , IT pos, const IT & end
+        include_loop ( std::string const& pre
+                     , IT pos, IT const& end
                      )
           : generic (pre, "include loop: " + fhg::util::join (pos, end, " -> ").string())
         {}
@@ -204,9 +204,9 @@ namespace xml
       class cannot_resolve : public generic
       {
       public:
-        cannot_resolve ( const std::string& field
-                       , const std::string& type
-                       , const type::structure_type&
+        cannot_resolve ( std::string const& field
+                       , std::string const& type
+                       , type::structure_type const&
                        );
 
       private:
@@ -217,16 +217,16 @@ namespace xml
       class struct_redefined : public generic
       {
       public:
-        struct_redefined ( const type::structure_type& early
-                         , const type::structure_type& late
+        struct_redefined ( type::structure_type const& early
+                         , type::structure_type const& late
                          );
       };
 
       class struct_field_redefined : public generic
       {
       public:
-        struct_field_redefined ( const std::string& name
-                               , const boost::filesystem::path& path
+        struct_field_redefined ( std::string const& name
+                               , boost::filesystem::path const& path
                                )
           : generic ( boost::format ("struct field '%1%' redefined")
                     % name , path
@@ -237,7 +237,7 @@ namespace xml
       class place_type_unknown : public generic
       {
       public:
-        place_type_unknown (const type::place_type&);
+        place_type_unknown (type::place_type const&);
       };
 
       // ******************************************************************* //
@@ -245,10 +245,10 @@ namespace xml
       class parse_lift : public generic
       {
       public:
-        parse_lift ( const std::string & place
-                   , const std::string & field
-                   , const boost::filesystem::path & path
-                   , const std::string & msg
+        parse_lift ( std::string const& place
+                   , std::string const& field
+                   , boost::filesystem::path const& path
+                   , std::string const& msg
                    )
           : generic
             ( boost::format
@@ -266,8 +266,8 @@ namespace xml
       class eval_context_bind : public generic
       {
       public:
-        eval_context_bind ( const std::string & descr
-                          , const std::string & msg
+        eval_context_bind ( std::string const& descr
+                          , std::string const& msg
                           )
           : generic (descr + ": " + msg)
         {}
@@ -279,9 +279,9 @@ namespace xml
       class generic_duplicate : public generic
       {
       public:
-        generic_duplicate ( const T& early
-                          , const T& late
-                          , const boost::format& fmt
+        generic_duplicate ( T const& early
+                          , T const& late
+                          , boost::format const& fmt
                           )
           : generic ( boost::format ( "duplicate %1% at %2%"
                                       ", earlier definition is at %3%"
@@ -297,7 +297,7 @@ namespace xml
       class duplicate_ ## _name : public generic_duplicate<_type>       \
       {                                                                 \
       public:                                                           \
-        duplicate_ ## _name (const _type& early, const _type& late);    \
+        duplicate_ ## _name (_type const& early, _type const& late);    \
       }
 
       DUPLICATE (connect, type::connect_type);
@@ -319,55 +319,55 @@ namespace xml
       class empty_preferences : public generic
       {
       public:
-        empty_preferences (const util::position_type&);
+        empty_preferences (util::position_type const&);
       };
 
       class duplicate_preference : public generic
       {
       public:
-        duplicate_preference (const std::string&, const util::position_type&);
+        duplicate_preference (std::string const&, util::position_type const&);
       };
 
       class preferences_without_modules : public generic
       {
       public:
-        preferences_without_modules (const util::position_type&);
+        preferences_without_modules (util::position_type const&);
       };
 
       class missing_target_for_module : public generic
       {
       public:
-        missing_target_for_module ( const std::string&
-                                  , const util::position_type&
+        missing_target_for_module ( std::string const&
+                                  , util::position_type const&
                                   );
       };
 
       class modules_without_preferences : public generic
       {
       public:
-        modules_without_preferences (const util::position_type&);
+        modules_without_preferences (util::position_type const&);
 
-        modules_without_preferences ( const std::string&
-                                    , const std::string&
-                                    , const util::position_type&
+        modules_without_preferences ( std::string const&
+                                    , std::string const&
+                                    , util::position_type const&
                                     );
       };
 
       class duplicate_module_for_target : public generic
       {
       public:
-        duplicate_module_for_target ( const std::string&
-                                    , const std::string&
-                                    , const util::position_type&
+        duplicate_module_for_target ( std::string const&
+                                    , std::string const&
+                                    , util::position_type const&
                                     );
       };
 
       class mismatching_modules_and_preferences : public generic
       {
       public:
-        mismatching_modules_and_preferences ( const std::list<std::string>&
-                                            , const std::list<std::string>&
-                                            , const util::position_type&
+        mismatching_modules_and_preferences ( std::list<std::string> const&
+                                            , std::list<std::string> const&
+                                            , util::position_type const&
                                             );
       };
 
@@ -376,8 +376,8 @@ namespace xml
       class mismatching_eureka_for_module : public generic
       {
       public:
-        mismatching_eureka_for_module ( const std::string&
-                                      , const util::position_type&
+        mismatching_eureka_for_module ( std::string const&
+                                      , util::position_type const&
                                       );
       };
 
@@ -400,10 +400,10 @@ namespace xml
       class port_with_unknown_type : public generic
       {
       public:
-        port_with_unknown_type ( const we::type::PortDirection & direction
-                               , const std::string & port
-                               , const std::string & type
-                               , const boost::filesystem::path & path
+        port_with_unknown_type ( we::type::PortDirection const& direction
+                               , std::string const& port
+                               , std::string const& type
+                               , boost::filesystem::path const& path
                                )
           : generic
             ( boost::format ("%1% %2% with unknown type %3%")
@@ -421,11 +421,11 @@ namespace xml
       {
       public:
         function_description_with_unknown_port
-        ( const std::string & port_type
-        , const std::string & port_name
-        , const std::string & mod_name
-        , const std::string & mod_function
-        , const boost::filesystem::path & path
+        ( std::string const& port_type
+        , std::string const& port_name
+        , std::string const& mod_name
+        , std::string const& mod_function
+        , boost::filesystem::path const& path
         )
           : generic
             ( boost::format
@@ -444,8 +444,8 @@ namespace xml
       class port_connected_place_nonexistent : public generic
       {
       public:
-        port_connected_place_nonexistent ( const type::port_type&
-                                         , const boost::filesystem::path&
+        port_connected_place_nonexistent ( type::port_type const&
+                                         , boost::filesystem::path const&
                                          );
 
       private:
@@ -457,9 +457,9 @@ namespace xml
       class tunnel_connected_non_virtual : public generic
       {
       public:
-        tunnel_connected_non_virtual ( const type::port_type&
-                                     , const type::place_type&
-                                     , const boost::filesystem::path&
+        tunnel_connected_non_virtual ( type::port_type const&
+                                     , type::place_type const&
+                                     , boost::filesystem::path const&
                                      );
 
       private:
@@ -471,9 +471,9 @@ namespace xml
       class tunnel_name_mismatch : public generic
       {
       public:
-        tunnel_name_mismatch ( const type::port_type&
-                             , const type::place_type&
-                             , const boost::filesystem::path&
+        tunnel_name_mismatch ( type::port_type const&
+                             , type::place_type const&
+                             , boost::filesystem::path const&
                              );
 
       private:
@@ -485,7 +485,7 @@ namespace xml
       class port_not_connected : public generic
       {
       public:
-        port_not_connected (const type::port_type&, const boost::filesystem::path&);
+        port_not_connected (type::port_type const&, boost::filesystem::path const&);
 
       private:
         const boost::filesystem::path _path;
@@ -496,9 +496,9 @@ namespace xml
       class port_connected_type_error : public generic
       {
       public:
-        port_connected_type_error ( const type::port_type&
-                                  , const type::place_type&
-                                  , const boost::filesystem::path&
+        port_connected_type_error ( type::port_type const&
+                                  , type::place_type const&
+                                  , boost::filesystem::path const&
                                   );
 
       private:
@@ -510,11 +510,11 @@ namespace xml
       class port_tunneled_type_error : public generic
       {
       public:
-        port_tunneled_type_error ( const std::string& name_virtual
-                                 , const pnet::type::signature::signature_type& sig_virtual
-                                 , const std::string& name_real
-                                 , const pnet::type::signature::signature_type& sig_real
-                                 , const boost::filesystem::path& path
+        port_tunneled_type_error ( std::string const& name_virtual
+                                 , pnet::type::signature::signature_type const& sig_virtual
+                                 , std::string const& name_real
+                                 , pnet::type::signature::signature_type const& sig_real
+                                 , boost::filesystem::path const& path
                                  )
           : generic
             ( boost::format
@@ -536,7 +536,7 @@ namespace xml
       {
       public:
         connect_to_nonexistent_place ( type::transition_type const&
-                                     , const type::connect_type&
+                                     , type::connect_type const&
                                      );
       };
 
@@ -544,7 +544,7 @@ namespace xml
       {
       public:
         connect_to_nonexistent_port ( type::transition_type const&
-                                    , const type::connect_type&
+                                    , type::connect_type const&
                                     );
       };
 
@@ -553,7 +553,7 @@ namespace xml
       class unknown_function : public generic
       {
       public:
-        unknown_function (const std::string&, type::transition_type const&);
+        unknown_function (std::string const&, type::transition_type const&);
 
       private:
         const std::string _function_name;
@@ -589,7 +589,7 @@ namespace xml
       public:
         connect_eureka_to_nonexistent_out_port
           ( type::transition_type const&
-          , const type::eureka_type&
+          , type::eureka_type const&
           );
       };
 
@@ -598,7 +598,7 @@ namespace xml
       public:
         eureka_port_type_mismatch
           ( type::transition_type const&
-          , const type::eureka_type&
+          , type::eureka_type const&
           );
       };
 
@@ -616,9 +616,9 @@ namespace xml
       {
       public:
         connect_type_error ( type::transition_type const&
-                           , const type::connect_type&
-                           , const type::port_type&
-                           , const type::place_type&
+                           , type::connect_type const&
+                           , type::port_type const&
+                           , type::place_type const&
                            );
       };
 
@@ -662,9 +662,9 @@ namespace xml
       class property_generic : public generic
       {
       public:
-        property_generic ( const std::string & msg
-                         , const we::type::property::path_type & key
-                         , const boost::filesystem::path & path
+        property_generic ( std::string const& msg
+                         , we::type::property::path_type const& key
+                         , boost::filesystem::path const& path
                          )
           : generic
             ( boost::format ("%1% for property %2%")
@@ -680,10 +680,10 @@ namespace xml
       class type_map_mismatch : public generic
       {
       public:
-        type_map_mismatch ( const std::string & from
-                          , const std::string & to_old
-                          , const std::string & to_new
-                          , const boost::filesystem::path & path
+        type_map_mismatch ( std::string const& from
+                          , std::string const& to_old
+                          , std::string const& to_new
+                          , boost::filesystem::path const& path
                           )
           : generic
             ( boost::format ("type map mismatch, type %1% mapped to type %3%"
@@ -702,9 +702,9 @@ namespace xml
       class missing_type_out : public generic
       {
       public:
-        missing_type_out ( const std::string & type
-                         , const std::string & spec
-                         , const boost::filesystem::path & path
+        missing_type_out ( std::string const& type
+                         , std::string const& spec
+                         , boost::filesystem::path const& path
                          )
           : generic
             ( boost::format ("missing type-out %1% in specialization %2%")
@@ -720,9 +720,9 @@ namespace xml
       class invalid_prefix : public generic
       {
       public:
-        invalid_prefix ( const std::string & name
-                       , const std::string & type
-                       , const boost::filesystem::path & path
+        invalid_prefix ( std::string const& name
+                       , std::string const& type
+                       , boost::filesystem::path const& path
                        )
           : generic
             ( boost::format ("%2% %1% with invalid prefix")
@@ -738,9 +738,9 @@ namespace xml
       class invalid_name : public generic
       {
       public:
-        invalid_name ( const std::string & name
-                     , const std::string & type
-                     , const boost::filesystem::path & path
+        invalid_name ( std::string const& name
+                     , std::string const& type
+                     , boost::filesystem::path const& path
                      )
           : generic
             ( boost::format
@@ -757,8 +757,8 @@ namespace xml
       class invalid_field_name : public generic
       {
       public:
-        invalid_field_name ( const std::string & name
-                           , const boost::filesystem::path & path
+        invalid_field_name ( std::string const& name
+                           , boost::filesystem::path const& path
                            )
           : generic (boost::format (" invalid field name %1%") % name, path)
         {}
@@ -769,8 +769,8 @@ namespace xml
       class no_map_for_virtual_place : public generic
       {
       public:
-        no_map_for_virtual_place ( const std::string & name
-                                 , const boost::filesystem::path & path
+        no_map_for_virtual_place ( std::string const& name
+                                 , boost::filesystem::path const& path
                                  )
           : generic
             ( boost::format (" missing map for virtual place %1%") % name
@@ -784,8 +784,8 @@ namespace xml
       class port_type_mismatch : public generic
       {
       public:
-        port_type_mismatch ( const type::port_type& port
-                           , const type::port_type& other_port
+        port_type_mismatch ( type::port_type const& port
+                           , type::port_type const& other_port
                            );
       };
 
@@ -794,10 +794,10 @@ namespace xml
       class real_place_missing : public generic
       {
       public:
-        real_place_missing ( const std::string & place_virtual
-                           , const std::string & place_real
-                           , const std::string & trans
-                           , const boost::filesystem::path & path
+        real_place_missing ( std::string const& place_virtual
+                           , std::string const& place_real
+                           , std::string const& trans
+                           , boost::filesystem::path const& path
                            )
           : generic
             ( boost::format
@@ -819,11 +819,11 @@ namespace xml
         class formatted : public generic
         {
         public:
-          formatted ( const std::string & name
-                    , const std::string & function
-                    , const std::string & what
-                    , const std::size_t & k
-                    , const boost::filesystem::path & path
+          formatted ( std::string const& name
+                    , std::string const& function
+                    , std::string const& what
+                    , std::size_t const& k
+                    , boost::filesystem::path const& path
                     )
             : generic
               ( boost::format
@@ -845,11 +845,11 @@ namespace xml
         class expected : public formatted
         {
         public:
-          expected ( const std::string & name
-                   , const std::string & function
-                   , const std::string & what
-                   , const std::size_t & k
-                   , const boost::filesystem::path & path
+          expected ( std::string const& name
+                   , std::string const& function
+                   , std::string const& what
+                   , std::size_t const& k
+                   , boost::filesystem::path const& path
                    )
             : formatted ( name
                         , function
@@ -866,11 +866,11 @@ namespace xml
       class could_not_open_file : public generic
       {
       public:
-        could_not_open_file (const boost::filesystem::path & file)
+        could_not_open_file (boost::filesystem::path const& file)
           : could_not_open_file (file.string())
         {}
 
-        could_not_open_file (const std::string & file)
+        could_not_open_file (std::string const& file)
           : generic (boost::format ("could not open file %1%") % file)
         {}
       };
@@ -880,7 +880,7 @@ namespace xml
       class could_not_create_directory : public generic
       {
       public:
-        could_not_create_directory (const boost::filesystem::path & path)
+        could_not_create_directory (boost::filesystem::path const& path)
           : generic (boost::format ("could not create directory %1%") % path)
         {}
       };
@@ -890,8 +890,8 @@ namespace xml
       class template_without_function : public generic
       {
       public:
-        template_without_function ( const boost::optional<std::string>& name
-                                  , const boost::filesystem::path& path
+        template_without_function ( boost::optional<std::string> const& name
+                                  , boost::filesystem::path const& path
                                   )
           : generic
             (boost::format ("template %1% without a function") % name, path)
@@ -903,7 +903,7 @@ namespace xml
       class weparse : public generic
       {
       public:
-        weparse (const std::string & msg)
+        weparse (std::string const& msg)
           : generic (msg)
         {}
       };
@@ -913,7 +913,7 @@ namespace xml
       class strange : public generic
       {
       public:
-        strange (const std::string & msg)
+        strange (std::string const& msg)
           : generic ("this is STRANGE and should not happen", msg)
         {}
       };

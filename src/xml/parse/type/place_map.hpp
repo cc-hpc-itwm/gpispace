@@ -40,18 +40,18 @@ namespace xml
       public:
         typedef std::pair<std::string, std::string> unique_key_type;
 
-        place_map_type ( const util::position_type&
-                       , const std::string & _place_virtual
-                       , const std::string & _place_real
-                       , const we::type::property::type& properties
+        place_map_type ( util::position_type const&
+                       , std::string const& _place_virtual
+                       , std::string const& _place_real
+                       , we::type::property::type const& properties
                        );
 
-        const std::string& place_virtual() const;
-        const std::string& place_real() const;
+        std::string const& place_virtual() const;
+        std::string const& place_real() const;
 
         place_map_type with_place_real (std::string const&) const;
 
-        const we::type::property::type& properties() const;
+        we::type::property::type const& properties() const;
 
         unique_key_type unique_key() const;
 
@@ -69,7 +69,7 @@ namespace xml
       namespace dump
       {
         void dump ( ::fhg::util::xml::xmlstream & s
-                  , const place_map_type & p
+                  , place_map_type const& p
                   );
       }
     }

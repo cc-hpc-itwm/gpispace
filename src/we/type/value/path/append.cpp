@@ -25,7 +25,7 @@ namespace pnet
       namespace path
       {
         append::append ( std::list<std::string>& path
-                       , const std::string& key
+                       , std::string const& key
                        )
           : _path (path)
         {

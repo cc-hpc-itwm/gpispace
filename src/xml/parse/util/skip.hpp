@@ -22,6 +22,6 @@ namespace xml
 {
   namespace parse
   {
-    void skip (xml_node_type*&, const rapidxml::node_type);
+    void skip (xml_node_type*&, rapidxml::node_type);
   }
 }

@@ -54,7 +54,7 @@ namespace pnet
         }
       }
 
-      bool is_literal (const std::string& tname)
+      bool is_literal (std::string const& tname)
       {
         static std::set<std::string> ln (init_literal_names());
 

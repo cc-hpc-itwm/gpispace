@@ -31,7 +31,7 @@ namespace we
   namespace loader
   {
     typedef void (*WrapperFunction)( drts::worker::context *
-                                   , const expr::eval::context&
+                                   , expr::eval::context const&
                                    , expr::eval::context&
                                    , std::map<std::string, void*> const&
                                    );
@@ -41,7 +41,7 @@ namespace we
     public:
       virtual ~IModule() {}
 
-      virtual void add_function (const std::string&, WrapperFunction) = 0;
+      virtual void add_function (std::string const&, WrapperFunction) = 0;
     };
   }
 }

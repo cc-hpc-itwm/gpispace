@@ -41,14 +41,14 @@ namespace xml
         typedef std::string unique_key_type;
         typedef std::unordered_set<std::string> names_type;
 
-        tmpl_type ( const util::position_type&
-                  , const boost::optional<std::string>& name
-                  , const names_type& tmpl_parameter
+        tmpl_type ( util::position_type const&
+                  , boost::optional<std::string> const& name
+                  , names_type const& tmpl_parameter
                   , function_type const& function
                   );
 
-        const boost::optional<std::string>& name() const;
-        const names_type& tmpl_parameter () const;
+        boost::optional<std::string> const& name() const;
+        names_type const& tmpl_parameter () const;
 
         function_type const& function() const;
 
@@ -57,7 +57,7 @@ namespace xml
         void resolve_types_recursive
           (std::unordered_map<std::string, pnet::type::signature::signature_type> known);
 
-        const unique_key_type& unique_key() const;
+        unique_key_type const& unique_key() const;
 
       private:
         boost::optional<std::string> const _name;
@@ -67,7 +67,7 @@ namespace xml
 
       namespace dump
       {
-        void dump (::fhg::util::xml::xmlstream&, const tmpl_type&);
+        void dump (::fhg::util::xml::xmlstream&, tmpl_type const&);
       }
     }
   }

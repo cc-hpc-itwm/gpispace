@@ -16,10 +16,9 @@
 
 #include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
 
-#include <fhgcom/header.hpp>
+#include <fhgcom/address.hpp>
 
 #include <fhg/util/boost/optional.hpp>
-#include <util-generic/cxx14/make_unique.hpp>
 
 #include <boost/range/algorithm.hpp>
 
@@ -125,7 +124,7 @@ namespace sdpa
                          , c.end()
                          , std::inserter (workers, workers.begin())
                          , [&total_transfer_cost]
-                           (const cost_and_matching_info_t& cost_and_matching_info)
+                           (cost_and_matching_info_t const& cost_and_matching_info)
                            {
                              total_transfer_cost += cost_and_matching_info._transfer_cost;
                              return cost_and_matching_info._worker_id;
@@ -144,7 +143,7 @@ namespace sdpa
     }
 
     CoallocationScheduler::CoallocationScheduler
-        (std::function<Requirements_and_preferences (const sdpa::job_id_t&)>
+        (std::function<Requirements_and_preferences (sdpa::job_id_t const&)>
            requirements_and_preferences
         )
       : _requirements_and_preferences (requirements_and_preferences)
@@ -157,7 +156,7 @@ namespace sdpa
       _jobs_to_schedule.erase (job);
     }
 
-    void CoallocationScheduler::submit_job (const sdpa::job_id_t& jobId)
+    void CoallocationScheduler::submit_job (sdpa::job_id_t const& jobId)
     {
       _jobs_to_schedule.push (jobId);
     }
@@ -190,7 +189,7 @@ namespace sdpa
         double total_transfer_cost;
 
         std::tie (workers, implementation, total_transfer_cost)
-          = find_assignment (jobId, lock_worker_man);
+          = find_assignment (requirements_and_preferences, lock_worker_man);
 
         if (!workers.empty())
         {
@@ -218,7 +217,7 @@ namespace sdpa
 
             allocation_table_.emplace
               ( jobId
-              , fhg::util::cxx14::make_unique<scheduler::Reservation>
+              , std::make_unique<scheduler::Reservation>
                   ( workers
                   , implementation
                   , requirements_and_preferences.preferences()
@@ -298,7 +297,7 @@ namespace sdpa
     void CoallocationScheduler::start_pending_jobs
       ( std::function<void ( WorkerSet const&
                            , Implementation const& implementation
-                           , const job_id_t&
+                           , job_id_t const&
                            , std::function<fhg::com::p2p::address_t (worker_id_t const&)>
                            )
                      > serve_job
@@ -345,7 +344,7 @@ namespace sdpa
       }
     }
 
-    void CoallocationScheduler::release_reservation (const sdpa::job_id_t& job_id)
+    void CoallocationScheduler::release_reservation (sdpa::job_id_t const& job_id)
     {
       std::lock_guard<std::mutex> const lock_alloc_table (mtx_alloc_table_);
       std::lock_guard<std::mutex> const lock_worker_man (_mtx_worker_man);
@@ -354,7 +353,7 @@ namespace sdpa
     }
 
     void CoallocationScheduler::release_reservation
-      ( const sdpa::job_id_t& job_id
+      ( sdpa::job_id_t const& job_id
       , std::lock_guard<std::mutex> const&
       , std::lock_guard<std::mutex> const&
       )
@@ -456,7 +455,7 @@ namespace sdpa
       container_.insert (container_.end(), std::begin (range), std::end (range));
     }
 
-    size_t CoallocationScheduler::locked_job_id_list::erase (const job_id_t& item)
+    size_t CoallocationScheduler::locked_job_id_list::erase (job_id_t const& item)
     {
       std::lock_guard<std::mutex> const _ (mtx_);
       size_t count (0);
@@ -465,7 +464,7 @@ namespace sdpa
       {
         if (item == *iter)
         {
-          iter = container_.erase(iter);
+          iter = container_.erase (iter);
           ++count;
         }
         else
@@ -638,13 +637,10 @@ namespace sdpa
     }
 
     Workers_implementation_and_transfer_cost CoallocationScheduler::find_assignment
-      ( job_id_t const& job_id
+      ( Requirements_and_preferences const& requirements_and_preferences
       , std::lock_guard<std::mutex> const&
       ) const
     {
-      auto const requirements_and_preferences
-        (_requirements_and_preferences (job_id));
-
       size_t const num_required_workers
         (requirements_and_preferences.numWorkers());
 
@@ -660,7 +656,7 @@ namespace sdpa
       {
         auto const matching_degree_and_implementation
           ( match_requirements_and_preferences
-              (job_id, worker_class.first)
+              (requirements_and_preferences, worker_class.first)
           );
 
         if (!matching_degree_and_implementation.first)
@@ -712,25 +708,15 @@ namespace sdpa
 
     std::pair<boost::optional<double>, boost::optional<std::string>>
       CoallocationScheduler::match_requirements_and_preferences
-        ( job_id_t const& job_id
+        ( Requirements_and_preferences const& requirements_and_preferences
         , std::set<std::string> const& capabilities
         ) const
     {
-      auto const requirements_and_preferences
-        (_requirements_and_preferences (job_id));
-      std::size_t matchingDeg (0);
-      for ( we::type::requirement_t const& req
+      for ( we::type::Requirement const& req
           : requirements_and_preferences.requirements()
           )
       {
-        if (capabilities.count (req.value()))
-        {
-          if (!req.is_mandatory())
-          {
-            ++matchingDeg;
-          }
-        }
-        else if (req.is_mandatory())
+        if (!capabilities.count (req.value()))
         {
           return std::make_pair (boost::none, boost::none);
         }
@@ -741,9 +727,7 @@ namespace sdpa
       if (preferences.empty())
       {
         return std::make_pair
-          ( ( ( matchingDeg + 1.0)
-            / (capabilities.size() + 1.0)
-            )
+          ( 1.0 / (capabilities.size() + 1.0)
           , boost::none
           );
       }
@@ -764,8 +748,7 @@ namespace sdpa
       }
 
       boost::optional<double> matching_req_and_pref_deg
-        ( ( matchingDeg
-          + std::distance (preference, preferences.end())
+        ( ( std::distance (preference, preferences.end())
           + 1.0
           )
           /

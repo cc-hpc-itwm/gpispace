@@ -20,8 +20,8 @@ namespace sdpa
 {
   namespace daemon
   {
-    Job::Job ( const job_id_t id
-             , we::type::activity_t activity
+    Job::Job ( job_id_t id
+             , we::type::Activity activity
              , job_source source
              , job_handler handler
              , Requirements_and_preferences requirements_and_preferences
@@ -37,7 +37,7 @@ namespace sdpa
       start();
     }
 
-    const job_id_t & Job::id() const
+    job_id_t const& Job::id() const
     {
       return id_;
     }
@@ -55,7 +55,7 @@ namespace sdpa
       std::lock_guard<std::mutex> const _ (mtx_);
       return m_error_message;
     }
-    const we::type::activity_t& Job::result() const
+    we::type::Activity const& Job::result() const
     {
       std::lock_guard<std::mutex> const _ (mtx_);
       return result_;
@@ -88,7 +88,7 @@ namespace sdpa
       process_event (e_failed());
       m_error_message = error_message;
     }
-    void Job::JobFinished (we::type::activity_t result)
+    void Job::JobFinished (we::type::Activity result)
     {
       std::lock_guard<std::mutex> const _ (mtx_);
       process_event (e_finished());

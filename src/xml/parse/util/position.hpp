@@ -33,13 +33,13 @@ namespace xml
       public:
         position_type ( const char* begin
                       , const char* pos
-                      , const boost::filesystem::path&
-                      , const unsigned int& line = 1
-                      , const unsigned int& column = 0
+                      , boost::filesystem::path const&
+                      , unsigned int const& line = 1
+                      , unsigned int const& column = 0
                       );
         const unsigned int& line() const;
         const unsigned int& column() const;
-        const boost::filesystem::path& path() const;
+        boost::filesystem::path const& path() const;
 
       private:
         unsigned int _line;
@@ -47,7 +47,7 @@ namespace xml
         boost::filesystem::path _path;
       };
 
-      std::ostream& operator<< (std::ostream&, const position_type&);
+      std::ostream& operator<< (std::ostream&, position_type const&);
 
 #define XML_PARSE_UTIL_POSITION_GENERATED()                             \
       ::xml::parse::util::position_type (nullptr, nullptr, __FILE__, __LINE__)

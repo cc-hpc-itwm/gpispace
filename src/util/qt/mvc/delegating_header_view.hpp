@@ -50,7 +50,7 @@ namespace fhg
           void close_editor();
 
         protected:
-          virtual void paintSection (QPainter*, const QRect&, int) const override;
+          virtual void paintSection (QPainter*, QRect const&, int) const override;
           virtual QSize sizeHint() const override;
           virtual void keyPressEvent (QKeyEvent*) override;
           virtual void contextMenuEvent (QContextMenuEvent*) override;
@@ -58,8 +58,8 @@ namespace fhg
           virtual bool event (QEvent*) override;
 
         private slots:
-          void sections_inserted (const QModelIndex&, int, int);
-          void sections_removed (const QModelIndex&, int, int);
+          void sections_inserted (QModelIndex const&, int, int);
+          void sections_removed (QModelIndex const&, int, int);
           void data_changed (Qt::Orientation, int, int);
 
           void set_editor_geometry();

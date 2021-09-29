@@ -55,19 +55,19 @@ namespace fhg
 
         void append_event (logging::message const&);
 
-        virtual int rowCount (const QModelIndex& = QModelIndex()) const override;
-        virtual int columnCount (const QModelIndex& = QModelIndex()) const override;
+        virtual int rowCount (QModelIndex const& = QModelIndex()) const override;
+        virtual int columnCount (QModelIndex const& = QModelIndex()) const override;
         virtual QVariant data
-          (const QModelIndex&, int role = Qt::DisplayRole) const override;
+          (QModelIndex const&, int role = Qt::DisplayRole) const override;
         virtual QVariant headerData
           (int section, Qt::Orientation, int role = Qt::DisplayRole) const override;
         virtual QModelIndex index
-          (int row, int column, const QModelIndex& = QModelIndex()) const override;
-        virtual QModelIndex parent (const QModelIndex&) const override;
+          (int row, int column, QModelIndex const& = QModelIndex()) const override;
+        virtual QModelIndex parent (QModelIndex const&) const override;
 
         void clear();
         virtual bool removeRows
-          (int row, int count, const QModelIndex& parent = QModelIndex()) override;
+          (int row, int count, QModelIndex const& parent = QModelIndex()) override;
 
         typedef long timestamp_type;
         typedef long duration_type;

@@ -346,7 +346,7 @@ namespace gspc
                    % context
                    )
               )
-            , std::runtime_error ("D::D()")
+            , std::runtime_error ("Exception in gspc_we_plugin_create: D::D()")
             )
           );
       }

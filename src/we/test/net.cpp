@@ -16,10 +16,10 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <we/type/activity.hpp>
-#include <we/type/expression.hpp>
+#include <we/type/Activity.hpp>
+#include <we/type/Expression.hpp>
 #include <we/type/net.hpp>
-#include <we/type/transition.hpp>
+#include <we/type/Transition.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/random/string.hpp>
@@ -34,14 +34,14 @@
 BOOST_AUTO_TEST_CASE (transition_without_input_port_can_not_fire)
 {
   we::type::net_type net;
-  net.add_transition ( we::type::transition_t
+  net.add_transition ( we::type::Transition
                        ( fhg::util::testing::random_string()
-                       , we::type::expression_t()
+                       , we::type::Expression()
                        , boost::none
                        , no_properties()
                        , we::priority_type()
                        , boost::optional<we::type::eureka_id_type>{}
-                       , std::list<we::type::preference_t>{}
+                       , std::list<we::type::Preference>{}
                        )
                      );
 
@@ -58,14 +58,14 @@ BOOST_AUTO_TEST_CASE (deserialized_transition_without_input_port_can_not_fire)
 
   {
     we::type::net_type net;
-    net.add_transition ( we::type::transition_t
+    net.add_transition ( we::type::Transition
                          ( fhg::util::testing::random_string()
-                         , we::type::expression_t()
+                         , we::type::Expression()
                          , boost::none
                          , no_properties()
                          , we::priority_type()
                          , boost::optional<we::type::eureka_id_type>{}
-                         , std::list<we::type::preference_t>{}
+                         , std::list<we::type::Preference>{}
                          )
                        );
 
@@ -112,14 +112,14 @@ BOOST_AUTO_TEST_CASE (transition_that_depends_on_own_output_can_fire)
   net.put_value (place_in, we::type::literal::control());
   net.put_value (place_credit, we::type::literal::control());
 
-  we::type::transition_t transition
+  we::type::Transition transition
     ( fhg::util::testing::random_identifier()
-    , we::type::expression_t ("${out} := ${in}")
+    , we::type::Expression ("${out} := ${in}")
     , boost::none
     , no_properties()
     , we::priority_type()
     , boost::optional<we::type::eureka_id_type>{}
-    , std::list<we::type::preference_t>{}
+    , std::list<we::type::Preference>{}
     );
 
   auto&& add_port
@@ -128,14 +128,14 @@ BOOST_AUTO_TEST_CASE (transition_that_depends_on_own_output_can_fire)
          ) -> we::port_id_type
      {
        return transition.add_port
-         (we::type::port_t (name, direction, signature, no_properties()));
+         (we::type::Port (name, direction, signature, no_properties()));
      }
     );
 
-  we::port_id_type const port_in (add_port ("in", we::type::PORT_IN));
-  we::port_id_type const port_out (add_port ("out", we::type::PORT_OUT));
-  we::port_id_type const port_credit_in (add_port ("c", we::type::PORT_IN));
-  we::port_id_type const port_credit_out (add_port ("c", we::type::PORT_OUT));
+  we::port_id_type const port_in (add_port ("in", we::type::port::direction::In{}));
+  we::port_id_type const port_out (add_port ("out", we::type::port::direction::Out{}));
+  we::port_id_type const port_credit_in (add_port ("c", we::type::port::direction::In{}));
+  we::port_id_type const port_credit_out (add_port ("c", we::type::port::direction::Out{}));
 
   we::transition_id_type const transition_id (net.add_transition (transition));
 

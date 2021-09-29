@@ -80,7 +80,7 @@ namespace drts
     {}
 
     context::implementation::implementation
-      ( std::string const &worker_name
+      ( std::string const& worker_name
       , std::set<std::string> const& workers
       , fhg::logging::stream_emitter& logger
       )
@@ -99,7 +99,7 @@ namespace drts
       return _workers;
     }
     std::string context::implementation::worker_to_hostname
-      (std::string const & w) const
+      (std::string const& w) const
     {
       const std::string::size_type host_start = w.find ('-') + 1;
       const std::string::size_type host_end = w.find (' ', host_start);

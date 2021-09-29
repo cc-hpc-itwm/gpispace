@@ -20,7 +20,6 @@
 #include <test/certificates_data.hpp>
 
 #include <fhg/util/thread/event.hpp>
-#include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/optional.hpp>
 
@@ -467,7 +466,7 @@ BOOST_DATA_TEST_CASE
 
   fhg::util::thread::event<std::string> job_submitted_1;
   auto worker_1
-    ( fhg::util::cxx14::make_unique<utils::fake_drts_worker_notifying_module_call_submission>
+    ( std::make_unique<utils::fake_drts_worker_notifying_module_call_submission>
         ( [&job_submitted_1] (std::string j) { job_submitted_1.notify (j); }
         , agent
         , certificates

@@ -33,17 +33,17 @@ namespace pnet
           printer (fhg::util::xml::xmlstream& os)
             : _os (os)
           {}
-          void _struct (const std::pair<std::string, structure_type>& s) const
+          void _struct (std::pair<std::string, structure_type> const& s) const
           {
             _os.open ("struct");
             _os.attr ("name", s.first);
-            for (const field_type& f : s.second)
+            for (field_type const& f : s.second)
             {
               traverse (*this, f);
             }
             _os.close();
           }
-          void _field (const std::pair<std::string, std::string>& f) const
+          void _field (std::pair<std::string, std::string> const& f) const
           {
             _os.open ("field");
             _os.attr ("name", f.first);
@@ -51,7 +51,7 @@ namespace pnet
             _os.close();
           }
           void _field_struct
-            (const std::pair<std::string, structure_type>& s) const
+            (std::pair<std::string, structure_type> const& s) const
           {
             traverse (*this, s);
           }
@@ -60,7 +60,7 @@ namespace pnet
         };
       }
 
-      dump::dump (const structured_type& structured)
+      dump::dump (structured_type const& structured)
         : _structured (structured)
       {}
       std::ostream& dump::operator() (std::ostream& os) const
@@ -71,13 +71,13 @@ namespace pnet
 
         return os;
       }
-      std::ostream& operator<< (std::ostream& os, const dump& d)
+      std::ostream& operator<< (std::ostream& os, dump const& d)
       {
         return d (os);
       }
 
       void dump_to ( fhg::util::xml::xmlstream& s
-                   , const structured_type& structured
+                   , structured_type const& structured
                    )
       {
         traverse (printer (s), structured);

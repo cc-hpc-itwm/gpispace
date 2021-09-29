@@ -35,9 +35,9 @@ namespace xml
     namespace warning
     {
       port_not_connected::port_not_connected
-        (const type::port_type& port, const boost::filesystem::path& path)
+        (type::port_type const& port, boost::filesystem::path const& path)
           : generic ( boost::format ("%1%-port %2% not connected in %3%")
-                    % we::type::enum_to_string (port.direction())
+                    % port.direction()
                     % port.name()
                     % path
                     )
@@ -46,9 +46,9 @@ namespace xml
 
       conflicting_port_types::conflicting_port_types
         ( type::transition_type const& transition
-        , const type::port_type& in
-        , const type::port_type& out
-        , const boost::filesystem::path& path
+        , type::port_type const& in
+        , type::port_type const& out
+        , boost::filesystem::path const& path
         )
           : generic ( boost::format ( "port %1% of transition %2% has differing "
                                       "types for input (%3%) and output (%4%) "
@@ -77,7 +77,7 @@ namespace xml
       { }
 
       duplicate_external_function::duplicate_external_function
-        (const type::module_type& mod, const type::module_type& old)
+        (type::module_type const& mod, type::module_type const& old)
           : generic ( boost::format ( "the external function %1% in module %2%"
                                       " has multiple occurences in %3% and %4%"
                                     )
@@ -97,8 +97,8 @@ namespace xml
                     )
       {}
 
-      struct_redefined::struct_redefined ( const type::structure_type& early
-                                         , const type::structure_type& late
+      struct_redefined::struct_redefined ( type::structure_type const& early
+                                         , type::structure_type const& late
                                          )
         : generic ( boost::format ("struct %1% at %2% redefined at %3%")
                   % early.name()

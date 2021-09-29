@@ -45,7 +45,7 @@ namespace
     fake_drts_worker_notifying_submission_and_cancel
         ( std::function<void (std::string)> announce_job
         , std::function<void (std::string)> announce_cancel
-        , const utils::agent& parent_agent
+        , utils::agent const& parent_agent
         , fhg::com::Certificates const& certificates
         )
       : utils::no_thread::fake_drts_worker_notifying_module_call_submission

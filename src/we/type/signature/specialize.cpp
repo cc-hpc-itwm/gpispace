@@ -47,7 +47,7 @@ namespace pnet
         class mapper
         {
         public:
-          mapper (const std::unordered_map<std::string, std::string>& m)
+          mapper (std::unordered_map<std::string, std::string> const& m)
             : _m (m)
           {}
           void _struct (structured_type& s) const
@@ -71,7 +71,7 @@ namespace pnet
         private:
           const std::unordered_map<std::string, std::string>& _m;
 
-          const std::string& map (const std::string& x) const
+          std::string const& map (std::string const& x) const
           {
             const std::unordered_map<std::string, std::string>::const_iterator
               pos (_m.find (x));
@@ -83,10 +83,10 @@ namespace pnet
 
       void specialize
         ( structured_type& s
-        , const std::unordered_map<std::string, std::string>& m
+        , std::unordered_map<std::string, std::string> const& m
         )
       {
-        mapper(m)._struct(s);
+        mapper (m)._struct (s);
       }
     }
   }

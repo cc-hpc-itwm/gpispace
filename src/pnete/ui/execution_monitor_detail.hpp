@@ -92,21 +92,21 @@ namespace fhg
         virtual QVariant headerData
           (int section, Qt::Orientation, int role = Qt::DisplayRole) const override;
         virtual bool setHeaderData
-          (int section, Qt::Orientation, const QVariant&, int role = Qt::EditRole) override;
+          (int section, Qt::Orientation, QVariant const&, int role = Qt::EditRole) override;
 
         virtual void setSourceModel (QAbstractItemModel*) override;
 
-        virtual int columnCount (const QModelIndex& = QModelIndex()) const override;
-        virtual QModelIndex mapToSource (const QModelIndex& proxy) const override;
-        virtual QModelIndex index (int, int, const QModelIndex&) const override;
+        virtual int columnCount (QModelIndex const& = QModelIndex()) const override;
+        virtual QModelIndex mapToSource (QModelIndex const& proxy) const override;
+        virtual QModelIndex index (int, int, QModelIndex const&) const override;
         virtual bool insertColumns
-          (int column, int count, const QModelIndex& parent = QModelIndex()) override;
+          (int column, int count, QModelIndex const& parent = QModelIndex()) override;
         virtual bool removeColumns
-          (int column, int count, const QModelIndex& parent = QModelIndex()) override;
+          (int column, int count, QModelIndex const& parent = QModelIndex()) override;
 
       private slots:
         void move_tick();
-        void source_dataChanged (const QModelIndex&, const QModelIndex&);
+        void source_dataChanged (QModelIndex const&, QModelIndex const&);
 
       private:
         using util::qt::mvc::id_proxy::setSourceModel;
@@ -134,18 +134,18 @@ namespace fhg
                                    );
 
         virtual void paint ( QPainter* painter
-                           , const QStyleOptionViewItem& option
-                           , const QModelIndex& index
+                           , QStyleOptionViewItem const& option
+                           , QModelIndex const& index
                            ) const override;
 
         virtual void paint
-          (QPainter*, const QRect&, const util::qt::mvc::section_index&) override;
-        virtual QWidget* create_editor ( const QRect&
+          (QPainter*, QRect const&, util::qt::mvc::section_index const&) override;
+        virtual QWidget* create_editor ( QRect const&
                                        , util::qt::mvc::delegating_header_view*
-                                       , const util::qt::mvc::section_index&
+                                       , util::qt::mvc::section_index const&
                                        ) override;
         virtual void release_editor
-          (const util::qt::mvc::section_index&, QWidget* editor) override;
+          (util::qt::mvc::section_index const&, QWidget* editor) override;
         virtual void update_editor
           (util::qt::mvc::section_index, QWidget* editor) override;
         virtual bool can_edit_section (util::qt::mvc::section_index) const override;
@@ -163,8 +163,8 @@ namespace fhg
 
         virtual bool helpEvent ( QHelpEvent* event
                                , QAbstractItemView* view
-                               , const QStyleOptionViewItem& option
-                               , const QModelIndex& index
+                               , QStyleOptionViewItem const& option
+                               , QModelIndex const& index
                                ) override;
 
       private:

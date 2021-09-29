@@ -19,11 +19,10 @@
 #include <we/type/net.fwd.hpp>
 
 #include <we/plugin/Plugins.hpp>
-#include <we/type/activity.fwd.hpp>
-#include <we/type/connection.hpp>
+#include <we/type/Activity.fwd.hpp>
 #include <we/type/id.hpp>
 #include <we/type/place.hpp>
-#include <we/type/transition.hpp>
+#include <we/type/Transition.hpp>
 #include <we/type/value.hpp>
 #include <we/type/value/serialize.hpp>
 #include <we/workflow_response.hpp>
@@ -47,6 +46,16 @@
 
 namespace we
 {
+  namespace edge
+  {
+    //! \todo eliminate this, instead use subclasses of connection
+    enum type {PT,PT_READ,TP,TP_MANY};
+
+    bool is_PT (type const&);
+
+    std::string enum_to_string (type const&);
+  }
+
   namespace type
   {
     class net_type
@@ -85,11 +94,11 @@ namespace we
         std::unordered_map<token_id_type, pnet::type::value::value_type>;
 
 
-      place_id_type add_place (const place::type&);
-      transition_id_type add_transition (const we::type::transition_t&);
+      place_id_type add_place (place::type const&);
+      transition_id_type add_transition (we::type::Transition const&);
 
       const std::unordered_map<place_id_type, place::type>& places() const;
-      const std::unordered_map<transition_id_type, we::type::transition_t>&
+      const std::unordered_map<transition_id_type, we::type::Transition>&
         transitions() const;
 
       void add_connection ( edge::type
@@ -117,14 +126,14 @@ namespace we
       port_to_eureka_type const& port_to_eureka() const;
       place_to_port_type const& place_to_port() const;
 
-      void put_value (place_id_type, const pnet::type::value::value_type&);
+      void put_value (place_id_type, pnet::type::value::value_type const&);
       //! \note place must be marked with atribute put_token="true"
       void put_token
         (std::string place_name, pnet::type::value::value_type const&);
 
       token_by_id_type const& get_token (place_id_type) const;
 
-      boost::optional<we::type::activity_t>
+      boost::optional<we::type::Activity>
         fire_expressions_and_extract_activity_random
           ( std::mt19937&
           , we::workflow_response_callback const&
@@ -133,7 +142,7 @@ namespace we
           , gspc::we::plugin::PutToken
           );
 
-      boost::optional<we::type::activity_t>
+      boost::optional<we::type::Activity>
         fire_expressions_and_extract_activity_random_TESTING_ONLY
           ( std::mt19937&
           , we::workflow_response_callback const&
@@ -147,13 +156,16 @@ namespace we
                   , eureka_response_callback
                   );
 
+
+      net_type& assert_correct_expression_types();
+
     private:
       place_id_type _place_id;
       std::unordered_map<place_id_type, place::type> _pmap;
       std::unordered_map<std::string, place_id_type> _place_id_by_name;
 
       transition_id_type _transition_id;
-      std::unordered_map<transition_id_type, we::type::transition_t> _tmap;
+      std::unordered_map<transition_id_type, we::type::Transition> _tmap;
 
       adj_pt_type _adj_pt_consume;
       adj_pt_type _adj_pt_read;
@@ -194,11 +206,11 @@ namespace we
 
       void disable (transition_id_type);
 
-      we::type::activity_t extract_activity
-        (transition_id_type, we::type::transition_t const&);
+      we::type::Activity extract_activity
+        (transition_id_type, we::type::Transition const&);
       void fire_expression
         ( transition_id_type
-        , we::type::transition_t const&
+        , we::type::Transition const&
         , we::workflow_response_callback const&
         , we::eureka_response_callback const&
         , gspc::we::plugin::Plugins&
@@ -220,7 +232,7 @@ namespace we
 
       friend class boost::serialization::access;
       template<typename Archive>
-      void serialize (Archive& ar, const unsigned int)
+      void serialize (Archive& ar, unsigned int)
       {
         ar & BOOST_SERIALIZATION_NVP (_place_id);
         ar & BOOST_SERIALIZATION_NVP (_pmap);

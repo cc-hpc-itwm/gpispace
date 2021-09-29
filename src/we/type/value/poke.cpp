@@ -28,14 +28,14 @@ namespace pnet
     {
       namespace
       {
-        struct first_is : public std::unary_function<const std::string&, bool>
+        struct first_is : public std::unary_function<std::string const&, bool>
         {
-          first_is (const std::string& what)
+          first_is (std::string const& what)
             : _what (what)
           {}
 
           template<typename T>
-          bool operator() (const T& x)
+          bool operator() (T const& x)
           {
             return x.first == _what;
           }
@@ -47,10 +47,10 @@ namespace pnet
         class visitor_poke : public boost::static_visitor<value_type&>
         {
         public:
-          visitor_poke ( const std::list<std::string>::const_iterator& key
-                       , const std::list<std::string>::const_iterator& end
+          visitor_poke ( std::list<std::string>::const_iterator const& key
+                       , std::list<std::string>::const_iterator const& end
                        , value_type& node
-                       , const value_type& value
+                       , value_type const& value
                        )
             : _key (key)
             , _end (end)
@@ -73,10 +73,10 @@ namespace pnet
           }
 
         private:
-          const std::list<std::string>::const_iterator& _key;
-          const std::list<std::string>::const_iterator& _end;
+          std::list<std::string>::const_iterator const& _key;
+          std::list<std::string>::const_iterator const& _end;
           value_type& _node;
-          const value_type& _value;
+          value_type const& _value;
 
           value_type& deeper (structured_type& m) const
           {
@@ -96,25 +96,25 @@ namespace pnet
         };
       }
 
-      value_type& poke ( const std::list<std::string>::const_iterator& key
-                       , const std::list<std::string>::const_iterator& end
+      value_type& poke ( std::list<std::string>::const_iterator const& key
+                       , std::list<std::string>::const_iterator const& end
                        , value_type& node
-                       , const value_type& value
+                       , value_type const& value
                        )
       {
         return boost::apply_visitor
           (visitor_poke (key, end, node, value), node);
       }
-      value_type& poke ( const std::list<std::string>& path
+      value_type& poke ( std::list<std::string> const& path
                        , value_type& node
-                       , const value_type& value
+                       , value_type const& value
                        )
       {
         return poke (path.begin(), path.end(), node, value);
       }
-      value_type& poke ( const std::string& path
+      value_type& poke ( std::string const& path
                        , value_type& node
-                       , const value_type& value
+                       , value_type const& value
                        )
       {
         return poke (path::split (path), node, value);

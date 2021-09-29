@@ -45,7 +45,7 @@ namespace xml
           _s.insert ("char");
         }
 
-        bool operator() (const std::string& x) const
+        bool operator() (std::string const& x) const
         {
           return _s.find (x) != _s.end();
         }
@@ -56,8 +56,8 @@ namespace xml
 
     }
 
-    std::string validate_field_name ( const std::string& name
-                                    , const boost::filesystem::path& path
+    std::string validate_field_name ( std::string const& name
+                                    , boost::filesystem::path const& path
                                     )
     {
       static names_reserved reserved;

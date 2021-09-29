@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+#pragma once
+
 #include <boost/filesystem/path.hpp>
 
 #include <string>
@@ -30,7 +32,12 @@ namespace fhg
     //!       initializing and let it go out of scope at the time of
     //!       wanting to be demonized. exiting after closing pipe is
     //!       not an error
-    std::pair<pid_t, std::vector<std::string>> execute_and_get_startup_messages
+    struct StartupResult
+    {
+      pid_t pid;
+      std::vector<std::string> messages;
+    };
+    StartupResult execute_and_get_startup_messages
       ( boost::filesystem::path command
       , std::vector<std::string> arguments
       , std::unordered_map<std::string, std::string> environment

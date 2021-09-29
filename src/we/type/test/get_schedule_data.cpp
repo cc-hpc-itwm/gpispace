@@ -16,7 +16,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <we/type/activity.hpp>
+#include <we/type/Activity.hpp>
 //! \todo: eliminate this include that just completes the type
 #include <we/type/net.hpp>
 #include <we/type/property.hpp>
@@ -27,16 +27,16 @@
 
 BOOST_AUTO_TEST_CASE (get_schedule_data_not_set)
 {
-  we::type::transition_t const transition
+  we::type::Transition const transition
     ( fhg::util::testing::random_string()
-    , we::type::expression_t()
+    , we::type::Expression()
     , boost::none
     , we::type::property::type()
     , we::priority_type()
     , boost::optional<we::type::eureka_id_type>{}
-    , std::list<we::type::preference_t>{}
+    , std::list<we::type::Preference>{}
     );
-  we::type::activity_t activity (transition);
+  we::type::Activity activity (transition);
 
   BOOST_REQUIRE (activity.requirements_and_preferences (nullptr).numWorkers());
 }
@@ -50,16 +50,16 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_constant_string)
                  , std::to_string (value) + "UL"
                  );
 
-  we::type::transition_t const transition
+  we::type::Transition const transition
     ( fhg::util::testing::random_string()
-    , we::type::expression_t()
+    , we::type::Expression()
     , boost::none
     , properties
     , we::priority_type()
     , boost::optional<we::type::eureka_id_type>{}
-    , std::list<we::type::preference_t>{}
+    , std::list<we::type::Preference>{}
     );
-  we::type::activity_t activity (transition);
+  we::type::Activity activity (transition);
 
   BOOST_REQUIRE_EQUAL (activity.requirements_and_preferences (nullptr).numWorkers(), value);
 }
@@ -74,26 +74,26 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_expression_simple)
                  , "${" + port_name + "}"
                  );
 
-  we::type::transition_t transition
+  we::type::Transition transition
     ( fhg::util::testing::random_string()
-    , we::type::expression_t()
+    , we::type::Expression()
     , boost::none
     , properties
     , we::priority_type()
     , boost::optional<we::type::eureka_id_type>{}
-    , std::list<we::type::preference_t>{}
+    , std::list<we::type::Preference>{}
     );
 
   transition.add_port
-    ( we::type::port_t
+    ( we::type::Port
       ( port_name
-      , we::type::PORT_IN
+      , we::type::port::direction::In{}
       , pnet::type::signature::signature_type (std::string ("unsigned long"))
       , we::type::property::type()
       )
     );
 
-  we::type::activity_t activity (transition);
+  we::type::Activity activity (transition);
   activity.add_input (port_name, value);
 
   BOOST_REQUIRE_EQUAL (activity.requirements_and_preferences (nullptr).numWorkers(), value);
@@ -122,34 +122,34 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_expression_sum)
                  , "${" + port_name1 + "} + ${" + port_name2 + "}"
                  );
 
-  we::type::transition_t transition
+  we::type::Transition transition
     ( fhg::util::testing::random_string()
-    , we::type::expression_t()
+    , we::type::Expression()
     , boost::none
     , properties
     , we::priority_type()
     , boost::optional<we::type::eureka_id_type>{}
-    , std::list<we::type::preference_t>{}
+    , std::list<we::type::Preference>{}
     );
 
   transition.add_port
-    ( we::type::port_t
+    ( we::type::Port
       ( port_name1
-      , we::type::PORT_IN
+      , we::type::port::direction::In{}
       , pnet::type::signature::signature_type (std::string ("unsigned long"))
       , we::type::property::type()
       )
     );
   transition.add_port
-    ( we::type::port_t
+    ( we::type::Port
       ( port_name2
-      , we::type::PORT_IN
+      , we::type::port::direction::In{}
       , pnet::type::signature::signature_type (std::string ("unsigned long"))
         , we::type::property::type()
       )
     );
 
-  we::type::activity_t activity (transition);
+  we::type::Activity activity (transition);
   activity.add_input (port_name1, value1);
   activity.add_input (port_name2, value2);
 

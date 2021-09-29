@@ -29,14 +29,14 @@ namespace pnet
       class dump
       {
       public:
-        dump (const structured_type&);
+        dump (structured_type const&);
         std::ostream& operator() (std::ostream&) const;
       private:
-        const structured_type& _structured;
+        structured_type const& _structured;
       };
-      std::ostream& operator<< (std::ostream&, const dump&);
+      std::ostream& operator<< (std::ostream&, dump const&);
 
-      void dump_to (fhg::util::xml::xmlstream&, const structured_type&);
+      void dump_to (fhg::util::xml::xmlstream&, structured_type const&);
     }
   }
 }

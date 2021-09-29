@@ -48,13 +48,13 @@ namespace expr
         friend std::ostream& operator<< (std::ostream&, context const&);
 
     public:
-      void bind_ref (const std::string&, const pnet::type::value::value_type&);
+      void bind_ref (std::string const&, pnet::type::value::value_type const&);
 
-      void bind_and_discard_ref ( const std::list<std::string>&
-                                , const pnet::type::value::value_type&
+      void bind_and_discard_ref ( std::list<std::string> const&
+                                , pnet::type::value::value_type const&
                                 );
 
-      const pnet::type::value::value_type& value (const std::list<std::string>&) const;
+      pnet::type::value::value_type const& value (std::list<std::string> const&) const;
     };
   }
 }

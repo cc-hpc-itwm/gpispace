@@ -29,22 +29,22 @@ namespace pnet
 {
   namespace
   {
-    class visitor_name : public boost::static_visitor<const std::string&>
+    class visitor_name : public boost::static_visitor<std::string const&>
     {
     public:
-      const std::string& operator()
-        (const std::pair<std::string, std::string>& f) const
+      std::string const& operator()
+        (std::pair<std::string, std::string> const& f) const
       {
         return f.first;
       }
-      const std::string& operator()
-        (const type::signature::structured_type& s) const
+      std::string const& operator()
+        (type::signature::structured_type const& s) const
       {
         return s.first;
       }
     };
 
-    const std::string& name (const type::signature::field_type& s)
+    std::string const& name (type::signature::field_type const& s)
     {
       return boost::apply_visitor (visitor_name(), s);
     }
@@ -54,19 +54,19 @@ namespace pnet
     {
     public:
       type::signature::signature_type operator()
-        (const std::pair<std::string, std::string>& f) const
+        (std::pair<std::string, std::string> const& f) const
       {
         return f.second;
       }
       type::signature::signature_type operator()
-        (const type::signature::structured_type& s) const
+        (type::signature::structured_type const& s) const
       {
         return s;
       }
     };
 
     type::signature::signature_type signature
-      (const type::signature::field_type& s)
+      (type::signature::field_type const& s)
     {
       return boost::apply_visitor (visitor_signature(), s);
     }
@@ -74,23 +74,23 @@ namespace pnet
     using type::value::path::append;
 
     void require_type ( std::list<std::string>&
-                      , const type::value::value_type&
-                      , const type::signature::signature_type&
+                      , type::value::value_type const&
+                      , type::signature::signature_type const&
                       );
 
     class require_structured : public boost::static_visitor<>
     {
     public:
       require_structured ( std::list<std::string>& path
-                         , const type::value::structured_type& v
+                         , type::value::structured_type const& v
                          )
         : _path (path)
         , _value (v)
       {}
 
-      void operator() (const std::pair< std::string
+      void operator() (std::pair< std::string
                                       , type::signature::structure_type
-                                      >& s
+                                      > const& s
                       ) const
       {
         type::value::structured_type::const_iterator v_pos (_value.begin());
@@ -129,7 +129,7 @@ namespace pnet
 
     private:
       std::list<std::string>& _path;
-      const type::value::structured_type& _value;
+      type::value::structured_type const& _value;
     };
 
     class visitor_require_type : public boost::static_visitor<>
@@ -139,29 +139,29 @@ namespace pnet
         : _path (path)
       {}
 
-      void operator() ( const type::value::structured_type& v
-                      , const type::signature::structured_type& s
+      void operator() ( type::value::structured_type const& v
+                      , type::signature::structured_type const& s
                       ) const
       {
         require_structured (_path, v) (s);
       }
       [[noreturn]] void operator()
-        ( const type::value::structured_type& v
-        , const std::string& s
+        ( type::value::structured_type const& v
+        , std::string const& s
         ) const
       {
         throw exception::type_mismatch (s, v, _path);
       }
       template<typename V>
-        void operator() ( const V& v
-                        , const type::signature::structured_type& s
+        void operator() ( V const& v
+                        , type::signature::structured_type const& s
                         ) const
       {
         throw exception::type_mismatch (s, v, _path);
       }
       template<typename V>
-        void operator() ( const V& v
-                        , const std::string& s
+        void operator() ( V const& v
+                        , std::string const& s
                         ) const
       {
         if (type::value::name_of (v) != s)
@@ -175,17 +175,17 @@ namespace pnet
     };
 
     void require_type ( std::list<std::string>& path
-                      , const type::value::value_type& value
-                      , const type::signature::signature_type& signature
+                      , type::value::value_type const& value
+                      , type::signature::signature_type const& signature
                       )
    {
       boost::apply_visitor (visitor_require_type (path), value, signature);
     }
   }
 
-  const type::value::value_type& require_type
-    ( const type::value::value_type& value
-    , const type::signature::signature_type& signature
+  type::value::value_type const& require_type
+    ( type::value::value_type const& value
+    , type::signature::signature_type const& signature
     )
   {
     std::list<std::string> path;
@@ -195,10 +195,10 @@ namespace pnet
     return value;
   }
 
-  const type::value::value_type& require_type
-    ( const type::value::value_type& value
-    , const type::signature::signature_type& signature
-    , const std::string& field
+  type::value::value_type const& require_type
+    ( type::value::value_type const& value
+    , type::signature::signature_type const& signature
+    , std::string const& field
     )
   {
     std::list<std::string> path;

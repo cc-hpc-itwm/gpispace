@@ -44,8 +44,8 @@
 #include <util-generic/ostream/put_time.hpp>
 #include <util-generic/split.hpp>
 
-#include <we/type/module_call.fwd.hpp>
-#include <we/type/expression.fwd.hpp>
+#include <we/type/ModuleCall.fwd.hpp>
+#include <we/type/Expression.fwd.hpp>
 #include <we/type/net.fwd.hpp>
 
 #include <we/type/signature/cpp.hpp>
@@ -58,12 +58,15 @@
 
 #include <we/type/id.hpp>
 
+#include <boost/format.hpp>
 #include <boost/range/adaptors.hpp>
 
+#include <exception>
 #include <functional>
 #include <iostream>
 #include <string>
 #include <set>
+#include <stdexcept>
 
 namespace xml
 {
@@ -72,20 +75,20 @@ namespace xml
     namespace type
     {
       function_type::function_type
-        ( const util::position_type& pod
-        , const boost::optional<std::string>& name
-        , const ports_type& ports
+        ( util::position_type const& pod
+        , boost::optional<std::string> const& name
+        , ports_type const& ports
         , fhg::pnet::util::unique<memory_buffer_type> const& memory_buffers
         , std::list<memory_get> const& memory_gets
         , std::list<memory_put> const& memory_puts
         , std::list<memory_getput> const& memory_getputs
-        , const bool& contains_a_module_call_
-        , const structs_type& structs_
-        , const conditions_type& conditions
-        , const requirements_type& requirements_
-        , const preferences_type& preferences
-        , const content_type& content
-        , const we::type::property::type& properties
+        , bool const& contains_a_module_call_
+        , structs_type const& structs_
+        , conditions_type const& conditions
+        , requirements_type const& requirements_
+        , preferences_type const& preferences
+        , content_type const& content
+        , we::type::property::type const& properties
         )
         : with_position_of_definition (pod)
         , _name (name)
@@ -104,15 +107,15 @@ namespace xml
       {
         for (port_type const& port : _ports)
         {
-          if (port.direction() != we::type::PORT_TUNNEL)
+          if (!port.is_tunnel())
           {
-            boost::optional<const port_type&> const other
-              ( _ports.get ( std::make_pair ( port.name()
-                                            , port.direction()
-                                            == we::type::PORT_IN
-                                            ? we::type::PORT_OUT
-                                            : we::type::PORT_IN
-                                            )
+            boost::optional<port_type const&> const other
+              ( _ports.get ( { port.name()
+                             , ( port.is_input()
+                               ? we::type::PortDirection {we::type::port::direction::Out{}}
+                               : we::type::PortDirection {we::type::port::direction::In{}}
+                               )
+                             }
                            )
               );
 
@@ -199,7 +202,7 @@ namespace xml
                };
       }
 
-      const function_type::content_type& function_type::content() const
+      function_type::content_type const& function_type::content() const
       {
         return _content;
       }
@@ -226,7 +229,7 @@ namespace xml
 
       // ******************************************************************* //
 
-      const boost::optional<std::string>& function_type::name() const
+      boost::optional<std::string> const& function_type::name() const
       {
         return _name;
       }
@@ -252,51 +255,51 @@ namespace xml
         return _memory_buffers;
       }
 
-      const function_type::ports_type& function_type::ports() const
+      function_type::ports_type const& function_type::ports() const
       {
         return _ports;
       }
 
-      boost::optional<const port_type&>
-      function_type::get_port_in (const std::string & name) const
+      boost::optional<port_type const&>
+      function_type::get_port_in (std::string const& name) const
       {
-        return ports().get (std::make_pair (name, we::type::PORT_IN));
+        return ports().get ({name, we::type::port::direction::In{}});
       }
 
-      boost::optional<const port_type&>
-      function_type::get_port_out (const std::string & name) const
+      boost::optional<port_type const&>
+      function_type::get_port_out (std::string const& name) const
       {
-        return ports().get (std::make_pair (name, we::type::PORT_OUT));
+        return ports().get ({name, we::type::port::direction::Out{}});
       }
 
-      bool function_type::is_known_port_in (const std::string & name) const
+      bool function_type::is_known_port_in (std::string const& name) const
       {
         return !!get_port_in (name);
       }
 
-      bool function_type::is_known_port_out (const std::string & name) const
+      bool function_type::is_known_port_out (std::string const& name) const
       {
         return !!get_port_out (name);
       }
 
-      bool function_type::is_known_port (const std::string & name) const
+      bool function_type::is_known_port (std::string const& name) const
       {
         return is_known_port_in (name) || is_known_port_out (name);
       }
 
-      bool function_type::is_known_port_inout (const std::string & name) const
+      bool function_type::is_known_port_inout (std::string const& name) const
       {
         return is_known_port_in (name) && is_known_port_out (name);
       }
 
-      bool function_type::is_known_tunnel (const std::string& name) const
+      bool function_type::is_known_tunnel (std::string const& name) const
       {
-        return ports().has (std::make_pair (name, we::type::PORT_TUNNEL));
+        return ports().has ({name, we::type::port::direction::Tunnel{}});
       }
 
       // ***************************************************************** //
 
-      const conditions_type& function_type::conditions() const
+      conditions_type const& function_type::conditions() const
       {
         return _conditions;
       }
@@ -307,7 +310,7 @@ namespace xml
           : fhg::util::join (begin(), end(), " && ", "(", ")").string();
       }
 
-      conditions_type operator+ (conditions_type lhs, const conditions_type& rhs)
+      conditions_type operator+ (conditions_type lhs, conditions_type const& rhs)
       {
         lhs.insert (lhs.end(), rhs.begin(), rhs.end());
         return lhs;
@@ -322,9 +325,9 @@ namespace xml
 
       // ***************************************************************** //
 
-      void function_type::type_check (const state::type & state) const
+      void function_type::type_check (state::type const& state) const
       {
-        for (const port_type& port : ports())
+        for (port_type const& port : ports())
         {
           port.type_check (position_of_definition().path(), state, *this);
         }
@@ -398,33 +401,27 @@ namespace xml
       // ***************************************************************** //
 
       class function_synthesize
-        : public boost::static_visitor<we::type::transition_t>
+        : public boost::static_visitor<we::type::Transition>
       {
       private:
-        const std::string& _name;
-        const state::type & state;
-        const function_type& fun;
-        const conditions_type& _conditions;
+        std::string const& _name;
+        state::type const& state;
+        function_type const& fun;
+        conditions_type const& _conditions;
         we::type::property::type _properties;
-        const requirements_type& _trans_requirements;
+        requirements_type const& _trans_requirements;
         std::unordered_map<std::string, we::port_id_type>& _port_id_in;
         std::unordered_map<std::string, we::port_id_type>& _port_id_out;
         we::priority_type _priority;
         fhg::pnet::util::unique<place_map_type> const& _place_map;
         std::unordered_map<we::port_id_type, std::string>& _real_place_names;
 
-        typedef we::type::transition_t we_transition_type;
-
-        typedef we::type::net_type we_net_type;
-        typedef we::type::module_call_t we_module_type;
-        typedef we::type::expression_t we_expr_type;
-
         typedef std::unordered_map< std::string
                                   , we::place_id_type
                                   > pid_of_place_type;
 
         we::port_id_type add_port
-          (we_transition_type& transition, we::type::port_t const& port) const
+          (we::type::Transition& transition, we::type::Port const& port) const
         {
           we::port_id_type const port_id (transition.add_port (port));
 
@@ -440,13 +437,13 @@ namespace xml
           return port_id;
         }
 
-        void add_ports ( we_transition_type & trans
-                       , const function_type::ports_type& ports
+        void add_ports ( we::type::Transition & trans
+                       , function_type::ports_type const& ports
                        ) const
         {
-          for (const port_type& port : ports)
+          for (port_type const& port : ports)
           {
-            add_port (trans, we::type::port_t ( port.name()
+            add_port (trans, we::type::Port ( port.name()
                                               , port.direction()
                                               , port.signature()
                                               , port.properties()
@@ -456,17 +453,17 @@ namespace xml
         }
 
         template<typename Map>
-        void add_ports ( we_transition_type & trans
-                       , const function_type::ports_type& ports
-                       , const Map & pid_of_place
+        void add_ports ( we::type::Transition & trans
+                       , function_type::ports_type const& ports
+                       , Map const& pid_of_place
                        , net_type const& net
                        ) const
         {
-          for (const port_type& port : ports)
+          for (port_type const& port : ports)
           {
             if (not port.place)
             {
-              add_port (trans, we::type::port_t ( port.name()
+              add_port (trans, we::type::Port ( port.name()
                                                 , port.direction()
                                                 , port.signature()
                                                 , port.properties()
@@ -481,7 +478,7 @@ namespace xml
 
               we::port_id_type const port_id
                 ( add_port ( trans
-                           , we::type::port_t ( port.name()
+                           , we::type::Port ( port.name()
                                               , port.direction()
                                               , port.signature()
                                               , pid_of_place.at (*port.place)
@@ -490,7 +487,7 @@ namespace xml
                            )
                 );
 
-              if (port.direction() == we::type::PORT_TUNNEL)
+              if (port.is_tunnel())
               {
                 for (place_map_type const& place_map : _place_map)
                 {
@@ -506,39 +503,35 @@ namespace xml
           }
         }
 
-        void add_requirements (we_transition_type& trans) const
+        void add_requirements (we::type::Transition& trans) const
         {
           requirements_type requirements (fun.requirements);
           requirements.join (_trans_requirements);
 
-          for ( requirements_type::const_iterator r (requirements.begin())
-              ; r != requirements.end()
-              ; ++r
-              )
+          for (auto const& req : requirements)
           {
-            trans.add_requirement
-              (we::type::requirement_t (r->first, r->second));
+            trans.add_requirement (we::type::Requirement {req});
           }
         }
 
-        const std::string& name() const
+        std::string const& name() const
         {
           return _name;
         }
 
-        we::type::expression_t condition (void) const
+        we::type::Expression condition (void) const
         {
           const std::string cond ((fun.conditions() + _conditions).flatten());
 
           expr::parse::parser parsed_condition
             (util::we_parse (cond, "condition", "function", name(), fun.position_of_definition().path()));
 
-          return we::type::expression_t (cond, parsed_condition);
+          return we::type::Expression (cond, parsed_condition);
         }
 
-        we_module_type create_we_module (const module_type& mod) const
+        we::type::ModuleCall create_we_module (module_type const& mod) const
         {
-          std::unordered_map<std::string, we::type::memory_buffer_info_t>
+          std::unordered_map<std::string, we::type::MemoryBufferInfo>
             memory_buffers;
 
           for (std::string const& memory_buffer_name : mod.memory_buffer_arg())
@@ -592,24 +585,25 @@ namespace xml
               );
           }
 
-          return we_module_type ( mod.name()
-                                , mod.function()
-                                , std::move (memory_buffers)
-                                , std::move (memory_gets)
-                                , std::move (memory_puts)
-                                , mod.require_function_unloads_without_rest()
-                                , mod.require_module_unloads_without_rest()
-                                );
+          return we::type::ModuleCall
+            ( mod.name()
+            , mod.function()
+            , std::move (memory_buffers)
+            , std::move (memory_gets)
+            , std::move (memory_puts)
+            , mod.require_function_unloads_without_rest()
+            , mod.require_module_unloads_without_rest()
+            );
         }
 
       public:
         function_synthesize
-          ( const std::string& name
-          , const state::type& _state
-          , const function_type& _fun
-          , const conditions_type& conditions
-          , const we::type::property::type& trans_properties
-          , const requirements_type& trans_requirements
+          ( std::string const& name
+          , state::type const& _state
+          , function_type const& _fun
+          , conditions_type const& conditions
+          , we::type::property::type const& trans_properties
+          , requirements_type const& trans_requirements
           , std::unordered_map<std::string, we::port_id_type>& port_id_in
           , std::unordered_map<std::string, we::port_id_type>& port_id_out
           , we::priority_type priority
@@ -631,16 +625,16 @@ namespace xml
           util::property::join (state, _properties, fun.properties());
         }
 
-        we_transition_type
+        we::type::Transition
         operator () (expression_type const& e) const
         {
           const std::string expr (e.expression());
           const expr::parse::parser parsed_expression
             (util::we_parse (expr, "expression", "function", name(), fun.position_of_definition().path()));
 
-          we_transition_type trans
+          we::type::Transition trans
             ( name()
-            , we_expr_type (expr, parsed_expression)
+            , we::type::Expression (expr, parsed_expression)
             , condition()
             , _properties
             , _priority
@@ -654,9 +648,9 @@ namespace xml
           return trans;
         }
 
-        we_transition_type operator () (const module_type& mod) const
+        we::type::Transition operator () (module_type const& mod) const
         {
-          we_transition_type trans
+          we::type::Transition trans
             ( name()
             , create_we_module (mod)
             , condition()
@@ -672,9 +666,9 @@ namespace xml
           return trans;
         }
 
-        we_transition_type operator () (net_type const& net) const
+        we::type::Transition operator () (net_type const& net) const
         {
-          we_net_type we_net;
+          we::type::net_type we_net;
 
           pid_of_place_type pid_of_place
             ( net_synthesize ( we_net
@@ -691,7 +685,7 @@ namespace xml
                                , net.properties()
                                );
 
-          we_transition_type trans
+          we::type::Transition trans
             ( name()
             , we_net
             , condition()
@@ -707,16 +701,16 @@ namespace xml
           return trans;
         }
 
-        we_transition_type operator () (const multi_module_type& multi_mod) const
+        we::type::Transition operator () (multi_module_type const& multi_mod) const
         {
-          we::type::multi_module_call_t multi_modules;
+          we::type::MultiModuleCall multi_modules;
 
           for (auto const& mod_it : multi_mod.modules())
           {
             multi_modules[mod_it.first] = create_we_module (mod_it.second);
           }
 
-          we_transition_type trans
+          we::type::Transition trans
             ( name()
             , multi_modules
             , condition()
@@ -733,18 +727,19 @@ namespace xml
         }
       };
 
-      we::type::transition_t function_type::synthesize
-        ( const std::string& name
-        , const state::type& state
+      we::type::Transition function_type::synthesize
+        ( std::string const& name
+        , state::type const& state
         , std::unordered_map<std::string, we::port_id_type>& port_id_in
         , std::unordered_map<std::string, we::port_id_type>& port_id_out
-        , const conditions_type& conditions
-        , const we::type::property::type& trans_properties
-        , const requirements_type& trans_requirements
+        , conditions_type const& conditions
+        , we::type::property::type const& trans_properties
+        , requirements_type const& trans_requirements
         , we::priority_type priority
         , fhg::pnet::util::unique<place_map_type> const& place_map
         , std::unordered_map<we::port_id_type, std::string>& real_place_names
         ) const
+      try
       {
         return boost::apply_visitor
           ( function_synthesize ( name
@@ -760,6 +755,17 @@ namespace xml
                                 , real_place_names
                                 )
           , content()
+          ).assert_correct_expression_types();
+      }
+      catch (...)
+      {
+        std::throw_with_nested
+          ( std::runtime_error
+            (str ( boost::format ("In '%1%' defined at %2%.")
+                 % (this->name() ? this->name().get() : name)
+                 % this->position_of_definition()
+                 )
+            )
           );
       }
 
@@ -783,17 +789,17 @@ namespace xml
         class function_specialize : public boost::static_visitor<void>
         {
         private:
-          const type::type_map_type & map;
-          const type::type_get_type & get;
-          const xml::parse::structure_type_util::set_type & known_structs;
+          type::type_map_type const& map;
+          type::type_get_type const& get;
+          xml::parse::structure_type_util::set_type const& known_structs;
           state::type & state;
           function_type & fun;
 
         public:
           function_specialize
-            ( const type::type_map_type & _map
-            , const type::type_get_type & _get
-            , const xml::parse::structure_type_util::set_type & _known_structs
+            ( type::type_map_type const& _map
+            , type::type_get_type const& _get
+            , xml::parse::structure_type_util::set_type const& _known_structs
             , state::type & _state
             , function_type & _fun
             )
@@ -825,9 +831,9 @@ namespace xml
         };
       }
 
-      void function_type::specialize ( const type_map_type & map
-                                     , const type_get_type & get
-                                     , const xml::parse::structure_type_util::set_type & known_structs
+      void function_type::specialize ( type_map_type const& map
+                                     , type_get_type const& get
+                                     , xml::parse::structure_type_util::set_type const& known_structs
                                      , state::type & state
                                      )
       {
@@ -856,12 +862,12 @@ namespace xml
           );
       }
 
-      const we::type::property::type& function_type::properties() const
+      we::type::property::type const& function_type::properties() const
       {
         return _properties;
       }
 
-      const function_type::unique_key_type& function_type::unique_key() const
+      function_type::unique_key_type const& function_type::unique_key() const
       {
         //! \note anonymous functions can't be stored in unqiue, thus
         //! just indirect.
@@ -870,11 +876,11 @@ namespace xml
 
       // ***************************************************************** //
 
-      fun_info_type::fun_info_type ( const std::string & _name
-                                   , const std::string & _code
-                                   , const std::list<std::string>& _ldflags
-                                   , const std::list<std::string>& _cxxflags
-                                   , const boost::filesystem::path & _path
+      fun_info_type::fun_info_type ( std::string const& _name
+                                   , std::string const& _code
+                                   , std::list<std::string> const& _ldflags
+                                   , std::list<std::string> const& _cxxflags
+                                   , boost::filesystem::path const& _path
                                    )
         : name (_name)
         , code (_code)
@@ -883,7 +889,7 @@ namespace xml
         , path (_path)
       { }
 
-      bool fun_info_type::operator== (const fun_info_type & other) const
+      bool fun_info_type::operator== (fun_info_type const& other) const
       {
         return name == other.name;
       }
@@ -894,16 +900,16 @@ namespace xml
 
       typedef boost::filesystem::path path_t;
 
-      void mk_wrapper ( const state::type & state
-                      , const fun_info_map & m
+      void mk_wrapper ( state::type const& state
+                      , fun_info_map const& m
                       )
       {
         fhg::util::indenter indent;
 
-        for (const fun_info_map::value_type& mod : m)
+        for (fun_info_map::value_type const& mod : m)
         {
-          const std::string& modname (mod.first);
-          const fun_infos_type& funs (mod.second);
+          std::string const& modname (mod.first);
+          fun_infos_type const& funs (mod.second);
 
           util::check_no_change_fstream stream
             ( state
@@ -912,7 +918,7 @@ namespace xml
 
           stream << fhg::util::cpp::include ("we/loader/macros.hpp");
 
-          for (const fun_info_type& fun : funs)
+          for (fun_info_type const& fun : funs)
           {
             stream << std::endl << fun.code;
           }
@@ -920,7 +926,7 @@ namespace xml
           stream << std::endl;
           stream << "WE_MOD_INITIALIZE_START()";
           stream << fhg::util::cpp::block::open (indent);
-          for (const fun_info_type& fun : funs)
+          for (fun_info_type const& fun : funs)
           {
             stream << indent
                    << "WE_REGISTER_FUN_AS ("
@@ -936,9 +942,9 @@ namespace xml
         }
       }
 
-      void mk_makefile ( const state::type & state
-                       , const fun_info_map & m
-                       , const std::unordered_set<std::string>& structnames
+      void mk_makefile ( state::type const& state
+                       , fun_info_map const& m
+                       , std::unordered_set<std::string> const& structnames
                        )
       {
         namespace cpp_util = ::fhg::util::cpp;
@@ -971,7 +977,7 @@ namespace xml
                                                                    << std::endl;
         stream                                                     << std::endl;
 
-        for (const fun_info_map::value_type& mod : m)
+        for (fun_info_map::value_type const& mod : m)
         {
           stream << "MODULES += pnetc/op/lib" << mod.first << ".so"
                  << std::endl;
@@ -1063,7 +1069,7 @@ namespace xml
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
 
-        for (const std::string& tname : structnames)
+        for (std::string const& tname : structnames)
         {
           const std::string path_type ("pnetc/type/");
           const std::string obj (path_type + tname + "/op.o");
@@ -1097,7 +1103,7 @@ namespace xml
             stream << "####"                                       << std::endl;
 
             const std::string objs ("OBJ_" + mod->first);
-            const fun_infos_type & funs (mod->second);
+            fun_infos_type const& funs (mod->second);
             const std::string ldflags ("LDFLAGS_" + mod->first);
             const std::string file_module_ldflags ("Makefile." + ldflags);
 
@@ -1123,7 +1129,7 @@ namespace xml
 
                 stream << objs << " += " << obj_fun << std::endl;
 
-                for (const std::string& flag : fun->ldflags)
+                for (std::string const& flag : fun->ldflags)
                   {
                     ldflags_module << ldflags << " += " << flag << std::endl;
                   }
@@ -1132,7 +1138,7 @@ namespace xml
                   util::check_no_change_fstream cxxflags_function
                     (state, prefix / file_function_cxxflags);
 
-                  for (const std::string& flag : fun->cxxflags)
+                  for (std::string const& flag : fun->cxxflags)
                   {
                     cxxflags_function << cxxflags << " += " << flag << std::endl;
                   }
@@ -1330,7 +1336,7 @@ namespace xml
       typedef std::unordered_map<std::string, mc_by_function_type>
         mcs_type;
 
-      bool find_module_calls ( const state::type &
+      bool find_module_calls ( state::type const&
                              , function_type&
                              , fun_info_map &
                              , mcs_type &
@@ -1342,14 +1348,14 @@ namespace xml
           : public boost::static_visitor<bool>
         {
         private:
-          const state::type & state;
-          const transition_type & trans;
+          state::type const& state;
+          transition_type const& trans;
           fun_info_map & m;
           mcs_type& mcs;
 
         public:
-          transition_find_module_calls_visitor ( const state::type & _state
-                                               , const transition_type & _trans
+          transition_find_module_calls_visitor ( state::type const& _state
+                                               , transition_type const& _trans
                                                , fun_info_map & _m
                                                , mcs_type& _mcs
                                                )
@@ -1374,7 +1380,7 @@ namespace xml
 
       namespace
       {
-        bool find_module_calls ( const state::type & state
+        bool find_module_calls ( state::type const& state
                                , net_type & n
                                , fun_info_map & m
                                , mcs_type& mcs
@@ -1403,8 +1409,8 @@ namespace xml
           std::string name;
           std::string type;
 
-          port_with_type ( const std::string & _name
-                         , const std::string & _type
+          port_with_type ( std::string const& _name
+                         , std::string const& _type
                          )
             : name (_name), type (_type)
           { }
@@ -1418,7 +1424,7 @@ namespace xml
           class include : public fhg::util::ostream::modifier
           {
           public:
-            include ( const std::string& tname
+            include ( std::string const& tname
                     , std::string const& suffix
                     )
               : _tname (tname)
@@ -1476,7 +1482,7 @@ namespace xml
         class mk_type : public fhg::util::ostream::modifier
         {
         public:
-          mk_type (const std::string& type)
+          mk_type (std::string const& type)
             : _type (type)
           {}
           virtual std::ostream& operator() (std::ostream& os) const override
@@ -1493,16 +1499,16 @@ namespace xml
             return os;
           }
         private:
-          const std::string& _type;
+          std::string const& _type;
         };
 
         class mk_get : public fhg::util::ostream::modifier
         {
         public:
           mk_get ( fhg::util::indenter& indent
-                 , const port_with_type& port
-                 , const std::string& modif = ""
-                 , const std::string& amper = ""
+                 , port_with_type const& port
+                 , std::string const& modif = ""
+                 , std::string const& amper = ""
                  )
             : _indent (indent)
             , _port (port)
@@ -1532,12 +1538,12 @@ namespace xml
 
         private:
           fhg::util::indenter& _indent;
-          const port_with_type& _port;
+          port_with_type const& _port;
           const std::string _modif;
           const std::string _amper;
         };
 
-        std::string mk_value (const port_with_type & port)
+        std::string mk_value (port_with_type const& port)
         {
           namespace cpp_util = ::fhg::util::cpp;
 
@@ -1561,11 +1567,11 @@ namespace xml
         void
         mod_signature ( Stream& s
                       , fhg::util::indenter& indent
-                      , const boost::optional<port_with_type> & port_return
-                      , const ports_with_type_type & ports_const
-                      , const ports_with_type_type & ports_mutable
-                      , const ports_with_type_type & ports_out
-                      , const module_type & mod
+                      , boost::optional<port_with_type> const& port_return
+                      , ports_with_type_type const& ports_const
+                      , ports_with_type_type const& ports_mutable
+                      , ports_with_type_type const& ports_out
+                      , module_type const& mod
                       , function_type const& function
                       )
         {
@@ -1595,19 +1601,19 @@ namespace xml
             s << sep << "drts::worker::context *_pnetc_context";
           }
 
-          for (const port_with_type& port : ports_const)
+          for (port_with_type const& port : ports_const)
           {
             s << sep << "const " << mk_type (port.type) << "& " << port.name
               << deeper (indent);
           }
 
-          for (const port_with_type& port : ports_mutable)
+          for (port_with_type const& port : ports_mutable)
           {
             s << sep << mk_type (port.type) << "& " << port.name
               << deeper (indent);
           }
 
-          for (const port_with_type& port : ports_out)
+          for (port_with_type const& port : ports_out)
           {
             s << sep << mk_type (port.type) << "& " << port.name
               << deeper (indent);
@@ -1634,12 +1640,12 @@ namespace xml
         template<typename Stream>
         void
         mod_wrapper ( Stream& s
-                    , const module_type & mod
-                    , const path_t file_hpp
-                    , const ports_with_type_type & ports_const
-                    , const ports_with_type_type & ports_mutable
-                    , const ports_with_type_type & ports_out
-                    , const boost::optional<port_with_type> & port_return
+                    , module_type const& mod
+                    , path_t file_hpp
+                    , ports_with_type_type const& ports_const
+                    , ports_with_type_type const& ports_mutable
+                    , ports_with_type_type const& ports_out
+                    , boost::optional<port_with_type> const& port_return
                     , std::unordered_set<std::string> const& types
                     , function_type const& function
                     )
@@ -1668,7 +1674,7 @@ namespace xml
           {
             s << "_pnetc_context";
           }
-          s << deeper (indent) << ", const expr::eval::context&";
+          s << deeper (indent) << ", expr::eval::context const&";
           if (!ports_const.empty() || !ports_mutable.empty())
           {
             s << "_pnetc_input";
@@ -1686,17 +1692,17 @@ namespace xml
           s << deeper (indent) << ")";
           s << block::open (indent);
 
-          for (const port_with_type& port : ports_const)
+          for (port_with_type const& port : ports_const)
           {
             s << mk_get (indent, port, "const ", "& ");
           }
 
-          for (const port_with_type& port : ports_mutable)
+          for (port_with_type const& port : ports_mutable)
           {
             s << mk_get (indent, port);
           }
 
-          for (const port_with_type& port : ports_out)
+          for (port_with_type const& port : ports_out)
           {
             s << indent << mk_type (port.type) << " " << port.name << ";";
           }
@@ -1727,17 +1733,17 @@ namespace xml
             s << sep << "_pnetc_context";
           }
 
-          for (const port_with_type& port : ports_const)
+          for (port_with_type const& port : ports_const)
           {
             s << sep << port.name;
           }
 
-          for (const port_with_type& port : ports_mutable)
+          for (port_with_type const& port : ports_mutable)
           {
             s << sep << port.name;
           }
 
-          for (const port_with_type& port : ports_out)
+          for (port_with_type const& port : ports_out)
           {
             s << sep << port.name;
           }
@@ -1764,7 +1770,7 @@ namespace xml
 
           s << ";";
 
-          for (const port_with_type& port : ports_mutable)
+          for (port_with_type const& port : ports_mutable)
           {
             s << indent
               << "_pnetc_output.bind_and_discard_ref ("
@@ -1775,7 +1781,7 @@ namespace xml
               ;
           }
 
-          for (const port_with_type& port : ports_out)
+          for (port_with_type const& port : ports_out)
           {
             s << indent
               << "_pnetc_output.bind_and_discard_ref ("
@@ -1798,13 +1804,13 @@ namespace xml
           : public boost::static_visitor<bool>
         {
         private:
-          const state::type & state;
+          state::type const& state;
           type::function_type const& _function;
           fun_info_map & m;
           mcs_type& mcs;
 
         public:
-          find_module_calls_visitor ( const state::type & _state
+          find_module_calls_visitor ( state::type const& _state
                                     , type::function_type& function
                                     , fun_info_map & _m
                                     , mcs_type& _mcs
@@ -1869,7 +1875,7 @@ namespace xml
               types.insert (port.type());
             }
 
-            for (const std::string& name : mod.port_arg())
+            for (std::string const& name : mod.port_arg())
             {
               if (_function.is_known_port_inout (name))
               {
@@ -1962,7 +1968,7 @@ namespace xml
               {
                 stream << cpp_util::include ("drts/worker/context_fwd.hpp");
               }
-              for (const std::string& tname : types)
+              for (std::string const& tname : types)
               {
                 stream << include (tname, ".hpp");
               }
@@ -2033,7 +2039,7 @@ namespace xml
               stream << cpp_util::include
                 ("pnetc/op/" + mod.name() + "/" + file_hpp);
 
-              for (const std::string& tname : types)
+              for (std::string const& tname : types)
               {
                 stream << include (tname, "/op.hpp");
               }
@@ -2043,7 +2049,7 @@ namespace xml
                 stream << cpp_util::include ("drts/worker/context.hpp");
               }
 
-              for (const std::string& inc : mod.cincludes())
+              for (std::string const& inc : mod.cincludes())
               {
                 stream << cpp_util::include (inc);
               }
@@ -2112,7 +2118,7 @@ namespace xml
         };
       }
 
-      bool find_module_calls ( const state::type & state
+      bool find_module_calls ( state::type const& state
                              , function_type& function
                              , fun_info_map & m
                              )
@@ -2122,7 +2128,7 @@ namespace xml
         return find_module_calls (state, function, m, mcs);
       }
 
-      bool find_module_calls ( const state::type & state
+      bool find_module_calls ( state::type const& state
                              , function_type& function
                              , fun_info_map & m
                              , mcs_type& mcs
@@ -2141,12 +2147,12 @@ namespace xml
 
       namespace
       {
-        void to_cpp ( const structs_type& structs
-                    , const state::type& state
+        void to_cpp ( structs_type const& structs
+                    , state::type const& state
                     , std::unordered_set<std::string>& structnames
                     )
         {
-          for (const structure_type& structure : structs)
+          for (structure_type const& structure : structs)
           {
             structnames.insert (structure.name());
 
@@ -2173,7 +2179,7 @@ namespace xml
                 (pnet::type::signature::names (sig));
 
 
-              for (const std::string& tname : names)
+              for (std::string const& tname : names)
               {
                 stream << include (tname, ".hpp");
               }
@@ -2207,7 +2213,7 @@ namespace xml
                                                 + structure.name() + ".hpp"
                                                 );
 
-              for (const std::string& tname : pnet::type::signature::names (sig))
+              for (std::string const& tname : pnet::type::signature::names (sig))
               {
                 stream << include (tname, "/op.hpp");
               }
@@ -2248,7 +2254,7 @@ namespace xml
         class visitor_to_cpp : public boost::static_visitor<void>
         {
         public:
-          visitor_to_cpp ( const state::type & _state
+          visitor_to_cpp ( state::type const& _state
                          , std::unordered_set<std::string>& structnames
                          )
             : state (_state)
@@ -2266,7 +2272,7 @@ namespace xml
                 struct_to_cpp (state, function, _structnames);
               }
 
-              for (const transition_type& transition : n.transitions())
+              for (transition_type const& transition : n.transitions())
               {
                 boost::apply_visitor (*this, transition.function_or_use());
               }
@@ -2279,17 +2285,17 @@ namespace xml
           }
 
           void operator() (use_type const&) const { }
-          void operator() (const module_type&) const { }
+          void operator() (module_type const&) const { }
           void operator() (expression_type const&) const { }
-          void operator() (const multi_module_type&) const { }
+          void operator() (multi_module_type const&) const { }
 
         private:
-          const state::type & state;
+          state::type const& state;
           std::unordered_set<std::string>& _structnames;
         };
       }
 
-      void struct_to_cpp ( const state::type& state
+      void struct_to_cpp ( state::type const& state
                          , function_type const& function
                          , std::unordered_set<std::string>& structnames
                          )
@@ -2309,15 +2315,15 @@ namespace xml
       namespace dump
       {
         void dump ( ::fhg::util::xml::xmlstream &
-                  , const function_type &
+                  , function_type const&
                   );
 
         void dump ( ::fhg::util::xml::xmlstream &
-                  , const transition_type &
+                  , transition_type const&
                   );
 
         void dump ( ::fhg::util::xml::xmlstream &
-                  , const tmpl_type &
+                  , tmpl_type const&
                   );
 
         namespace
@@ -2333,7 +2339,7 @@ namespace xml
             {}
 
             template<typename T>
-            void operator () (const T& x) const
+            void operator () (T const& x) const
             {
               ::xml::parse::type::dump::dump (s, x);
             }
@@ -2341,7 +2347,7 @@ namespace xml
         }
 
         void dump ( ::fhg::util::xml::xmlstream & s
-                  , const function_type & f
+                  , function_type const& f
                   )
         {
           s.open ("defun");
@@ -2361,7 +2367,7 @@ namespace xml
 
           boost::apply_visitor (function_dump_visitor (s), f.content());
 
-          for (const std::string& cond : f.conditions())
+          for (std::string const& cond : f.conditions())
           {
             s.open ("condition");
             s.content (cond);
@@ -2370,7 +2376,7 @@ namespace xml
 
           s.close ();
         }
-      } // namespace dump
+      }
     }
   }
 }

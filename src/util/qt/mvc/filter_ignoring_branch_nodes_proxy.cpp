@@ -32,7 +32,7 @@ namespace fhg
         }
 
         bool filter_ignoring_branch_nodes_proxy::filterAcceptsRow
-          (int source_row, const QModelIndex& parent) const
+          (int source_row, QModelIndex const& parent) const
         {
           if (sort_filter_proxy::filterAcceptsRow (source_row, parent))
           {

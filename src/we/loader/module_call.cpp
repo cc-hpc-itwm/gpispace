@@ -19,7 +19,7 @@
 #include <we/loader/exceptions.hpp>
 
 #include <we/type/id.hpp>
-#include <we/type/port.hpp>
+#include <we/type/Port.hpp>
 #include <we/type/range.hpp>
 #include <we/expr/parse/parser.hpp>
 
@@ -69,10 +69,10 @@ namespace we
     void put_global_data
       ( iml::Client /*const*/& virtual_memory_api
       , iml::SharedMemoryAllocation /*const*/& shared_memory
-      , const iml::AllocationHandle global_memory_handle
-      , const iml::MemoryOffset global_memory_offset
-      , const iml::MemorySize size
-      , const iml::MemoryOffset shared_memory_offset
+      , iml::AllocationHandle global_memory_handle
+      , iml::MemoryOffset global_memory_offset
+      , iml::MemorySize size
+      , iml::MemoryOffset shared_memory_offset
       )
     {
       virtual_memory_api.memcpy
@@ -85,10 +85,10 @@ namespace we
     void get_global_data
       ( iml::Client /*const*/& virtual_memory_api
       , iml::SharedMemoryAllocation /*const*/& shared_memory
-      , const iml::AllocationHandle global_memory_handle
-      , const iml::MemoryOffset global_memory_offset
-      , const iml::MemorySize size
-      , const iml::MemoryOffset shared_memory_offset
+      , iml::AllocationHandle global_memory_handle
+      , iml::MemoryOffset global_memory_offset
+      , iml::MemorySize size
+      , iml::MemoryOffset shared_memory_offset
       )
     {
       virtual_memory_api.memcpy
@@ -102,10 +102,10 @@ namespace we
       ( std::function<void
                       ( iml::Client /*const*/&
                       , iml::SharedMemoryAllocation /*const*/&
-                      , const iml::AllocationHandle
-                      , const iml::MemoryOffset
-                      , const iml::MemorySize
-                      , const iml::MemoryOffset
+                      , iml::AllocationHandle
+                      , iml::MemoryOffset
+                      , iml::MemorySize
+                      , iml::MemoryOffset
                       )> do_transfer
       , iml::Client /*const*/* virtual_memory_api
       , iml::SharedMemoryAllocation /*const*/* shared_memory
@@ -206,7 +206,7 @@ namespace we
       , iml::SharedMemoryAllocation /*const*/* shared_memory
       , drts::worker::context* context
       , expr::eval::context const& input
-      , const we::type::module_call_t& module_call
+      , we::type::ModuleCall const& module_call
       )
     {
       std::map<std::string, void*> pointers;

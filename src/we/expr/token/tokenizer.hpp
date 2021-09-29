@@ -33,16 +33,16 @@ namespace expr
     {
     public:
       tokenizer (fhg::util::parse::position&);
-      const pnet::type::value::value_type& value() const;
-      const token::type& token() const;
+      pnet::type::value::value_type const& value() const;
+      token::type const& token() const;
       void operator++();
-      const std::list<std::string>& get_ref() const;
+      std::list<std::string> const& get_ref() const;
 
     public:
-      void set_token (const token::type&);
-      void set_value (const pnet::type::value::value_type&);
-      void unary (const token::type&, const std::string&);
-      void cmp (const token::type&, const token::type&);
+      void set_token (token::type const&);
+      void set_value (pnet::type::value::value_type const&);
+      void unary (token::type const&, std::string const&);
+      void cmp (token::type const&, token::type const&);
       void negsub();
       void mulpow();
       void or_boolean_integral();
@@ -59,7 +59,7 @@ namespace expr
       pnet::type::value::value_type _tokval;
       std::list<std::string> _ref;
 
-      void skip_comment (const std::size_t);
+      void skip_comment (std::size_t);
     };
   }
 }

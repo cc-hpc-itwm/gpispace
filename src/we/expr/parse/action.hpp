@@ -36,8 +36,8 @@ namespace expr
       , error4
       };
 
-      std::ostream& operator<< (std::ostream&, const type&);
-      type action (const token::type&, const token::type&);
+      std::ostream& operator<< (std::ostream&, type const&);
+      type action (token::type const&, token::type const&);
     }
   }
 }

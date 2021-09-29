@@ -33,7 +33,7 @@ namespace fhg
 
       public:
         restricted_tree_column_sorter
-          (QTreeView*, const QSet<int> allowed_columns, QObject* parent = nullptr);
+          (QTreeView*, QSet<int> allowed_columns, QObject* parent = nullptr);
 
       private:
         enum state

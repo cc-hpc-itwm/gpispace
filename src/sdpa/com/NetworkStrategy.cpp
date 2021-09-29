@@ -21,8 +21,6 @@
 #include <util-generic/print_exception.hpp>
 #include <util-generic/this_bound_mem_fn.hpp>
 
-#include <boost/lexical_cast.hpp>
-
 #include <algorithm>
 #include <utility>
 

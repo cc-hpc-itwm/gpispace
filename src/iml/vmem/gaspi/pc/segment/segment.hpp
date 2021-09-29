@@ -30,13 +30,13 @@ namespace iml
     class OpenedSharedMemory
     {
     public:
-      OpenedSharedMemory ( std::string const & name
-                         , const iml::MemorySize sz
+      OpenedSharedMemory ( std::string const& name
+                         , iml::MemorySize sz
                          );
 
       ~OpenedSharedMemory();
 
-      void create (const mode_t mode = 00600);
+      void create (mode_t mode = 00600);
       void open ();
       void close ();
       void unlink ();

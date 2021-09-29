@@ -33,10 +33,10 @@ namespace xml
       {
         namespace
         {
-          void set ( const state::type& state
+          void set ( state::type const& state
                    , we::type::property::type& prop
-                   , const we::type::property::path_type& path
-                   , const we::type::property::value_type& value
+                   , we::type::property::path_type const& path
+                   , we::type::property::value_type const& value
                    )
           {
             const boost::optional<pnet::type::value::value_type> old
@@ -58,8 +58,8 @@ namespace xml
 
         void set_state ( state::type& state
                        , we::type::property::type& prop
-                       , const we::type::property::path_type& path
-                       , const we::type::property::value_type& value
+                       , we::type::property::path_type const& path
+                       , we::type::property::value_type const& value
                        )
         {
           state.interpret_property (path, value);
@@ -67,9 +67,9 @@ namespace xml
           ::xml::parse::util::property::set (state, prop, path, value);
         }
 
-        void join ( const state::type& state
+        void join ( state::type const& state
                   , we::type::property::type& x
-                  , const we::type::property::type& y
+                  , we::type::property::type const& y
                   )
         {
           typedef std::pair< std::list<std::string>

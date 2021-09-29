@@ -36,7 +36,7 @@ namespace fhg
     {
       return _other_end;
     }
-    void channel::send (const std::string& data)
+    void channel::send (std::string const& data)
     {
       return peer_t::send (_other_end, data);
     }

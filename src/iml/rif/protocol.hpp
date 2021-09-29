@@ -79,8 +79,8 @@ namespace boost
     template<class Archive>
       inline void save
         ( Archive& ar
-        , const std::unordered_map<pid_t, std::exception_ptr>& t
-        , const unsigned int
+        , std::unordered_map<pid_t, std::exception_ptr> const& t
+        , unsigned int
         )
     {
       std::size_t const size (t.size());
@@ -98,7 +98,7 @@ namespace boost
       inline void load
         ( Archive& ar
         , std::unordered_map<pid_t, std::exception_ptr>& t
-        , const unsigned int
+        , unsigned int
         )
     {
       std::size_t size;
@@ -120,7 +120,7 @@ namespace boost
       inline void serialize
         ( Archive& ar
         , std::unordered_map<pid_t, std::exception_ptr>& t
-        , const unsigned int file_version
+        , unsigned int file_version
         )
     {
       boost::serialization::split_free (ar, t, file_version);

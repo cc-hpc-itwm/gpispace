@@ -42,24 +42,24 @@ namespace expr
       public:
         visitor_eval (context& _c) : c (_c) {}
 
-        pnet::type::value::value_type operator() (const pnet::type::value::value_type& v) const
+        pnet::type::value::value_type operator() (pnet::type::value::value_type const& v) const
         {
           return v;
         }
 
-        pnet::type::value::value_type operator() (const std::list<std::string>& key) const
+        pnet::type::value::value_type operator() (std::list<std::string> const& key) const
         {
           return c.value (key);
         }
 
-        pnet::type::value::value_type operator () (const expr::parse::node::unary_t& u) const
+        pnet::type::value::value_type operator () (expr::parse::node::unary_t const& u) const
         {
           pnet::type::value::value_type c0 (boost::apply_visitor (*this, u.child));
 
           return pnet::type::value::unary (u.token, c0);
         }
 
-        pnet::type::value::value_type operator () (const expr::parse::node::binary_t& b) const
+        pnet::type::value::value_type operator () (expr::parse::node::binary_t const& b) const
         {
           if (is_define (b.token))
             {
@@ -124,7 +124,7 @@ namespace expr
 
         }
 
-        pnet::type::value::value_type operator () (const expr::parse::node::ternary_t& t) const
+        pnet::type::value::value_type operator () (expr::parse::node::ternary_t const& t) const
         {
           switch (t.token)
             {
@@ -166,7 +166,7 @@ namespace expr
       };
     }
 
-    pnet::type::value::value_type eval (context& c, const expr::parse::node::type& nd)
+    pnet::type::value::value_type eval (context& c, expr::parse::node::type const& nd)
     {
       return boost::apply_visitor (visitor_eval (c), nd);
     }

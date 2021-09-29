@@ -49,7 +49,7 @@
 
     <transition name="random_module_call">
       <defun>
-        <require key="work" mandatory="true"/>
+        <require key="work"/>
         <inout name="trigger" type="control"/>
         <module name="workflow_response" function="random_call()">
           <cinclude href="chrono"/>

@@ -14,13 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+#include <we/expr/parse/parser.hpp>
+
 #include <we/exception.hpp>
 #include <we/expr/eval/context.hpp>
 #include <we/expr/eval/eval.hpp>
 #include <we/expr/parse/action.hpp>
-#include <we/expr/parse/parser.hpp>
 #include <we/expr/token/prop.hpp>
 #include <we/expr/token/tokenizer.hpp>
+#include <we/expr/type/Context.hpp>
+#include <we/expr/type/infer.hpp>
 #include <we/type/value/function.hpp>
 
 #include <boost/lexical_cast.hpp>
@@ -39,6 +42,14 @@ namespace expr
       : op_stack()
       , nd_stack()
       , tmp_stack()
+    {
+      parse (input);
+    }
+    parser::parser (DisableConstantFolding, std::string const& input)
+      : op_stack()
+      , nd_stack()
+      , tmp_stack()
+      , _do_constant_folding (false)
     {
       parse (input);
     }
@@ -69,6 +80,26 @@ namespace expr
       eval::context UNUSED_context;
 
       return eval_all (UNUSED_context);
+    }
+
+    // evaluate the whole stack in order, return the type of the last node
+    Type parser::type_check_all (type::Context& context) const
+    {
+      return std::accumulate
+        ( nd_stack.begin(), nd_stack.end()
+        , expr::Type{}
+        , [&context] (auto, node::type const& node)
+          {
+            return expr::type::infer (context, node);
+          }
+        );
+    }
+
+    Type parser::type_check_all() const
+    {
+      type::Context UNUSED_context;
+
+      return type_check_all (UNUSED_context);
     }
 
     bool parser::is_const_true() const
@@ -124,7 +155,7 @@ namespace expr
 
       nd_t c (tmp_stack.back()); tmp_stack.pop_back();
 
-      if (node::is_value (c))
+      if (_do_constant_folding && node::is_value (c))
       {
         tmp_stack.emplace_back
           (pnet::type::value::unary (token, node::get (c)));
@@ -161,7 +192,7 @@ namespace expr
           );
       }
 
-      if (node::is_value(l) && node::is_value(r))
+      if (_do_constant_folding && node::is_value (l) && node::is_value (r))
       {
         tmp_stack.emplace_back ( pnet::type::value::binary
                                  ( token

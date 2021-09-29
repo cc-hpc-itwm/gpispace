@@ -36,7 +36,6 @@
 
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/system/system_error.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
@@ -51,17 +50,17 @@ namespace gpi
     {
       namespace detail
       {
-        static beegfs_area_t::path_t data_path (beegfs_area_t::path_t const &p)
+        static beegfs_area_t::path_t data_path (beegfs_area_t::path_t const& p)
         {
           return p / "data";
         }
 
-        static beegfs_area_t::path_t version_path (beegfs_area_t::path_t const &p)
+        static beegfs_area_t::path_t version_path (beegfs_area_t::path_t const& p)
         {
           return p / "version";
         }
 
-        static beegfs_area_t::path_t lock_path (beegfs_area_t::path_t const &p)
+        static beegfs_area_t::path_t lock_path (beegfs_area_t::path_t const& p)
         {
           return p / "lock";
         }
@@ -126,8 +125,8 @@ namespace gpi
       }
 
       beegfs_area_t::beegfs_area_t ( bool is_creator
-                                   , const beegfs_area_t::path_t & path
-                                   , const iml::MemorySize size        // total
+                                   , beegfs_area_t::path_t const& path
+                                   , iml::MemorySize size        // total
                                    , gpi::pc::global::itopology_t & topology
                                    )
         : area_t (size)
@@ -329,25 +328,25 @@ namespace gpi
       }
 
       bool
-      beegfs_area_t::is_range_local( const gpi::pc::type::handle::descriptor_t &
-                                , const iml::MemoryOffset
-                                , const iml::MemoryOffset
+      beegfs_area_t::is_range_local( gpi::pc::type::handle::descriptor_t const&
+                                , iml::MemoryOffset
+                                , iml::MemoryOffset
                                 ) const
       {
         return true;
       }
 
       iml::MemorySize
-      beegfs_area_t::get_local_size ( const iml::MemorySize size
-                                 , const gpi::pc::type::flags_t
+      beegfs_area_t::get_local_size ( iml::MemorySize size
+                                 , gpi::pc::type::flags_t
                                  ) const
       {
         return size;
       }
 
       double beegfs_area_t::get_transfer_costs
-        ( const iml::MemoryRegion& transfer
-        , const gpi::rank_t FHG_UTIL_UNUSED
+        ( iml::MemoryRegion const& transfer
+        , gpi::rank_t FHG_UTIL_UNUSED
                             ( rank
                             , "NYI: use BeeGFS::beegfs_getStripeTarget"
                               "to get locality information"

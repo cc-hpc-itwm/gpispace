@@ -17,8 +17,6 @@
 #include <iml/SharedMemoryAllocation.hpp>
 #include <iml/Client.hpp>
 
-#include <fhg/util/thread/queue.hpp>
-
 #include <fhgcom/channel.hpp>
 #include <logging/stream_emitter.hpp>
 
@@ -60,7 +58,7 @@ public:
     };
 
     Job ( std::string const& jobid
-        , we::type::activity_t const& activity_
+        , we::type::Activity const& activity_
         , boost::optional<std::string> const& target_impl_
         , std::set<std::string> const& workers_
         )
@@ -74,11 +72,11 @@ public:
     {}
 
     std::string const id;
-    we::type::activity_t activity;
+    we::type::Activity activity;
     boost::optional<std::string> const target_impl;
     std::set<std::string> const workers;
     std::atomic<state_t> state;
-    we::type::activity_t result;
+    we::type::Activity result;
     std::string message;
   };
 

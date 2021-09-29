@@ -14,31 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-set (GSPC_WE_TEST_EUREKA_INVALID_EXPRESSION "bummer")
-configure_file ("${CMAKE_CURRENT_SOURCE_DIR}/xpnet/invalid_eureka_expression.xpnet.in"
-                "${CMAKE_CURRENT_BINARY_DIR}/xpnet/invalid_eureka_expression.xpnet"
-                @ONLY
-)
-configure_file ("${CMAKE_CURRENT_SOURCE_DIR}/invalid_eureka_expression_throws_during_execution.cpp.in"
-                "${CMAKE_CURRENT_BINARY_DIR}/invalid_eureka_expression_throws_during_execution.cpp"
-                @ONLY
-)
-
-fhg_add_test (NAME we_eureka_invalid_eureka_expression_throws_during_execution
-  SOURCES "${CMAKE_CURRENT_BINARY_DIR}/invalid_eureka_expression_throws_during_execution.cpp"
-  USE_BOOST
-  ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
-       --source-directory "${CMAKE_CURRENT_BINARY_DIR}"
-       --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
-  LIBRARIES gspc
-            test-utilities
-            fhg-util
-            Boost::program_options
-            Boost::filesystem
-  REQUIRES_INSTALLATION
-  START_SCOPED_RIF
-)
-
 if (BUILD_TESTING)
   gspc_add_library (NAME we_test_eureka_Fixture
     NAMESPACE GSPC

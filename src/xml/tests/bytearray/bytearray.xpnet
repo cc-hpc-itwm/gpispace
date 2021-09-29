@@ -34,7 +34,7 @@
       <defun>
         <in name="p" type="point"/>
         <out name="ba" type="bytearray"/>
-        <module name="test_bytearray" function="ba produce(p)">
+        <module name="test_bytearray" function="ba produce (p)">
           <code><![CDATA[
             ::we::type::bytearray ba (&p);
 
@@ -50,7 +50,7 @@
       <defun>
         <in name="ba" type="bytearray"/>
         <out name="p" type="point"/>
-        <module name="test_bytearray" function="p consume(ba)">
+        <module name="test_bytearray" function="p consume (ba)">
           <code><![CDATA[
             ::pnetc::type::point::point p;
 

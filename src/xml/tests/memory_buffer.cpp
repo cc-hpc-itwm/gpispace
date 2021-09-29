@@ -178,7 +178,7 @@ BOOST_DATA_TEST_CASE
   <memory-buffer name="b" %1%>
     <size>1</size>
   </memory-buffer>
-  <module name="m" function="f(b)">
+  <module name="m" function="f (b)">
     <code/>
   </module>
 </defun>)EOS")

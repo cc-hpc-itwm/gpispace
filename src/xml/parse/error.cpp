@@ -44,9 +44,9 @@ namespace xml
   {
     namespace error
     {
-      wrong_node::wrong_node ( const rapidxml::node_type& want
-                             , const rapidxml::node_type& got
-                             , const util::position_type& position
+      wrong_node::wrong_node ( rapidxml::node_type const& want
+                             , rapidxml::node_type const& got
+                             , util::position_type const& position
                              )
         : generic ( boost::format ( "expected node of type %1%: got node of"
                                     " type %2% in %3%"
@@ -57,10 +57,10 @@ namespace xml
                   )
       { }
 
-      wrong_node::wrong_node ( const rapidxml::node_type& want1
-                             , const rapidxml::node_type& want2
-                             , const rapidxml::node_type& got
-                             , const util::position_type& position
+      wrong_node::wrong_node ( rapidxml::node_type const& want1
+                             , rapidxml::node_type const& want2
+                             , rapidxml::node_type const& got
+                             , util::position_type const& position
                              )
         : generic ( boost::format ( "expected node of type %1%: or %2% got"
                                     " node of type %3% in %4%"
@@ -72,9 +72,9 @@ namespace xml
                   )
       { }
 
-      missing_attr::missing_attr ( const std::string& pre
-                                 , const std::string& attr
-                                 , const util::position_type& position
+      missing_attr::missing_attr ( std::string const& pre
+                                 , std::string const& attr
+                                 , util::position_type const& position
                                  )
         : generic ( boost::format ("%1%: missing attribute %2% in %3%")
                   % pre
@@ -83,8 +83,8 @@ namespace xml
                   )
       { }
 
-      no_elements_given::no_elements_given ( const std::string& pre
-                                           , const boost::filesystem::path& path
+      no_elements_given::no_elements_given ( std::string const& pre
+                                           , boost::filesystem::path const& path
                                            )
         : generic ( boost::format ("%1%: no elements given at all in %2%")
                   % pre
@@ -93,7 +93,7 @@ namespace xml
       { }
 
       more_than_one_definition::more_than_one_definition
-        (const std::string& pre, const util::position_type& position)
+        (std::string const& pre, util::position_type const& position)
           : generic ( boost::format ("%1%: more than one definition in %2%")
                     % pre
                     % position
@@ -101,26 +101,26 @@ namespace xml
       { }
 
       port_type_mismatch::port_type_mismatch
-        ( const type::port_type& port
-        , const type::port_type& other_port
+        ( type::port_type const& port
+        , type::port_type const& other_port
         )
           : generic ( boost::format ( "in-/out-port %1% has different types: "
                                     "%2% (%3%) from %4% and %5% (%6%) from %7%"
                                     )
                     % port.name()
                     % port.type()
-                    % we::type::enum_to_string (port.direction())
+                    % port.direction()
                     % port.position_of_definition()
                     % other_port.type()
-                    % we::type::enum_to_string (other_port.direction())
+                    % other_port.direction()
                     % other_port.position_of_definition()
                     )
       { }
 
       port_not_connected::port_not_connected
-        (const type::port_type& port, const boost::filesystem::path& path)
+        (type::port_type const& port, boost::filesystem::path const& path)
           : generic ( boost::format ("%1%-port %2% not connected in %3%")
-                    % we::type::enum_to_string (port.direction())
+                    % port.direction()
                     % port.name()
                     % path
                     )
@@ -128,14 +128,14 @@ namespace xml
       { }
 
       port_connected_type_error::port_connected_type_error
-        ( const type::port_type& port
-        , const type::place_type& place
-        , const boost::filesystem::path& path
+        ( type::port_type const& port
+        , type::place_type const& place
+        , boost::filesystem::path const& path
         )
           : generic ( boost::format ( "type error: %1%-port %2% of type %3% "
                                       "connected to place %4% of type %5% in %6%"
                                     )
-                    % we::type::enum_to_string (port.direction())
+                    % port.direction()
                     % port.name()
                     % port.type()
                     % place.name()
@@ -146,13 +146,13 @@ namespace xml
       { }
 
       port_connected_place_nonexistent::port_connected_place_nonexistent
-        ( const type::port_type& port
-        , const boost::filesystem::path& path
+        ( type::port_type const& port
+        , boost::filesystem::path const& path
         )
           : generic ( boost::format ( "%1%-port %2% connected to "
                                       "non-existing place %3% in %4%"
                                     )
-                    % we::type::enum_to_string (port.direction())
+                    % port.direction()
                     % port.name()
                     % *port.place
                     % path
@@ -161,9 +161,9 @@ namespace xml
       { }
 
       tunnel_connected_non_virtual::tunnel_connected_non_virtual
-        ( const type::port_type& port
-        , const type::place_type& place
-        , const boost::filesystem::path& path
+        ( type::port_type const& port
+        , type::place_type const& place
+        , boost::filesystem::path const& path
         )
           : generic ( boost::format ( "tunnel %1% connected to non-virtual "
                                       "place %2% in %3%"
@@ -176,9 +176,9 @@ namespace xml
       { }
 
       tunnel_name_mismatch::tunnel_name_mismatch
-        ( const type::port_type& port
-        , const type::place_type& place
-        , const boost::filesystem::path& path
+        ( type::port_type const& port
+        , type::place_type const& place
+        , boost::filesystem::path const& path
         )
           : generic ( boost::format ( "tunnel %1% is connected to place with "
                                       "different name  %2% in %3%"
@@ -190,7 +190,7 @@ namespace xml
               , _path (path)
       { }
 
-      unknown_function::unknown_function ( const std::string& fun
+      unknown_function::unknown_function ( std::string const& fun
                                          , type::transition_type const& trans
                                          )
         : generic ( boost::format ( "unknown function %1% in transition %2%"
@@ -253,7 +253,7 @@ namespace xml
 
       connect_to_nonexistent_place::connect_to_nonexistent_place
        ( type::transition_type const& transition
-       , const type::connect_type& connection
+       , type::connect_type const& connection
        )
          : generic ( boost::format ( "connect-%1% to nonexistent place %2%"
                                      " in transition %3% at %4%"
@@ -267,7 +267,7 @@ namespace xml
 
       connect_to_nonexistent_port::connect_to_nonexistent_port
        ( type::transition_type const& transition
-       , const type::connect_type& connection
+       , type::connect_type const& connection
        )
          : generic ( boost::format ( "connect-%1% to nonexistent port %2%"
                                      " in transition %3% at %4%"
@@ -281,7 +281,7 @@ namespace xml
 
       eureka_port_type_mismatch::eureka_port_type_mismatch
        ( type::transition_type const& transition
-       , const type::eureka_type& eureka
+       , type::eureka_type const& eureka
        )
          : generic ( boost::format ( "connect-eureka output port %1%"
                                      " is not of type \"set\""
@@ -318,7 +318,7 @@ namespace xml
 
       connect_eureka_to_nonexistent_out_port::connect_eureka_to_nonexistent_out_port
        ( type::transition_type const& transition
-       , const type::eureka_type& eureka
+       , type::eureka_type const& eureka
        )
          : generic ( boost::format ( "connect-eureka to non-existent output port %1%"
                                      " in transition %2% at %3%"
@@ -331,9 +331,9 @@ namespace xml
 
       connect_type_error::connect_type_error
         ( type::transition_type const& transition
-        , const type::connect_type& connection
-        , const type::port_type& port
-        , const type::place_type& place
+        , type::connect_type const& connection
+        , type::port_type const& port
+        , type::place_type const& place
         )
          : generic ( boost::format ( "type-error: connect-%1%"
                                      " from place %2%::%3% (%4%) at %5%"
@@ -485,14 +485,14 @@ namespace xml
                       )
                     % memory_buffer.name()
                     % memory_buffer.position_of_definition()
-                    % we::type::enum_to_string (port.direction())
+                    % port.direction()
                     % port.position_of_definition()
                     )
         {}
 
-      cannot_resolve::cannot_resolve ( const std::string& field
-                                     , const std::string& type
-                                     , const type::structure_type& strct
+      cannot_resolve::cannot_resolve ( std::string const& field
+                                     , std::string const& type
+                                     , type::structure_type const& strct
                                      )
         : generic ( boost::format ("cannot resolve %1%::%2%, defined at %3%")
                   % field
@@ -503,8 +503,8 @@ namespace xml
         , _type (type)
       {}
 
-      struct_redefined::struct_redefined ( const type::structure_type& early
-                                         , const type::structure_type& late
+      struct_redefined::struct_redefined ( type::structure_type const& early
+                                         , type::structure_type const& late
                                          )
         : generic ( boost::format ("struct %1% at %2% redefined at %3%")
                   % early.name()
@@ -521,8 +521,8 @@ namespace xml
             (early, late, boost::format ("specialize %1%") % early.name())
       {}
 
-      duplicate_place::duplicate_place ( const type::place_type& early
-                                       , const type::place_type& late
+      duplicate_place::duplicate_place ( type::place_type const& early
+                                       , type::place_type const& late
                                        )
         : generic_duplicate<type::place_type>
           (early, late, boost::format ("place %1%") % early.name())
@@ -536,29 +536,29 @@ namespace xml
             (early, late, boost::format ("transition %1%") % early.name())
       {}
 
-      duplicate_port::duplicate_port ( const type::port_type& early
-                                     , const type::port_type& late
+      duplicate_port::duplicate_port ( type::port_type const& early
+                                     , type::port_type const& late
                                      )
         : generic_duplicate<type::port_type>
             ( early
             , late
             , boost::format ("%1%-port %2%")
-            % we::type::enum_to_string (early.direction())
+            % early.direction()
             % early.name()
             )
       {}
 
       duplicate_template::duplicate_template
-        ( const type::tmpl_type& early
-        , const type::tmpl_type& late
+        ( type::tmpl_type const& early
+        , type::tmpl_type const& late
         )
           : generic_duplicate<type::tmpl_type>
             (early, late, boost::format ("template %1%") % early.name())
       {}
 
       duplicate_place_map::duplicate_place_map
-        ( const type::place_map_type& early
-        , const type::place_map_type& late
+        ( type::place_map_type const& early
+        , type::place_map_type const& late
         )
           : generic_duplicate<type::place_map_type>
               ( early
@@ -570,8 +570,8 @@ namespace xml
       {}
 
       duplicate_external_function::duplicate_external_function
-         ( const type::module_type& early
-         , const type::module_type& late
+         ( type::module_type const& early
+         , type::module_type const& late
          )
           : generic_duplicate<type::module_type>
             ( early
@@ -585,8 +585,8 @@ namespace xml
       {}
 
       duplicate_connect::duplicate_connect
-        ( const type::connect_type& early
-        , const type::connect_type& late
+        ( type::connect_type const& early
+        , type::connect_type const& late
         )
           : generic_duplicate<type::connect_type>
             ( early
@@ -602,8 +602,8 @@ namespace xml
       {}
 
       duplicate_response::duplicate_response
-        ( const type::response_type& early
-        , const type::response_type& late
+        ( type::response_type const& early
+        , type::response_type const& late
         )
           : generic_duplicate<type::response_type>
             ( early
@@ -618,8 +618,8 @@ namespace xml
       {}
 
       duplicate_eureka::duplicate_eureka
-        ( const type::eureka_type& early
-        , const type::eureka_type& late
+        ( type::eureka_type const& early
+        , type::eureka_type const& late
         )
           : generic_duplicate<type::eureka_type>
             ( early
@@ -642,7 +642,7 @@ namespace xml
             )
       {}
 
-      place_type_unknown::place_type_unknown (const type::place_type& place)
+      place_type_unknown::place_type_unknown (type::place_type const& place)
         : generic ( boost::format ("unknown type %1% for place %2% at %3%")
                   % place.type()
                   % place.name()
@@ -651,7 +651,7 @@ namespace xml
       {}
 
       duplicate_preference::duplicate_preference
-        (const std::string& target, const util::position_type& position)
+        (std::string const& target, util::position_type const& position)
           : generic ( boost::format ( "duplicate target type '%1%' at %2%"
                                       ", already in the preferences"
                                     )
@@ -661,7 +661,7 @@ namespace xml
       {}
 
       empty_preferences::empty_preferences
-        (const util::position_type& position)
+        (util::position_type const& position)
           : generic ( boost::format ( "preferences enabled, but no targets"
                                       " specified at %1%"
                                     )
@@ -670,7 +670,7 @@ namespace xml
       {}
 
       preferences_without_modules::preferences_without_modules
-        (const util::position_type& position)
+        (util::position_type const& position)
           : generic ( boost::format ( "preferences enabled, but no modules"
                                       " with target defined in %1%"
                                     )
@@ -679,7 +679,7 @@ namespace xml
       {}
 
       missing_target_for_module::missing_target_for_module
-        (const std::string& module, const util::position_type& position)
+        (std::string const& module, util::position_type const& position)
           : generic ( boost::format ( "module '%1%' missing target"
                                       " for multi-module transition at %2%"
                                     )
@@ -689,9 +689,9 @@ namespace xml
       {}
 
       modules_without_preferences::modules_without_preferences
-        ( const std::string& module
-        , const std::string& target
-        , const util::position_type& position
+        ( std::string const& module
+        , std::string const& target
+        , util::position_type const& position
         )
           : generic ( boost::format ( "module '%1%' defined with target '%2%'"
                                       ", but preferences not enabled at %3%"
@@ -703,16 +703,16 @@ namespace xml
       {}
 
       modules_without_preferences::modules_without_preferences
-          (const util::position_type& position)
+          (util::position_type const& position)
         : generic ( boost::format ("modules without preferences at %1%")
                   % position
                   )
       {}
 
       duplicate_module_for_target::duplicate_module_for_target
-        ( const std::string& module
-        , const std::string& target
-        , const util::position_type& position
+        ( std::string const& module
+        , std::string const& target
+        , util::position_type const& position
         )
           : generic ( boost::format ( "duplicate module '%1%' for target '%2%'"
                                       " at %3%"
@@ -724,7 +724,7 @@ namespace xml
       {}
 
       mismatching_eureka_for_module::mismatching_eureka_for_module
-        (const std::string& module, const util::position_type& position)
+        (std::string const& module, util::position_type const& position)
           : generic ( boost::format ( "mismatching eureka group for module '%1%'"
                                       " in multi-module transition at %2%"
                                     )
@@ -735,8 +735,8 @@ namespace xml
 
       namespace
       {
-        std::string print_target_list ( const std::string& _prefix
-                               , const std::list<std::string>& _list
+        std::string print_target_list ( std::string const& _prefix
+                               , std::list<std::string> const& _list
                                )
        {
          return !_list.empty() ? fhg::util::print_container ( _prefix + " ('"
@@ -749,9 +749,9 @@ namespace xml
       }
 
       mismatching_modules_and_preferences::mismatching_modules_and_preferences
-        ( const std::list<std::string>& missing_in_preferences
-        , const std::list<std::string>& missing_in_modules
-        , const util::position_type& position
+        ( std::list<std::string> const& missing_in_preferences
+        , std::list<std::string> const& missing_in_modules
+        , util::position_type const& position
         )
           : generic ( boost::format ( "mismatching targets for multi-module"
                                       " transition in %3%, %1%%2%"

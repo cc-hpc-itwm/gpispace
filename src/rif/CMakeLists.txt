@@ -16,6 +16,13 @@
 
 find_package (Libssh2 REQUIRED COMPONENTS _relocatable)
 
+gspc_add_library (NAME rif-entry_point
+  TYPE STATIC
+  SOURCES "entry_point.cpp"
+  LIBRARIES PRIVATE Util::Generic
+            PRIVATE Boost::serialization
+)
+
 gspc_add_executable (NAME gspc-rifd
   RUNTIME
   SOURCES "gspc-rifd.cpp"
@@ -29,6 +36,7 @@ gspc_add_executable (NAME gspc-rifd
             Boost::program_options
             Boost::system
             Boost::thread
+            PRIVATE rif-entry_point
   CREATE_BUNDLE_INFO
 )
 
@@ -73,6 +81,7 @@ gspc_add_library (NAME rif-strategies
     PRIVATE Libssh2::libssh2
     PRIVATE OpenSSL::Crypto
     PRIVATE OpenSSL::SSL
+    PRIVATE rif-entry_point
     PUBLIC Boost::filesystem
     PUBLIC Boost::program_options
     PUBLIC Boost::serialization

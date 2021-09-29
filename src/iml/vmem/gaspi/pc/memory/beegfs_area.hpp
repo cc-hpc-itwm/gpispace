@@ -47,8 +47,8 @@ namespace gpi
                                  );
 
         beegfs_area_t ( bool is_creator
-                      , const path_t & path
-                      , const iml::MemorySize size        // total
+                      , path_t const& path
+                      , iml::MemorySize size        // total
                       , gpi::pc::global::itopology_t & topology
                       );
 
@@ -58,15 +58,15 @@ namespace gpi
         global::itopology_t& global_topology() override;
 
       private:
-        virtual bool is_range_local ( const gpi::pc::type::handle::descriptor_t &
-                            , const iml::MemoryOffset begin
-                            , const iml::MemorySize   range_size
+        virtual bool is_range_local ( gpi::pc::type::handle::descriptor_t const&
+                            , iml::MemoryOffset begin
+                            , iml::MemorySize   range_size
                             ) const override;
 
         virtual void *raw_ptr (iml::MemoryOffset off) override;
 
-        virtual iml::MemorySize get_local_size ( const iml::MemorySize size
-                                             , const gpi::pc::type::flags_t flags
+        virtual iml::MemorySize get_local_size ( iml::MemorySize size
+                                             , gpi::pc::type::flags_t flags
                                              ) const override;
 
         virtual iml::MemorySize
@@ -85,8 +85,8 @@ namespace gpi
 
         void open (std::size_t total_size);
         void close();
-        double get_transfer_costs ( const iml::MemoryRegion&
-                                  , const gpi::rank_t
+        double get_transfer_costs ( iml::MemoryRegion const&
+                                  , gpi::rank_t
                                   ) const override;
 
         fhg::util::threadsafe_queue<int> _fds;

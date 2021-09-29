@@ -14,8 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-cmake_minimum_required (VERSION 3.13 FATAL_ERROR)
-project (gspc VERSION 21.06 LANGUAGES CXX)
+cmake_minimum_required (VERSION 3.15 FATAL_ERROR)
+project (gspc VERSION 21.09 LANGUAGES CXX)
 
 # CMake automatically trims leading zeros in versions. Since GPI-Space
 # versions are dates, revert that.
@@ -52,6 +52,15 @@ set (BUILD_TESTING OFF CACHE BOOL "")
 option (GSPC_WITH_MONITOR_APP "Enable the 'gspc-monitor' execution and logging \
 monitor application (also known as 'gantt')" ON)
 
+include (GNUInstallDirs)
+
+set (GSPC_CONFIG_INSTALL_DIR "${CMAKE_INSTALL_DATAROOTDIR}/GPISpace/cmake")
+
+# TODO: temporary fix, should be removed once everything is standalone
+set (UTIL_CMAKE_INSTALL ON)
+set (UTIL_GENERIC_INSTALL ON)
+set (UTIL_GENERIC_BUILD_TESTING OFF CACHE BOOL "Build util-generic tests")
+
 add_subdirectory (cmake)
 
 include (util-cmake/add_macros)
@@ -60,7 +69,7 @@ include (util-cmake/require_compiler_version)
 
 set (PROJECT_CONTACT "gpispace-support@itwm.fraunhofer.de" CACHE STRING "Contact information")
 
-# BEGIN RELEASE v21.06
+# BEGIN RELEASE v21.09
 install (FILES "${CMAKE_SOURCE_DIR}/git.submodules" DESTINATION .)
 # END RELEASE
 
@@ -233,7 +242,6 @@ install (FILES "${CMAKE_CURRENT_SOURCE_DIR}/README.md"
   DESTINATION "share/gspc/"
 )
 
-set (GPISpace_installconfig_destination "share/GPISpace/cmake")
 set (GSPC_HOME ".")
 
 set (GPISpace_installconfig_boost_coroutine_warning_suppression)
@@ -260,8 +268,9 @@ endif()
 
 include (CMakePackageConfigHelpers)
 configure_package_config_file (GPISpaceConfig.cmake.in GPISpaceConfig.cmake
-  INSTALL_DESTINATION "${GPISpace_installconfig_destination}"
-  PATH_VARS GSPC_HOME
+  INSTALL_DESTINATION "${GSPC_CONFIG_INSTALL_DIR}"
+  PATH_VARS
+    GSPC_HOME
 )
 write_basic_package_version_file (GPISpaceConfigVersion.cmake
   COMPATIBILITY ExactVersion
@@ -269,7 +278,7 @@ write_basic_package_version_file (GPISpaceConfigVersion.cmake
 
 install (FILES "${CMAKE_CURRENT_BINARY_DIR}/GPISpaceConfig.cmake"
                "${CMAKE_CURRENT_BINARY_DIR}/GPISpaceConfigVersion.cmake"
-  DESTINATION "${GPISpace_installconfig_destination}"
+  DESTINATION "${GSPC_CONFIG_INSTALL_DIR}"
 )
 
 install (FILES

@@ -27,14 +27,14 @@ namespace fhg
       class position
       {
       public:
-        position (const std::string&);
+        position (std::string const&);
 
         char operator*() const;
         void operator++();
         bool end() const;
         std::size_t eaten() const;
 
-        std::string error_message (const std::string&) const;
+        std::string error_message (std::string const&) const;
 
       private:
         std::size_t _k;

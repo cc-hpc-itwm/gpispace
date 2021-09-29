@@ -70,7 +70,7 @@
 
     <transition name="process_and_mark_free">
       <defun>
-        <require key="process_and_mark_free" mandatory="true"/>
+        <require key="process_and_mark_free"/>
         <in name="work_package" type="work_package"/>
         <out name="statistic" type="Statistic"/>
         <out name="package" type="string"/>

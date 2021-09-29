@@ -17,10 +17,10 @@
 #pragma once
 
 #include <we/layer.hpp>
-#include <we/type/activity.hpp>
-#include <we/type/module_call.hpp>
+#include <we/type/Activity.hpp>
+#include <we/type/ModuleCall.hpp>
 #include <we/type/signature.hpp>
-#include <we/type/transition.hpp>
+#include <we/type/Transition.hpp>
 #include <we/type/value/read.hpp>
 #include <we/type/value/wrap.hpp>
 
@@ -41,18 +41,18 @@ namespace
 
 namespace
 {
-  std::tuple< we::type::transition_t
-            , we::type::transition_t
+  std::tuple< we::type::Transition
+            , we::type::Transition
             , we::transition_id_type
             >
     net_with_childs (bool put_on_input, std::size_t token_count)
   {
-    we::type::transition_t transition
+    we::type::Transition transition
       ( "module call"
-      , we::type::module_call_t
+      , we::type::ModuleCall
         ( "m"
         , "f"
-        , std::unordered_map<std::string, we::type::memory_buffer_info_t>()
+        , std::unordered_map<std::string, we::type::MemoryBufferInfo>()
         , std::list<we::type::memory_transfer>()
         , std::list<we::type::memory_transfer>()
         , true
@@ -62,19 +62,19 @@ namespace
       , we::type::property::type()
       , we::priority_type()
       , boost::optional<we::type::eureka_id_type>{}
-      , std::list<we::type::preference_t>{}
+      , std::list<we::type::Preference>{}
       );
     we::port_id_type const port_id_in
-      ( transition.add_port ( we::type::port_t ( "in"
-                                               , we::type::PORT_IN
+      ( transition.add_port ( we::type::Port ( "in"
+                                               , we::type::port::direction::In{}
                                                , signature::CONTROL
                                                , we::type::property::type()
                                                )
                             )
       );
     we::port_id_type const port_id_out
-      ( transition.add_port ( we::type::port_t ( "out"
-                                               , we::type::PORT_OUT
+      ( transition.add_port ( we::type::Port ( "out"
+                                               , we::type::port::direction::Out{}
                                                , signature::CONTROL
                                                , we::type::property::type()
                                                )
@@ -106,42 +106,42 @@ namespace
     }
 
     return std::make_tuple
-      ( we::type::transition_t ( "net"
+      ( we::type::Transition ( "net"
                                , net
                                , boost::none
                                , we::type::property::type()
                                , we::priority_type()
                                , boost::optional<we::type::eureka_id_type>{}
-                               , std::list<we::type::preference_t>{}
+                               , std::list<we::type::Preference>{}
                                )
       , transition
       , transition_id
       );
   }
 
-  std::tuple< we::type::activity_t
-            , we::type::activity_t
-            , we::type::activity_t
-            , we::type::activity_t
+  std::tuple< we::type::Activity
+            , we::type::Activity
+            , we::type::Activity
+            , we::type::Activity
             >
     activity_with_child (std::size_t token_count)
   {
     we::transition_id_type transition_id_child;
-    we::type::transition_t transition_in;
-    we::type::transition_t transition_out;
-    we::type::transition_t transition_child;
+    we::type::Transition transition_in;
+    we::type::Transition transition_out;
+    we::type::Transition transition_child;
     std::tie (transition_in, transition_child, transition_id_child) =
       net_with_childs (true, token_count);
     std::tie (transition_out, std::ignore, std::ignore) =
       net_with_childs (false, token_count);
 
-    we::type::activity_t activity_input (transition_in);
-    we::type::activity_t activity_output (transition_out);
+    we::type::Activity activity_input (transition_in);
+    we::type::Activity activity_output (transition_out);
 
-    we::type::activity_t activity_child (transition_child);
+    we::type::Activity activity_child (transition_child);
     activity_child.add_input ("in", value::CONTROL);
 
-    we::type::activity_t activity_result
+    we::type::Activity activity_result
       (we::type::TESTING_ONLY{}, transition_child, transition_id_child);
     activity_result.add_output_TESTING_ONLY ("out", value::CONTROL);
 

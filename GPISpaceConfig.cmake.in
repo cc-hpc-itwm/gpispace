@@ -34,6 +34,10 @@ if (CMAKE_MINIMUM_REQUIRED_VERSION VERSION_LESS @CMAKE_MINIMUM_REQUIRED_VERSION@
   return ()
 endif ()
 
+if (${CMAKE_FIND_PACKAGE_NAME}_FOUND)
+  return ()
+endif ()
+
 include (CMakeFindDependencyMacro)
 
 @PACKAGE_INIT@
@@ -76,6 +80,13 @@ endforeach()
 
 set (GSPC_HOME "${GSPC_HOME}" CACHE PATH "" FORCE)
 mark_as_advanced (GSPC_HOME)
+
+################################################################################
+# Dependency: Util-CMake                                                       #
+################################################################################
+
+set (util-cmake_ROOT "${GSPC_HOME}")
+find_dependency (util-cmake REQUIRED)
 
 ################################################################################
 # Dependency: Boost                                                            #
@@ -141,6 +152,13 @@ if (NOT _boost_po_link_workaround IN_LIST _current_options)
     PROPERTY INTERFACE_LINK_OPTIONS ${_boost_po_link_workaround}
   )
 endif()
+
+################################################################################
+# Dependency: Util-Generic                                                     #
+################################################################################
+
+set (util-generic_ROOT "${GSPC_HOME}")
+find_dependency (util-generic REQUIRED)
 
 ################################################################################
 # Dependency: IML                                                              #
@@ -266,9 +284,8 @@ endif()
 # GPISpace targets                                                             #
 ################################################################################
 
-add_library (GPISpace-header-only INTERFACE)
-add_library (GPISpace::header-only ALIAS GPISpace-header-only)
-target_include_directories (GPISpace-header-only SYSTEM
+add_library (GPISpace::header-only INTERFACE IMPORTED)
+target_include_directories (GPISpace::header-only SYSTEM
   INTERFACE "${GSPC_INCLUDE_DIR}"
 )
 
@@ -279,7 +296,7 @@ target_include_directories (GPISpace-header-only SYSTEM
 # this, enforce that at least this project's libraries are free of
 # them. Also building the libraries that never end up being linked
 # into a workflow module with this flag is accepted collateral damage.
-target_compile_options (GPISpace-header-only
+target_compile_options (GPISpace::header-only
   INTERFACE $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<STREQUAL:GNU,$<CXX_COMPILER_ID>>>:-fno-gnu-unique>
   INTERFACE $<$<AND:$<COMPILE_LANGUAGE:C>,$<STREQUAL:GNU,$<C_COMPILER_ID>>>:-fno-gnu-unique>
 )
@@ -300,9 +317,8 @@ target_link_libraries (GPISpace::APIGuard
   INTERFACE Boost::boost
 )
 
-add_library (GPISpace-workflow_development INTERFACE)
-add_library (GPISpace::workflow_development ALIAS GPISpace-workflow_development)
-target_link_libraries (GPISpace-workflow_development
+add_library (GPISpace::workflow_development INTERFACE IMPORTED)
+target_link_libraries (GPISpace::workflow_development
   INTERFACE GPISpace::header-only
             GPISpacePrivate::we-dev
             GPISpacePrivate::drts-context
@@ -314,9 +330,8 @@ target_link_libraries (GPISpace-workflow_development
             Boost::thread
 )
 
-add_library (GPISpace-execution INTERFACE)
-add_library (GPISpace::execution ALIAS GPISpace-execution)
-target_link_libraries (GPISpace-execution
+add_library (GPISpace::execution INTERFACE IMPORTED)
+target_link_libraries (GPISpace::execution
   INTERFACE GPISpace::header-only
             GPISpacePrivate::gspc
             GPISpacePrivate::we-dev

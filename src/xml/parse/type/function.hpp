@@ -35,8 +35,8 @@
 #include <xml/parse/util/position.fwd.hpp>
 
 #include <we/type/property.hpp>
-#include <we/type/transition.hpp>
-#include <we/type/port.hpp>
+#include <we/type/Transition.hpp>
+#include <we/type/Port.hpp>
 
 #include <boost/optional.hpp>
 
@@ -64,20 +64,20 @@ namespace xml
 
         // ***************************************************************** //
 
-        function_type ( const util::position_type&
-                      , const boost::optional<std::string>& name
-                      , const ports_type& ports
+        function_type ( util::position_type const&
+                      , boost::optional<std::string> const& name
+                      , ports_type const& ports
                       , fhg::pnet::util::unique<memory_buffer_type> const&
                       , std::list<memory_get> const&
                       , std::list<memory_put> const&
                       , std::list<memory_getput> const&
-                      , const bool& contains_a_module_call
-                      , const structs_type& structs
-                      , const conditions_type&
-                      , const requirements_type& requirements
-                      , const preferences_type& preferences
-                      , const content_type& content
-                      , const we::type::property::type& properties
+                      , bool const& contains_a_module_call
+                      , structs_type const& structs
+                      , conditions_type const&
+                      , requirements_type const& requirements
+                      , preferences_type const& preferences
+                      , content_type const& content
+                      , we::type::property::type const& properties
                       );
 
         //! \note explicitly defaulted in compilation unit to be able
@@ -90,7 +90,7 @@ namespace xml
 
         function_type with_name (std::string) const;
 
-        const content_type& content() const;
+        content_type const& content() const;
         content_type& content();
 
         // ***************************************************************** //
@@ -101,7 +101,7 @@ namespace xml
 
         // ***************************************************************** //
 
-        const boost::optional<std::string>& name() const;
+        boost::optional<std::string> const& name() const;
 
         // ***************************************************************** //
 
@@ -112,28 +112,28 @@ namespace xml
         fhg::pnet::util::unique<memory_buffer_type>
           const& memory_buffers() const;
 
-        const ports_type& ports() const;
+        ports_type const& ports() const;
 
-        boost::optional<const port_type&> get_port_in (const std::string & name) const;
-        boost::optional<const port_type&> get_port_out (const std::string & name) const;
+        boost::optional<port_type const&> get_port_in (std::string const& name) const;
+        boost::optional<port_type const&> get_port_out (std::string const& name) const;
 
-        bool is_known_port_in (const std::string & name) const;
-        bool is_known_port_out (const std::string & name) const;
-        bool is_known_port (const std::string & name) const;
-        bool is_known_port_inout (const std::string & name) const;
-        bool is_known_tunnel (const std::string& name) const;
-
-        // ***************************************************************** //
-
-        const conditions_type& conditions() const;
+        bool is_known_port_in (std::string const& name) const;
+        bool is_known_port_out (std::string const& name) const;
+        bool is_known_port (std::string const& name) const;
+        bool is_known_port_inout (std::string const& name) const;
+        bool is_known_tunnel (std::string const& name) const;
 
         // ***************************************************************** //
 
-        const preferences_type& preferences() const;
+        conditions_type const& conditions() const;
 
         // ***************************************************************** //
 
-        void type_check (const state::type & state) const;
+        preferences_type const& preferences() const;
+
+        // ***************************************************************** //
+
+        void type_check (state::type const& state) const;
         void resolve_function_use_recursive
           (std::unordered_map<std::string, function_type const&> known);
         void resolve_types_recursive
@@ -141,14 +141,14 @@ namespace xml
 
         // ***************************************************************** //
 
-        we::type::transition_t synthesize
-          ( const std::string&
-          , const state::type&
+        we::type::Transition synthesize
+          ( std::string const&
+          , state::type const&
           , std::unordered_map<std::string, we::port_id_type>& port_id_in
           , std::unordered_map<std::string, we::port_id_type>& port_id_out
-          , const conditions_type&
-          , const we::type::property::type&
-          , const requirements_type&
+          , conditions_type const&
+          , we::type::property::type const&
+          , requirements_type const&
           , we::priority_type
           , fhg::pnet::util::unique<place_map_type> const&
           , std::unordered_map<we::port_id_type, std::string>& real_place_names
@@ -158,15 +158,15 @@ namespace xml
 
         void specialize (state::type & state);
 
-        void specialize ( const type_map_type & map
-                        , const type_get_type & get
-                        , const xml::parse::structure_type_util::set_type & known_structs
+        void specialize ( type_map_type const& map
+                        , type_get_type const& get
+                        , xml::parse::structure_type_util::set_type const& known_structs
                         , state::type & state
                         );
 
-        const we::type::property::type& properties() const;
+        we::type::property::type const& properties() const;
 
-        const unique_key_type& unique_key() const;
+        unique_key_type const& unique_key() const;
 
       private:
         //! \note should be const but can't be due to a massive amount
@@ -211,37 +211,37 @@ namespace xml
         std::list<std::string> cxxflags;
         boost::filesystem::path path;
 
-        fun_info_type ( const std::string & _name
-                      , const std::string & _code
-                      , const std::list<std::string>& _ldflags
-                      , const std::list<std::string>& _cxxflags
-                      , const boost::filesystem::path & _path
+        fun_info_type ( std::string const& _name
+                      , std::string const& _code
+                      , std::list<std::string> const& _ldflags
+                      , std::list<std::string> const& _cxxflags
+                      , boost::filesystem::path const& _path
                       );
 
-        bool operator== (const fun_info_type & other) const;
+        bool operator== (fun_info_type const& other) const;
       };
 
       typedef std::unordered_set<fun_info_type> fun_infos_type;
 
       typedef std::unordered_map<std::string,fun_infos_type> fun_info_map;
 
-      void mk_wrapper ( const state::type & state
-                      , const fun_info_map & m
+      void mk_wrapper ( state::type const& state
+                      , fun_info_map const& m
                       );
 
-      void mk_makefile ( const state::type & state
-                       , const fun_info_map & m
-                       , const std::unordered_set<std::string>& structnames
+      void mk_makefile ( state::type const& state
+                       , fun_info_map const& m
+                       , std::unordered_set<std::string> const& structnames
                        );
 
-      bool find_module_calls ( const state::type & state
+      bool find_module_calls ( state::type const& state
                              , function_type&
                              , fun_info_map & m
                              );
 
       // ***************************************************************** //
 
-      void struct_to_cpp ( const state::type &
+      void struct_to_cpp ( state::type const&
                          , function_type const&
                          , std::unordered_set<std::string>&
                          );
@@ -251,9 +251,9 @@ namespace xml
       namespace dump
       {
         void dump ( ::fhg::util::xml::xmlstream & s
-                  , const function_type & f
+                  , function_type const& f
                   );
-      } // namespace dump
+      }
     }
   }
 }

@@ -16,7 +16,7 @@
 
 <defun name="mod_type">
   <net>
-    <!-- long f1 (double &, const double &, const double &) -->
+    <!-- long f1 (double &, double const&, double const&) -->
     <transition name="f1">
     <defun>
       <in name="x" type="double"/>
@@ -28,7 +28,7 @@
     </defun>
     </transition>
 
-    <!-- void f2 (double &, const double &, const double &) -->
+    <!-- void f2 (double &, double const&, double const&) -->
     <transition name="f2">
     <defun>
       <in name="x" type="double"/>
@@ -53,7 +53,7 @@
     </defun>
     </transition>
 
-    <!-- void f5 (const long &) -->
+    <!-- void f5 (long const&) -->
     <transition name="f5">
     <defun>
       <in name="i" type="long"/>

@@ -27,34 +27,29 @@ namespace sdpa
   {
   public:
     Capability() = default;
-    explicit Capability(const std::string& name,
-                        const std::string& owner);
+    explicit Capability (std::string const&);
 
     std::string name() const { return name_;}
 
-    std::string owner() const { return owner_; }
-
     template <class Archive>
-    void serialize(Archive& ar, const unsigned int)
+    void serialize (Archive& ar, unsigned int)
     {
       ar & name_;
-      ar & owner_;
       ar & uuid_;
     }
 
-    bool operator<(const Capability& b) const
+    bool operator<(Capability const& b) const
     {
       return uuid_ < b.uuid_;
     }
 
-    bool operator==(const Capability& b) const
+    bool operator==(Capability const& b) const
     {
       return uuid_ == b.uuid_;
     }
 
   private:
     std::string name_;
-    std::string owner_;
     std::string uuid_;
   };
 

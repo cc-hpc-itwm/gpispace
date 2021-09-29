@@ -17,7 +17,7 @@
 #pragma once
 
 #include <we/type/net.hpp> // recursive wrapper of transition_t fails otherwise.
-#include <we/type/activity.hpp>
+#include <we/type/Activity.hpp>
 
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
@@ -41,10 +41,10 @@ namespace sdpa
       , STATE_MAX = STATE_CANCELED
       };
 
-      NotificationEvent ( const std::list<std::string>& components
-                        , const std::string& activity_id
-                        , const state_t& activity_state
-                        , const we::type::activity_t& activity
+      NotificationEvent ( std::list<std::string> const& components
+                        , std::string const& activity_id
+                        , state_t const& activity_state
+                        , we::type::Activity const& activity
                         )
         : _components (components)
         , _activity_id (activity_id)
@@ -52,7 +52,7 @@ namespace sdpa
         , _activity_state (activity_state)
       {}
 
-      NotificationEvent (const std::string encoded)
+      NotificationEvent (std::string encoded)
       {
         std::istringstream stream (encoded);
         boost::archive::text_iarchive archive (stream);
@@ -72,10 +72,10 @@ namespace sdpa
         return stream.str();
       }
 
-      const std::list<std::string>& components() const { return _components; }
-      const std::string &activity_id() const { return _activity_id; }
-      const std::string &activity_name() const { return _activity_name; }
-      const state_t &activity_state() const { return _activity_state; }
+      std::list<std::string> const& components() const { return _components; }
+      std::string const& activity_id() const { return _activity_id; }
+      std::string const& activity_name() const { return _activity_name; }
+      state_t const& activity_state() const { return _activity_state; }
 
     private:
       std::list<std::string> _components;

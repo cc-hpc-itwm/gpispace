@@ -182,7 +182,7 @@ BOOST_AUTO_TEST_CASE (string_conversion)
   {
     std::string inp ("");
     std::string::const_iterator pos (inp.begin());
-    const std::string::const_iterator& end (inp.end());
+    std::string::const_iterator const& end (inp.end());
 
     boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
 
@@ -193,7 +193,7 @@ BOOST_AUTO_TEST_CASE (string_conversion)
   {
     std::string inp ("foo");
     std::string::const_iterator pos (inp.begin());
-    const std::string::const_iterator& end (inp.end());
+    std::string::const_iterator const& end (inp.end());
 
     boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
 
@@ -204,7 +204,7 @@ BOOST_AUTO_TEST_CASE (string_conversion)
   {
     std::string inp ("0x");
     std::string::const_iterator pos (inp.begin());
-    const std::string::const_iterator& end (inp.end());
+    std::string::const_iterator const& end (inp.end());
 
     boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
 
@@ -216,7 +216,7 @@ BOOST_AUTO_TEST_CASE (string_conversion)
   {
     std::string inp ("0x/");
     std::string::const_iterator pos (inp.begin());
-    const std::string::const_iterator& end (inp.end());
+    std::string::const_iterator const& end (inp.end());
 
     boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
 
@@ -228,7 +228,7 @@ BOOST_AUTO_TEST_CASE (string_conversion)
   {
     std::string inp ("0x/foo");
     std::string::const_iterator pos (inp.begin());
-    const std::string::const_iterator& end (inp.end());
+    std::string::const_iterator const& end (inp.end());
 
     boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
 
@@ -240,7 +240,7 @@ BOOST_AUTO_TEST_CASE (string_conversion)
   {
     std::string inp ("0x/0000000000000000");
     std::string::const_iterator pos (inp.begin());
-    const std::string::const_iterator& end (inp.end());
+    std::string::const_iterator const& end (inp.end());
 
     boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
 
@@ -252,7 +252,7 @@ BOOST_AUTO_TEST_CASE (string_conversion)
   {
     std::string inp ("0x/000000000000000");
     std::string::const_iterator pos (inp.begin());
-    const std::string::const_iterator& end (inp.end());
+    std::string::const_iterator const& end (inp.end());
 
     boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
 
@@ -264,7 +264,7 @@ BOOST_AUTO_TEST_CASE (string_conversion)
   {
     std::string inp ("0x/0000000000000000/");
     std::string::const_iterator pos (inp.begin());
-    const std::string::const_iterator& end (inp.end());
+    std::string::const_iterator const& end (inp.end());
 
     boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
 
@@ -276,7 +276,7 @@ BOOST_AUTO_TEST_CASE (string_conversion)
   {
     std::string inp ("0x/000000000000001f/0000000000000001/");
     std::string::const_iterator pos (inp.begin());
-    const std::string::const_iterator& end (inp.end());
+    std::string::const_iterator const& end (inp.end());
 
     boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
 
@@ -288,7 +288,7 @@ BOOST_AUTO_TEST_CASE (string_conversion)
   {
     std::string inp ("0x/000000000000001f/0000000000000001/foo");
     std::string::const_iterator pos (inp.begin());
-    const std::string::const_iterator& end (inp.end());
+    std::string::const_iterator const& end (inp.end());
 
     boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
 
@@ -300,7 +300,7 @@ BOOST_AUTO_TEST_CASE (string_conversion)
   {
     std::string inp ("0x/000000000000001f/0000000000000001!");
     std::string::const_iterator pos (inp.begin());
-    const std::string::const_iterator& end (inp.end());
+    std::string::const_iterator const& end (inp.end());
 
     boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
 
@@ -312,7 +312,7 @@ BOOST_AUTO_TEST_CASE (string_conversion)
   {
     std::string inp ("0x/000000000000001f/0000000000000001 foo");
     std::string::const_iterator pos (inp.begin());
-    const std::string::const_iterator& end (inp.end());
+    std::string::const_iterator const& end (inp.end());
 
     boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
 
@@ -324,7 +324,7 @@ BOOST_AUTO_TEST_CASE (string_conversion)
   {
     std::string inp ("0x/0000000000000001!0000000000000001/");
     std::string::const_iterator pos (inp.begin());
-    const std::string::const_iterator& end (inp.end());
+    std::string::const_iterator const& end (inp.end());
 
     boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
 

@@ -26,11 +26,11 @@ namespace pnet
     namespace value
     {
       template <typename T>
-      inline std::list<T> unwrap (std::list<value_type> const &lv)
+      inline std::list<T> unwrap (std::list<value_type> const& lv)
       {
         std::list<T> lt;
 
-        for (auto const &v : lv)
+        for (auto const& v : lv)
         {
           lt.emplace_back (from_value<T> (v));
         }
@@ -39,11 +39,11 @@ namespace pnet
       }
 
       template <typename T>
-      inline std::set<T> unwrap (std::set<value_type> const &sv)
+      inline std::set<T> unwrap (std::set<value_type> const& sv)
       {
         std::set<T> st;
 
-        for (auto const &v : sv)
+        for (auto const& v : sv)
         {
           st.emplace (from_value<T> (v));
         }
@@ -52,7 +52,7 @@ namespace pnet
       }
 
       template <typename K, typename V>
-      inline std::map<K, V> unwrap (std::map<value_type, value_type> const &mvv)
+      inline std::map<K, V> unwrap (std::map<value_type, value_type> const& mvv)
       {
         std::map<K, V> mkv;
 

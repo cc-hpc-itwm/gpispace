@@ -38,23 +38,23 @@ namespace we
     {}
 
     explicit
-    id_base_type (const pod_type& value)
+    id_base_type (pod_type const& value)
       : _value (value)
     {}
 
-    bool operator== (const id_base_type& other) const
+    bool operator== (id_base_type const& other) const
     {
       return _value == other._value;
     }
-    bool operator!= (const id_base_type& other) const
+    bool operator!= (id_base_type const& other) const
     {
       return _value != other._value;
     }
-    bool operator< (const id_base_type& other) const
+    bool operator< (id_base_type const& other) const
     {
       return _value < other._value;
     }
-    bool operator> (const id_base_type& other) const
+    bool operator> (id_base_type const& other) const
     {
       return _value > other._value;
     }
@@ -67,21 +67,21 @@ namespace we
       return old;
     }
 
-    const pod_type& value () const
+    pod_type const& value () const
     {
       return _value;
     }
 
     template<typename P, typename C>
-    friend std::ostream& operator<< (std::ostream&, const id_base_type<P, C>&);
+    friend std::ostream& operator<< (std::ostream&, id_base_type<P, C> const&);
     template<typename P, typename C>
     friend std::istream& operator>> (std::istream&, id_base_type<P, C>&);
     template<typename P, typename C>
-    friend std::size_t hash_value (const id_base_type<P, C>&);
+    friend std::size_t hash_value (id_base_type<P, C> const&);
     friend class boost::serialization::access;
 
     template<typename Archive>
-    void serialize (Archive& ar, const unsigned int)
+    void serialize (Archive& ar, unsigned int)
     {
       ar & BOOST_SERIALIZATION_NVP(_value);
     }
@@ -91,14 +91,14 @@ namespace we
   };
 
   template<typename pod_type, typename client_type>
-  std::size_t hash_value (const id_base_type<pod_type, client_type>& id)
+  std::size_t hash_value (id_base_type<pod_type, client_type> const& id)
   {
     return boost::hash<pod_type>() (id._value);
   }
 
   template<typename pod_type, typename client_type>
   std::ostream& operator<< ( std::ostream& s
-                           , const id_base_type<pod_type, client_type>& id
+                           , id_base_type<pod_type, client_type> const& id
                            )
   {
     return s << id._value;
@@ -120,14 +120,14 @@ namespace we
     struct _name : public ::we::id_base_type<_type, _name>              \
     {                                                                   \
       _name () : id_base_type<_type,_name>() {}                         \
-      _name (const _type& value) : id_base_type<_type,_name> (value) {} \
+      _name (_type const& value) : id_base_type<_type,_name> (value) {} \
     };                                                                  \
   }                                                                     \
   namespace std                                                         \
   {                                                                     \
     template<> struct hash<we::_name>                                   \
     {                                                                   \
-      size_t operator() (const we::_name& id) const                     \
+      size_t operator() (we::_name const& id) const                     \
       {                                                                 \
         return std::hash<_type>() (id.value());                         \
       }                                                                 \
@@ -140,7 +140,7 @@ namespace we
     struct _name : public ::we::id_base_type<_type, _name>              \
     {                                                                   \
       _name () : id_base_type<_type,_name>() {}                         \
-      _name (const _type& value) : id_base_type<_type,_name> (value) {} \
+      _name (_type const& value) : id_base_type<_type,_name> (value) {} \
     };                                                                  \
   }
 #endif

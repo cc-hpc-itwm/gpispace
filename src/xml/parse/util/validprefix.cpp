@@ -24,9 +24,9 @@ namespace xml
 {
   namespace parse
   {
-    std::string validate_prefix ( const std::string& name
-                                , const std::string& type
-                                , const boost::filesystem::path& path
+    std::string validate_prefix ( std::string const& name
+                                , std::string const& type
+                                , boost::filesystem::path const& path
                                 )
     {
       if (rewrite::has_magic_prefix (name))

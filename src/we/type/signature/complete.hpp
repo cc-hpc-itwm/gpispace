@@ -28,12 +28,12 @@ namespace pnet
       class complete
       {
       public:
-        complete (const std::string&);
-        const std::string& tname() const;
+        complete (std::string const&);
+        std::string const& tname() const;
       private:
-        const std::string& _tname;
+        std::string const& _tname;
       };
-      std::ostream& operator<< (std::ostream&, const complete&);
+      std::ostream& operator<< (std::ostream&, complete const&);
     }
   }
 }

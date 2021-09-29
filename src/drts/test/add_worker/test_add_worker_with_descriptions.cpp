@@ -33,7 +33,6 @@
 #include <test/source_directory.hpp>
 #include <test/shared_directory.hpp>
 
-#include <fhg/util/thread/event.hpp>
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/finally.hpp>
 #include <util-generic/read_lines.hpp>

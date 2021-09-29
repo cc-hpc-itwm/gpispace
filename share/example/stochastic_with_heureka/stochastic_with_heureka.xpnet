@@ -109,7 +109,7 @@
 
     <transition name="roll_and_heureka">
       <defun>
-        <require key="roll_and_heureka" mandatory="true"/>
+        <require key="roll_and_heureka"/>
         <in name="implementation" type="string"/>
         <in name="user_data" type="bytearray"/>
         <in name="job" type="job"/>
@@ -303,7 +303,7 @@ if (!cancelled)
 
     <transition name="reduce">
       <defun>
-        <require key="reduce" mandatory="true"/>
+        <require key="reduce"/>
         <in name="implementation" type="string"/>
         <in name="user_data" type="bytearray"/>
         <in name="partial_resultL" type="bytearray"/>
@@ -390,7 +390,7 @@ if (!cancelled)
 
     <transition name="post_process">
       <defun>
-        <require key="post_process" mandatory="true"/>
+        <require key="post_process"/>
         <in name="implementation" type="string"/>
         <in name="user_data" type="bytearray"/>
         <in name="number_of_rolls_done" type="unsigned long"/>

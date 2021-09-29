@@ -30,7 +30,6 @@
 #include <iml/testing/beegfs_directory.hpp>
 
 #include <boost/filesystem.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
 #include <boost/test/unit_test.hpp>
 
@@ -157,7 +156,7 @@ BOOST_FIXTURE_TEST_CASE (create_big_beegfs_segment, setup_and_cleanup_shared_fil
                        , topology
                        );
   }
-  catch (std::exception const &ex)
+  catch (std::exception const& ex)
   {
     BOOST_WARN_MESSAGE ( false
                        , "could not allocate beegfs segment of size: " << size
@@ -183,7 +182,7 @@ BOOST_FIXTURE_TEST_CASE (create_huge_beegfs_segment, setup_and_cleanup_shared_fi
                        , topology
                        );
   }
-  catch (std::exception const &ex)
+  catch (std::exception const& ex)
   {
     BOOST_ERROR ( "could not allocate beegfs segment of size: " << size
                 << ": " << ex.what ()
@@ -231,7 +230,7 @@ BOOST_FIXTURE_TEST_CASE (test_read, setup_and_cleanup_shared_file)
 
     area.free (handle);
   }
-  catch (std::exception const &ex)
+  catch (std::exception const& ex)
   {
     BOOST_ERROR ( "could not allocate beegfs segment of size: " << size
                 << ": " << ex.what ()

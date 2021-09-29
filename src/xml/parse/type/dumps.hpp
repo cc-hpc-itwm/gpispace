@@ -32,7 +32,7 @@ namespace xml
         template<typename IT>
         void dumps ( ::fhg::util::xml::xmlstream & s
                    , IT pos
-                   , const IT & end
+                   , IT const& end
                    )
         {
           for (; pos != end; ++pos)
@@ -44,8 +44,8 @@ namespace xml
         template<typename IT, typename T>
         void dumps ( ::fhg::util::xml::xmlstream & s
                    , IT pos
-                   , const IT & end
-                   , const T & x
+                   , IT const& end
+                   , T const& x
                    )
         {
           for (; pos != end; ++pos)
@@ -68,10 +68,10 @@ namespace xml
         template<typename Container, typename T>
         void dumps ( ::fhg::util::xml::xmlstream& s
                    , Container container
-                   , const T& x
+                   , T const& x
                    )
         {
-          for (const typename Container::value_type val : container)
+          for (auto val : container)
           {
             ::xml::parse::type::dump::dump (s, val, x);
           }

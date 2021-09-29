@@ -39,44 +39,44 @@ namespace xml
       struct module_type : with_position_of_definition
       {
       public:
-        module_type ( const util::position_type&
-                    , const std::string& name
-                    , const std::string& function
-                    , const boost::optional<std::string>& target
-                    , const boost::optional<std::string>& port_return
-                    , const std::list<std::string>& port_arg
+        module_type ( util::position_type const&
+                    , std::string const& name
+                    , std::string const& function
+                    , boost::optional<std::string> const& target
+                    , boost::optional<std::string> const& port_return
+                    , std::list<std::string> const& port_arg
                     , boost::optional<std::string> _memory_buffer_return
                     , std::list<std::string> _memory_buffer_arg
-                    , const boost::optional<std::string>& code
-                    , const boost::optional<util::position_type>& pod_of_code
-                    , const std::list<std::string>& cincludes
-                    , const std::list<std::string>& ldflags
-                    , const std::list<std::string>& cxxflags
-                    , const boost::optional<bool> &pass_context
-                    , const boost::optional<we::type::eureka_id_type> &eureka_id
+                    , boost::optional<std::string> const& code
+                    , boost::optional<util::position_type> const& pod_of_code
+                    , std::list<std::string> const& cincludes
+                    , std::list<std::string> const& ldflags
+                    , std::list<std::string> const& cxxflags
+                    , boost::optional<bool> const& pass_context
+                    , boost::optional<we::type::eureka_id_type> const& eureka_id
                     , bool require_function_unloads_without_rest
                     , bool require_module_unloads_without_rest
                     );
 
-        const std::string& name() const;
-        const std::string& function() const;
-        const boost::optional<std::string>& target() const;
-        const boost::optional<std::string>& port_return() const;
-        const std::list<std::string>& port_arg() const;
-        const boost::optional<std::string>& memory_buffer_return() const;
-        const std::list<std::string>& memory_buffer_arg() const;
-        const boost::optional<std::string>& code() const;
+        std::string const& name() const;
+        std::string const& function() const;
+        boost::optional<std::string> const& target() const;
+        boost::optional<std::string> const& port_return() const;
+        std::list<std::string> const& port_arg() const;
+        boost::optional<std::string> const& memory_buffer_return() const;
+        std::list<std::string> const& memory_buffer_arg() const;
+        boost::optional<std::string> const& code() const;
         const boost::optional<util::position_type>
           position_of_definition_of_code() const;
-        const std::list<std::string>& cincludes() const;
-        const std::list<std::string>& ldflags() const;
-        const std::list<std::string>& cxxflags() const;
+        std::list<std::string> const& cincludes() const;
+        std::list<std::string> const& ldflags() const;
+        std::list<std::string> const& cxxflags() const;
         bool pass_context () const;
-        const boost::optional<we::type::eureka_id_type>& eureka_id() const;
+        boost::optional<we::type::eureka_id_type> const& eureka_id() const;
         bool require_function_unloads_without_rest() const;
         bool require_module_unloads_without_rest() const;
 
-        bool operator== (const module_type&) const;
+        bool operator== (module_type const&) const;
 
         void specialize (type_map_type const&);
 
@@ -99,13 +99,13 @@ namespace xml
         bool _require_module_unloads_without_rest;
       };
 
-      std::size_t hash_value (const module_type&);
+      std::size_t hash_value (module_type const&);
 
       namespace dump
       {
-        std::string dump_fun (const module_type&);
+        std::string dump_fun (module_type const&);
 
-        void dump (::fhg::util::xml::xmlstream&, const module_type&);
+        void dump (::fhg::util::xml::xmlstream&, module_type const&);
       }
     }
   }

@@ -26,11 +26,11 @@ namespace xml
   {
     namespace type
     {
-      specialize_type::specialize_type ( const util::position_type& pod
-                                       , const std::string& name
-                                       , const std::string& use_
-                                       , const type_map_type& type_map_
-                                       , const type_get_type& type_get_
+      specialize_type::specialize_type ( util::position_type const& pod
+                                       , std::string const& name
+                                       , std::string const& use_
+                                       , type_map_type const& type_map_
+                                       , type_get_type const& type_get_
                                        )
         : with_position_of_definition (pod)
         , _name (name)
@@ -39,22 +39,22 @@ namespace xml
         , type_get (type_get_)
       {}
 
-      const std::string& specialize_type::name() const
+      std::string const& specialize_type::name() const
       {
         return _name;
       }
 
-      const specialize_type::unique_key_type&
+      specialize_type::unique_key_type const&
         specialize_type::unique_key() const
       {
         return name();
       }
 
-      void split_structs ( const xml::parse::structure_type_util::set_type & global
+      void split_structs ( xml::parse::structure_type_util::set_type const& global
                          , structs_type & child_structs
                          , structs_type & parent_structs
-                         , const type_get_type & type_get
-                         , const state::type & state
+                         , type_get_type const& type_get
+                         , state::type const& state
                          )
       {
         namespace st = xml::parse::structure_type_util;
@@ -91,7 +91,7 @@ namespace xml
       namespace dump
       {
         void dump ( ::fhg::util::xml::xmlstream & s
-                  , const specialize_type & sp
+                  , specialize_type const& sp
                   )
         {
           s.open ("specialize");

@@ -68,7 +68,7 @@ namespace fhg
       (int sig_num, siginfo_t* info, void* context) const
     {
       std::lock_guard<std::mutex> const _ (_handler_mutex);
-      for ( const std::function<void (int, siginfo_t*, void*)>& fun
+      for ( std::function<void (int, siginfo_t*, void*)> const& fun
           : _handlers.find (sig_num)->second.second
           )
       {
@@ -130,7 +130,7 @@ namespace fhg
 
         std::ostringstream log_message;
         log_message << "received signal "
-                    << sig_num << " (" << strsignal(sig_num) << "),"
+                    << sig_num << " (" << strsignal (sig_num) << "),"
                     << " address is " << static_cast<void*> (info->si_addr)
                     << " from " << std::hex << caller_address;
 

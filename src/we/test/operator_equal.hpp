@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <we/type/activity.hpp>
+#include <we/type/Activity.hpp>
 
 #include <we/type/place.hpp>
 #include <we/type/net.hpp>
@@ -42,15 +42,15 @@ namespace we
   namespace type
   {
     bool operator== (net_type const& lhs, net_type const& rhs);
-    bool operator== (port_t const& lhs, port_t const& rhs);
-    bool operator== (requirement_t const& lhs, requirement_t const& rhs);
-    bool operator== (module_call_t const& lhs, module_call_t const& rhs);
-    bool operator== (expression_t const& lhs, expression_t const& rhs);
-    bool operator== (transition_t const& lhs, transition_t const& rhs);
+    bool operator== (Port const& lhs, Port const& rhs);
+    bool operator== (Requirement const& lhs, Requirement const& rhs);
+    bool operator== (ModuleCall const& lhs, ModuleCall const& rhs);
+    bool operator== (Expression const& lhs, Expression const& rhs);
+    bool operator== (Transition const& lhs, Transition const& rhs);
   }
 
     namespace type
     {
-      bool operator== (activity_t const& lhs, activity_t const& rhs);
+      bool operator== (Activity const& lhs, Activity const& rhs);
     }
 }

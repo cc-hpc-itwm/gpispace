@@ -25,22 +25,22 @@ namespace we
   {
     namespace literal
     {
-      bool operator== (const control&, const control&)
+      bool operator== (control const&, control const&)
       {
         return true;
       }
 
-      std::ostream& operator<< (std::ostream& os, const control&)
+      std::ostream& operator<< (std::ostream& os, control const&)
       {
         return os << std::string("[]");
       }
 
-      std::size_t hash_value (const control&)
+      std::size_t hash_value (control const&)
       {
         return 42;
       }
 
-      bool operator< (const control&, const control&)
+      bool operator< (control const&, control const&)
       {
         return false;
       }

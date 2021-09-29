@@ -77,13 +77,13 @@ namespace gpi
         _memory_manager.clear();
       }
 
-      void manager_t::close_socket (const int fd)
+      void manager_t::close_socket (int fd)
       {
         fhg::util::syscall::shutdown (fd, SHUT_RDWR);
         fhg::util::syscall::close (fd);
       }
 
-      void manager_t::safe_unlink(std::string const & path)
+      void manager_t::safe_unlink (std::string const& path)
       {
         struct stat st;
 
@@ -96,7 +96,7 @@ namespace gpi
           return;
         }
 
-        if (!S_ISSOCK(st.st_mode))
+        if (!S_ISSOCK (st.st_mode))
         {
           throw std::runtime_error ("not a socket");
         }
@@ -112,7 +112,7 @@ namespace gpi
 
         for (;;)
         {
-          peer_addr_size = sizeof(struct sockaddr_un);
+          peer_addr_size = sizeof (struct sockaddr_un);
           try
           {
             cfd = fhg::util::syscall::accept ( m_socket
@@ -175,7 +175,7 @@ namespace gpi
           /**********************************************/
 
           gpi::pc::proto::message_t
-            operator () (const gpi::pc::proto::memory::alloc_t & alloc) const
+            operator () (gpi::pc::proto::memory::alloc_t const& alloc) const
           {
             gpi::pc::proto::memory::alloc_reply_t rpl;
             rpl.handle = _memory_manager.alloc
@@ -184,7 +184,7 @@ namespace gpi
           }
 
           gpi::pc::proto::message_t
-            operator () (const gpi::pc::proto::memory::free_t & free) const
+            operator () (gpi::pc::proto::memory::free_t const& free) const
           {
             _memory_manager.free (free.handle);
             return gpi::pc::proto::error::error_t
@@ -192,7 +192,7 @@ namespace gpi
           }
 
           gpi::pc::proto::message_t
-            operator () (const gpi::pc::proto::memory::memcpy_t & cpy) const
+            operator () (gpi::pc::proto::memory::memcpy_t const& cpy) const
           {
             gpi::pc::proto::memory::memcpy_reply_t rpl;
             rpl.memcpy_id = _memory_manager.memcpy (cpy.dst, cpy.src, cpy.size);
@@ -200,7 +200,7 @@ namespace gpi
           }
 
           gpi::pc::proto::message_t
-            operator () (const gpi::pc::proto::memory::wait_t & w) const
+            operator () (gpi::pc::proto::memory::wait_t const& w) const
           {
             try
             {
@@ -216,7 +216,7 @@ namespace gpi
           }
 
           gpi::pc::proto::message_t
-            operator () (const gpi::pc::proto::memory::info_t & info) const
+            operator () (gpi::pc::proto::memory::info_t const& info) const
           {
             gpi::pc::proto::memory::info_reply_t rpl;
             rpl.descriptor = _memory_manager.info (info.handle);
@@ -224,7 +224,7 @@ namespace gpi
           }
 
           gpi::pc::proto::message_t
-            operator() (const gpi::pc::proto::memory::get_transfer_costs_t& request) const
+            operator() (gpi::pc::proto::memory::get_transfer_costs_t const& request) const
           {
             return gpi::pc::proto::memory::message_t
               (gpi::pc::proto::memory::transfer_costs_t (_memory_manager.get_transfer_costs (request.transfers)));
@@ -235,7 +235,7 @@ namespace gpi
           /**********************************************/
 
           gpi::pc::proto::message_t
-            operator () (const gpi::pc::proto::segment::register_t & register_segment) const
+            operator () (gpi::pc::proto::segment::register_t const& register_segment) const
           {
             gpi::pc::proto::segment::register_reply_t rpl;
             rpl.handle
@@ -251,7 +251,7 @@ namespace gpi
           }
 
           gpi::pc::proto::message_t
-            operator () (const gpi::pc::proto::segment::unregister_t & unregister_segment) const
+            operator () (gpi::pc::proto::segment::unregister_t const& unregister_segment) const
           {
             _memory_manager.unregister_memory
               (m_proc_id, unregister_segment.handle);
@@ -260,7 +260,7 @@ namespace gpi
           }
 
           gpi::pc::proto::message_t
-            operator () (const gpi::pc::proto::segment::add_memory_t & add_mem) const
+            operator () (gpi::pc::proto::segment::add_memory_t const& add_mem) const
           try
           {
             return proto::segment::message_t
@@ -281,7 +281,7 @@ namespace gpi
           }
 
           gpi::pc::proto::message_t
-            operator () (const gpi::pc::proto::segment::del_memory_t & del_mem) const
+            operator () (gpi::pc::proto::segment::del_memory_t const& del_mem) const
           {
             _memory_manager.del_memory (m_proc_id, del_mem.id, _topology);
             return
@@ -293,13 +293,13 @@ namespace gpi
           /**********************************************/
 
           gpi::pc::proto::message_t
-          operator () (const gpi::pc::proto::segment::message_t & m) const
+          operator () (gpi::pc::proto::segment::message_t const& m) const
           {
             return boost::apply_visitor (*this, m);
           }
 
           gpi::pc::proto::message_t
-          operator () (const gpi::pc::proto::memory::message_t & m) const
+          operator () (gpi::pc::proto::memory::message_t const& m) const
           {
             return boost::apply_visitor (*this, m);
           }
@@ -308,7 +308,7 @@ namespace gpi
 
           template <typename T>
             gpi::pc::proto::message_t
-            operator () (T const &) const
+            operator () (T const&) const
           {
             return gpi::pc::proto::error::error_t
               (gpi::pc::proto::error::bad_request,  "invalid input message");
@@ -491,7 +491,7 @@ namespace gpi
       }
 
 
-      manager_t::manager_t ( std::string const & p
+      manager_t::manager_t ( std::string const& p
                            , fhg::iml::vmem::gaspi_context& gaspi_context
                            , std::unique_ptr<fhg::rpc::service_tcp_provider_with_deferred_dispatcher> topology_rpc_server
                            )
@@ -540,11 +540,11 @@ namespace gpi
         }
 
         struct sockaddr_un my_addr;
-        memset (&my_addr, 0, sizeof(my_addr));
+        memset (&my_addr, 0, sizeof (my_addr));
         my_addr.sun_family = AF_UNIX;
         strncpy ( my_addr.sun_path
                 , m_path.c_str()
-                , sizeof(my_addr.sun_path) - 1
+                , sizeof (my_addr.sun_path) - 1
                 );
 
         fhg::util::nest_exceptions<std::runtime_error>

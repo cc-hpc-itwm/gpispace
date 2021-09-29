@@ -23,6 +23,6 @@ namespace expr
 {
   namespace eval
   {
-    pnet::type::value::value_type eval (context&, const expr::parse::node::type&);
+    pnet::type::value::value_type eval (context&, expr::parse::node::type const&);
   }
 }

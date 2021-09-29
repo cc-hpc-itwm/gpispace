@@ -107,13 +107,7 @@ template_use_type =
   attribute name { xsd:NCName },
   attribute use { xsd:string }
 use_type = attribute name { xsd:NCName }
-require_type =
-  attribute key { xsd:string }
-  >> a:documentation [
-       "\x{a}" ~
-       "            default value is : true"
-     ],
-  [ ns_1:defaultValue = "true" ] attribute mandatory { xsd:boolean }?
+require_type = attribute key { xsd:string }
 template_parameter_type = attribute type { xsd:NCName }
 place_type =
   (element properties { property_map_type }

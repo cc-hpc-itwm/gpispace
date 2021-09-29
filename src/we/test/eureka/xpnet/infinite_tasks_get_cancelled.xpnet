@@ -35,7 +35,7 @@
       <connect-read port="register_port" place="register_port"/>
       <connect-in port="task" place="task"/>
       <connect-in port="trigger" place="loop"/>
-      <connect-in port="eureka_group" place="eureka_group"/>
+      <connect-read port="eureka_group" place="eureka_group"/>
     </transition>
 
     <place name="eureka" type="int" put_token="true"/>

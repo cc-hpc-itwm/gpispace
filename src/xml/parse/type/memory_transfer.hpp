@@ -37,10 +37,10 @@ namespace xml
       struct memory_transfer_type : with_position_of_definition
       {
       public:
-        memory_transfer_type ( const util::position_type&
+        memory_transfer_type ( util::position_type const&
                              , std::string const& global
                              , std::string const& local
-                             , const we::type::property::type&
+                             , we::type::property::type const&
                              , boost::optional<bool> const&
                              );
 
@@ -52,7 +52,7 @@ namespace xml
         {
           return _local;
         }
-        const we::type::property::type& properties() const
+        we::type::property::type const& properties() const
         {
           return _properties;
         }
@@ -68,10 +68,10 @@ namespace xml
       struct memory_get : memory_transfer_type
       {
       public:
-        memory_get ( const util::position_type&
+        memory_get ( util::position_type const&
                    , std::string const& global
                    , std::string const& local
-                   , const we::type::property::type&
+                   , we::type::property::type const&
                    , boost::optional<bool> const&
                    );
       };
@@ -79,10 +79,10 @@ namespace xml
       struct memory_put : memory_transfer_type
       {
       public:
-        memory_put ( const util::position_type&
+        memory_put ( util::position_type const&
                    , std::string const& global
                    , std::string const& local
-                   , const we::type::property::type&
+                   , we::type::property::type const&
                    , boost::optional<bool> const&
                    , boost::optional<bool> const&
                    );
@@ -98,10 +98,10 @@ namespace xml
       struct memory_getput : memory_transfer_type
       {
       public:
-        memory_getput ( const util::position_type&
+        memory_getput ( util::position_type const&
                       , std::string const& global
                       , std::string const& local
-                      , const we::type::property::type&
+                      , we::type::property::type const&
                       , boost::optional<bool> const&
                       , boost::optional<bool> const&
                       );
@@ -116,9 +116,9 @@ namespace xml
 
       namespace dump
       {
-        void dump (::fhg::util::xml::xmlstream&, const memory_get&);
-        void dump (::fhg::util::xml::xmlstream&, const memory_put&);
-        void dump (::fhg::util::xml::xmlstream&, const memory_getput&);
+        void dump (::fhg::util::xml::xmlstream&, memory_get const&);
+        void dump (::fhg::util::xml::xmlstream&, memory_put const&);
+        void dump (::fhg::util::xml::xmlstream&, memory_getput const&);
       }
     }
   }

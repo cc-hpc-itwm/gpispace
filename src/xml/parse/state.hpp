@@ -59,35 +59,33 @@ namespace xml
       public:
         type();
 
-        const gen_param_type& gen_ldflags() const;
-        const gen_param_type& gen_cxxflags() const;
+        gen_param_type const& gen_ldflags() const;
+        gen_param_type const& gen_cxxflags() const;
         gen_param_type& gen_ldflags();
         gen_param_type& gen_cxxflags();
 
         const ::xml::parse::type::requirements_type& requirements() const;
 
         void set_requirement
-          ( const ::xml::parse::type::require_key_type& key
-          , const bool& mandatory
-          );
+          (const ::xml::parse::type::require_key_type& key);
 
         we::type::property::path_type& prop_path();
 
-        void interpret_property ( const we::type::property::path_type& path
-                                , const we::type::property::value_type& value
+        void interpret_property ( we::type::property::path_type const& path
+                                , we::type::property::value_type const& value
                                 );
 
-        void set_input (const boost::filesystem::path& path);
-        void set_input (const std::string& file);
+        void set_input (boost::filesystem::path const& path);
+        void set_input (std::string const& file);
 
         boost::filesystem::path file_in_progress() const;
         void set_in_progress_position (const char*);
         util::position_type position (const xml_node_type*) const;
 
-        const std::set<boost::filesystem::path>& dependencies() const;
+        std::set<boost::filesystem::path> const& dependencies() const;
 
 #define ACCESS(name)                     \
-        const std::string& name() const; \
+        std::string const& name() const; \
         std::string& name();
 
         ACCESS (path_to_cpp)
@@ -98,7 +96,7 @@ namespace xml
 
 #undef ACCESS
 
-#define ACCESS(name) const std::vector<std::string>& name() const;
+#define ACCESS(name) std::vector<std::string> const& name() const;
 
         ACCESS (dependencies_target)
         ACCESS (dependencies_target_quoted)
@@ -106,7 +104,7 @@ namespace xml
 #undef ACCESS
 
 #define ACCESST(_t,_x)                            \
-          const _t& _x() const;                   \
+          _t const& _x() const;                   \
         _t& _x();
 #define ACCESS(x) ACCESST(bool,x)
 
@@ -152,7 +150,7 @@ namespace xml
 #undef ACCESS
 #undef ACCESST
 
-#define WARN(x) void warn (const warning::x& w) const;
+#define WARN(x) void warn (warning::x const& w) const;
 
         WARN (overwrite_function_name_as)
         WARN (overwrite_template_name_as)
@@ -201,7 +199,7 @@ namespace xml
 
         template<typename T>
         T generic_parse ( std::function<T (std::istream&, type&)> parse
-                        , const boost::filesystem::path& path
+                        , boost::filesystem::path const& path
                         )
         {
           _in_progress.push_back (path);
@@ -219,11 +217,11 @@ namespace xml
           return x;
         }
 
-        void check_for_include_loop (const boost::filesystem::path& path) const;
+        void check_for_include_loop (boost::filesystem::path const& path) const;
 
         template<typename T>
         T generic_include ( std::function<T (std::istream&, type&)> parse
-                          , const std::string& file
+                          , std::string const& file
                           )
         {
           const boost::filesystem::path path (expand (file));
@@ -346,15 +344,15 @@ namespace xml
         std::string _option_path_prefixes_to_strip;
 
         template<typename W>
-        void generic_warn ( const W& w
-                          , const bool& active
-                          , const std::string& flag
+        void generic_warn ( W const& w
+                          , bool const& active
+                          , std::string const& flag
                           ) const;
 
-        boost::filesystem::path expand (const std::string& file) const;
+        boost::filesystem::path expand (std::string const& file) const;
       };
 
-      std::pair<std::string, std::string> reg_M (const std::string& s);
+      std::pair<std::string, std::string> reg_M (std::string const& s);
     }
   }
 }

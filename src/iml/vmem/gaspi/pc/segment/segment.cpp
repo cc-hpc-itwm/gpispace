@@ -38,8 +38,8 @@ namespace iml
         close ();
       }
 
-      OpenedSharedMemory::OpenedSharedMemory ( std::string const & name
-                                             , const iml::MemorySize sz
+      OpenedSharedMemory::OpenedSharedMemory ( std::string const& name
+                                             , iml::MemorySize sz
                                              )
         : m_ptr (nullptr)
         , _name (name)
@@ -54,7 +54,7 @@ namespace iml
         }
       }
 
-      void OpenedSharedMemory::create (const mode_t mode)
+      void OpenedSharedMemory::create (mode_t mode)
       {
         int fd (-1);
 

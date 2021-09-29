@@ -26,10 +26,10 @@ namespace xml
     namespace type
     {
       memory_transfer_type::memory_transfer_type
-        ( const util::position_type& position_of_definition
+        ( util::position_type const& position_of_definition
         , std::string const& global
         , std::string const& local
-        , const we::type::property::type& properties
+        , we::type::property::type const& properties
         , boost::optional<bool> const& allow_empty_ranges
         )
           : with_position_of_definition (position_of_definition)
@@ -46,10 +46,10 @@ namespace xml
       }
 
       memory_get::memory_get
-        ( const util::position_type& position_of_definition
+        ( util::position_type const& position_of_definition
         , std::string const& global
         , std::string const& local
-        , const we::type::property::type& properties
+        , we::type::property::type const& properties
         , boost::optional<bool> const& allow_empty_ranges
         )
           : memory_transfer_type
@@ -62,10 +62,10 @@ namespace xml
       {}
 
       memory_put::memory_put
-        ( const util::position_type& position_of_definition
+        ( util::position_type const& position_of_definition
         , std::string const& global
         , std::string const& local
-        , const we::type::property::type& properties
+        , we::type::property::type const& properties
         , boost::optional<bool> const& not_modified_in_module_call
         , boost::optional<bool> const& allow_empty_ranges
         )
@@ -80,10 +80,10 @@ namespace xml
       {}
 
       memory_getput::memory_getput
-        ( const util::position_type& position_of_definition
+        ( util::position_type const& position_of_definition
         , std::string const& global
         , std::string const& local
-        , const we::type::property::type& properties
+        , we::type::property::type const& properties
         , boost::optional<bool> const& not_modified_in_module_call
         , boost::optional<bool> const& allow_empty_ranges
         )
@@ -115,13 +115,13 @@ namespace xml
           }
         }
 
-        void dump (::fhg::util::xml::xmlstream& s, const memory_get& mg)
+        void dump (::fhg::util::xml::xmlstream& s, memory_get const& mg)
         {
           s.open ("memory-get");
           dump_transfer (s, mg);
           s.close();
         }
-        void dump (::fhg::util::xml::xmlstream& s, const memory_put& mp)
+        void dump (::fhg::util::xml::xmlstream& s, memory_put const& mp)
         {
           s.open ("memory-put");
           s.attr
@@ -129,7 +129,7 @@ namespace xml
           dump_transfer (s, mp);
           s.close();
         }
-        void dump (::fhg::util::xml::xmlstream& s, const memory_getput& mp)
+        void dump (::fhg::util::xml::xmlstream& s, memory_getput const& mp)
         {
           s.open ("memory-getput");
           s.attr

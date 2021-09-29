@@ -66,37 +66,37 @@ namespace gpi
 
         virtual std::packaged_task<void()> get_send_task
           ( area_t & src_area
-          , const iml::MemoryLocation src
-          , const iml::MemoryLocation dst
+          , iml::MemoryLocation src
+          , iml::MemoryLocation dst
           , iml::MemorySize amount
           ) override;
 
         virtual std::packaged_task<void()> get_recv_task
           ( area_t & dst_area
-          , const iml::MemoryLocation dst
-          , const iml::MemoryLocation src
+          , iml::MemoryLocation dst
+          , iml::MemoryLocation src
           , iml::MemorySize amount
           ) override;
 
       private:
-        virtual bool is_range_local ( const gpi::pc::type::handle::descriptor_t &
-                            , const iml::MemoryOffset begin
-                            , const iml::MemorySize   range_size
+        virtual bool is_range_local ( gpi::pc::type::handle::descriptor_t const&
+                            , iml::MemoryOffset begin
+                            , iml::MemorySize   range_size
                             ) const override;
 
         iml::MemoryOffset
-        handle_to_global_offset ( const iml::MemoryOffset
-                                , const iml::MemorySize per_node_size
+        handle_to_global_offset ( iml::MemoryOffset
+                                , iml::MemorySize per_node_size
                                 ) const;
 
         virtual void *raw_ptr (iml::MemoryOffset off) override;
 
-        virtual iml::MemorySize get_local_size ( const iml::MemorySize size
-                                             , const gpi::pc::type::flags_t flags
+        virtual iml::MemorySize get_local_size ( iml::MemorySize size
+                                             , gpi::pc::type::flags_t flags
                                              ) const override;
 
-        double get_transfer_costs ( const iml::MemoryRegion&
-                                  , const gpi::rank_t
+        double get_transfer_costs ( iml::MemoryRegion const&
+                                  , gpi::rank_t
                                   ) const override;
 
         fhg::iml::vmem::gaspi_context& _gaspi_context;

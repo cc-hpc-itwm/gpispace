@@ -25,8 +25,8 @@ namespace xml
   namespace parse
   {
     void expect_none_or ( xml_node_type*& node
-                        , const rapidxml::node_type t
-                        , const state::type& state
+                        , rapidxml::node_type t
+                        , state::type const& state
                         )
     {
       skip (node, rapidxml::node_comment);
@@ -37,9 +37,9 @@ namespace xml
       }
     }
     void expect_none_or ( xml_node_type*& node
-                        , const rapidxml::node_type t1
-                        , const rapidxml::node_type t2
-                        , const state::type& state
+                        , rapidxml::node_type t1
+                        , rapidxml::node_type t2
+                        , state::type const& state
                         )
     {
       skip (node, rapidxml::node_comment);

@@ -47,9 +47,9 @@ namespace xml
 
       position_type::position_type ( const char* begin
                                    , const char* pos
-                                   , const boost::filesystem::path& path
-                                   , const unsigned int& line
-                                   , const unsigned int& column
+                                   , boost::filesystem::path const& path
+                                   , unsigned int const& line
+                                   , unsigned int const& column
                                    )
         : _line (line)
         , _column (column)
@@ -66,12 +66,12 @@ namespace xml
       {
         return _column;
       }
-      const boost::filesystem::path& position_type::path() const
+      boost::filesystem::path const& position_type::path() const
       {
         return _path;
       }
 
-      std::ostream& operator<< (std::ostream& os, const position_type& p)
+      std::ostream& operator<< (std::ostream& os, position_type const& p)
       {
         return os << "[" << p.path().string()
                   << ":" << p.line()

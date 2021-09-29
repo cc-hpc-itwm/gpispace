@@ -29,10 +29,10 @@ namespace xml
   {
     namespace type
     {
-      place_type::place_type ( const util::position_type& pod
-                             , const std::string & name
-                             , const std::string & type
-                             , const boost::optional<bool> is_virtual
+      place_type::place_type ( util::position_type const& pod
+                             , std::string const& name
+                             , std::string const& type
+                             , boost::optional<bool> is_virtual
                              , boost::optional<bool> put_token
                              , std::list<token_type> tokens_
                              , we::type::property::type properties
@@ -48,12 +48,12 @@ namespace xml
         , _properties (std::move (properties))
       {}
 
-      const std::string& place_type::name() const
+      std::string const& place_type::name() const
       {
         return _name;
       }
 
-      const std::string& place_type::type() const
+      std::string const& place_type::type() const
       {
         return _type;
       }
@@ -94,13 +94,13 @@ namespace xml
         }
       }
 
-      void place_type::push_token (const token_type & t)
+      void place_type::push_token (token_type const& t)
       {
         tokens.push_back (t);
       }
 
-      place_type place_type::specialized ( const type::type_map_type & map_in
-                                         , const state::type &
+      place_type place_type::specialized ( type::type_map_type const& map_in
+                                         , state::type const&
                                          ) const
       {
         const type::type_map_type::const_iterator
@@ -117,7 +117,7 @@ namespace xml
                           );
       }
 
-      const boost::optional<bool>& place_type::get_is_virtual (void) const
+      boost::optional<bool> const& place_type::get_is_virtual (void) const
       {
         return _is_virtual;
       }
@@ -126,7 +126,7 @@ namespace xml
         return _is_virtual.get_value_or (false);
       }
 
-      const we::type::property::type& place_type::properties() const
+      we::type::property::type const& place_type::properties() const
       {
         return _properties;
       }
@@ -135,14 +135,14 @@ namespace xml
         return _properties;
       }
 
-      const place_type::unique_key_type& place_type::unique_key() const
+      place_type::unique_key_type const& place_type::unique_key() const
       {
         return name();
       }
 
       namespace dump
       {
-        void dump (fhg::util::xml::xmlstream & s, const place_type & p)
+        void dump (fhg::util::xml::xmlstream & s, place_type const& p)
         {
           s.open ("place");
           s.attr ("name", p.name());
@@ -152,7 +152,7 @@ namespace xml
 
           ::we::type::property::dump::dump (s, p.properties());
 
-          for (const place_type::token_type& token : p.tokens)
+          for (place_type::token_type const& token : p.tokens)
           {
             s.open ("token");
             s.open ("value");

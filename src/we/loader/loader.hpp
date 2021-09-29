@@ -34,13 +34,13 @@ namespace we
     public:
       loader (std::list<boost::filesystem::path> const&);
 
-      Module const& operator[] (const std::string &m)
+      Module const& operator[] (std::string const& m)
       {
         return module (false, m);
       }
       Module const& module
         ( bool require_module_unloads_without_rest
-        , const std::string &module
+        , std::string const& module
         );
 
    private:

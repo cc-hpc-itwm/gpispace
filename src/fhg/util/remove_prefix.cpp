@@ -22,8 +22,8 @@ namespace fhg
 {
   namespace util
   {
-    remove_prefix_failed::remove_prefix_failed ( const std::string word
-                                               , const std::string prefix
+    remove_prefix_failed::remove_prefix_failed ( std::string word
+                                               , std::string prefix
                                                )
       : std::runtime_error
         ( ( boost::format
@@ -36,8 +36,8 @@ namespace fhg
       , _prefix (prefix)
     { }
 
-    std::string remove_prefix ( const std::string& prefix
-                              , const std::string& word
+    std::string remove_prefix ( std::string const& prefix
+                              , std::string const& word
                               )
     {
       const std::string::const_iterator end_prefix (prefix.end());

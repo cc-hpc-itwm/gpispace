@@ -18,6 +18,8 @@
 
 #include <we/type/signature.hpp>
 
+#include <gspc/detail/dllexport.hpp>
+
 #include <util-generic/ostream/modifier.hpp>
 
 #include <iosfwd>
@@ -28,13 +30,13 @@ namespace pnet
   {
     namespace signature
     {
-      class show : public fhg::util::ostream::modifier
+      class GSPC_DLLEXPORT show : public fhg::util::ostream::modifier
       {
       public:
-        show (const signature_type&);
+        show (signature_type const&);
         virtual std::ostream& operator() (std::ostream&) const override;
       private:
-        const signature_type& _signature;
+        signature_type const& _signature;
       };
     }
   }

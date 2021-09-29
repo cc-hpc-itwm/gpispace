@@ -32,7 +32,7 @@ namespace
   {
     template<typename Ex>
     void require_exception_from_generate_cpp
-      (const boost::format& expected_what)
+      (boost::format const& expected_what)
     {
       boost::filesystem::path const path
         (fhg::util::executable_path().parent_path() / "gen");
@@ -49,7 +49,7 @@ namespace
 
     template<typename Ex>
     void require_exception_from_parse
-      (const boost::format& expected_what)
+      (boost::format const& expected_what)
     {
       fhg::util::testing::require_exception_with_message<Ex>
         ( [this]

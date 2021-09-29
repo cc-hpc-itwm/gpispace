@@ -27,27 +27,27 @@ namespace
       : _os (os)
     {}
 
-    std::ostream& operator() (const int& x) const
+    std::ostream& operator() (int const& x) const
     {
       return _os << x;
     }
-    std::ostream& operator() (const long& x) const
+    std::ostream& operator() (long const& x) const
     {
       return _os << x << "L";
     }
-    std::ostream& operator() (const unsigned int& x) const
+    std::ostream& operator() (unsigned int const& x) const
     {
       return _os << x << "U";
     }
-    std::ostream& operator() (const unsigned long& x) const
+    std::ostream& operator() (unsigned long const& x) const
     {
       return _os << x << "UL";
     }
-    std::ostream& operator() (const float& x) const
+    std::ostream& operator() (float const& x) const
     {
       return _os << x << "f";
     }
-    std::ostream& operator() (const double& x) const
+    std::ostream& operator() (double const& x) const
     {
       return _os << x;
     }
@@ -57,7 +57,7 @@ namespace
   };
 }
 
-std::ostream& operator<< (std::ostream& os, const fhg::util::num_type& v)
+std::ostream& operator<< (std::ostream& os, fhg::util::num_type const& v)
 {
   const std::ios_base::fmtflags ff (os.flags());
   os << std::showpoint;

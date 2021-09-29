@@ -32,7 +32,7 @@ namespace fhg
           , _tag (boost::none)
         {}
         open::open ( fhg::util::indenter& indent
-                   , const std::string& tag
+                   , std::string const& tag
                    )
           : _indent (indent)
           , _tag (tag)

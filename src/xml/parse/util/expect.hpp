@@ -24,13 +24,13 @@ namespace xml
   namespace parse
   {
     void expect_none_or ( xml_node_type*& node
-                        , const rapidxml::node_type
-                        , const state::type&
+                        , rapidxml::node_type
+                        , state::type const&
                         );
     void expect_none_or ( xml_node_type*& node
-                        , const rapidxml::node_type
-                        , const rapidxml::node_type
-                        , const state::type&
+                        , rapidxml::node_type
+                        , rapidxml::node_type
+                        , state::type const&
                         );
   }
 }

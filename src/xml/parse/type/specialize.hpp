@@ -40,15 +40,15 @@ namespace xml
       public:
         typedef std::string unique_key_type;
 
-        specialize_type ( const util::position_type&
-                        , const std::string& name
-                        , const std::string& use
-                        , const type_map_type& type_map
-                        , const type_get_type& type_get
+        specialize_type ( util::position_type const&
+                        , std::string const& name
+                        , std::string const& use
+                        , type_map_type const& type_map
+                        , type_get_type const& type_get
                         );
 
-        const std::string& name () const;
-        const unique_key_type& unique_key() const;
+        std::string const& name () const;
+        unique_key_type const& unique_key() const;
 
       private:
         std::string const _name;
@@ -60,17 +60,17 @@ namespace xml
         type_get_type type_get;
       };
 
-      void split_structs ( const parse::structure_type_util::set_type & global
+      void split_structs ( parse::structure_type_util::set_type const& global
                          , structs_type & child_structs
                          , structs_type & parent_structs
-                         , const type_get_type & type_get
-                         , const state::type & state
+                         , type_get_type const& type_get
+                         , state::type const& state
                          );
 
       namespace dump
       {
         void dump ( ::fhg::util::xml::xmlstream & s
-                  , const specialize_type & sp
+                  , specialize_type const& sp
                   );
       }
     }

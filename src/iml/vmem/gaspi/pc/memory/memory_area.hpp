@@ -66,36 +66,36 @@ namespace gpi
         std::unordered_set<iml::AllocationHandle> existing_allocations() const;
 
         void
-        alloc ( const iml::MemorySize size
-              , const gpi::pc::type::flags_t flags
+        alloc ( iml::MemorySize size
+              , gpi::pc::type::flags_t flags
               , iml::SegmentHandle segment_id
               , iml::AllocationHandle allocation
               );
 
         void
-        remote_alloc ( const iml::AllocationHandle hdl
-                     , const iml::MemoryOffset offset
-                     , const iml::MemorySize size
-                     , const iml::MemorySize local_size
+        remote_alloc ( iml::AllocationHandle hdl
+                     , iml::MemoryOffset offset
+                     , iml::MemorySize size
+                     , iml::MemorySize local_size
                      , iml::SegmentHandle segment_id
                      );
 
         void
-        remote_free (const iml::AllocationHandle hdl);
+        remote_free (iml::AllocationHandle hdl);
 
         void
-        free (const iml::AllocationHandle hdl);
+        free (iml::AllocationHandle hdl);
 
-        gpi::pc::type::handle::descriptor_t const &
-        descriptor (const iml::AllocationHandle) const;
+        gpi::pc::type::handle::descriptor_t const&
+        descriptor (iml::AllocationHandle) const;
 
-        bool is_local (const iml::MemoryRegion region) const;
-        bool is_local ( const iml::MemoryLocation loc
-                      , const iml::MemorySize amt
+        bool is_local (iml::MemoryRegion region) const;
+        bool is_local ( iml::MemoryLocation loc
+                      , iml::MemorySize amt
                       ) const;
 
-        void check_bounds ( const iml::MemoryLocation & loc
-                          , const iml::MemorySize size
+        void check_bounds ( iml::MemoryLocation const& loc
+                          , iml::MemorySize size
                           ) const;
 
         /**
@@ -106,7 +106,7 @@ namespace gpi
            - the location is out of bounds
            - the implementation does not support raw pointers.
          */
-        void *pointer_to (const iml::MemoryLocation & loc);
+        void *pointer_to (iml::MemoryLocation const& loc);
 
         iml::MemorySize
         read_from ( iml::MemoryLocation loc
@@ -121,13 +121,13 @@ namespace gpi
                  );
 
         std::packaged_task<void()> get_transfer_task
-          ( const iml::MemoryLocation src
-          , const iml::MemoryLocation dst
+          ( iml::MemoryLocation src
+          , iml::MemoryLocation dst
           , area_t& dst_area
           , iml::MemorySize amount
           );
-        virtual double get_transfer_costs ( const iml::MemoryRegion&
-                                          , const gpi::rank_t
+        virtual double get_transfer_costs ( iml::MemoryRegion const&
+                                          , gpi::rank_t
                                           ) const = 0;
       protected:
         area_t (iml::MemorySize size);
@@ -137,27 +137,27 @@ namespace gpi
 
         /* hook functions that need to be overridded by specific segments */
 
-        virtual bool is_range_local ( const gpi::pc::type::handle::descriptor_t &
-                                    , const iml::MemoryOffset a
-                                    , const iml::MemoryOffset b
+        virtual bool is_range_local ( gpi::pc::type::handle::descriptor_t const&
+                                    , iml::MemoryOffset a
+                                    , iml::MemoryOffset b
                                     ) const = 0;
         virtual void *raw_ptr (iml::MemoryOffset off) = 0;
 
-        virtual iml::MemorySize get_local_size ( const iml::MemorySize size
-                                                     , const gpi::pc::type::flags_t flags
+        virtual iml::MemorySize get_local_size ( iml::MemorySize size
+                                                     , gpi::pc::type::flags_t flags
                                                      ) const = 0;
 
         virtual std::packaged_task<void()> get_send_task
           ( area_t& src_area
-          , const iml::MemoryLocation src
-          , const iml::MemoryLocation dst
+          , iml::MemoryLocation src
+          , iml::MemoryLocation dst
           , iml::MemorySize amount
           );
 
         virtual std::packaged_task<void()> get_recv_task
           ( area_t& dst_area
-          , const iml::MemoryLocation dst
-          , const iml::MemoryLocation src
+          , iml::MemoryLocation dst
+          , iml::MemoryLocation src
           , iml::MemorySize amount
           );
 

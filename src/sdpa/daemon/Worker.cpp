@@ -15,26 +15,39 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <sdpa/daemon/Worker.hpp>
-#include <stdexcept>
-#include <fhg/util/now.hpp>
-#include <iostream>
+
 #include <algorithm>
+#include <iostream>
 #include <numeric>
+#include <stdexcept>
+#include <sys/time.h>
 
 namespace sdpa
 {
   namespace daemon
   {
-    Worker::Worker ( const capabilities_set_t& capabilities
+    namespace
+    {
+      double now()
+      {
+        struct timeval tv;
+
+        gettimeofday (&tv, nullptr);
+
+        return (double (tv.tv_sec) + double (tv.tv_usec) * 1E-6);
+      }
+    }
+
+    Worker::Worker ( capabilities_set_t const& capabilities
                    , unsigned long allocated_shared_memory_size
-                   , const std::string& hostname
+                   , std::string const& hostname
                    )
       : _cost_assigned_jobs (0)
       , _capabilities (capabilities)
       , capability_names_()
       , _allocated_shared_memory_size (allocated_shared_memory_size)
       , _hostname (hostname)
-      , _last_time_idle (fhg::util::now())
+      , _last_time_idle (now())
       , reserved_ (false)
     {
       for (capability_t const& capability : capabilities)
@@ -53,13 +66,13 @@ namespace sdpa
       return !submitted_.empty() || !acknowledged_.empty();
     }
 
-    void Worker::assign (const job_id_t& jobId, double cost)
+    void Worker::assign (job_id_t const& jobId, double cost)
     {
       pending_.insert (jobId);
       _cost_assigned_jobs += cost;
     }
 
-    void Worker::submit (const job_id_t& jobId)
+    void Worker::submit (job_id_t const& jobId)
     {
       if (!pending_.erase (jobId))
       {
@@ -69,7 +82,7 @@ namespace sdpa
       reserved_ = true;
     }
 
-    void Worker::acknowledge (const job_id_t &job_id)
+    void Worker::acknowledge (job_id_t const& job_id)
     {
       if (submitted_.erase (job_id) == 0)
       {
@@ -78,17 +91,17 @@ namespace sdpa
       acknowledged_.insert (job_id);
     }
 
-    void Worker::delete_submitted_job(const job_id_t job_id, double cost)
+    void Worker::delete_submitted_job (job_id_t job_id, double cost)
     {
       submitted_.erase (job_id);
       acknowledged_.erase (job_id);
-      _last_time_idle = fhg::util::now();
+      _last_time_idle = now();
       reserved_ = false;
 
       _cost_assigned_jobs -= cost;
     }
 
-    void Worker::delete_pending_job (const job_id_t job_id, double cost)
+    void Worker::delete_pending_job (job_id_t job_id, double cost)
     {
       if (0 == pending_.erase (job_id))
       {
@@ -100,7 +113,7 @@ namespace sdpa
       _cost_assigned_jobs -= cost;
     }
 
-    bool Worker::hasCapability(const std::string& cpbName) const
+    bool Worker::hasCapability (std::string const& cpbName) const
     {
       return capability_names_.contains (cpbName);
     }

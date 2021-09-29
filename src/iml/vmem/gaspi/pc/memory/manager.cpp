@@ -169,7 +169,7 @@ namespace gpi
       }
 
       void
-      manager_t::unregister_memory ( const gpi::pc::type::process_id_t pid
+      manager_t::unregister_memory ( gpi::pc::type::process_id_t pid
                                    , iml::SharedMemoryAllocationHandle hdl
                                    )
       {
@@ -192,7 +192,7 @@ namespace gpi
       }
 
       void manager_t::remove_shm_segments_of
-        (gpi::pc::type::process_id_t const proc_id)
+        (gpi::pc::type::process_id_t proc_id)
       {
         lock_type lock (m_mutex);
 
@@ -230,13 +230,13 @@ namespace gpi
       }
 
       manager_t::area_ptr
-      manager_t::get_area (const iml::SegmentHandle mem_id)
+      manager_t::get_area (iml::SegmentHandle mem_id)
       {
         return static_cast<const manager_t*>(this)->get_area (mem_id);
       }
 
       manager_t::area_ptr
-      manager_t::get_area (const iml::SegmentHandle mem_id) const
+      manager_t::get_area (iml::SegmentHandle mem_id) const
       {
         lock_type lock (m_mutex);
         area_map_t::const_iterator area_it (m_areas.find (mem_id));
@@ -250,13 +250,13 @@ namespace gpi
       }
 
       manager_t::area_ptr
-        manager_t::get_area_by_handle (const iml::AllocationHandle hdl)
+        manager_t::get_area_by_handle (iml::AllocationHandle hdl)
       {
         return static_cast<const manager_t*>(this)->get_area_by_handle(hdl);
       }
 
       manager_t::area_ptr
-        manager_t::get_area_by_handle (const iml::AllocationHandle hdl) const
+        manager_t::get_area_by_handle (iml::AllocationHandle hdl) const
       {
         lock_type lock (m_mutex);
 
@@ -274,8 +274,8 @@ namespace gpi
       }
 
       void
-        manager_t::add_handle ( const iml::AllocationHandle hdl
-                            , const iml::SegmentHandle seg_id
+        manager_t::add_handle ( iml::AllocationHandle hdl
+                            , iml::SegmentHandle seg_id
                             )
       {
         lock_type lock (m_mutex);
@@ -287,7 +287,7 @@ namespace gpi
       }
 
       void
-        manager_t::del_handle (const iml::AllocationHandle hdl)
+        manager_t::del_handle (iml::AllocationHandle hdl)
       {
         lock_type lock (m_mutex);
         if (m_handle_to_segment.find (hdl) == m_handle_to_segment.end())
@@ -298,11 +298,11 @@ namespace gpi
       }
 
       void
-      manager_t::remote_alloc ( const iml::SegmentHandle seg_id
-                              , const iml::AllocationHandle hdl
-                              , const iml::MemoryOffset offset
-                              , const iml::MemorySize size
-                              , const iml::MemorySize local_size
+      manager_t::remote_alloc ( iml::SegmentHandle seg_id
+                              , iml::AllocationHandle hdl
+                              , iml::MemoryOffset offset
+                              , iml::MemorySize size
+                              , iml::MemorySize local_size
                               )
       {
         area_ptr area (get_area (seg_id));
@@ -311,9 +311,9 @@ namespace gpi
       }
 
       iml::AllocationHandle
-      manager_t::alloc ( const iml::SegmentHandle seg_id
-                       , const iml::MemorySize size
-                       , const gpi::pc::type::flags_t flags
+      manager_t::alloc ( iml::SegmentHandle seg_id
+                       , iml::MemorySize size
+                       , gpi::pc::type::flags_t flags
                        )
       {
         area_ptr area (get_area (seg_id));
@@ -327,7 +327,7 @@ namespace gpi
       }
 
       void
-        manager_t::remote_free (const iml::AllocationHandle hdl)
+        manager_t::remote_free (iml::AllocationHandle hdl)
       {
         area_ptr area (get_area_by_handle (hdl));
 
@@ -336,7 +336,7 @@ namespace gpi
       }
 
       void
-        manager_t::free (const iml::AllocationHandle hdl)
+        manager_t::free (iml::AllocationHandle hdl)
       {
         area_ptr area (get_area_by_handle (hdl));
 
@@ -345,13 +345,13 @@ namespace gpi
       }
 
       gpi::pc::type::handle::descriptor_t
-        manager_t::info (const iml::AllocationHandle hdl) const
+        manager_t::info (iml::AllocationHandle hdl) const
       {
         return get_area_by_handle(hdl)->descriptor(hdl);
       }
 
       std::unordered_map<std::string, double>
-      manager_t::get_transfer_costs (const std::list<iml::MemoryRegion>& transfers) const
+      manager_t::get_transfer_costs (std::list<iml::MemoryRegion> const& transfers) const
       {
         std::unordered_map<std::string, double> costs;
 
@@ -369,9 +369,9 @@ namespace gpi
       }
 
       type::memcpy_id_t manager_t::memcpy
-        ( iml::MemoryLocation const & dst
-        , iml::MemoryLocation const & src
-        , const iml::MemorySize amount
+        ( iml::MemoryLocation const& dst
+        , iml::MemoryLocation const& src
+        , iml::MemorySize amount
         )
       {
         auto& src_area (*get_area_by_handle (src.allocation));
@@ -423,7 +423,7 @@ namespace gpi
       }
 
       void
-      manager_t::remote_add_memory ( const iml::SegmentHandle seg_id
+      manager_t::remote_add_memory ( iml::SegmentHandle seg_id
                                    , iml::SegmentDescription const& description
                                    , unsigned long total_size
                                    , global::topology_t& topology
@@ -458,7 +458,7 @@ namespace gpi
       }
 
       iml::SegmentHandle
-      manager_t::add_memory ( const gpi::pc::type::process_id_t proc_id
+      manager_t::add_memory ( gpi::pc::type::process_id_t proc_id
                             , iml::SegmentDescription const& description
                             , unsigned long total_size
                             , global::topology_t& topology
@@ -519,7 +519,7 @@ namespace gpi
       }
 
       void
-      manager_t::remote_del_memory ( const iml::SegmentHandle seg_id
+      manager_t::remote_del_memory ( iml::SegmentHandle seg_id
                                    , global::topology_t& topology
                                    )
       {
@@ -527,8 +527,8 @@ namespace gpi
       }
 
       void
-      manager_t::del_memory ( const gpi::pc::type::process_id_t proc_id
-                            , const iml::SegmentHandle seg_id
+      manager_t::del_memory ( gpi::pc::type::process_id_t proc_id
+                            , iml::SegmentHandle seg_id
                             , global::topology_t& topology
                             )
       {

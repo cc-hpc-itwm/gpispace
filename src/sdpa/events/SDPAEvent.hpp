@@ -18,7 +18,7 @@
 
 #include <sdpa/events/EventHandler.hpp>
 
-#include <fhgcom/header.hpp>
+#include <fhgcom/address.hpp>
 
 #include <boost/serialization/access.hpp>
 #include <boost/shared_ptr.hpp>

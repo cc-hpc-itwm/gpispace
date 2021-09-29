@@ -24,6 +24,6 @@ namespace expr
   {
     enum type {left, right};
 
-    type associativity (const token::type&);
+    type associativity (token::type const&);
   }
 }

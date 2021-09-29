@@ -18,6 +18,21 @@ size_t read (offset_t offset, void *buffer, size_t amount)
 }
 ```
 
+## in_this_scope
+
+A macro to change the value of a given variable in the current scope
+and make sure the variable is set to it's original value at scope exit.
+
+```c++
+variable = value;
+{
+  FHG_UTIL_IN_THIS_SCOPE (variable) = other_value;
+
+  assert (variable == other_value);
+}
+assert (variable == value);
+```
+
 ## hard_integral_typedef
 
 A set of macros to create type safe integral types that do not convert
@@ -234,6 +249,14 @@ forwarding functors without having to specify loads of
 `std::placeholder`s or repeating all arguments in a lambda and
 manually having to perfect forward all of them.
 
+## cxx17/holds_alternative
+
+`holds_alternative` implementation for `boost::variant`.
+It checks if the given `boost::variant` holds the queried alternative
+type.
+The call is ill-formed if the queried type doesn't appear exactly once
+in the variant's types.
+
 ## cxx17/void_t
 
 Metafunction that maps a sequence of any types to the type
@@ -333,10 +356,6 @@ do_something_unrelated();
 return *result;
 ```
 
-## cxx11/cxx03_compat
-
-Feature detection macros for c++11 features for use in c++03/11 mixed code.
-
 # Networking
 
 ## connectable_to_address_string
@@ -416,11 +435,6 @@ A `set` container that stores unique objects of type `T`, but allows
 multiple references to them and only erases once as many `erase`s
 happened as `emplace`s happened before.
 
-## cxx14/get_by_type
-
-Extract a value from a `std::tuple` by type rather than by index,
-assuming the type is unique in the tuple.
-
 ## cxx14/make_unique
 
 Function to safely construct a unique pointer in the context of
@@ -484,10 +498,6 @@ trivially serializable.
 Various Boost.Serialization implementations for STL or Boost types.
 
 # Hashing
-
-## cxx14/enum_hash
-
-Include for `std::hash<>` for anything qualifying as `std::is_enum`.
 
 ## hash/combined_hash
 

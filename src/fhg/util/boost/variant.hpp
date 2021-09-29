@@ -38,7 +38,7 @@ namespace fhg
             return val;
           }
 
-          template<typename U> boost::optional<T&> operator() (const U&) const
+          template<typename U> boost::optional<T&> operator() (U const&) const
           {
             return boost::none;
           }
@@ -48,12 +48,12 @@ namespace fhg
           : public boost::static_visitor<bool>
         {
         public:
-          bool operator() (const T&) const
+          bool operator() (T const&) const
           {
             return true;
           }
 
-          template<typename U> bool operator() (const U&) const
+          template<typename U> bool operator() (U const&) const
           {
             return false;
           }
@@ -61,7 +61,7 @@ namespace fhg
       }
 
       template<typename T, typename variant_type>
-        boost::optional<const T&> get_or_none (const variant_type& variant)
+        boost::optional<T const&> get_or_none (variant_type const& variant)
       {
         return boost::apply_visitor (get_or_none_impl<const T>(), variant);
       }
@@ -73,7 +73,7 @@ namespace fhg
       }
 
       template<typename T, typename variant_type>
-        bool is_of_type (const variant_type& variant)
+        bool is_of_type (variant_type const& variant)
       {
         return boost::apply_visitor (is_of_type_impl<T>(), variant);
       }

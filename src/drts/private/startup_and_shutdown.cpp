@@ -22,7 +22,6 @@
 #include <rif/client.hpp>
 
 #include <fhg/util/starts_with.hpp>
-#include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/functor_visitor.hpp>
 #include <util-generic/getenv.hpp>
 #include <util-generic/hostname.hpp>
@@ -465,12 +464,12 @@ namespace fhg
           ( ep.best (util::hostname())
           , [&] (logging::socket_endpoint const& as_socket)
             {
-              return util::cxx14::make_unique<rpc::remote_socket_endpoint>
+              return std::make_unique<rpc::remote_socket_endpoint>
                 (io_service, as_socket.socket);
             }
           , [&] (logging::tcp_endpoint const& as_tcp)
             {
-              return util::cxx14::make_unique<rpc::remote_tcp_endpoint>
+              return std::make_unique<rpc::remote_tcp_endpoint>
                 (io_service, as_tcp);
             }
           );
@@ -619,7 +618,7 @@ namespace fhg
       {
         std::string const kind = [](component_type c)
         {
-          switch(c)
+          switch (c)
           {
             case component_type::worker:
               return "drts-kernel";

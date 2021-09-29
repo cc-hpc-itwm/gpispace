@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-cmake_minimum_required (VERSION 3.13 FATAL_ERROR)
+cmake_minimum_required (VERSION 3.15 FATAL_ERROR)
 project (stochastic_with_heureka VERSION 1 LANGUAGES CXX)
 set (CMAKE_CXX_STANDARD 11)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -45,7 +45,7 @@ include ("deployment/${SWH_DEPLOYMENT_STRATEGY}.cmake")
 
 include (CTest)
 
-find_package (GPISpace 21.06 EXACT REQUIRED
+find_package (GPISpace 21.09 EXACT REQUIRED
   COMPONENTS
     # No need to check submodule versions as the SWH source directory
     # is no git repository and it doesn't use copies of submodules
@@ -54,7 +54,7 @@ find_package (GPISpace 21.06 EXACT REQUIRED
 )
 _swh_deployment_gpispace()
 
-find_package (Boost 1.55 REQUIRED
+find_package (Boost 1.61 REQUIRED
   COMPONENTS filesystem
              program_options
              unit_test_framework

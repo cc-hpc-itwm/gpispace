@@ -20,13 +20,13 @@
 #include <sdpa/job_states.hpp>
 #include <sdpa/types.hpp>
 
-#include <we/type/activity.hpp>
+#include <we/type/Activity.hpp>
 #include <we/type/net.hpp>
 #include <we/type/value.hpp>
 
 #include <fhgcom/channel.hpp>
 
-#include <fhg/util/thread/queue.hpp>
+#include <util-generic/threadsafe_queue.hpp>
 
 #include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
@@ -55,9 +55,9 @@ namespace sdpa
              );
       ~Client();
 
-      job_id_t submitJob(we::type::activity_t);
-      void cancelJob(const job_id_t &);
-      void deleteJob(const job_id_t &);
+      job_id_t submitJob (we::type::Activity);
+      void cancelJob (job_id_t const&);
+      void deleteJob (job_id_t const&);
       void put_token
         (job_id_t, std::string place_name, pnet::type::value::value_type);
       pnet::type::value::value_type workflow_response
@@ -65,12 +65,12 @@ namespace sdpa
 
       sdpa::status::code wait_for_terminal_state (job_id_t, job_info_t&);
 
-      we::type::activity_t result (sdpa::job_id_t const&) const;
+      we::type::Activity result (sdpa::job_id_t const&) const;
 
     private:
       std::mutex _make_client_thread_safe;
 
-      fhg::thread::queue<sdpa::events::SDPAEvent::Ptr> m_incoming_events;
+      fhg::util::threadsafe_queue<sdpa::events::SDPAEvent::Ptr> m_incoming_events;
 
       template<typename Expected, typename Sent>
         Expected send_and_wait_for_reply (Sent event);
@@ -82,7 +82,7 @@ namespace sdpa
 
       bool _stopping;
       fhg::com::channel m_peer;
-      std::unordered_map<sdpa::job_id_t, we::type::activity_t> _job_results;
+      std::unordered_map<sdpa::job_id_t, we::type::Activity> _job_results;
     };
   }
 }

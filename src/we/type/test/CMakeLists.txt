@@ -38,8 +38,8 @@ fhg_add_test (NAME we_type_bitsetofint
   LIBRARIES pnet
 )
 
-fhg_add_test (NAME we_type_module_call
-  SOURCES module_call.cpp
+fhg_add_test (NAME we_type_ModuleCall
+  SOURCES ModuleCall.cpp
   USE_BOOST
   LIBRARIES pnet
 )
@@ -84,7 +84,7 @@ fhg_add_test (NAME we_type_get_schedule_data
 fhg_add_test (NAME we_type_dynamic_requirements
   SOURCES dynamic_requirements.cpp
   USE_BOOST
-  LIBRARIES pnet
+  LIBRARIES pnet we::test_equality
 )
 
 fhg_add_test (NAME we_type_transition_with_preferences
@@ -93,8 +93,20 @@ fhg_add_test (NAME we_type_transition_with_preferences
   LIBRARIES pnet we::test_equality
 )
 
-fhg_add_test (NAME we_type_memory_buffer_info
-  SOURCES memory_buffer_info.cpp
+fhg_add_test (NAME we_type_MemoryBufferInfo
+  SOURCES MemoryBufferInfo.cpp
   USE_BOOST
-  LIBRARIES pnet
+  LIBRARIES pnet we_expr_type_testing
+)
+
+fhg_add_test (NAME we_type_memory_transfer
+  SOURCES "memory_transfer.cpp"
+  USE_BOOST
+  LIBRARIES pnet we_expr_type_testing
+)
+
+fhg_add_test (NAME we_type_Transition
+  SOURCES "Transition.cpp"
+  USE_BOOST
+  LIBRARIES pnet we_expr_type_testing
 )

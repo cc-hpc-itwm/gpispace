@@ -38,12 +38,12 @@ namespace gpi
     class code_t
     {
     public:
-      explicit code_t (int val, std::string const & txt)
+      explicit code_t (int val, std::string const& txt)
         : m_val (val)
         , m_txt (txt)
       {}
 
-      const std::string & name() const    { return m_txt; }
+      std::string const& name() const    { return m_txt; }
       int value () const { return m_val; }
     private:
       int m_val;
@@ -72,7 +72,7 @@ namespace gpi
     struct gaspi_error : public std::runtime_error
     {
       explicit
-      gaspi_error (gpi::error::code_t const & ec, std::string const & m)
+      gaspi_error (gpi::error::code_t const& ec, std::string const& m)
         : std::runtime_error (ec.name ())
         , value (ec.value())
         , user_message (m)

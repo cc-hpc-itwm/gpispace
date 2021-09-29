@@ -24,7 +24,7 @@ namespace expr
 {
   namespace prec
   {
-    int prec (const token::type & token)
+    int prec (token::type const& token)
     {
       switch (token)
         {

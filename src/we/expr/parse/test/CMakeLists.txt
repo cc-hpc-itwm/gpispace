@@ -14,12 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-fhg_add_test (NAME we_expr_parse_simplify
-  SOURCES simplify.cpp
-  USE_BOOST
-  LIBRARIES pnet
-)
-
 fhg_add_test (NAME we_expr_parse_node_collect_key_roots
   SOURCES node_collect_key_roots.cpp
   USE_BOOST

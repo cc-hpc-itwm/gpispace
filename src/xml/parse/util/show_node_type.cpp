@@ -26,7 +26,7 @@ namespace xml
   {
     namespace util
     {
-      std::string show_node_type (const int t)
+      std::string show_node_type (int t)
       {
         switch (t)
           {

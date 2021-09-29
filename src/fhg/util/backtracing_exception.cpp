@@ -30,7 +30,7 @@ namespace fhg
   namespace util
   {
 #ifndef NO_BACKTRACE
-    std::string make_backtrace (const std::string& reason)
+    std::string make_backtrace (std::string const& reason)
     {
       std::stringstream what;
       what << reason << std::endl << std::endl;
@@ -82,11 +82,11 @@ namespace fhg
 #ifndef NO_CXA_DEMANGLE
         int status;
         const char* ret
-          (abi::__cxa_demangle(function_name.c_str(), nullptr, nullptr, &status));
+          (abi::__cxa_demangle (function_name.c_str(), nullptr, nullptr, &status));
         const std::string demangled_name
           (status == 0 ? ret : function_name);
 #else
-        const std::string& demangled_name (function_name);
+        std::string const& demangled_name (function_name);
 #endif
 
 #if defined (__APPLE__)
@@ -124,13 +124,13 @@ namespace fhg
       return what.str();
     }
 #else
-    std::string make_backtrace (const std::string& reason)
+    std::string make_backtrace (std::string const& reason)
     {
       return reason;
     }
 #endif
 
-    backtracing_exception::backtracing_exception (const std::string& reason)
+    backtracing_exception::backtracing_exception (std::string const& reason)
       : std::runtime_error (make_backtrace (reason))
     {
     }

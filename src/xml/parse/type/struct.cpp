@@ -38,25 +38,25 @@ namespace xml
     namespace type
     {
       structure_type::structure_type
-        ( const util::position_type& pod
-        , const pnet::type::signature::structured_type& sig
+        ( util::position_type const& pod
+        , pnet::type::signature::structured_type const& sig
         )
         : with_position_of_definition (pod)
         , _sig (sig)
       {}
 
-      const pnet::type::signature::structured_type& structure_type::signature() const
+      pnet::type::signature::structured_type const& structure_type::signature() const
       {
         return _sig;
       }
 
-      const std::string& structure_type::name() const
+      std::string const& structure_type::name() const
       {
         return _sig.first;
       }
 
       void structure_type::specialize
-        (const std::unordered_map<std::string, std::string>& m)
+        (std::unordered_map<std::string, std::string> const& m)
       {
         pnet::type::signature::specialize (_sig, m);
       }
@@ -64,8 +64,8 @@ namespace xml
       namespace
       {
         boost::optional<pnet::type::signature::signature_type> get_assignment
-          ( const std::unordered_map<std::string, structure_type>& m
-          , const std::string& key
+          ( std::unordered_map<std::string, structure_type> const& m
+          , std::string const& key
           )
         {
           std::unordered_map<std::string, structure_type>::const_iterator
@@ -84,12 +84,12 @@ namespace xml
         {
         public:
           pnet::type::signature::structured_type operator()
-            (const std::string& s) const
+            (std::string const& s) const
           {
             throw std::runtime_error ("expected struct, got " + s);
           }
           pnet::type::signature::structured_type operator()
-            (const pnet::type::signature::structured_type& s) const
+            (pnet::type::signature::structured_type const& s) const
           {
             return s;
           }
@@ -97,7 +97,7 @@ namespace xml
       }
 
       void structure_type::resolve
-        (const std::unordered_map<std::string, structure_type>& m)
+        (std::unordered_map<std::string, structure_type> const& m)
       {
         pnet::type::signature::signature_type sign
           (pnet::type::signature::resolve
@@ -110,7 +110,7 @@ namespace xml
       namespace dump
       {
         void dump ( ::fhg::util::xml::xmlstream & s
-                  , const structure_type & st
+                  , structure_type const& st
                   )
         {
           pnet::type::signature::dump_to (s, st.signature());
@@ -120,7 +120,7 @@ namespace xml
 
     namespace structure_type_util
     {
-      set_type make ( const type::structs_type & structs
+      set_type make ( type::structs_type const& structs
                     , xml::parse::state::type const& state
                     )
       {

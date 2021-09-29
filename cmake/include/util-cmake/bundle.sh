@@ -109,10 +109,10 @@ exclusion=${exclusion}\|$(join '|' \
 rm -rf "${destination}"
 mkdir -p "${destination}"
 
-did_not_fail=false
+success=false
 function remove_output_on_error
 {
-  if ! ${did_not_fail}
+  if ! ${success}
   then
     rm -rf "${destination}"
   fi
@@ -141,4 +141,4 @@ do
   "${chrpath_binary}" -d "${dest}"
 done
 
-did_not_fail=true
+success=true

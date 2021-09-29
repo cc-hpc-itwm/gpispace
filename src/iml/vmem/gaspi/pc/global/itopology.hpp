@@ -34,21 +34,21 @@ namespace gpi
         virtual ~itopology_t () = default;
 
         // initiate a global alloc
-        virtual void alloc ( const iml::SegmentHandle segment
-                           , const iml::AllocationHandle
-                           , const iml::MemoryOffset
-                           , const iml::MemorySize size
-                           , const iml::MemorySize local_size
+        virtual void alloc ( iml::SegmentHandle segment
+                           , iml::AllocationHandle
+                           , iml::MemoryOffset
+                           , iml::MemorySize size
+                           , iml::MemorySize local_size
                            ) = 0;
 
-        virtual void free (const iml::AllocationHandle) = 0;
+        virtual void free (iml::AllocationHandle) = 0;
 
-        virtual void add_memory ( const iml::SegmentHandle seg_id
+        virtual void add_memory ( iml::SegmentHandle seg_id
                                 , iml::SegmentDescription const& description
                                 , unsigned long total_size
                                 ) = 0;
 
-        virtual void del_memory (const iml::SegmentHandle seg_id) = 0;
+        virtual void del_memory (iml::SegmentHandle seg_id) = 0;
       };
     }
   }

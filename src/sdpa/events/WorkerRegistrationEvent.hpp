@@ -32,9 +32,9 @@ namespace sdpa
 
       WorkerRegistrationEvent
         ( std::string const& name
-        , const capabilities_set_t& cpbset
-        , const unsigned long allocated_shared_memory_size
-        , const std::string& hostname
+        , capabilities_set_t const& cpbset
+        , unsigned long allocated_shared_memory_size
+        , std::string const& hostname
         )
           : MgmtEvent()
           , _name (name)
@@ -47,12 +47,12 @@ namespace sdpa
       {
         return _name;
       }
-      const capabilities_set_t& capabilities() const
+      capabilities_set_t const& capabilities() const
       {
         return cpbset_;
       }
 
-      const std::string& hostname() const
+      std::string const& hostname() const
       {
         return hostname_;
       }

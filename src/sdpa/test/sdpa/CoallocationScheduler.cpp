@@ -19,7 +19,7 @@
 #include <sdpa/test/sdpa/utils.hpp>
 #include <sdpa/types.hpp>
 
-#include <we/type/requirement.hpp>
+#include <we/type/Requirement.hpp>
 #include <we/type/schedule_data.hpp>
 
 #include <fhg/util/next.hpp>
@@ -233,7 +233,7 @@ struct fixture_scheduler_and_requirements_and_preferences
 
   long count_assigned_jobs
     ( std::map<sdpa::job_id_t, std::set<sdpa::worker_id_t>> assignment
-    , const sdpa::worker_id_t& worker_id
+    , sdpa::worker_id_t const& worker_id
     )
   {
     auto value = [](std::pair<sdpa::job_id_t, std::set<sdpa::worker_id_t>>const& p)
@@ -244,7 +244,7 @@ struct fixture_scheduler_and_requirements_and_preferences
 
     return (std::count_if ( boost::make_transform_iterator (assignment.begin(), value)
                           , boost::make_transform_iterator (assignment.end(), value)
-                          , [&worker_id] (const std::set<sdpa::worker_id_t>& v)
+                          , [&worker_id] (std::set<sdpa::worker_id_t> const& v)
                             {
                               return v.count (worker_id);
                             }
@@ -406,7 +406,7 @@ namespace
 
   Requirements_and_preferences require (std::string name_1)
   {
-    return { {we::type::requirement_t (name_1, true)}
+    return { {we::type::Requirement (name_1)}
            , we::type::schedule_data()
            , null_transfer_cost
            , computational_cost
@@ -417,7 +417,7 @@ namespace
 
   Requirements_and_preferences require (std::string name, unsigned long workers)
   {
-    return { {we::type::requirement_t (name, true)}
+    return { {we::type::Requirement (name)}
            , we::type::schedule_data (workers)
            , null_transfer_cost
            , computational_cost
@@ -453,7 +453,7 @@ namespace
     , Preferences const& preferences
     )
   {
-    return { {we::type::requirement_t (capability, true)}
+    return { {we::type::Requirement (capability)}
            , we::type::schedule_data()
            , null_transfer_cost
            , computational_cost
@@ -468,7 +468,7 @@ namespace
      , Preferences const& preferences
      )
   {
-    return { {we::type::requirement_t (capability, true)}
+    return { {we::type::Requirement (capability)}
            , we::type::schedule_data (num_workers)
            , null_transfer_cost
            , computational_cost
@@ -553,10 +553,10 @@ BOOST_FIXTURE_TEST_CASE
   , fixture_scheduler_and_requirements_and_preferences
   )
 {
-  add_worker (_scheduler, "A0", {sdpa::capability_t ("A", "A0")});
-  add_worker (_scheduler, "B0", {sdpa::capability_t ("B", "B0")});
-  add_worker (_scheduler, "A1", {sdpa::capability_t ("A", "A1")});
-  add_worker (_scheduler, "B1", {sdpa::capability_t ("B", "B1")});
+  add_worker (_scheduler, "A0", {sdpa::capability_t ("A")});
+  add_worker (_scheduler, "B0", {sdpa::capability_t ("B")});
+  add_worker (_scheduler, "A1", {sdpa::capability_t ("A")});
+  add_worker (_scheduler, "B1", {sdpa::capability_t ("B")});
 
   auto const job_2a (add_and_enqueue_job (require ("A", 2)));
   auto const job_2b (add_and_enqueue_job (require ("B", 2)));
@@ -651,7 +651,7 @@ BOOST_FIXTURE_TEST_CASE
                         );
   }
 
-  _scheduler.start_pending_jobs (SERVE_JOB_AND_CHECK_EXPECTED(job));
+  _scheduler.start_pending_jobs (SERVE_JOB_AND_CHECK_EXPECTED (job));
 }
 
 BOOST_FIXTURE_TEST_CASE ( multiple_job_submissions_with_no_children_allowed
@@ -703,8 +703,8 @@ BOOST_FIXTURE_TEST_CASE
   sdpa::worker_id_t const worker_id (utils::random_peer_name());
   add_worker ( _scheduler
              , worker_id
-             , { sdpa::capability_t ("A", worker_id)
-               , sdpa::capability_t ("B", worker_id)
+             , { sdpa::capability_t ("A")
+               , sdpa::capability_t ("B")
                }
              );
 
@@ -743,7 +743,7 @@ struct fixture_minimal_cost_assignment
 {
   fixture_minimal_cost_assignment()
   : _scheduler
-      ( [] (const sdpa::job_id_t&)
+      ( [] (sdpa::job_id_t const&)
         {
           return no_requirements_and_preferences();
         }
@@ -771,12 +771,12 @@ struct fixture_minimal_cost_assignment
     _scheduler.add_worker ("worker_20", {}, random_ulong(), "node5", fhg::util::testing::random_string());
   }
 
-  double max_value (const std::map<std::string, double>& map_cost)
+  double max_value (std::map<std::string, double> const& map_cost)
   {
     return std::max_element ( map_cost.begin()
                             , map_cost.end()
-                            , [] ( const std::pair<std::string, double>& lhs
-                                 , const std::pair<std::string, double>& rhs
+                            , [] ( std::pair<std::string, double> const& lhs
+                                 , std::pair<std::string, double> const& rhs
                                  )
                                  {return lhs.second < rhs.second;}
                             )->second;
@@ -787,7 +787,7 @@ struct fixture_minimal_cost_assignment
 
 struct serve_job_and_check_for_minimal_cost_assignement
 {
-  std::vector<std::string> generate_worker_names (const unsigned int n)
+  std::vector<std::string> generate_worker_names (unsigned int n)
   {
     std::vector<std::string> worker_ids (n);
     std::generate ( worker_ids.begin()
@@ -813,24 +813,24 @@ struct serve_job_and_check_for_minimal_cost_assignement
   }
 
   void serve_and_check_assignment
-    ( const std::function<double (std::string const&)> cost
-    , const std::vector<std::string>& worker_ids
+    ( std::function<double (std::string const&)> cost
+    , std::vector<std::string> const& worker_ids
     , sdpa::daemon::WorkerSet const& assigned_workers
     , sdpa::daemon::Implementation const&
-    , const sdpa::job_id_t&
+    , sdpa::job_id_t const&
     )
   {
     sdpa::worker_id_t assigned_worker_with_max_cost
       (*std::max_element ( assigned_workers.begin()
                          , assigned_workers.end()
-                         , [cost] ( const sdpa::worker_id_t& left
-                                  , const sdpa::worker_id_t& right
+                         , [cost] ( sdpa::worker_id_t const& left
+                                  , sdpa::worker_id_t const& right
                                   )
                            { return cost (left) < cost (right); }
                          )
       );
 
-    for (const sdpa::worker_id_t& wid : worker_ids)
+    for (sdpa::worker_id_t const& wid : worker_ids)
     {
       if (!assigned_workers.count (wid))
       {
@@ -857,14 +857,14 @@ BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_and_random_costs
     map_transfer_costs (generate_costs (worker_ids));
 
   const std::function<double (std::string const&)>
-    test_transfer_cost ( [&map_transfer_costs](const std::string& worker) -> double
+    test_transfer_cost ( [&map_transfer_costs](std::string const& worker) -> double
                          {
                            return map_transfer_costs.at (worker);
                          }
                        );
 
   sdpa::daemon::CoallocationScheduler
-    _scheduler (  [&test_transfer_cost] (const sdpa::job_id_t&)
+    _scheduler (  [&test_transfer_cost] (sdpa::job_id_t const&)
                   {
                     return Requirements_and_preferences
                       ( {}
@@ -932,7 +932,7 @@ BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_preassignment_and_load_balan
 
   const std::function<double (std::string const&)>
     test_transfer_cost ( [&host_ids, &transfer_costs]
-                         (const std::string& host) -> double
+                         (std::string const& host) -> double
                          {
                            std::vector<std::string>::const_iterator
                              it (std::find (host_ids.begin(), host_ids.end(), host));
@@ -948,7 +948,7 @@ BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_preassignment_and_load_balan
                        );
 
   sdpa::daemon::CoallocationScheduler
-    _scheduler ( [&test_transfer_cost, &_computational_cost] (const sdpa::job_id_t&)
+    _scheduler ( [&test_transfer_cost, &_computational_cost] (sdpa::job_id_t const&)
                  {
                    return Requirements_and_preferences
                      ( {}
@@ -983,7 +983,7 @@ BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_preassignment_and_load_balan
                             + _computational_cost
                             );
 
-  for ( const std::set<sdpa::worker_id_t>& job_assigned_workers
+  for ( std::set<sdpa::worker_id_t> const& job_assigned_workers
       : assignment | boost::adaptors::map_values
       )
   {
@@ -1128,7 +1128,7 @@ BOOST_FIXTURE_TEST_CASE
   add_worker (_scheduler, name_worker_0);
   add_worker ( _scheduler
              , name_worker_1
-             , {sdpa::Capability (name_capability, name_worker_1)}
+             , {sdpa::Capability (name_capability)}
              );
 
   auto const job_id (add_and_enqueue_job (no_requirements_and_preferences()));
@@ -1151,21 +1151,21 @@ BOOST_FIXTURE_TEST_CASE ( assign_job_to_the_matching_worker_with_less_capabiliti
 
   add_worker ( _scheduler
              , "worker_0"
-             , {sdpa::Capability ("A", "worker_0")}
+             , {sdpa::Capability ("A")}
              );
 
   add_worker ( _scheduler
              , "worker_1"
-             , { sdpa::Capability ("A", "worker_1")
-               , sdpa::Capability ("B", "worker_1")
+             , { sdpa::Capability ("A")
+               , sdpa::Capability ("B")
                }
              );
 
   add_worker ( _scheduler
              , "worker_2"
-             , { sdpa::Capability ("A", "worker_2")
-               , sdpa::Capability ("B", "worker_2")
-               , sdpa::Capability ("C", "worker_2")
+             , { sdpa::Capability ("A")
+               , sdpa::Capability ("B")
+               , sdpa::Capability ("C")
                }
              );
 
@@ -1206,7 +1206,7 @@ BOOST_FIXTURE_TEST_CASE ( assign_to_the_same_worker_if_the_total_cost_is_lower
                         );
 
   std::function<double (std::string const&)> const
-    test_transfer_cost ( [&name_node_0, &name_node_1](const std::string& host) -> double
+    test_transfer_cost ( [&name_node_0, &name_node_1](std::string const& host) -> double
                          {
                            if (host == name_node_0)
                              return 1000.0;
@@ -1258,9 +1258,9 @@ BOOST_FIXTURE_TEST_CASE ( work_stealing
   std::set<sdpa::worker_id_t> set_0 {"worker_0"};
 
   add_worker
-    (_scheduler, "worker_0", {sdpa::Capability ("A", "worker_0")});
+    (_scheduler, "worker_0", {sdpa::Capability ("A")});
   add_worker
-    (_scheduler, "worker_1", {sdpa::Capability ("A", "worker_1")});
+    (_scheduler, "worker_1", {sdpa::Capability ("A")});
 
   auto const job_0 (add_and_enqueue_job (require ("A")));
   auto const job_1 (add_and_enqueue_job (require ("A")));
@@ -1277,7 +1277,7 @@ BOOST_FIXTURE_TEST_CASE ( work_stealing
   }
 
   add_worker
-    (_scheduler, "worker_2", {sdpa::Capability ("A", "worker_2")});
+    (_scheduler, "worker_2", {sdpa::Capability ("A")});
 
   _scheduler.assign_jobs_to_workers();
 
@@ -1317,7 +1317,7 @@ BOOST_FIXTURE_TEST_CASE ( stealing_from_worker_does_not_free_it
                         )
 {
   add_worker
-    (_scheduler, "worker_0", {sdpa::Capability ("A", "worker_0")});
+    (_scheduler, "worker_0", {sdpa::Capability ("A")});
 
   auto const job_0 (add_and_enqueue_job (require ("A")));
   auto const job_1 (add_and_enqueue_job (require ("A")));
@@ -1339,7 +1339,7 @@ BOOST_FIXTURE_TEST_CASE ( stealing_from_worker_does_not_free_it
   }
 
   add_worker
-    (_scheduler, "worker_1", {sdpa::Capability ("A", "worker_1")});
+    (_scheduler, "worker_1", {sdpa::Capability ("A")});
 
   {
     _scheduler.assign_jobs_to_workers();
@@ -1460,7 +1460,7 @@ struct fixture_add_new_workers
       sdpa::capabilities_set_t cpbset;
       for (std::string const& capability_name : cpbnames)
       {
-        cpbset.emplace (capability_name, worker);
+        cpbset.emplace (capability_name);
       }
 
       add_worker (_scheduler, worker, cpbset);
@@ -1776,7 +1776,7 @@ BOOST_FIXTURE_TEST_CASE
   sdpa::worker_id_t worker_with_2_jobs;
   sdpa::worker_id_t worker_with_1_job;
 
-  for (const sdpa::worker_id_t& worker : workers)
+  for (sdpa::worker_id_t const& worker : workers)
   {
     const unsigned int n_assigned_jobs
       (n_jobs_assigned_to_worker (worker, old_assignment));
@@ -2104,24 +2104,24 @@ BOOST_FIXTURE_TEST_CASE
 
   add_worker ( _scheduler
              , worker_0
-             , { sdpa::Capability (common_capability, worker_0)
-               , sdpa::Capability (*first_pref, worker_0)
+             , { sdpa::Capability (common_capability)
+               , sdpa::Capability (*first_pref)
                }
              );
 
   sdpa::worker_id_t const worker_1 (utils::random_peer_name());
   add_worker ( _scheduler
              , worker_1
-             , { sdpa::Capability (common_capability, worker_1)
-               , sdpa::Capability (*std::next (first_pref, 1), worker_1)
+             , { sdpa::Capability (common_capability)
+               , sdpa::Capability (*std::next (first_pref, 1))
                }
              );
 
   sdpa::worker_id_t const worker_2 (utils::random_peer_name());
   add_worker ( _scheduler
              , worker_2
-             , { sdpa::Capability (common_capability, worker_2)
-               , sdpa::Capability (*std::next (first_pref, 2), worker_2)
+             , { sdpa::Capability (common_capability)
+               , sdpa::Capability (*std::next (first_pref, 2))
                }
              );
 
@@ -2202,8 +2202,8 @@ BOOST_FIXTURE_TEST_CASE
 
   add_worker ( _scheduler
              , worker
-             , { sdpa::Capability (capability, worker)
-               , sdpa::Capability (preference, worker)
+             , { sdpa::Capability (capability)
+               , sdpa::Capability (preference)
                }
              );
 
@@ -2369,7 +2369,7 @@ BOOST_FIXTURE_TEST_CASE
   sdpa::worker_id_t const worker_0 (utils::random_peer_name());
   add_worker (_scheduler
              , worker_0
-             , {sdpa::Capability (preference, worker_0)}
+             , {sdpa::Capability (preference)}
              );
 
   sdpa::worker_id_t const worker_1 (utils::random_peer_name());
@@ -2456,7 +2456,7 @@ BOOST_FIXTURE_TEST_CASE
 
   sdpa::worker_id_t const worker (utils::random_peer_name());
   add_worker
-    (_scheduler, worker, {sdpa::Capability (capability_pool(), worker)});
+    (_scheduler, worker, {sdpa::Capability (capability_pool())});
 
   auto const job
     ( add_and_enqueue_job
@@ -2500,7 +2500,7 @@ BOOST_FIXTURE_TEST_CASE
     test_workers.emplace_back (worker);
     add_worker ( _scheduler
                , worker
-               , {sdpa::Capability (common_capability, worker)}
+               , {sdpa::Capability (common_capability)}
                );
   }
 
@@ -2545,11 +2545,9 @@ BOOST_FIXTURE_TEST_CASE
     test_workers.emplace_back (worker);
     add_worker ( _scheduler
                , worker
-               , { sdpa::Capability (common_capability, worker)
+               , { sdpa::Capability (common_capability)
                  , sdpa::Capability
-                     ( *fhg::util::next (preferences.begin(), k % preferences.size())
-                     , worker
-                     )
+                     (*fhg::util::next (preferences.begin(), k % preferences.size()))
                  }
                );
   }
@@ -2586,7 +2584,7 @@ BOOST_FIXTURE_TEST_CASE
     sdpa::worker_id_t const worker (utils::random_peer_name());
     test_workers.emplace_back (worker);
     add_worker
-      (_scheduler, worker, {sdpa::Capability (common_capability, worker)});
+      (_scheduler, worker, {sdpa::Capability (common_capability)});
   }
 
   for (unsigned int i {0}; i < num_tasks; ++i)
@@ -2632,11 +2630,9 @@ BOOST_FIXTURE_TEST_CASE
     test_workers.emplace_back (worker);
     add_worker ( _scheduler
                , worker
-               , { sdpa::Capability (common_capability, worker)
+               , { sdpa::Capability (common_capability)
                  , sdpa::Capability
-                     ( *fhg::util::next (preferences.begin(), k % preferences.size())
-                     , worker
-                     )
+                     (*fhg::util::next (preferences.begin(), k % preferences.size()))
                  }
                );
   }

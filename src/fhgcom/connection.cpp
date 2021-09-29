@@ -19,7 +19,6 @@
 #include <fhgcom/peer.hpp>
 
 #include <fhg/assert.hpp>
-#include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/functor_visitor.hpp>
 
 #include <boost/asio/read.hpp>
@@ -103,7 +102,7 @@ namespace fhg
       , boost::asio::io_service::strand const& strand
       , std::function<void (ptr_t connection, std::unique_ptr<message_t>)> handle_hello_message
       , std::function<void (ptr_t connection, std::unique_ptr<message_t>)> handle_user_data
-      , std::function<void (ptr_t connection, const boost::system::error_code&)> handle_error
+      , std::function<void (ptr_t connection, boost::system::error_code const&)> handle_error
       , peer_t* peer
       )
       : _peer (peer)
@@ -224,7 +223,7 @@ namespace fhg
 
     void connection_t::start_read ()
     {
-      in_message_ = fhg::util::cxx14::make_unique<message_t>();
+      in_message_ = std::make_unique<message_t>();
 
       async_read_wrapper
       	( socket_
@@ -239,13 +238,13 @@ namespace fhg
       	);
     }
 
-    void connection_t::handle_read_header( const boost::system::error_code & ec
+    void connection_t::handle_read_header( boost::system::error_code const& ec
                                          , std::size_t bytes_transferred
                                          )
     {
       if (! ec && bytes_transferred > 0)
       {
-        fhg_assert (bytes_transferred == sizeof(p2p::header_t));
+        fhg_assert (bytes_transferred == sizeof (p2p::header_t));
 
         // WORK HERE: convert for local endianess!
         in_message_->resize ();
@@ -269,7 +268,7 @@ namespace fhg
       }
     }
 
-    void connection_t::handle_read_data( const boost::system::error_code & ec
+    void connection_t::handle_read_data( boost::system::error_code const& ec
                                        , std::size_t
                                        )
     {
@@ -315,7 +314,7 @@ namespace fhg
               )
           );
       }
-      catch (std::length_error const &)
+      catch (std::length_error const&)
       {
         strand_.post (std::bind( &connection_t::handle_write
                                , shared_from_this()
@@ -324,7 +323,7 @@ namespace fhg
       }
     }
 
-    void connection_t::handle_write (const boost::system::error_code & ec)
+    void connection_t::handle_write (boost::system::error_code const& ec)
     {
       if (! ec)
       {

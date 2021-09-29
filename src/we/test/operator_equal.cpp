@@ -87,7 +87,7 @@ namespace we
         && tokens (lhs) == tokens (rhs);
     }
 
-    bool operator== (port_t const& lhs, port_t const& rhs)
+    bool operator== (Port const& lhs, Port const& rhs)
     {
       return lhs.name() == rhs.name()
         && lhs.direction() == rhs.direction()
@@ -95,24 +95,23 @@ namespace we
         && lhs.property() == rhs.property();
     }
 
-    bool operator== (requirement_t const& lhs, requirement_t const& rhs)
+    bool operator== (Requirement const& lhs, Requirement const& rhs)
     {
-      return lhs.value() == rhs.value()
-        && lhs.is_mandatory() == rhs.is_mandatory();
+      return lhs.value() == rhs.value();
     }
 
-    bool operator== (module_call_t const& lhs, module_call_t const& rhs)
+    bool operator== (ModuleCall const& lhs, ModuleCall const& rhs)
     {
       return lhs.module() == rhs.module()
         && lhs.function() == rhs.function();
     }
 
-    bool operator== (expression_t const& lhs, expression_t const& rhs)
+    bool operator== (Expression const& lhs, Expression const& rhs)
     {
       return lhs.expression() == rhs.expression();
     }
 
-    bool operator== (transition_t const& lhs, transition_t const& rhs)
+    bool operator== (Transition const& lhs, Transition const& rhs)
     {
       return lhs.name() == rhs.name()
         && lhs.data() == rhs.data()
@@ -129,7 +128,7 @@ namespace we
 
     namespace type
     {
-      bool operator== (activity_t const& lhs, activity_t const& rhs)
+      bool operator== (Activity const& lhs, Activity const& rhs)
       {
         return lhs.input() == rhs.input()
           && lhs.output() == rhs.output()

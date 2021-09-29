@@ -22,7 +22,7 @@
 #include <drts/private/startup_and_shutdown.hpp>
 #include <drts/drts_iml.hpp>
 
-#include <we/type/activity.hpp>
+#include <we/type/Activity.hpp>
 #include <we/type/value.hpp>
 #include <we/type/value/poke.hpp>
 

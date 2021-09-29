@@ -31,7 +31,7 @@ namespace expr
   {
     namespace action
     {
-      std::ostream& operator<< (std::ostream& s, const type& action)
+      std::ostream& operator<< (std::ostream& s, type const& action)
       {
         switch (action)
           {
@@ -49,7 +49,7 @@ namespace expr
 
       //! \todo change behavior of parser here
       //! \todo make a real table, avoid any conditional
-      type action (const token::type& top, const token::type& inp)
+      type action (token::type const& top, token::type const& inp)
       {
         if (top == token::lpr)
           {

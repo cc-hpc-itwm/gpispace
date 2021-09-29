@@ -72,9 +72,9 @@ namespace we
       throw module_load_failed
         (path, fhg::util::current_exception_printer().string());
     }
-    void Module::call ( const std::string& function
+    void Module::call ( std::string const& function
                       , drts::worker::context *info
-                      , const expr::eval::context& input
+                      , expr::eval::context const& input
                       , expr::eval::context& output
                       , std::map<std::string, void*> const& memory_buffer
                       ) const
@@ -89,7 +89,7 @@ namespace we
 
       (*fun->second)(info, input, output, memory_buffer);
     }
-    void Module::add_function (const std::string& name, WrapperFunction f)
+    void Module::add_function (std::string const& name, WrapperFunction f)
     {
       if (! call_table_.emplace (name, f).second)
       {

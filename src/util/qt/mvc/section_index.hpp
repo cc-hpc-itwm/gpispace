@@ -41,8 +41,8 @@ namespace fhg
           QVariant data (int role = Qt::DisplayRole) const;
           bool data (QVariant, int role = Qt::EditRole) const;
 
-          bool operator< (const section_index&) const;
-          bool operator== (const section_index&) const;
+          bool operator< (section_index const&) const;
+          bool operator== (section_index const&) const;
         };
 
         QDebug operator<< (QDebug, section_index);

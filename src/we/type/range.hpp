@@ -64,8 +64,8 @@ namespace we
 
     interval intersect (interval const& other) const
     {
-      const interval& left (this->_offset <= other._offset ? *this : other);
-      const interval& right (this->_offset <= other._offset ? other : *this);
+      interval const& left (this->_offset <= other._offset ? *this : other);
+      interval const& right (this->_offset <= other._offset ? other : *this);
 
       if (right._offset < (left._offset + left._size))
       {

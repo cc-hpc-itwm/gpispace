@@ -21,14 +21,12 @@
 #include <drts/private/pimpl.hpp>
 #include <drts/private/information_to_reattach.hpp>
 
-#include <we/type/activity.hpp>
+#include <we/type/Activity.hpp>
 #include <we/type/value.hpp>
-
-#include <util-generic/cxx14/make_unique.hpp>
 
 #include <sdpa/client.hpp>
 
-#include <we/type/activity.hpp>
+#include <we/type/Activity.hpp>
 
 #include <boost/format.hpp>
 
@@ -38,15 +36,15 @@ namespace gspc
 {
   struct workflow::implementation
   {
-    implementation (::we::type::activity_t activity)
+    implementation (::we::type::Activity activity)
       : _activity (activity)
     {}
 
-    ::we::type::activity_t _activity;
+    ::we::type::Activity _activity;
   };
 
   workflow::workflow (boost::filesystem::path workflow_)
-    : _ (new implementation (::we::type::activity_t (workflow_)))
+    : _ (new implementation (::we::type::Activity (workflow_)))
   {}
   PIMPL_DTOR (workflow)
 
@@ -75,7 +73,7 @@ namespace gspc
       )
       : _client ( fhg::com::host_t (top_level_agent_endpoint.host)
                 , fhg::com::port_t (std::to_string (top_level_agent_endpoint.port))
-                , fhg::util::cxx14::make_unique<boost::asio::io_service>()
+                , std::make_unique<boost::asio::io_service>()
                 , certificates
                 )
     {}
@@ -138,7 +136,7 @@ namespace gspc
       }
     }
 
-    ::we::type::activity_t wait_and_delete_job
+    ::we::type::Activity wait_and_delete_job
       (job_id_t job_id, sdpa::client::Client& client)
     {
       wait_for_terminal_state (job_id, client);

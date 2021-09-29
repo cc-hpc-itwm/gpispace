@@ -34,7 +34,7 @@ namespace fhg
           alphanum_sort_proxy (QAbstractItemModel*, QObject* = nullptr);
 
         protected:
-          virtual bool lessThan (const QModelIndex&, const QModelIndex&) const override;
+          virtual bool lessThan (QModelIndex const&, QModelIndex const&) const override;
         };
       }
     }

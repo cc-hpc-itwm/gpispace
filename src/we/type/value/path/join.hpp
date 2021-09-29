@@ -29,7 +29,7 @@ namespace pnet
     {
       namespace path
       {
-        GSPC_DLLEXPORT std::string join (const std::list<std::string>&);
+        GSPC_DLLEXPORT std::string join (std::list<std::string> const&);
       }
     }
   }

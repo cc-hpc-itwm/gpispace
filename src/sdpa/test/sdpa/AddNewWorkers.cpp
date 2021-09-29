@@ -19,14 +19,13 @@
 
 #include <test/certificates_data.hpp>
 
-#include <we/type/activity.hpp>
-#include <we/type/module_call.hpp>
+#include <we/type/Activity.hpp>
+#include <we/type/ModuleCall.hpp>
 #include <we/type/net.hpp>
 #include <we/type/place.hpp>
-#include <we/type/transition.hpp>
+#include <we/type/Transition.hpp>
 
 #include <fhg/util/thread/event.hpp>
-#include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/optional.hpp>
 #include <util-generic/testing/random.hpp>
@@ -43,22 +42,22 @@
 #include <vector>
 
 static
-we::type::activity_t net_with_n_children (unsigned int n)
+we::type::Activity net_with_n_children (unsigned int n)
 {
   we::type::property::type props;
   props.set ({"fhg", "drts", "schedule", "num_worker"}, std::to_string (1) + "UL");
 
   fhg::util::testing::unique_random<std::string> transition_names;
 
-  std::vector<we::type::transition_t> transitions;
+  std::vector<we::type::Transition> transitions;
   for (unsigned int k{0}; k < n; k++)
   {
     transitions.emplace_back
       ( transition_names()
-      , we::type::module_call_t
+      , we::type::ModuleCall
           ( fhg::util::testing::random_string()
           , fhg::util::testing::random_string()
-          , std::unordered_map<std::string, we::type::memory_buffer_info_t>()
+          , std::unordered_map<std::string, we::type::MemoryBufferInfo>()
           , std::list<we::type::memory_transfer>()
           , std::list<we::type::memory_transfer>()
           , true
@@ -68,7 +67,7 @@ we::type::activity_t net_with_n_children (unsigned int n)
       , props
       , we::priority_type()
       , boost::optional<we::type::eureka_id_type>{}
-      , std::list<we::type::preference_t>{}
+      , std::list<we::type::Preference>{}
       );
   }
 
@@ -77,8 +76,8 @@ we::type::activity_t net_with_n_children (unsigned int n)
   for (unsigned int k{0}; k < n; k++)
   {
     port_ids_in.emplace_back ( transitions.at (k).add_port
-                                 ( we::type::port_t ( port_name
-                                                    , we::type::PORT_IN
+                                 ( we::type::Port ( port_name
+                                                    , we::type::port::direction::In{}
                                                     , std::string ("string")
                                                     , we::type::property::type()
                                                     )
@@ -117,14 +116,14 @@ we::type::activity_t net_with_n_children (unsigned int n)
                         );
   }
 
-  return we::type::activity_t
-    ( we::type::transition_t ( fhg::util::testing::random_string()
+  return we::type::Activity
+    ( we::type::Transition ( fhg::util::testing::random_string()
                              , net
                              , boost::none
                              , we::type::property::type()
                              , we::priority_type()
                              , boost::optional<we::type::eureka_id_type>{}
-                             , std::list<we::type::preference_t>{}
+                             , std::list<we::type::Preference>{}
                              )
     );
 }
@@ -152,7 +151,7 @@ BOOST_DATA_TEST_CASE (add_new_workers, certificates_data, certificates)
   {
     fhg::util::thread::event<std::string>& e (submit_events.at (i));
     workers.emplace_back
-      ( fhg::util::cxx14::make_unique<utils::fake_drts_worker_waiting_for_finished_ack>
+      ( std::make_unique<utils::fake_drts_worker_waiting_for_finished_ack>
         ( [&e] (std::string str) {e.notify (str);}
         , agent
         , certificates
@@ -179,7 +178,7 @@ BOOST_DATA_TEST_CASE (add_new_workers, certificates_data, certificates)
   {
     fhg::util::thread::event<std::string>& e (new_submit_events.at (i));
     new_workers.emplace_back
-      ( fhg::util::cxx14::make_unique<utils::fake_drts_worker_waiting_for_finished_ack>
+      ( std::make_unique<utils::fake_drts_worker_waiting_for_finished_ack>
         ( [&e] (std::string str) {e.notify (str);}
         , agent
         , certificates

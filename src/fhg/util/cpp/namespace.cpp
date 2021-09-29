@@ -28,13 +28,13 @@ namespace fhg
       namespace ns
       {
         open::open ( fhg::util::indenter& indent
-                   , const boost::optional<std::string>& tag
+                   , boost::optional<std::string> const& tag
                    )
           : _indent (indent)
           , _tag (tag)
         {}
 
-        open::open (fhg::util::indenter& indent, const std::string& tag)
+        open::open (fhg::util::indenter& indent, std::string const& tag)
           : _indent (indent)
           , _tag (tag)
         {}

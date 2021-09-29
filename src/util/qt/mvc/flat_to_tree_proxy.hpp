@@ -47,29 +47,29 @@ namespace fhg
           //! \note Exists for ~unique_ptr<fwd-decl-type>() only.
           ~flat_to_tree_proxy() override;
 
-          virtual int rowCount (const QModelIndex& = QModelIndex()) const override;
-          virtual int columnCount (const QModelIndex& = QModelIndex()) const override;
+          virtual int rowCount (QModelIndex const& = QModelIndex()) const override;
+          virtual int columnCount (QModelIndex const& = QModelIndex()) const override;
           virtual QModelIndex index
-            (int row, int column, const QModelIndex& parent = QModelIndex()) const override;
-          virtual QModelIndex parent (const QModelIndex&) const override;
-          virtual QVariant data (const QModelIndex&, int role = Qt::DisplayRole) const override;
+            (int row, int column, QModelIndex const& parent = QModelIndex()) const override;
+          virtual QModelIndex parent (QModelIndex const&) const override;
+          virtual QVariant data (QModelIndex const&, int role = Qt::DisplayRole) const override;
           virtual QVariant headerData
             (int section, Qt::Orientation, int role = Qt::DisplayRole) const override;
-          virtual bool removeRows (int from, int n, const QModelIndex& = QModelIndex()) override;
+          virtual bool removeRows (int from, int n, QModelIndex const& = QModelIndex()) override;
 
         private slots:
           void rebuild_transformation_tree();
           void rebuild_source_to_tree();
           void rows_inserted (QModelIndex parent, int from, int to);
 
-          void source_dataChanged (const QModelIndex&, const QModelIndex&);
+          void source_dataChanged (QModelIndex const&, QModelIndex const&);
 
         private:
           class index_tree_item;
 
-          index_tree_item* item_for (const QModelIndex&) const;
+          index_tree_item* item_for (QModelIndex const&) const;
           QModelIndex index_for (index_tree_item*, int column) const;
-          QModelIndex index_for (const QModelIndex& source) const;
+          QModelIndex index_for (QModelIndex const& source) const;
 
           void insert_from_source
             (int begin, int end, QModelIndex parent, bool emit_per_row);
@@ -93,13 +93,13 @@ namespace fhg
 
           transform_functions_model (QObject* parent = nullptr);
 
-          virtual QVariant data (const QModelIndex&, int role = Qt::DisplayRole) const override;
+          virtual QVariant data (QModelIndex const&, int role = Qt::DisplayRole) const override;
           virtual bool setData
-            (const QModelIndex&, const QVariant&, int role = Qt::EditRole) override;
-          virtual QMap<int, QVariant> itemData (const QModelIndex&) const override;
-          virtual int rowCount (const QModelIndex& = QModelIndex()) const override;
-          virtual bool insertRows (int from, int n, const QModelIndex& = QModelIndex()) override;
-          virtual bool removeRows (int from, int n, const QModelIndex& = QModelIndex()) override;
+            (QModelIndex const&, QVariant const&, int role = Qt::EditRole) override;
+          virtual QMap<int, QVariant> itemData (QModelIndex const&) const override;
+          virtual int rowCount (QModelIndex const& = QModelIndex()) const override;
+          virtual bool insertRows (int from, int n, QModelIndex const& = QModelIndex()) override;
+          virtual bool removeRows (int from, int n, QModelIndex const& = QModelIndex()) override;
 
           struct transform_function
           {

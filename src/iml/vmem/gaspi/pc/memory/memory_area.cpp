@@ -83,21 +83,21 @@ namespace gpi
         return false;
       }
 
-      bool area_t::is_local (const iml::MemoryRegion region) const
+      bool area_t::is_local (iml::MemoryRegion region) const
       {
         return is_local (region, region.size);
       }
 
       bool
-      area_t::is_local ( const iml::MemoryLocation location
-                       , const iml::MemorySize amount
+      area_t::is_local ( iml::MemoryLocation location
+                       , iml::MemorySize amount
                        ) const
       {
         lock_type lock (m_mutex);
 
 
         handle_descriptor_map_t::const_iterator hdl_it
-            (m_handles.find(location.allocation));
+            (m_handles.find (location.allocation));
         if (hdl_it == m_handles.end())
           throw std::runtime_error ("is_local(): no such handle");
 
@@ -108,13 +108,13 @@ namespace gpi
       }
 
       void
-      area_t::check_bounds ( const iml::MemoryLocation & loc
-                           , const iml::MemorySize size
+      area_t::check_bounds ( iml::MemoryLocation const& loc
+                           , iml::MemorySize size
                            ) const
       {
         lock_type lock (m_mutex);
         handle_descriptor_map_t::const_iterator
-            hdl_it (m_handles.find(loc.allocation));
+            hdl_it (m_handles.find (loc.allocation));
         if (hdl_it == m_handles.end())
           throw std::invalid_argument("check_bounds: no such handle");
         if (! (loc.offset < hdl_it->second.size && (loc.offset + size) <= hdl_it->second.size))
@@ -143,10 +143,10 @@ namespace gpi
       }
 
       void
-        area_t::remote_alloc ( const iml::AllocationHandle hdl_id
-                           , const iml::MemoryOffset offset
-                           , const iml::MemorySize size
-                           , const iml::MemorySize local_size
+        area_t::remote_alloc ( iml::AllocationHandle hdl_id
+                           , iml::MemoryOffset offset
+                           , iml::MemorySize size
+                           , iml::MemorySize local_size
                            , iml::SegmentHandle segment_id
                            )
       {
@@ -176,8 +176,8 @@ namespace gpi
       }
 
       void
-      area_t::alloc ( const iml::MemorySize size
-                    , const gpi::pc::type::flags_t flags
+      area_t::alloc ( iml::MemorySize size
+                    , gpi::pc::type::flags_t flags
                     , iml::SegmentHandle segment_id
                     , iml::AllocationHandle allocation
                     )
@@ -211,7 +211,7 @@ namespace gpi
             );
         }
 
-        iml_client::vmem::dtmmgr::Arena_t arena = grow_direction(hdl.flags);
+        iml_client::vmem::dtmmgr::Arena_t arena = grow_direction (hdl.flags);
 
         try
         {
@@ -262,7 +262,7 @@ namespace gpi
         }
       }
 
-      void area_t::free (const iml::AllocationHandle hdl)
+      void area_t::free (iml::AllocationHandle hdl)
       {
         lock_type const lock (m_mutex);
 
@@ -283,7 +283,7 @@ namespace gpi
         }
       }
 
-      void area_t::remote_free (const iml::AllocationHandle hdl)
+      void area_t::remote_free (iml::AllocationHandle hdl)
       {
         lock_type const lock (m_mutex);
 
@@ -293,14 +293,14 @@ namespace gpi
       void area_t::internal_free
         (lock_type const&, type::handle::descriptor_t const& desc)
       {
-        iml_client::vmem::dtmmgr::Arena_t arena (grow_direction(desc.flags));
+        iml_client::vmem::dtmmgr::Arena_t arena (grow_direction (desc.flags));
 
         m_mmgr.free (desc.id, arena);
         m_handles.erase (desc.id);
       }
 
-      gpi::pc::type::handle::descriptor_t const &
-        area_t::descriptor (const iml::AllocationHandle hdl) const
+      gpi::pc::type::handle::descriptor_t const&
+        area_t::descriptor (iml::AllocationHandle hdl) const
       {
         lock_type lock (m_mutex);
         handle_descriptor_map_t::const_iterator pos (m_handles.find (hdl));
@@ -321,7 +321,7 @@ namespace gpi
         lock_type lock (m_mutex);
 
         handle_descriptor_map_t::const_iterator hdl_it
-            (m_handles.find(loc.allocation));
+            (m_handles.find (loc.allocation));
         if (hdl_it == m_handles.end())
           throw std::runtime_error
             ( "location_to_offset(): no such handle: "
@@ -332,7 +332,7 @@ namespace gpi
       }
 
       void *
-      area_t::pointer_to (iml::MemoryLocation const &loc)
+      area_t::pointer_to (iml::MemoryLocation const& loc)
       {
         return raw_ptr (location_to_offset (loc));
       }
@@ -406,8 +406,8 @@ namespace gpi
 
       std::packaged_task<void()> area_t::get_send_task
         ( area_t&
-        , const iml::MemoryLocation
-        , const iml::MemoryLocation
+        , iml::MemoryLocation
+        , iml::MemoryLocation
         , iml::MemorySize
         )
       {
@@ -416,8 +416,8 @@ namespace gpi
 
       std::packaged_task<void()> area_t::get_recv_task
         ( area_t&
-        , const iml::MemoryLocation
-        , const iml::MemoryLocation
+        , iml::MemoryLocation
+        , iml::MemoryLocation
         , iml::MemorySize
         )
       {
@@ -425,8 +425,8 @@ namespace gpi
       }
 
       std::packaged_task<void()> area_t::get_transfer_task
-        ( const iml::MemoryLocation src
-        , const iml::MemoryLocation dst
+        ( iml::MemoryLocation src
+        , iml::MemoryLocation dst
         , area_t& dst_area
         , iml::MemorySize amount
         )

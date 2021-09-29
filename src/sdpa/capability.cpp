@@ -28,11 +28,8 @@ namespace sdpa
     }
   }
 
-  Capability::Capability ( const std::string& name
-                         , const std::string& owner
-                         )
+  Capability::Capability (std::string const& name)
     : name_ (name)
-    , owner_ (owner)
     , uuid_ (GLOBAL_id_generator_cap().next())
     {}
 }

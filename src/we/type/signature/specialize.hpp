@@ -28,7 +28,7 @@ namespace pnet
     namespace signature
     {
       void specialize ( structured_type&
-                      , const std::unordered_map<std::string, std::string>&
+                      , std::unordered_map<std::string, std::string> const&
                       );
     }
   }

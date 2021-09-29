@@ -27,18 +27,18 @@ namespace pnet
     namespace value
     {
       GSPC_DLLEXPORT value_type& poke
-        ( const std::list<std::string>::const_iterator&
-        , const std::list<std::string>::const_iterator&
+        ( std::list<std::string>::const_iterator const&
+        , std::list<std::string>::const_iterator const&
         , value_type&
-        , const value_type&
+        , value_type const&
         );
       GSPC_DLLEXPORT value_type& poke
-        ( const std::list<std::string>& path
+        ( std::list<std::string> const& path
         , value_type& node
-        , const value_type& value
+        , value_type const& value
         );
       GSPC_DLLEXPORT value_type& poke
-        (const std::string&, value_type&, const value_type&);
+        (std::string const&, value_type&, value_type const&);
     }
   }
 }

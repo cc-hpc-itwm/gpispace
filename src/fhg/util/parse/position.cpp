@@ -27,7 +27,7 @@ namespace fhg
   {
     namespace parse
     {
-      position::position (const std::string& input)
+      position::position (std::string const& input)
         : _k (0)
         , _pos (input.begin())
         , _begin (input.begin())
@@ -52,7 +52,7 @@ namespace fhg
         return _k;
       }
 
-      std::string position::error_message (const std::string& message) const
+      std::string position::error_message (std::string const& message) const
       {
         std::ostringstream oss;
 

@@ -19,10 +19,9 @@
 #include <sdpa/test/sdpa/utils.hpp>
 #include <sdpa/types.hpp>
 
-#include <we/type/requirement.hpp>
+#include <we/type/Requirement.hpp>
 #include <we/type/schedule_data.hpp>
 
-#include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/random.hpp>
 
@@ -39,7 +38,7 @@
 
 namespace
 {
-  std::vector<std::string> generate_worker_names (const unsigned int n)
+  std::vector<std::string> generate_worker_names (unsigned int n)
   {
     return fhg::util::testing::randoms<std::vector<std::string>>
       (n, &utils::random_peer_name);
@@ -59,7 +58,7 @@ BOOST_AUTO_TEST_CASE (add_worker)
       {
         worker_manager.add_worker
           ( worker_id
-          , {sdpa::capability_t (capability_name, worker_id)}
+          , {sdpa::capability_t (capability_name)}
           , fhg::util::testing::random<unsigned long>{}()
           , fhg::util::testing::random_string()
           , fhg::util::testing::random_string()
@@ -100,7 +99,7 @@ BOOST_AUTO_TEST_CASE (delete_worker)
       {
         worker_manager.add_worker
           ( worker_id
-          , {sdpa::capability_t (capability_name, worker_id)}
+          , {sdpa::capability_t (capability_name)}
           , fhg::util::testing::random<unsigned long>{}()
           , fhg::util::testing::random_string()
           , fhg::util::testing::random_string()
@@ -136,7 +135,7 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_worker)
 
   sdpa::daemon::WorkerManager worker_manager;
   worker_manager.add_worker ( worker_ids[0]
-                            , {sdpa::capability_t ("A", worker_ids[0])}
+                            , {sdpa::capability_t ("A")}
                             , fhg::util::testing::random<unsigned long>{}()
                             , fhg::util::testing::random_string()
                             , fhg::util::testing::random_string()
@@ -173,7 +172,7 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_coallocated_workers)
   for (unsigned int k=0; k<N; k++)
   {
     worker_manager.add_worker ( worker_ids[k]
-                              , {sdpa::capability_t ("A", worker_ids[k])}
+                              , {sdpa::capability_t ("A")}
                               , fhg::util::testing::random<unsigned long>{}()
                               , fhg::util::testing::random_string()
                               , fhg::util::testing::random_string()
@@ -251,7 +250,7 @@ BOOST_AUTO_TEST_CASE (issue_675_reference_to_popped_queue_element)
                       {
                         worker_manager.add_worker
                           ( worker_id
-                          , {sdpa::capability_t (capability_name, worker_id)}
+                          , {sdpa::capability_t (capability_name)}
                           , fhg::util::testing::random<unsigned long>{}()
                           , fhg::util::testing::random_string()
                           , fhg::util::testing::random_string()
@@ -266,7 +265,7 @@ BOOST_AUTO_TEST_CASE (issue_675_reference_to_popped_queue_element)
       {
         reservations.emplace
           ( job_id
-          , fhg::util::cxx14::make_unique<sdpa::daemon::scheduler::Reservation>
+          , std::make_unique<sdpa::daemon::scheduler::Reservation>
               ( allowed_to_be_stolen
               ? std::set<sdpa::worker_id_t> {worker_id}
               : std::set<sdpa::worker_id_t>{}

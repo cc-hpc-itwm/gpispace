@@ -28,12 +28,12 @@ namespace sdpa
     public:
       typedef boost::shared_ptr<SubscribeAckEvent> Ptr;
 
-      SubscribeAckEvent (const job_id_t& job_id)
+      SubscribeAckEvent (job_id_t const& job_id)
         : MgmtEvent()
         , _job_id (job_id)
       { }
 
-      const sdpa::job_id_t& job_id() const
+      sdpa::job_id_t const& job_id() const
       {
         return _job_id;
       }

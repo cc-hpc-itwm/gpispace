@@ -40,6 +40,8 @@ BOOST_FIXTURE_TEST_CASE
   TasksByEurekaGroup expected_tasks;
 
   auto const eureka_group (random.unique_eureka_group());
+  WE_TEST_EUREKA_PUT_TOKEN ("eureka_group", eureka_group);
+
   auto const number_of_tasks
     (random.between (0, worker_per_node * NUMBER_OF_NODES()));
 
@@ -49,7 +51,6 @@ BOOST_FIXTURE_TEST_CASE
     expected_tasks[eureka_group].emplace (task);
 
     WE_TEST_EUREKA_PUT_TOKEN ("task", task);
-    WE_TEST_EUREKA_PUT_TOKEN ("eureka_group", eureka_group);
     WE_TEST_EUREKA_PUT_TOKEN ("sleep_for", random.sleep_time());
   }
 
@@ -58,7 +59,6 @@ BOOST_FIXTURE_TEST_CASE
   auto const eureka_value (random.eureka_value());
 
   WE_TEST_EUREKA_PUT_TOKEN ("eureka", eureka_value);
-  WE_TEST_EUREKA_PUT_TOKEN ("eureka_group", eureka_group);
 
   jobserver.wait
     (number_of_tasks, expected_tasks, JobServer::ExitedOrCancelled{});

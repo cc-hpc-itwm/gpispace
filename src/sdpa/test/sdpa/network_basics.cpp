@@ -46,9 +46,7 @@ FHG_UTIL_TESTING_RANDOM_SPECIALIZE_SIMPLE (sdpa::capabilities_set_t)
   auto count (fhg::util::testing::random<std::size_t>{} (100, 0));
   while (count --> 0)
   {
-    capabilities.emplace ( fhg::util::testing::random<std::string>{}()
-                         , utils::random_peer_name()
-                         );
+    capabilities.emplace (fhg::util::testing::random<std::string>{}());
   }
 
   return capabilities;

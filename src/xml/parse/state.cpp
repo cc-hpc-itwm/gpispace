@@ -29,9 +29,9 @@ namespace xml
     namespace state
     {
       template<typename W>
-      void type::generic_warn ( const W& w
-                              , const bool& active
-                              , const std::string& flag
+      void type::generic_warn ( W const& w
+                              , bool const& active
+                              , std::string const& flag
                               ) const
       {
         if (_warning_all || active)
@@ -47,7 +47,7 @@ namespace xml
         }
       }
 
-      boost::filesystem::path type::expand (const std::string& file) const
+      boost::filesystem::path type::expand (std::string const& file) const
       {
         const boost::filesystem::path absolute (file);
 
@@ -69,7 +69,7 @@ namespace xml
           }
           else
           {
-            for (const std::string& search_path : _search_path)
+            for (std::string const& search_path : _search_path)
             {
               if (!boost::filesystem::exists (search_path))
               {
@@ -192,12 +192,12 @@ namespace xml
         , _option_path_prefixes_to_strip ("path-prefix-to-strip")
       {}
 
-      const gen_param_type& type::gen_ldflags() const
+      gen_param_type const& type::gen_ldflags() const
       {
         return _gen_ldflags;
       }
 
-      const gen_param_type& type::gen_cxxflags() const
+      gen_param_type const& type::gen_cxxflags() const
       {
         return _gen_cxxflags;
       }
@@ -218,11 +218,9 @@ namespace xml
       }
 
       void type::set_requirement
-        ( const ::xml::parse::type::require_key_type& key
-        , const bool& mandatory
-        )
+        (const ::xml::parse::type::require_key_type& key)
       {
-        _requirements.set (key, mandatory);
+        _requirements.set (key);
       }
 
       we::type::property::path_type& type::prop_path()
@@ -231,8 +229,8 @@ namespace xml
       }
 
       void
-      type::interpret_property ( const we::type::property::path_type& path
-                               , const we::type::property::value_type& value
+      type::interpret_property ( we::type::property::path_type const& path
+                               , we::type::property::value_type const& value
                                )
       {
         we::type::property::path_type::const_iterator pos (path.begin());
@@ -294,12 +292,12 @@ namespace xml
         }
       }
 
-      void type::set_input (const boost::filesystem::path& path)
+      void type::set_input (boost::filesystem::path const& path)
       {
         _in_progress.push_back (path);
       }
 
-      void type::set_input (const std::string& file)
+      void type::set_input (std::string const& file)
       {
         set_input (boost::filesystem::path (file));
       }
@@ -351,13 +349,13 @@ namespace xml
         return p;
       }
 
-      const std::set<boost::filesystem::path>& type::dependencies() const
+      std::set<boost::filesystem::path> const& type::dependencies() const
       {
         return _dependencies;
       }
 
 #define ACCESS(name)                                                    \
-      const std::string& type::name() const                             \
+      std::string const& type::name() const                             \
       {                                                                 \
         return _ ## name;                                               \
       }                                                                 \
@@ -375,7 +373,7 @@ namespace xml
 #undef ACCESS
 
 #define ACCESS(name)                                                    \
-        const std::vector<std::string>& type::name() const              \
+        std::vector<std::string> const& type::name() const              \
         {                                                               \
           return _ ## name;                                             \
         }
@@ -386,7 +384,7 @@ namespace xml
 #undef ACCESS
 
 #define ACCESST(_t,_x)                          \
-        const _t& type::_x() const              \
+        _t const& type::_x() const              \
         {                                       \
           return _ ## _x;                       \
         }                                       \
@@ -439,7 +437,7 @@ namespace xml
 #undef ACCESST
 
 #define WARN(x)                                                         \
-        void type::warn (const warning::x& w) const                     \
+        void type::warn (warning::x const& w) const                     \
         {                                                               \
           generic_warn (w, _warning_ ## x, _option_W ## x );                  \
         }
@@ -473,7 +471,7 @@ namespace xml
 #undef WARN
 
       void
-      type::check_for_include_loop (const boost::filesystem::path& path) const
+      type::check_for_include_loop (boost::filesystem::path const& path) const
       {
         for ( in_progress_type::const_iterator pos (_in_progress.begin())
             ; pos != _in_progress.end()
@@ -796,13 +794,13 @@ namespace xml
       {
         typedef std::pair<std::string, std::string> pair_type;
 
-        pair_type mk (const std::string& param)
+        pair_type mk (std::string const& param)
         {
           return std::make_pair (param, std::string());
         }
       }
 
-      pair_type reg_M (const std::string& s)
+      pair_type reg_M (std::string const& s)
       {
         std::string::const_iterator pos (s.begin());
         const std::string::const_iterator end (s.end());

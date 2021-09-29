@@ -81,12 +81,12 @@ namespace fhg
           virtual QVariant headerData
             (int section, Qt::Orientation orientation, int role) const override;
           virtual bool setHeaderData
-            (int section, Qt::Orientation, const QVariant&, int role) override;
+            (int section, Qt::Orientation, QVariant const&, int role) override;
 
           //! \note revert bb00ac8d1251be3e703cc09e5fb2f100f24b398b
-          virtual QMap<int, QVariant> itemData (const QModelIndex&) const override;
+          virtual QMap<int, QVariant> itemData (QModelIndex const&) const override;
           virtual bool setItemData
-            (const QModelIndex&, const QMap<int, QVariant>&) override;
+            (QModelIndex const&, QMap<int, QVariant> const&) override;
         };
 
         class id_proxy : public QIdentityProxyModel
@@ -96,16 +96,16 @@ namespace fhg
         public:
           id_proxy (QObject* = nullptr);
 
-          //! \note No need to mapToSource(), as id(x) = x.
+          //! \note No need to mapToSource(), as id (x) = x.
           virtual QVariant headerData
             (int section, Qt::Orientation orientation, int role) const override;
           virtual bool setHeaderData
-            (int section, Qt::Orientation, const QVariant&, int role) override;
+            (int section, Qt::Orientation, QVariant const&, int role) override;
 
           //! \note revert bb00ac8d1251be3e703cc09e5fb2f100f24b398b
-          virtual QMap<int, QVariant> itemData (const QModelIndex&) const override;
+          virtual QMap<int, QVariant> itemData (QModelIndex const&) const override;
           virtual bool setItemData
-            (const QModelIndex&, const QMap<int, QVariant>&) override;
+            (QModelIndex const&, QMap<int, QVariant> const&) override;
         };
 
         class sort_filter_proxy : public QSortFilterProxyModel
@@ -120,12 +120,12 @@ namespace fhg
           virtual QVariant headerData
             (int section, Qt::Orientation orientation, int role) const override;
           virtual bool setHeaderData
-            (int section, Qt::Orientation, const QVariant&, int role) override;
+            (int section, Qt::Orientation, QVariant const&, int role) override;
 
           //! \note revert bb00ac8d1251be3e703cc09e5fb2f100f24b398b
-          virtual QMap<int, QVariant> itemData (const QModelIndex&) const override;
+          virtual QMap<int, QVariant> itemData (QModelIndex const&) const override;
           virtual bool setItemData
-            (const QModelIndex&, const QMap<int, QVariant>&) override;
+            (QModelIndex const&, QMap<int, QVariant> const&) override;
         };
       }
     }

@@ -25,10 +25,9 @@
 
 #include <xml/parse/util/position.fwd.hpp>
 
-#include <util-generic/hash/std/pair.hpp>
 #include <fhg/util/xml.fwd.hpp>
 
-#include <we/type/port.hpp>
+#include <we/type/Port.hpp>
 #include <we/type/property.hpp>
 #include <we/type/signature.hpp>
 
@@ -36,6 +35,7 @@
 #include <boost/optional.hpp>
 #include <boost/variant.hpp>
 
+#include <functional>
 #include <string>
 
 namespace xml
@@ -47,43 +47,59 @@ namespace xml
       struct port_type : with_position_of_definition
       {
       public:
-        typedef std::pair<std::string, we::type::PortDirection> unique_key_type;
+        struct unique_key_type
+        {
+          unique_key_type (std::string, we::type::PortDirection);
 
-        port_type ( const util::position_type&
-                  , const std::string & name
-                  , const std::string & _type
-                  , const boost::optional<std::string> & _place
-                  , const we::type::PortDirection& direction
-                  , const we::type::property::type& properties
+          friend bool operator==
+            (unique_key_type const&, unique_key_type const&);
+
+          std::size_t hash_value() const;
+
+        private:
+          std::string _name;
+          we::type::PortDirection _port_direction;
+        };
+
+        port_type ( util::position_type const&
+                  , std::string const& name
+                  , std::string const& _type
+                  , boost::optional<std::string> const& _place
+                  , we::type::PortDirection const& direction
+                  , we::type::property::type const& properties
                   = we::type::property::type()
                   , boost::optional<pnet::type::signature::signature_type> = boost::none
                   );
 
-        port_type specialized ( const type::type_map_type & map_in
-                              , const state::type &
+        port_type specialized ( type::type_map_type const& map_in
+                              , state::type const&
                               ) const;
 
-        void type_check ( const boost::filesystem::path&
-                        , const state::type&
+        void type_check ( boost::filesystem::path const&
+                        , state::type const&
                         , function_type const& parent
                         ) const;
 
-        const std::string& name() const;
+        std::string const& name() const;
 
-        const std::string& type() const;
+        std::string const& type() const;
 
         pnet::type::signature::signature_type signature() const;
         void resolve_types_recursive
           (std::unordered_map<std::string, pnet::type::signature::signature_type> known);
 
-        const we::type::PortDirection& direction() const;
+        we::type::PortDirection const& direction() const;
 
         boost::optional<place_type const&> resolved_place
           (net_type const& parent) const;
 
-        const we::type::property::type& properties() const;
+        we::type::property::type const& properties() const;
 
         unique_key_type unique_key() const;
+
+        bool is_input() const;
+        bool is_output() const;
+        bool is_tunnel() const;
 
       private:
         std::string const _name;
@@ -101,8 +117,21 @@ namespace xml
 
       namespace dump
       {
-        void dump (::fhg::util::xml::xmlstream&, const port_type&);
+        void dump (::fhg::util::xml::xmlstream&, port_type const&);
       }
     }
   }
+}
+
+namespace std
+{
+  template<>
+    struct hash<::xml::parse::type::port_type::unique_key_type>
+  {
+    std::size_t operator()
+      (::xml::parse::type::port_type::unique_key_type const& uk) const
+    {
+      return uk.hash_value();
+    }
+  };
 }

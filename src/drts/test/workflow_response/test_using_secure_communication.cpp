@@ -212,7 +212,7 @@ BOOST_AUTO_TEST_CASE (workflow_response_using_secure_communication)
        client.synchronous_workflow_response
          ("JOB-NOT-EXISTENT", "get_and_update_state", 12UL);
      }
-    , std::runtime_error ("unable to request workflow response: JOB-NOT-EXISTENT unknown or not running")
+    , std::runtime_error ("unable to request workflow response: JOB-NOT-EXISTENT unknown")
     );
 
   //! \todo specific exception
@@ -281,7 +281,7 @@ BOOST_AUTO_TEST_CASE (workflow_response_using_secure_communication)
        client.synchronous_workflow_response
          (job_id, "get_and_update_state", 0UL);
      }
-    , std::runtime_error ("unable to request workflow response: " + job_id + " unknown or not running")
+    , std::runtime_error ("unable to request workflow response: " + job_id + " not running")
     );
 
   std::multimap<std::string, pnet::type::value::value_type> const result

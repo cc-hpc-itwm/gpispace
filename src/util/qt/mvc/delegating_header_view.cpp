@@ -67,15 +67,15 @@ namespace fhg
           {
             connect ( model()
                     , orientation() == Qt::Horizontal
-                    ? SIGNAL (columnsInserted (const QModelIndex&, int, int))
-                    : SIGNAL (rowsInserted (const QModelIndex&, int, int))
-                    , SLOT (sections_inserted (const QModelIndex&, int, int))
+                    ? SIGNAL (columnsInserted (QModelIndex const&, int, int))
+                    : SIGNAL (rowsInserted (QModelIndex const&, int, int))
+                    , SLOT (sections_inserted (QModelIndex const&, int, int))
                     );
             connect ( model()
                     , orientation() == Qt::Horizontal
-                    ? SIGNAL (columnsRemoved (const QModelIndex&, int, int))
-                    : SIGNAL (rowsRemoved (const QModelIndex&, int, int))
-                    , SLOT (sections_removed (const QModelIndex&, int, int))
+                    ? SIGNAL (columnsRemoved (QModelIndex const&, int, int))
+                    : SIGNAL (rowsRemoved (QModelIndex const&, int, int))
+                    , SLOT (sections_removed (QModelIndex const&, int, int))
                     );
             connect ( model()
                     , SIGNAL (headerDataChanged (Qt::Orientation, int, int))
@@ -109,7 +109,7 @@ namespace fhg
         }
 
         void delegating_header_view::paintSection ( QPainter* painter
-                                                  , const QRect& rect
+                                                  , QRect const& rect
                                                   , int logical_index
                                                   ) const
         {
@@ -196,14 +196,14 @@ namespace fhg
         }
 
         void delegating_header_view::sections_inserted
-          (const QModelIndex&, int from, int to)
+          (QModelIndex const&, int from, int to)
         {
           _delegates.insert (from, to - from + 1, nullptr);
           update();
         }
 
         void delegating_header_view::sections_removed
-          (const QModelIndex&, int from, int to)
+          (QModelIndex const&, int from, int to)
         {
           _delegates.remove (from, to - from + 1);
           if (_editor.section && *_editor.section >= from && *_editor.section <= to)

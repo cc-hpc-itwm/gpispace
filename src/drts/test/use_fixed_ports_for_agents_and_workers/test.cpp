@@ -32,7 +32,6 @@
 #include <test/shared_directory.hpp>
 #include <test/source_directory.hpp>
 
-#include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/finally.hpp>
 #include <util-generic/read_lines.hpp>
 #include <util-generic/temporary_file.hpp>
@@ -149,14 +148,14 @@ BOOST_AUTO_TEST_CASE (use_fixed_ports_for_agents_and_workers)
   {
     try
     {
-      agent_port = fhg::util::cxx14::make_unique<test::hopefully_free_port>();
-      worker_port = fhg::util::cxx14::make_unique<test::hopefully_free_port>();
+      agent_port = std::make_unique<test::hopefully_free_port>();
+      worker_port = std::make_unique<test::hopefully_free_port>();
 
       auto vm_with_ports (vm_without_ports);
       gspc::set_agent_port (vm_with_ports, agent_port->release());
       vm_with_ports.notify();
 
-      drts = fhg::util::cxx14::make_unique<gspc::scoped_runtime_system>
+      drts = std::make_unique<gspc::scoped_runtime_system>
                ( vm_with_ports
                , installation
                , "worker:1/" + std::to_string (worker_port->release())

@@ -49,13 +49,13 @@ namespace we
         return boost::get<pnet::type::value::structured_type> (_value);
       }
 
-      void type::set (const path_type& path, const value_type& val)
+      void type::set (path_type const& path, value_type const& val)
       {
         pnet::type::value::poke (path.begin(), path.end(), _value, val);
       }
 
-      boost::optional<const value_type&>
-        type::get (const path_type& path) const
+      boost::optional<value_type const&>
+        type::get (path_type const& path) const
       {
         return pnet::type::value::peek (path.begin(), path.end(), _value);
       }
@@ -69,13 +69,13 @@ namespace we
 
       namespace dump
       {
-        void dump (::fhg::util::xml::xmlstream& s, const type& p)
+        void dump (::fhg::util::xml::xmlstream& s, type const& p)
         {
           pnet::type::value::dump (s, p.value());
         }
       }
 
-      std::ostream& operator << (std::ostream& s, const type& t)
+      std::ostream& operator << (std::ostream& s, type const& t)
       {
         ::fhg::util::xml::xmlstream xs (s);
 

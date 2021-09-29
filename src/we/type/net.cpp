@@ -15,8 +15,8 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <we/type/net.hpp>
-#include <we/type/activity.hpp>
-#include <we/type/transition.hpp>
+#include <we/type/Activity.hpp>
+#include <we/type/Transition.hpp>
 #include <we/type/value.hpp>
 #include <we/type/value/peek.hpp>
 #include <we/type/value/show.hpp>
@@ -26,6 +26,7 @@
 #include <we/require_type.hpp>
 
 #include <fhg/util/next.hpp>
+#include <fhg/util/macros.hpp>
 
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_container.hpp>
@@ -54,6 +55,27 @@ namespace gspc
 
 namespace we
 {
+  namespace edge
+  {
+    bool is_PT (type const& e)
+    {
+      return (e == PT || e == PT_READ);
+    }
+
+    std::string enum_to_string (type const& e)
+    {
+      switch (e)
+      {
+      case PT: return "in";
+      case PT_READ: return "read";
+      case TP: return "out";
+      case TP_MANY: return "out-many";
+      }
+
+      INVALID_ENUM_VALUE (we::edge:type, e);
+    }
+  }
+
   namespace type
   {
     namespace
@@ -91,8 +113,8 @@ namespace we
 
         net_type& _net;
         transition_id_type _tid;
-        we::type::transition_t const& _transition;
-        boost::optional<expression_t> const& _condition;
+        we::type::Transition const& _transition;
+        boost::optional<Expression> const& _condition;
         expr::parse::node::KeyRoots _key_roots;
 
         typedef std::unordered_map<place_id_type, iterators_type> map_type;
@@ -111,7 +133,7 @@ namespace we
       };
     }
 
-    place_id_type net_type::add_place (const place::type& place)
+    place_id_type net_type::add_place (place::type const& place)
     {
       const place_id_type pid (_place_id++);
 
@@ -131,7 +153,7 @@ namespace we
     }
 
     transition_id_type
-    net_type::add_transition (const we::type::transition_t& transition)
+    net_type::add_transition (we::type::Transition const& transition)
     {
       const transition_id_type tid (_transition_id++);
 
@@ -257,7 +279,7 @@ namespace we
       return _pmap;
     }
 
-    const std::unordered_map<transition_id_type, we::type::transition_t>&
+    const std::unordered_map<transition_id_type, we::type::Transition>&
       net_type::transitions() const
     {
       return _tmap;
@@ -297,7 +319,7 @@ namespace we
     }
 
     void net_type::put_value ( place_id_type pid
-                             , const pnet::type::value::value_type& value
+                             , pnet::type::value::value_type const& value
                              )
     {
       do_update (do_put_value (pid, value));
@@ -339,9 +361,9 @@ namespace we
     }
 
     net_type::to_be_updated_type net_type::do_put_value
-      (place_id_type pid, const pnet::type::value::value_type& value)
+      (place_id_type pid, pnet::type::value::value_type const& value)
     {
-      const place::type& place (_pmap.at (pid));
+      place::type const& place (_pmap.at (pid));
       token_id_type const token_id (_token_id++);
 
       _token_by_place_id[pid].emplace
@@ -366,7 +388,7 @@ namespace we
 
     namespace
     {
-      const net_type::token_by_id_type& no_tokens()
+      net_type::token_by_id_type const& no_tokens()
       {
         static const net_type::token_by_id_type x;
 
@@ -374,7 +396,7 @@ namespace we
       }
     }
 
-    const net_type::token_by_id_type&
+    net_type::token_by_id_type const&
       net_type::get_token (place_id_type pid) const
     {
       token_by_place_id_type::const_iterator const pos
@@ -591,10 +613,10 @@ namespace we
       }
     }
 
-    we::type::activity_t net_type::extract_activity
-      (transition_id_type tid, we::type::transition_t const& transition)
+    we::type::Activity net_type::extract_activity
+      (transition_id_type tid, we::type::Transition const& transition)
     {
-      we::type::activity_t act (transition, tid);
+      we::type::Activity act (transition, tid);
 
       do_delete
         ( do_extract ( tid
@@ -616,7 +638,7 @@ namespace we
       {
       public:
         context_bind ( expr::eval::context& context
-                     , we::type::transition_t const& transition
+                     , we::type::Transition const& transition
                      )
           : _context (context)
           , _transition (transition)
@@ -632,11 +654,11 @@ namespace we
 
       private:
         expr::eval::context& _context;
-        we::type::transition_t const& _transition;
+        we::type::Transition const& _transition;
       };
     }
 
-    boost::optional<we::type::activity_t>
+    boost::optional<we::type::Activity>
       net_type::fire_expressions_and_extract_activity_random
         ( std::mt19937& engine
         , we::workflow_response_callback const& workflow_response
@@ -653,7 +675,7 @@ namespace we
           (0, transition_ids.size() - 1);
         transition_id_type const transition_id
           (*fhg::util::next (transition_ids.begin(), random (engine)));
-        we::type::transition_t const& transition (_tmap.at (transition_id));
+        we::type::Transition const& transition (_tmap.at (transition_id));
 
         if (transition.expression())
         {
@@ -674,7 +696,7 @@ namespace we
       return boost::none;
     }
 
-    boost::optional<we::type::activity_t>
+    boost::optional<we::type::Activity>
       net_type::fire_expressions_and_extract_activity_random_TESTING_ONLY
         ( std::mt19937& engine
         , we::workflow_response_callback const& workflow_response
@@ -696,7 +718,7 @@ namespace we
 
     void net_type::fire_expression
       ( transition_id_type tid
-      , we::type::transition_t const& transition
+      , we::type::Transition const& transition
       , we::workflow_response_callback const& workflow_response
       , we::eureka_response_callback const& eureka_response
       , gspc::we::plugin::Plugins& plugins
@@ -722,7 +744,7 @@ namespace we
 
           if (call_before_eval)
           {
-            expression_t const expression
+            Expression const expression
               (boost::get<std::string> (call_before_eval.get()));
             auto const pids (expression.ast().eval_all (context));
 
@@ -769,7 +791,7 @@ namespace we
 
           if (call_after_eval)
           {
-            expression_t const expression
+            Expression const expression
               (boost::get<std::string> (call_after_eval.get()));
             auto const pids (expression.ast().eval_all (context));
 
@@ -786,7 +808,7 @@ namespace we
 
       std::list<to_be_updated_type> pending_updates;
 
-      for ( we::type::transition_t::port_map_t::value_type const& p
+      for ( we::type::Transition::PortByID::value_type const& p
           : transition.ports_output()
           )
       {
@@ -961,6 +983,16 @@ namespace we
             );
         }
       }
+    }
+
+    net_type& net_type::assert_correct_expression_types()
+    {
+      for (auto& transition : _tmap | boost::adaptors::map_values)
+      {
+        transition.assert_correct_expression_types();
+      }
+
+      return *this;
     }
 
     // cross_type

@@ -28,8 +28,8 @@ namespace xml
       namespace
       {
         std::string
-        format_parse_error ( const std::string& input
-                           , const expr::exception::parse::exception& e
+        format_parse_error ( std::string const& input
+                           , expr::exception::parse::exception const& e
                            )
         {
           std::ostringstream s;
@@ -46,34 +46,34 @@ namespace xml
         }
       }
 
-      expr::parse::parser generic_we_parse ( const std::string& input
-                                           , const std::string& descr
+      expr::parse::parser generic_we_parse ( std::string const& input
+                                           , std::string const& descr
                                            )
       {
         try
           {
             return expr::parse::parser (input);
           }
-        catch (const expr::exception::eval::divide_by_zero & e)
+        catch (expr::exception::eval::divide_by_zero const& e)
           {
             throw error::weparse (descr + ": " + e.what());
           }
-        catch (const expr::exception::eval::type_error & e)
+        catch (expr::exception::eval::type_error const& e)
           {
             throw error::weparse (descr + ": " + e.what());
           }
-        catch (const expr::exception::parse::exception & e)
+        catch (expr::exception::parse::exception const& e)
           {
             throw error::weparse (descr + ": " + format_parse_error (input, e));
           }
       }
 
       expr::parse::parser
-      we_parse ( const std::string& input
-               , const std::string& descr
-               , const std::string& type
-               , const std::string& name
-               , const boost::filesystem::path& path
+      we_parse ( std::string const& input
+               , std::string const& descr
+               , std::string const& type
+               , std::string const& name
+               , boost::filesystem::path const& path
                )
       {
         std::ostringstream s;

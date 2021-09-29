@@ -58,9 +58,9 @@ namespace pnet
 
             template<typename P>
             void traverse_fields
-              (P p, const std::pair<std::string, structure_type>& s) const
+              (P p, std::pair<std::string, structure_type> const& s) const
             {
-              for (const field_type& f : s.second)
+              for (field_type const& f : s.second)
               {
                 traverse (p, f);
               }
@@ -84,15 +84,15 @@ namespace pnet
               : printer (os, indent)
               , _state()
             {}
-            void _struct (const std::pair<std::string, structure_type>& s) const
+            void _struct (std::pair<std::string, structure_type> const& s) const
             {
               traverse_fields (*this, s);
             }
-            void _field (const std::pair<std::string, std::string>& f) const
+            void _field (std::pair<std::string, std::string> const& f) const
             {
               F()(_os, _indent, f.first, f.second, _state);
             }
-            void _field_struct (const std::pair<std::string, structure_type>& s) const
+            void _field_struct (std::pair<std::string, structure_type> const& s) const
             {
               F()(_os, _indent, s.first, s.first, _state);
             }
@@ -105,9 +105,9 @@ namespace pnet
           public:
             void operator() ( std::ostream& os
                             , fhg::util::indenter& indent
-                            , const std::string& name
-                            , const std::string& type
-                            , const int
+                            , std::string const& name
+                            , std::string const& type
+                            , int
                             )
             {
               os << indent << complete (type) << ' ' << name <<  ';';
@@ -121,8 +121,8 @@ namespace pnet
           public:
             void operator() ( std::ostream& os
                             , fhg::util::indenter& indent
-                            , const std::string& name
-                            , const std::string& type
+                            , std::string const& name
+                            , std::string const& type
                             , bool& first
                             )
             {
@@ -141,8 +141,8 @@ namespace pnet
           public:
             void operator() ( std::ostream& os
                             , fhg::util::indenter& indent
-                            , const std::string& name
-                            , const std::string&
+                            , std::string const& name
+                            , std::string const&
                             , bool& first
                             ) const
             {
@@ -160,8 +160,8 @@ namespace pnet
           public:
             void operator() ( std::ostream& os
                             , fhg::util::indenter& indent
-                            , const std::string& name
-                            , const std::string&
+                            , std::string const& name
+                            , std::string const&
                             , bool& first
                             ) const
             {
@@ -179,8 +179,8 @@ namespace pnet
           public:
             void operator() ( std::ostream& os
                             , fhg::util::indenter&
-                            , const std::string& name
-                            , const std::string&
+                            , std::string const& name
+                            , std::string const&
                             , std::list<std::string>& prefix
                             ) const
             {
@@ -207,8 +207,8 @@ namespace pnet
           public:
             void operator() ( std::ostream& os
                             , fhg::util::indenter& indent
-                            , const std::string& name
-                            , const std::string&
+                            , std::string const& name
+                            , std::string const&
                             , bool& first
                             ) const
             {
@@ -230,7 +230,7 @@ namespace pnet
               : printer (os, indent)
             {}
 
-            void _struct (const std::pair<std::string, structure_type>& s) const
+            void _struct (std::pair<std::string, structure_type> const& s) const
             {
               namespace ns = fhg::util::cpp::ns;
               namespace structure = fhg::util::cpp::structure;
@@ -256,17 +256,17 @@ namespace pnet
 
               _os << ns::close (_indent);
             }
-            void _field (const std::pair<std::string, std::string>&) const
+            void _field (std::pair<std::string, std::string> const&) const
             {}
             void _field_struct
-              (const std::pair<std::string, structure_type>& s) const
+              (std::pair<std::string, structure_type> const& s) const
             {
               traverse (*this, s);
             }
 
           private:
             void operator_less
-              (const std::pair<std::string, structure_type>& s) const
+              (std::pair<std::string, structure_type> const& s) const
             {
               std::list<std::string> prefix;
 
@@ -294,7 +294,7 @@ namespace pnet
             }
 
             void operator_eq
-              (const std::pair<std::string, structure_type>& s) const
+              (std::pair<std::string, structure_type> const& s) const
             {
               bool first (true);
 
@@ -310,7 +310,7 @@ namespace pnet
             }
 
             void ctor_default
-              (const std::pair<std::string, structure_type>& s) const
+              (std::pair<std::string, structure_type> const& s) const
             {
               bool first (true);
 
@@ -320,7 +320,7 @@ namespace pnet
 
               _os << _indent << "{}";
             }
-            void ctor (const std::pair<std::string, structure_type>& s) const
+            void ctor (std::pair<std::string, structure_type> const& s) const
             {
               bool first (true);
 
@@ -340,7 +340,7 @@ namespace pnet
           };
         }
 
-        header::header (const structured_type& structured)
+        header::header (structured_type const& structured)
           : _structured (structured)
         {}
         std::ostream& header::operator() (std::ostream& os) const
@@ -359,7 +359,7 @@ namespace pnet
 
           return os;
         }
-        std::ostream& operator<< (std::ostream& os, const header& h)
+        std::ostream& operator<< (std::ostream& os, header const& h)
         {
           return h (os);
         }
@@ -373,11 +373,11 @@ namespace pnet
             print_header_signature (std::ostream& os)
               : _os (os)
             {}
-            std::ostream& operator() (const std::string& s) const
+            std::ostream& operator() (std::string const& s) const
             {
               return _os << "//" << s;
             }
-            std::ostream& operator() (const structured_type& s) const
+            std::ostream& operator() (structured_type const& s) const
             {
               return _os << header (s);
             }
@@ -386,14 +386,14 @@ namespace pnet
           };
         }
 
-        header_signature::header_signature (const signature_type& signature)
+        header_signature::header_signature (signature_type const& signature)
           : _signature (signature)
         {}
         std::ostream& header_signature::operator() (std::ostream& os) const
         {
           return boost::apply_visitor (print_header_signature (os), _signature);
         }
-        std::ostream& operator<< (std::ostream& os, const header_signature& h)
+        std::ostream& operator<< (std::ostream& os, header_signature const& h)
         {
           return h (os);
         }
@@ -413,7 +413,7 @@ namespace pnet
               , _tname (tname)
             {}
 
-            void _struct (const std::pair<std::string, structure_type>& s) const
+            void _struct (std::pair<std::string, structure_type> const& s) const
             {
               using pnet::type::value::path::append;
 
@@ -431,23 +431,23 @@ namespace pnet
 
               _os << _indent
                   << s.first
-                  << " from_value (const pnet::type::value::value_type&);";
+                  << " from_value (pnet::type::value::value_type const&);";
 
               _os << _indent
-                  << "pnet::type::value::value_type to_value (const "
-                  << s.first << "&);";
+                  << "pnet::type::value::value_type to_value ("
+                  << s.first << " const&);";
 
               _os << _indent
-                  << "std::ostream& operator<< (std::ostream&, const "
+                  << "std::ostream& operator<< (std::ostream&, "
                   << s.first
-                  << "&);";
+                  << " const&);";
 
               _os << fhg::util::cpp::ns::close (_indent);
             }
-            void _field (const std::pair<std::string, std::string>&) const
+            void _field (std::pair<std::string, std::string> const&) const
             {}
             void _field_struct
-              (const std::pair<std::string, structure_type>& s) const
+              (std::pair<std::string, structure_type> const& s) const
             {
               traverse (*this, s);
             }
@@ -457,7 +457,7 @@ namespace pnet
           };
         }
 
-        header_op::header_op (const structured_type& structured)
+        header_op::header_op (structured_type const& structured)
           : _structured (structured)
         {}
         std::ostream& header_op::operator() (std::ostream& os) const
@@ -496,9 +496,9 @@ namespace pnet
                << fhg::util::deeper (indent)
                << "inline value_type to_value<"
                << fhg::util::join (tname.begin(), tname.end(), "::")
-               << "> (const "
+               << "> ("
                << fhg::util::join (tname.begin(), tname.end(), "::")
-               << "& x)"
+               << " const& x)"
                << fhg::util::cpp::block::open (indent)
                << indent << "return "
                << fhg::util::join (tname.begin(), std::prev (tname.end()), "::")
@@ -526,7 +526,7 @@ namespace pnet
 
           return os;
         }
-        std::ostream& operator<< (std::ostream& os, const header_op& h)
+        std::ostream& operator<< (std::ostream& os, header_op const& h)
         {
           return h (os);
         }
@@ -540,11 +540,11 @@ namespace pnet
             print_header_op_signature (std::ostream& os)
               : _os (os)
             {}
-            std::ostream& operator() (const std::string& s) const
+            std::ostream& operator() (std::string const& s) const
             {
               return _os << "//" << s;
             }
-            std::ostream& operator() (const structured_type& s) const
+            std::ostream& operator() (structured_type const& s) const
             {
               return _os << header_op (s);
             }
@@ -553,14 +553,14 @@ namespace pnet
           };
         }
 
-        header_op_signature::header_op_signature (const signature_type& signature)
+        header_op_signature::header_op_signature (signature_type const& signature)
           : _signature (signature)
         {}
         std::ostream& header_op_signature::operator() (std::ostream& os) const
         {
           return boost::apply_visitor (print_header_op_signature (os), _signature);
         }
-        std::ostream& operator<< (std::ostream& os, const header_op_signature& h)
+        std::ostream& operator<< (std::ostream& os, header_op_signature const& h)
         {
           return h (os);
         }
@@ -577,11 +577,11 @@ namespace pnet
               : printer (os, indent)
               , _first (first)
             {}
-            void _struct (const std::pair<std::string, structure_type>& s) const
+            void _struct (std::pair<std::string, structure_type> const& s) const
             {
               traverse_fields (*this, s);
             }
-            void _field (const std::pair<std::string, std::string>& f) const
+            void _field (std::pair<std::string, std::string> const& f) const
             {
               _os << fhg::util::deeper (_indent) << (_first ? '(' : ',') << ' ';
 
@@ -607,7 +607,7 @@ namespace pnet
 
               _first = false;
             }
-            void _field_struct (const std::pair<std::string, structure_type>& s) const
+            void _field_struct (std::pair<std::string, structure_type> const& s) const
             {
               _os << fhg::util::deeper (_indent)
                   << (_first ? '(' : ',') << ' '
@@ -632,9 +632,9 @@ namespace pnet
           public:
             void operator() ( std::ostream& os
                             , fhg::util::indenter& indent
-                            , const std::string& name
-                            , const std::string& type
-                            , const int
+                            , std::string const& name
+                            , std::string const& type
+                            , int
                             ) const
             {
               os << indent
@@ -664,7 +664,7 @@ namespace pnet
               : printer (os, indent)
             {}
 
-            void _struct (const std::pair<std::string, structure_type>& s) const
+            void _struct (std::pair<std::string, structure_type> const& s) const
             {
               namespace ns = fhg::util::cpp::ns;
 
@@ -678,21 +678,21 @@ namespace pnet
 
               _os << ns::close (_indent);
             }
-            void _field (const std::pair<std::string, std::string>&) const
+            void _field (std::pair<std::string, std::string> const&) const
             {}
-            void _field_struct (const std::pair<std::string, structure_type>& s) const
+            void _field_struct (std::pair<std::string, structure_type> const& s) const
             {
               traverse (*this, s);
             }
           private:
             void from_value
-              (const std::pair<std::string, structure_type>& s) const
+              (std::pair<std::string, structure_type> const& s) const
             {
               namespace block = fhg::util::cpp::block;
 
               _os << _indent
                   << s.first << " from_value "
-                  << "(const pnet::type::value::value_type& v)"
+                  << "(pnet::type::value::value_type const& v)"
                   << block::open (_indent)
                   << _indent << "return " << s.first;
 
@@ -712,12 +712,12 @@ namespace pnet
               _os << block::close (_indent);
             }
             void to_value
-              (const std::pair<std::string, structure_type>& s) const
+              (std::pair<std::string, structure_type> const& s) const
             {
               namespace block = fhg::util::cpp::block;
 
               _os << _indent
-                  << "pnet::type::value::value_type to_value (const " << s.first << "& x)"
+                  << "pnet::type::value::value_type to_value (" << s.first << " const& x)"
                   << block::open (_indent)
                   << _indent << "pnet::type::value::value_type v;";
 
@@ -726,12 +726,12 @@ namespace pnet
               _os << _indent << "return v;"
                   << block::close (_indent);
             }
-            void show (const std::string& name) const
+            void show (std::string const& name) const
             {
               namespace block = fhg::util::cpp::block;
 
               _os << _indent
-                  << "std::ostream& operator<< (std::ostream& os, const " << name << "& x)"
+                  << "std::ostream& operator<< (std::ostream& os, " << name << " const& x)"
                   << block::open (_indent)
                   << _indent
                   << "return os << pnet::type::value::show (to_value (x));"
@@ -741,7 +741,7 @@ namespace pnet
           };
         }
 
-        impl::impl (const structured_type& structured)
+        impl::impl (structured_type const& structured)
           : _structured (structured)
         {}
         std::ostream& impl::operator() (std::ostream& os) const
@@ -764,7 +764,7 @@ namespace pnet
 
           return os;
         }
-        std::ostream& operator<< (std::ostream& os, const impl& h)
+        std::ostream& operator<< (std::ostream& os, impl const& h)
         {
           return h (os);
         }
@@ -778,11 +778,11 @@ namespace pnet
             print_impl_signature (std::ostream& os)
               : _os (os)
             {}
-            std::ostream& operator() (const std::string& s) const
+            std::ostream& operator() (std::string const& s) const
             {
               return _os << "//" << s;
             }
-            std::ostream& operator() (const structured_type& s) const
+            std::ostream& operator() (structured_type const& s) const
             {
               return _os << impl (s);
             }
@@ -791,14 +791,14 @@ namespace pnet
           };
         }
 
-        impl_signature::impl_signature (const signature_type& signature)
+        impl_signature::impl_signature (signature_type const& signature)
           : _signature (signature)
         {}
         std::ostream& impl_signature::operator() (std::ostream& os) const
         {
           return boost::apply_visitor (print_impl_signature (os), _signature);
         }
-        std::ostream& operator<< (std::ostream& os, const impl_signature& h)
+        std::ostream& operator<< (std::ostream& os, impl_signature const& h)
         {
           return h (os);
         }

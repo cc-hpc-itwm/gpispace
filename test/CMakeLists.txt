@@ -70,10 +70,18 @@ if (BUILD_TESTING)
     @ONLY ESCAPE_QUOTES
   )
 
-  gspc_add_library (NAME test-utilities
+  gspc_add_library (NAME test-util-certificates
     TYPE STATIC
     SOURCES "certificates_data.cpp"
-            "hopefully_free_port.cpp"
+    LIBRARIES Boost::base Boost::filesystem
+    INCLUDE_DIRECTORIES PUBLIC "${CMAKE_SOURCE_DIR}"
+    COMPILE_DEFINITIONS GSPC_SSL_CERTIFICATES_FOR_TESTS="${GSPC_SSL_CERTIFICATES_FOR_TESTS}"
+    DEPENDS test-certificates
+  )
+
+  gspc_add_library (NAME test-utilities
+    TYPE STATIC
+    SOURCES "hopefully_free_port.cpp"
             "make.cpp"
             "parse_command_line.cpp"
             "scoped_nodefile_from_environment.cpp"
@@ -83,13 +91,12 @@ if (BUILD_TESTING)
     INCLUDE_DIRECTORIES PUBLIC "${CMAKE_SOURCE_DIR}"
                         PRIVATE "${CMAKE_BINARY_DIR}"
     LIBRARIES gspc
+              test-util-certificates
               fhg-util
               Boost::program_options
               Boost::filesystem
               Util::Generic
               RPC
-    COMPILE_DEFINITIONS GSPC_SSL_CERTIFICATES_FOR_TESTS="${GSPC_SSL_CERTIFICATES_FOR_TESTS}"
-    DEPENDS test-certificates
   )
 endif()
 

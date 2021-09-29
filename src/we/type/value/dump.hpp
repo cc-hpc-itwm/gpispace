@@ -27,7 +27,7 @@ namespace pnet
     namespace value
     {
       fhg::util::xml::xmlstream& dump ( fhg::util::xml::xmlstream&
-                                      , const value_type&
+                                      , value_type const&
                                       );
     }
   }

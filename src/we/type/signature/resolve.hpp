@@ -30,10 +30,10 @@ namespace pnet
     namespace signature
     {
       typedef std::function< boost::optional<signature_type>
-                               (const std::string&)
+                               (std::string const&)
                            > resolver_type;
 
-      signature_type resolve (const structured_type&, const resolver_type&);
+      signature_type resolve (structured_type const&, resolver_type const&);
     }
   }
 }

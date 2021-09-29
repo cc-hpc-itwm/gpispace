@@ -36,21 +36,21 @@ namespace xml
     namespace type
     {
       module_type::module_type
-        ( const util::position_type& pod
-        , const std::string& name
-        , const std::string& function
-        , const boost::optional<std::string>& target
-        , const boost::optional<std::string>& port_return
-        , const std::list<std::string>& port_arg
+        ( util::position_type const& pod
+        , std::string const& name
+        , std::string const& function
+        , boost::optional<std::string> const& target
+        , boost::optional<std::string> const& port_return
+        , std::list<std::string> const& port_arg
         , boost::optional<std::string> memory_buffer_return
         , std::list<std::string> memory_buffer_arg
-        , const boost::optional<std::string>& code
-        , const boost::optional<util::position_type>& pod_of_code
-        , const std::list<std::string>& cincludes
-        , const std::list<std::string>& ldflags
-        , const std::list<std::string>& cxxflags
-        , const boost::optional<bool> &pass_context
-        , const boost::optional<we::type::eureka_id_type>& eureka_id
+        , boost::optional<std::string> const& code
+        , boost::optional<util::position_type> const& pod_of_code
+        , std::list<std::string> const& cincludes
+        , std::list<std::string> const& ldflags
+        , std::list<std::string> const& cxxflags
+        , boost::optional<bool> const& pass_context
+        , boost::optional<we::type::eureka_id_type> const& eureka_id
         , bool require_function_unloads_without_rest
         , bool require_module_unloads_without_rest
         )
@@ -84,32 +84,32 @@ namespace xml
         }
       }
 
-      const std::string& module_type::name() const
+      std::string const& module_type::name() const
       {
         return _name;
       }
-      const std::string& module_type::function() const
+      std::string const& module_type::function() const
       {
         return _function;
       }
-      const boost::optional<std::string>& module_type::port_return() const
+      boost::optional<std::string> const& module_type::port_return() const
       {
         return _port_return;
       }
-      const std::list<std::string>& module_type::port_arg() const
+      std::list<std::string> const& module_type::port_arg() const
       {
         return _port_arg;
       }
-      const boost::optional<std::string>&
+      boost::optional<std::string> const&
         module_type::memory_buffer_return() const
       {
         return _memory_buffer_return;
       }
-      const std::list<std::string>& module_type::memory_buffer_arg() const
+      std::list<std::string> const& module_type::memory_buffer_arg() const
       {
         return _memory_buffer_arg;
       }
-      const boost::optional<std::string>& module_type::code() const
+      boost::optional<std::string> const& module_type::code() const
       {
         return _code;
       }
@@ -118,15 +118,15 @@ namespace xml
       {
         return _position_of_definition_of_code;
       }
-      const std::list<std::string>& module_type::cincludes() const
+      std::list<std::string> const& module_type::cincludes() const
       {
         return _cincludes;
       }
-      const std::list<std::string>& module_type::ldflags() const
+      std::list<std::string> const& module_type::ldflags() const
       {
         return _ldflags;
       }
-      const std::list<std::string>& module_type::cxxflags() const
+      std::list<std::string> const& module_type::cxxflags() const
       {
         return _cxxflags;
       }
@@ -134,11 +134,11 @@ namespace xml
       {
         return _pass_context ? *_pass_context : false;
       }
-      const boost::optional<std::string>& module_type::target() const
+      boost::optional<std::string> const& module_type::target() const
       {
         return _target;
       }
-      const boost::optional<we::type::eureka_id_type>& module_type::eureka_id() const
+      boost::optional<we::type::eureka_id_type> const& module_type::eureka_id() const
       {
         return _eureka_id;
       }
@@ -151,7 +151,7 @@ namespace xml
         return _require_module_unloads_without_rest;
       }
 
-      bool module_type::operator == (const module_type& other) const
+      bool module_type::operator == (module_type const& other) const
       {
         return _port_return == other._port_return
           && _port_arg == other._port_arg
@@ -179,7 +179,7 @@ namespace xml
 
       namespace dump
       {
-        std::string dump_fun (const module_type& m)
+        std::string dump_fun (module_type const& m)
         {
           std::ostringstream s;
 
@@ -194,7 +194,7 @@ namespace xml
 
           bool first (true);
 
-          for (const std::string& arg : m.port_arg())
+          for (std::string const& arg : m.port_arg())
             {
               if (first)
               {
@@ -213,7 +213,7 @@ namespace xml
           return s.str();
         }
 
-        void dump (::fhg::util::xml::xmlstream& s, const module_type& m)
+        void dump (::fhg::util::xml::xmlstream& s, module_type const& m)
         {
           s.open ("module");
           s.attr ("name", m.name());
@@ -225,21 +225,21 @@ namespace xml
                  , m.require_module_unloads_without_rest()
                  );
 
-          for (const std::string& inc : m.cincludes())
+          for (std::string const& inc : m.cincludes())
             {
               s.open ("cinclude");
               s.attr ("href", inc);
               s.close ();
             }
 
-          for (const std::string& flag : m.ldflags())
+          for (std::string const& flag : m.ldflags())
             {
               s.open ("ld");
               s.attr ("flag", flag);
               s.close ();
             }
 
-          for (const std::string& flag : m.cxxflags())
+          for (std::string const& flag : m.cxxflags())
             {
               s.open ("cxx");
               s.attr ("flag", flag);

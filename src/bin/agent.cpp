@@ -20,7 +20,6 @@
 #include <csignal>
 
 #include <util-generic/connectable_to_address_string.hpp>
-#include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/getenv.hpp>
 #include <util-generic/print_exception.hpp>
 
@@ -78,7 +77,7 @@ int main (int argc, char **argv)
       ;
 
     po::variables_map vm;
-    po::store( po::command_line_parser( argc, argv ).options(desc).run(), vm );
+    po::store (po::command_line_parser (argc, argv).options (desc).run(), vm);
 
     po::notify (vm);
 
@@ -95,7 +94,7 @@ int main (int argc, char **argv)
     sdpa::daemon::Agent agent
       ( agentName
       , agentUrl
-      , fhg::util::cxx14::make_unique<boost::asio::io_service>()
+      , std::make_unique<boost::asio::io_service>()
       , vmem_socket
       , true
       , ssl_certificates

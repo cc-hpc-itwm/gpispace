@@ -31,7 +31,7 @@ namespace fhg
       template<typename I>
         struct hex
       {
-        static inline bool isdig (const char& c)
+        static inline bool isdig (char const& c)
         {
           switch (c)
           {
@@ -40,7 +40,7 @@ namespace fhg
           default: return fhg::util::isdigit (c);
           }
         }
-        static inline I val (const char& c)
+        static inline I val (char const& c)
         {
           switch (c)
           {
@@ -58,11 +58,11 @@ namespace fhg
       template<typename I>
         struct dec
       {
-        static inline bool isdig (const char & c)
+        static inline bool isdig (char const& c)
         {
           return fhg::util::isdigit (c);
         }
-        static inline I val (const char & c)
+        static inline I val (char const& c)
         {
           return I (c - '0');
         }
@@ -74,7 +74,7 @@ namespace fhg
 
       template<typename Base, typename I>
         inline I generic_base_read_integral ( parse::position& pos
-                                            , const bool has_sign
+                                            , bool has_sign
                                             )
       {
         I l (0);
@@ -127,7 +127,7 @@ namespace fhg
 
       template<typename I>
         inline I generic_read_integral ( parse::position& pos
-                                       , const bool has_sign = false
+                                       , bool has_sign = false
                                        )
       {
         if (pos.end() || !fhg::util::isdigit(*pos))
@@ -182,7 +182,7 @@ namespace fhg
         return false;
       }
 
-      double read_fraction (const unsigned long ipart, parse::position& pos)
+      double read_fraction (unsigned long ipart, parse::position& pos)
       {
         double x (ipart);
 
@@ -237,7 +237,7 @@ namespace fhg
     namespace
     {
       template<typename From, typename To>
-        To cast (const From& x, const parse::position& pos)
+        To cast (From const& x, parse::position const& pos)
       {
         if (x > static_cast<From> (std::numeric_limits<To>::max()))
         {

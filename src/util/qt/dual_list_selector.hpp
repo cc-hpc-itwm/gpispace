@@ -41,15 +41,15 @@ namespace fhg
           dual_list_move_and_drag_proxy
             (QAbstractItemModel*, QObject* = nullptr);
 
-          virtual Qt::ItemFlags flags (const QModelIndex&) const override;
+          virtual Qt::ItemFlags flags (QModelIndex const&) const override;
           virtual Qt::DropActions supportedDropActions() const override;
           virtual QStringList mimeTypes() const override;
-          virtual QMimeData* mimeData (const QModelIndexList&) const override;
+          virtual QMimeData* mimeData (QModelIndexList const&) const override;
           virtual bool dropMimeData ( const QMimeData*
                                     , Qt::DropAction
                                     , int row
                                     , int column
-                                    , const QModelIndex& parent
+                                    , QModelIndex const& parent
                                     ) override;
         };
 

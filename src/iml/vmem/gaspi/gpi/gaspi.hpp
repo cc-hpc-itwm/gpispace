@@ -43,7 +43,7 @@ namespace gpi
     {
     public:
       gaspi_t ( fhg::iml::vmem::gaspi_context&
-              , const unsigned long long per_node_size
+              , unsigned long long per_node_size
               , fhg::iml::vmem::gaspi_timeout&
               );
       ~gaspi_t();

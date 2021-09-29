@@ -21,7 +21,7 @@
 #include <sdpa/daemon/scheduler/Reservation.hpp>
 #include <sdpa/types.hpp>
 
-#include <fhgcom/header.hpp>
+#include <fhgcom/address.hpp>
 
 #include <boost/optional.hpp>
 
@@ -38,10 +38,10 @@ namespace sdpa
     {
     public:
       CoallocationScheduler
-        (std::function<Requirements_and_preferences (const sdpa::job_id_t&)>);
+        (std::function<Requirements_and_preferences (sdpa::job_id_t const&)>);
 
       // -- used by daemon
-      void delete_job (const sdpa::job_id_t&);
+      void delete_job (sdpa::job_id_t const&);
 
       void store_result
         (fhg::com::p2p::address_t const&, job_id_t const&, terminal_state);
@@ -49,10 +49,10 @@ namespace sdpa
         get_aggregated_results_if_all_terminated (job_id_t const&);
 
       // -- used by daemon and self
-      void submit_job (const sdpa::job_id_t&);
+      void submit_job (sdpa::job_id_t const&);
 
       // used by daemon and self and test
-      void release_reservation (const sdpa::job_id_t&);
+      void release_reservation (sdpa::job_id_t const&);
       void assign_jobs_to_workers();
       void steal_work();
 
@@ -77,7 +77,7 @@ namespace sdpa
       void start_pending_jobs
         (std::function<void ( WorkerSet const&
                             , Implementation const&
-                            , const job_id_t&
+                            , job_id_t const&
                             , std::function<fhg::com::p2p::address_t (worker_id_t const&)>
                             )
                       >
@@ -97,7 +97,7 @@ namespace sdpa
 
     private:
       void release_reservation
-        ( const sdpa::job_id_t&
+        ( sdpa::job_id_t const&
         , std::lock_guard<std::mutex> const&
         , std::lock_guard<std::mutex> const&
         );
@@ -111,15 +111,17 @@ namespace sdpa
         );
 
       Workers_implementation_and_transfer_cost find_assignment
-        ( job_id_t const& job_id, std::lock_guard<std::mutex> const&) const;
+        ( Requirements_and_preferences const&
+        , std::lock_guard<std::mutex> const&
+        ) const;
 
       std::pair<boost::optional<double>, boost::optional<std::string>>
         match_requirements_and_preferences
-          ( job_id_t const& job_id
-          , std::set<std::string> const& capabilities
+          ( Requirements_and_preferences const&
+          , std::set<std::string> const&
           ) const;
 
-      std::function<Requirements_and_preferences (const sdpa::job_id_t&)>
+      std::function<Requirements_and_preferences (sdpa::job_id_t const&)>
         _requirements_and_preferences;
 
       std::mutex _mtx_worker_man;
@@ -131,7 +133,7 @@ namespace sdpa
         inline void push (job_id_t const& item);
         template <typename Range>
         inline void push (Range const& items);
-        inline size_t erase (const job_id_t& item);
+        inline size_t erase (job_id_t const& item);
 
         std::list<job_id_t> get_and_clear();
 

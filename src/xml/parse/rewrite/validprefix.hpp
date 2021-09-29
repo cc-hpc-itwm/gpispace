@@ -24,12 +24,12 @@ namespace rewrite
 {
   static std::string magic_prefix = "_";
 
-  inline bool has_magic_prefix (const std::string & name)
+  inline bool has_magic_prefix (std::string const& name)
   {
     return fhg::util::starts_with (magic_prefix, name);
   }
 
-  inline std::string mk_prefix (const std::string & name)
+  inline std::string mk_prefix (std::string const& name)
   {
     return magic_prefix + name + magic_prefix;
   }

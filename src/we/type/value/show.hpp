@@ -31,12 +31,12 @@ namespace pnet
       class GSPC_DLLEXPORT show
       {
       public:
-        show (const value_type&);
+        show (value_type const&);
         std::ostream& operator() (std::ostream&) const;
       private:
-        const value_type& _value;
+        value_type const& _value;
       };
-      GSPC_DLLEXPORT std::ostream& operator<< (std::ostream&, const show&);
+      GSPC_DLLEXPORT std::ostream& operator<< (std::ostream&, show const&);
     }
   }
 }

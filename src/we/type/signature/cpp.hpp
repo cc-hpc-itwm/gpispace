@@ -33,62 +33,62 @@ namespace pnet
         class header
         {
         public:
-          header (const structured_type&);
+          header (structured_type const&);
           std::ostream& operator() (std::ostream&) const;
         private:
-          const structured_type& _structured;
+          structured_type const& _structured;
         };
-        std::ostream& operator<< (std::ostream&, const header&);
+        std::ostream& operator<< (std::ostream&, header const&);
 
         class header_signature
         {
         public:
-          header_signature (const signature_type&);
+          header_signature (signature_type const&);
           std::ostream& operator() (std::ostream&) const;
         private:
-          const signature_type& _signature;
+          signature_type const& _signature;
         };
-        std::ostream& operator<< (std::ostream&, const header_signature&);
+        std::ostream& operator<< (std::ostream&, header_signature const&);
 
         class header_op
         {
         public:
-          header_op (const structured_type&);
+          header_op (structured_type const&);
           std::ostream& operator() (std::ostream&) const;
         private:
-          const structured_type& _structured;
+          structured_type const& _structured;
         };
-        std::ostream& operator<< (std::ostream&, const header_op&);
+        std::ostream& operator<< (std::ostream&, header_op const&);
 
         class header_op_signature
         {
         public:
-          header_op_signature (const signature_type&);
+          header_op_signature (signature_type const&);
           std::ostream& operator() (std::ostream&) const;
         private:
-          const signature_type& _signature;
+          signature_type const& _signature;
         };
-        std::ostream& operator<< (std::ostream&, const header_op_signature&);
+        std::ostream& operator<< (std::ostream&, header_op_signature const&);
 
         class impl
         {
         public:
-          impl (const structured_type&);
+          impl (structured_type const&);
           std::ostream& operator() (std::ostream&) const;
         private:
-          const structured_type& _structured;
+          structured_type const& _structured;
         };
-        std::ostream& operator<< (std::ostream&, const impl&);
+        std::ostream& operator<< (std::ostream&, impl const&);
 
         class impl_signature
         {
         public:
-          impl_signature (const signature_type&);
+          impl_signature (signature_type const&);
           std::ostream& operator() (std::ostream&) const;
         private:
-          const signature_type& _signature;
+          signature_type const& _signature;
         };
-        std::ostream& operator<< (std::ostream&, const impl_signature&);
+        std::ostream& operator<< (std::ostream&, impl_signature const&);
       }
     }
   }

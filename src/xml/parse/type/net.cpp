@@ -35,7 +35,7 @@ namespace xml
   {
     namespace type
     {
-      net_type::net_type ( const util::position_type& pod
+      net_type::net_type ( util::position_type const& pod
                          , functions_type functions
                          , places_type places
                          , specializes_type specializes
@@ -55,30 +55,30 @@ namespace xml
         , _properties (std::move (properties))
       {}
 
-      const we::type::property::type& net_type::properties() const
+      we::type::property::type const& net_type::properties() const
       {
         return _properties;
       }
 
       // ***************************************************************** //
 
-      const net_type::functions_type& net_type::functions() const
+      net_type::functions_type const& net_type::functions() const
       {
         return _functions;
       }
-      const net_type::places_type& net_type::places() const
+      net_type::places_type const& net_type::places() const
       {
         return _places;
       }
-      const net_type::specializes_type& net_type::specializes() const
+      net_type::specializes_type const& net_type::specializes() const
       {
         return _specializes;
       }
-      const net_type::templates_type& net_type::templates() const
+      net_type::templates_type const& net_type::templates() const
       {
         return _templates;
       }
-      const net_type::transitions_type& net_type::transitions() const
+      net_type::transitions_type const& net_type::transitions() const
       {
         return _transitions;
       }
@@ -98,7 +98,7 @@ namespace xml
       //! So this would be a lazy specialization.
       //! The shadowing could be done by going further up the tree
       boost::optional<tmpl_type const&>
-      net_type::get_template (const std::string & name) const
+      net_type::get_template (std::string const& name) const
       {
         //! \todo IMPLEMENT THE LOOKUP FOR TEMPLATES IN parent FUNCTION
         return templates().get (name);
@@ -106,7 +106,7 @@ namespace xml
 
       // ***************************************************************** //
 
-      void net_type::type_map_apply ( const type::type_map_type & outer_map
+      void net_type::type_map_apply ( type::type_map_type const& outer_map
                                     , type::type_map_type & inner_map
                                     )
       {
@@ -125,9 +125,9 @@ namespace xml
         }
       }
 
-      void net_type::specialize ( const type::type_map_type & map
-                                , const type::type_get_type & get
-                                , const xml::parse::structure_type_util::set_type & known_structs
+      void net_type::specialize ( type::type_map_type const& map
+                                , type::type_get_type const& get
+                                , xml::parse::structure_type_util::set_type const& known_structs
                                 , state::type & state
                                 )
       {
@@ -224,14 +224,14 @@ namespace xml
 
       // ***************************************************************** //
 
-      void net_type::type_check (const state::type & state) const
+      void net_type::type_check (state::type const& state) const
       {
-        for (const transition_type& trans : transitions())
+        for (transition_type const& trans : transitions())
         {
           trans.type_check (state, *this);
         }
 
-        for (const function_type& function : functions())
+        for (function_type const& function : functions())
         {
           function.type_check (state);
         }
@@ -318,7 +318,7 @@ namespace xml
 
       // ******************************************************************* //
 
-      void net_type::set_prefix (const std::string & prefix)
+      void net_type::set_prefix (std::string const& prefix)
       {
         //! \note We need to copy out the ids from the unique, as we
         //! modify the unique and therefore break iteration.
@@ -338,7 +338,7 @@ namespace xml
         }
       }
 
-      void net_type::remove_prefix (const std::string & prefix)
+      void net_type::remove_prefix (std::string const& prefix)
       {
         //! \note We need to copy out the ids from the unique, as we
         //! modify the unique and therefore break iteration.
@@ -362,9 +362,9 @@ namespace xml
 
       std::unordered_map<std::string, we::place_id_type>
       net_synthesize ( we::type::net_type& we_net
-                     , const place_map_map_type & place_map_map
-                     , const net_type& net
-                     , const state::type & state
+                     , place_map_map_type const& place_map_map
+                     , net_type const& net
+                     , state::type const& state
                      )
       {
         typedef std::unordered_map< std::string
@@ -373,7 +373,7 @@ namespace xml
 
         pid_of_place_type pid_of_place;
 
-        for (const place_type& place : net.places())
+        for (place_type const& place : net.places())
         {
           if (!state.synthesize_virtual_places() && place.is_virtual())
           {
@@ -434,11 +434,11 @@ namespace xml
               );
           }
 
-        for (const place_type& place : net.places())
+        for (place_type const& place : net.places())
         {
           const we::place_id_type pid (pid_of_place.at (place.name()));
 
-          for (const place_type::token_type& token : place.tokens)
+          for (place_type::token_type const& token : place.tokens)
           {
             we_net.put_value
               (pid, util::generic_we_parse (token, "parse token").eval_all());
@@ -461,7 +461,7 @@ namespace xml
       namespace dump
       {
         void dump ( ::fhg::util::xml::xmlstream & s
-                  , const net_type & net
+                  , net_type const& net
                   )
         {
           s.open ("net");
@@ -477,7 +477,7 @@ namespace xml
 
           s.close ();
         }
-      } // namespace dump
+      }
     }
   }
 }

@@ -26,7 +26,7 @@ namespace pnet
     namespace value
     {
 #define NAME_OF(_name, _type...)                                         \
-      template<> inline const std::string& name_of<_type> (const _type&) \
+      template<> inline std::string const& name_of<_type> (_type const&) \
       {                                                                  \
         return _name();                                                  \
       }

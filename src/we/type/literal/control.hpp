@@ -29,14 +29,14 @@ namespace we
       struct GSPC_DLLEXPORT control
       {
         GSPC_DLLEXPORT
-          friend std::ostream& operator<< (std::ostream&, const control&);
+          friend std::ostream& operator<< (std::ostream&, control const&);
         GSPC_DLLEXPORT
-          friend bool operator== (const control&, const control&);
+          friend bool operator== (control const&, control const&);
 
         GSPC_DLLEXPORT
-          friend std::size_t hash_value (const control&);
+          friend std::size_t hash_value (control const&);
         GSPC_DLLEXPORT
-          friend bool operator< (const control&, const control&);
+          friend bool operator< (control const&, control const&);
 
         template<typename Archive> void serialize (Archive&, unsigned int) {}
       };

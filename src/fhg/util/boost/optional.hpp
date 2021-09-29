@@ -26,7 +26,7 @@ namespace fhg
     {
       using namespace ::boost;
       template<typename T, typename U>
-      boost::optional<U> fmap (U (*f)(const T &), const boost::optional<T>& m)
+      boost::optional<U> fmap (U (*f)(T const&), boost::optional<T> const& m)
       {
         if (m)
         {
@@ -55,7 +55,7 @@ namespace fhg
 namespace boost
 {
   template<typename T>
-  std::ostream& operator<< (std::ostream& s, const boost::optional<T>& x)
+  std::ostream& operator<< (std::ostream& s, boost::optional<T> const& x)
   {
     return x ? (s << "Just " << *x) : (s << "Nothing");
   }

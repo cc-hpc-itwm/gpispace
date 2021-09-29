@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <fhgcom/header.hpp>
+#include <fhgcom/address.hpp>
 
 #include <stdexcept>
 

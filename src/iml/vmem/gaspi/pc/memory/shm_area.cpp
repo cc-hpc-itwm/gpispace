@@ -26,8 +26,6 @@
 #include <util-generic/print_exception.hpp>
 #include <util-generic/syscall.hpp>
 
-#include <boost/lexical_cast.hpp>
-
 namespace gpi
 {
   namespace pc
@@ -36,15 +34,15 @@ namespace gpi
     {
       namespace detail
       {
-        static void unlink (std::string const &p)
+        static void unlink (std::string const& p)
         {
           fhg::util::syscall::shm_unlink (p.c_str());
         }
 
-        static void* open ( std::string const & path
+        static void* open ( std::string const& path
                           , iml::MemorySize size
-                          , const int open_flags
-                          , const mode_t open_mode = 0
+                          , int open_flags
+                          , mode_t open_mode = 0
                           )
         {
           int fd (-1);
@@ -90,7 +88,7 @@ namespace gpi
           return ptr;
         }
 
-        static void close (void *ptr, const iml::MemorySize sz)
+        static void close (void *ptr, iml::MemorySize sz)
         {
           if (ptr)
           {
@@ -100,7 +98,7 @@ namespace gpi
       }
 
       shm_area_t::shm_area_t ( type::name_t const& name
-                             , const iml::MemorySize user_size
+                             , iml::MemorySize user_size
                              )
         : area_t (user_size)
         , m_ptr (nullptr)
@@ -152,9 +150,9 @@ namespace gpi
       }
 
       bool
-      shm_area_t::is_range_local ( const gpi::pc::type::handle::descriptor_t &hdl
-                                 , const iml::MemoryOffset a
-                                 , const iml::MemoryOffset b
+      shm_area_t::is_range_local ( gpi::pc::type::handle::descriptor_t const& hdl
+                                 , iml::MemoryOffset a
+                                 , iml::MemoryOffset b
                                  ) const
       {
         return ((hdl.offset + a) <   _size)
@@ -162,15 +160,15 @@ namespace gpi
       }
 
       iml::MemorySize
-      shm_area_t::get_local_size ( const iml::MemorySize sz
-                                 , const gpi::pc::type::flags_t
+      shm_area_t::get_local_size ( iml::MemorySize sz
+                                 , gpi::pc::type::flags_t
                                  ) const
       {
         return sz;
       }
 
-      double shm_area_t::get_transfer_costs ( const iml::MemoryRegion&
-                                            , const gpi::rank_t
+      double shm_area_t::get_transfer_costs ( iml::MemoryRegion const&
+                                            , gpi::rank_t
                                             ) const
       {
         return 0.0;

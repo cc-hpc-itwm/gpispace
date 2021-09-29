@@ -27,13 +27,13 @@ namespace pnet
 {
   namespace exception
   {
-    type_error::type_error (const std::string& msg)
+    type_error::type_error (std::string const& msg)
       : std::runtime_error ((boost::format ("type error: %1%") % msg).str())
     {}
     type_mismatch::type_mismatch
-    ( const type::signature::signature_type& signature
-    , const type::value::value_type& value
-    , const std::list<std::string>& path
+    ( type::signature::signature_type const& signature
+    , type::value::value_type const& value
+    , std::list<std::string> const& path
     )
       : type_error
         ( ( boost::format ( "type mismatch for field '%2%': expected type '%1%'"
@@ -50,9 +50,9 @@ namespace pnet
       , _path (path)
     {}
     missing_field::missing_field
-    ( const type::signature::signature_type& signature
-    , const type::value::value_type& value
-    , const std::list<std::string>& path
+    ( type::signature::signature_type const& signature
+    , type::value::value_type const& value
+    , std::list<std::string> const& path
     )
       : type_error
         ( ( boost::format ("missing field '%2%' of type '%1%' in value '%3%'")
@@ -66,8 +66,8 @@ namespace pnet
       , _path (path)
     {}
     unknown_field::unknown_field
-    ( const type::value::value_type& value
-    , const std::list<std::string>& path
+    ( type::value::value_type const& value
+    , std::list<std::string> const& path
     )
       : type_error
         ( ( boost::format ("unknown field '%1%' with value '%2%' of type '%3%'")
@@ -80,7 +80,7 @@ namespace pnet
       , _path (path)
     {}
     eval::eval ( const ::expr::token::type& token
-               , const type::value::value_type& x
+               , type::value::value_type const& x
                )
       : type_error
         ( ( boost::format ("eval %1% (%2%)")
@@ -94,8 +94,8 @@ namespace pnet
       _values.push_back (x);
     }
     eval::eval ( const ::expr::token::type& token
-               , const type::value::value_type& l
-               , const type::value::value_type& r
+               , type::value::value_type const& l
+               , type::value::value_type const& r
                )
       : type_error
         ( ( boost::format ("eval %1% (%2%, %3%)")
@@ -110,13 +110,13 @@ namespace pnet
       _values.push_back (l);
       _values.push_back (r);
     }
-    missing_binding::missing_binding (const std::string& key)
+    missing_binding::missing_binding (std::string const& key)
       : std::runtime_error
         ((boost::format ("missing binding for: ${%1%}") % key).str())
       , _key (key)
     {}
-    could_not_resolve::could_not_resolve ( const std::string& type
-                                         , const std::list<std::string>& path
+    could_not_resolve::could_not_resolve ( std::string const& type
+                                         , std::list<std::string> const& path
                                          )
       : std::runtime_error
         ((boost::format ("could not resolve type '%1%' for field '%2%'")
@@ -130,8 +130,8 @@ namespace pnet
 
     namespace port
     {
-      unknown::unknown ( const std::string& transition_name
-                       , const std::string& port_name
+      unknown::unknown ( std::string const& transition_name
+                       , std::string const& port_name
                        )
         : std::runtime_error
           ( ( boost::format ("in transiton '%1%': unknown port '%2%'")

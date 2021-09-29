@@ -18,7 +18,8 @@ add_subdirectory (iml)
 
 gspc_add_library (NAME fhgcom
   TYPE STATIC
-  SOURCES "fhgcom/channel.cpp"
+  SOURCES "fhgcom/address.cpp"
+          "fhgcom/channel.cpp"
           "fhgcom/connection.cpp"
           "fhgcom/header.cpp"
           "fhgcom/peer.cpp"
@@ -70,35 +71,35 @@ gspc_add_library (NAME pnet
           "we/expr/parse/action.cpp"
           "we/expr/parse/node.cpp"
           "we/expr/parse/parser.cpp"
-          "we/expr/parse/simplify/constant_propagation.cpp"
-          "we/expr/parse/simplify/copy_propagation.cpp"
-          "we/expr/parse/simplify/dead_code_elimination.cpp"
-          "we/expr/parse/simplify/expression_list.cpp"
-          "we/expr/parse/simplify/simplify.cpp"
-          "we/expr/parse/simplify/util.cpp"
           "we/expr/token/assoc.cpp"
           "we/expr/token/prec.cpp"
           "we/expr/token/prop.cpp"
           "we/expr/token/tokenizer.cpp"
           "we/expr/token/type.cpp"
+          "we/expr/type/AssignResult.cpp"
+          "we/expr/type/Context.cpp"
+          "we/expr/type/Path.cpp"
+          "we/expr/type/Type.cpp"
+          "we/expr/type/infer.cpp"
           "we/field.cpp"
           "we/loader/exceptions.cpp"
           "we/loader/loader.cpp"
           "we/loader/module_call.cpp"
           "we/layer.cpp"
-          "we/type/activity.cpp"
-          "we/type/memory_buffer_info_t.cpp"
-          "we/type/module_call.cpp"
+          "we/type/Activity.cpp"
+          "we/type/MemoryBufferInfo.cpp"
+          "we/type/memory_transfer.cpp"
+          "we/type/ModuleCall.cpp"
           "we/require_type.cpp"
           "we/signature_of.cpp"
           "we/type/bitsetofint.cpp"
           "we/type/bytearray.cpp"
-          "we/type/connection.cpp"
-          "we/type/expression.cpp"
+          "we/type/Expression.cpp"
           "we/type/literal/control.cpp"
           "we/type/net.cpp"
-          "we/type/port.cpp"
+          "we/type/Port.cpp"
           "we/type/property.cpp"
+          "we/type/Requirement.cpp"
           "we/type/schedule_data.cpp"
           "we/type/signature/complete.cpp"
           "${CMAKE_BINARY_DIR}/we/type/signature/cpp.cpp"
@@ -108,7 +109,7 @@ gspc_add_library (NAME pnet
           "we/type/signature/resolve.cpp"
           "we/type/signature/show.cpp"
           "we/type/signature/specialize.cpp"
-          "we/type/transition.cpp"
+          "we/type/Transition.cpp"
           "we/type/value/function.cpp"
           "we/type/value/name.cpp"
           "we/type/value/path/append.cpp"
@@ -306,3 +307,11 @@ install (FILES
   logging/tcp_endpoint.hpp
   DESTINATION include/logging/
 )
+
+if (BUILD_TESTING)
+  gspc_add_library (NAME we_expr_type_testing
+    TYPE STATIC
+    SOURCES "we/expr/type/testing/types.cpp"
+    LIBRARIES pnet
+  )
+endif()

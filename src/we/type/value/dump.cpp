@@ -44,7 +44,7 @@ namespace pnet
             , _parent (parent)
           {}
 
-          fhg::util::xml::xmlstream& operator() (const structured_type& m) const
+          fhg::util::xml::xmlstream& operator() (structured_type const& m) const
           {
             if (_parent)
             {
@@ -66,7 +66,7 @@ namespace pnet
             return _os;
           }
           template<typename T>
-          fhg::util::xml::xmlstream& operator() (const T& value) const
+          fhg::util::xml::xmlstream& operator() (T const& value) const
           {
             if (!_parent)
             {
@@ -106,7 +106,7 @@ namespace pnet
       }
 
       fhg::util::xml::xmlstream& dump ( fhg::util::xml::xmlstream& os
-                                      , const value_type& value
+                                      , value_type const& value
                                       )
       {
         return boost::apply_visitor (visitor_dump (os, 0), value);

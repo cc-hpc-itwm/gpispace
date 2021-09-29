@@ -14,11 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <we/type/activity.hpp>
+#include <we/type/Activity.hpp>
 #include <we/type/id.hpp>
 #include <we/type/net.hpp>
 #include <we/type/signature/show.hpp>
-#include <we/type/transition.hpp>
+#include <we/type/Transition.hpp>
 #include <we/type/value/show.hpp>
 
 #include <fhg/project_info.hpp>
@@ -73,30 +73,30 @@ namespace
   static const std::string endl ("\\n");
   static const std::string arrow (" -> ");
 
-  std::string parens ( const std::string& s
-                     , const std::string open
-                     , const std::string close
+  std::string parens ( std::string const& s
+                     , std::string open
+                     , std::string close
                      )
   {
     return open + s + close;
   }
 
-  std::string brackets (const std::string& s)
+  std::string brackets (std::string const& s)
   {
     return " " + parens (s, "[", "]");
   }
 
-  std::string props (const std::string& s)
+  std::string props (std::string const& s)
   {
     return parens (s, ":: ", " ::");
   }
 
-  std::string dquote (const std::string& s)
+  std::string dquote (std::string const& s)
   {
     return parens (s, "\"", "\"");
   }
 
-  std::string lines (const char& b, const std::string& s)
+  std::string lines (char const& b, std::string const& s)
   {
     std::string l;
 
@@ -127,7 +127,7 @@ namespace
     return l;
   }
 
-  std::string quote (const char& c)
+  std::string quote (char const& c)
   {
     switch (c)
     {
@@ -142,7 +142,7 @@ namespace
     }
   }
 
-  std::string quote (const std::string& s)
+  std::string quote (std::string const& s)
   {
     std::string q;
 
@@ -154,12 +154,12 @@ namespace
     return lines (';', q);
   }
 
-  std::string keyval (const std::string& key, const std::string& val)
+  std::string keyval (std::string const& key, std::string const& val)
   {
     return key + " = " + dquote (val);
   }
 
-  std::string name (const id_type& id, const std::string& _name)
+  std::string name (id_type const& id, std::string const& _name)
   {
     std::ostringstream s;
 
@@ -168,13 +168,13 @@ namespace
     return s.str();
   }
 
-  std::string bgcolor (const std::string& color)
+  std::string bgcolor (std::string const& color)
   {
     return keyval ("bgcolor", color);
   }
 
-  std::string node ( const std::string& shape
-                   , const std::string& label
+  std::string node ( std::string const& shape
+                   , std::string const& label
                    , std::string const& fillcolor = color::node
                    )
   {
@@ -200,7 +200,7 @@ namespace
   {
   public:
     bool full;
-    std::list<std::function <bool (we::type::transition_t const&)>>
+    std::list<std::function <bool (we::type::Transition const&)>>
       filter;
     bool show_token;
     bool show_signature;
@@ -208,9 +208,9 @@ namespace
     bool show_virtual;
     bool show_tunnel_connection;
 
-    bool should_be_expanded (const we::type::transition_t& x) const
+    bool should_be_expanded (we::type::Transition const& x) const
     {
-      for (std::function <bool (we::type::transition_t const&)> f : filter)
+      for (std::function <bool (we::type::Transition const&)> f : filter)
       {
         if (f (x))
         {
@@ -232,9 +232,9 @@ namespace
     {}
   };
 
-  std::string with_signature ( const std::string& name
-                             , const pnet::type::signature::signature_type& sig
-                             , const options& opts
+  std::string with_signature ( std::string const& name
+                             , pnet::type::signature::signature_type const& sig
+                             , options const& opts
                              )
   {
     std::ostringstream s;
@@ -250,9 +250,9 @@ namespace
   }
 
   std::string to_dot
-    ( const we::type::transition_t&
+    ( we::type::Transition const&
     , id_type&
-    , const options&
+    , options const&
     , fhg::util::indenter&
     , boost::optional<we::type::TokensOnPorts> input
     , boost::optional<we::type::TokensOnPorts> output
@@ -263,17 +263,17 @@ namespace
   private:
     id_type& id;
     fhg::util::indenter& _indent;
-    const options& opts;
+    options const& opts;
 
   public:
     visit_transition
-      (id_type& _id, fhg::util::indenter& indent, const options& _opts)
+      (id_type& _id, fhg::util::indenter& indent, options const& _opts)
       : id (_id)
       , _indent (indent)
       , opts (_opts)
     {}
 
-    std::string operator() (const we::type::expression_t& expr) const
+    std::string operator() (we::type::Expression const& expr) const
     {
       std::ostringstream s;
 
@@ -284,7 +284,7 @@ namespace
       return s.str();
     }
 
-    std::string operator() (const we::type::module_call_t& mod_call) const
+    std::string operator() (we::type::ModuleCall const& mod_call) const
     {
       std::ostringstream s;
 
@@ -295,7 +295,7 @@ namespace
       return s.str();
     }
 
-    std::string operator() (const we::type::multi_module_call_t& mod_calls) const
+    std::string operator() (we::type::MultiModuleCall const& mod_calls) const
     {
       std::ostringstream s;
 
@@ -309,7 +309,7 @@ namespace
       return s.str();
     }
 
-    std::string operator() (const we::type::net_type& net) const
+    std::string operator() (we::type::net_type const& net) const
     {
       std::ostringstream s;
 
@@ -319,14 +319,14 @@ namespace
 
       for (auto const& ip : net.places())
       {
-        const we::place_id_type& place_id (ip.first);
-        const place::type& place (ip.second);
+        we::place_id_type const& place_id (ip.first);
+        place::type const& place (ip.second);
 
         std::ostringstream token;
 
         if (opts.show_token)
         {
-          for ( const pnet::type::value::value_type& t
+          for ( pnet::type::value::value_type const& t
               : net.get_token (place_id) | boost::adaptors::map_values
               )
           {
@@ -356,8 +356,8 @@ namespace
 
       for (auto const& it : net.transitions())
       {
-        const we::transition_id_type& trans_id (it.first);
-        const we::type::transition_t& trans (it.second);
+        we::transition_id_type const& trans_id (it.first);
+        we::type::Transition const& trans (it.second);
         const id_type id_trans (++id);
 
         ++_indent;
@@ -433,9 +433,9 @@ namespace
   };
 
   std::string to_dot
-    ( const we::type::transition_t& t
+    ( we::type::Transition const& t
     , id_type& id
-    , const options& opts
+    , options const& opts
     , fhg::util::indenter& indent
     , boost::optional<we::type::TokensOnPorts> input
     , boost::optional<we::type::TokensOnPorts> output
@@ -481,7 +481,7 @@ namespace
               + priority.str()
               );
 
-    for (we::type::transition_t::port_map_t::value_type const& p : t.ports_input())
+    for (we::type::Transition::PortByID::value_type const& p : t.ports_input())
     {
       std::ostringstream token;
 
@@ -503,7 +503,7 @@ namespace
                 + quote (token.str())
                 );
     }
-    for (we::type::transition_t::port_map_t::value_type const& p : t.ports_output())
+    for (we::type::Transition::PortByID::value_type const& p : t.ports_output())
     {
       std::ostringstream token;
 
@@ -525,7 +525,7 @@ namespace
                 + quote (token.str())
                 );
     }
-    for (we::type::transition_t::port_map_t::value_type const& p : t.ports_tunnel())
+    for (we::type::Transition::PortByID::value_type const& p : t.ports_tunnel())
     {
       s << fhg::util::deeper (indent)
         << name (id_trans, "port_" + boost::lexical_cast<std::string> (p.first))
@@ -540,7 +540,7 @@ namespace
       s << boost::apply_visitor (visit_transition (id, indent, opts), t.data());
       --indent;
 
-      for (we::type::transition_t::port_map_t::value_type const& p : t.ports_input())
+      for (we::type::Transition::PortByID::value_type const& p : t.ports_input())
       {
         if (p.second.associated_place())
         {
@@ -554,7 +554,7 @@ namespace
             << association();
         }
       }
-      for (we::type::transition_t::port_map_t::value_type const& p : t.ports_output())
+      for (we::type::Transition::PortByID::value_type const& p : t.ports_output())
       {
         if (p.second.associated_place())
         {
@@ -568,7 +568,7 @@ namespace
             << association();
         }
       }
-      for (we::type::transition_t::port_map_t::value_type const& p : t.ports_tunnel())
+      for (we::type::Transition::PortByID::value_type const& p : t.ports_tunnel())
       {
         if (p.second.associated_place())
         {
@@ -599,7 +599,7 @@ namespace
   }
 
   void to_dot ( std::ostream& os
-              , we::type::activity_t const& activity
+              , we::type::Activity const& activity
               , options const& options
               )
   {
@@ -697,7 +697,7 @@ try
 
   boost::program_options::variables_map vm;
   boost::program_options::store
-    ( boost::program_options::command_line_parser(argc, argv)
+    ( boost::program_options::command_line_parser (argc, argv)
     . options (desc).positional (p).run()
     , vm
     );
@@ -721,7 +721,7 @@ try
   for (std::string const& nsw : not_starts_with)
   {
     options.filter.push_back
-      ( [&nsw] (we::type::transition_t const& t)
+      ( [&nsw] (we::type::Transition const& t)
       {
         return fhg::util::starts_with (nsw, t.name());
       }
@@ -730,17 +730,17 @@ try
   for (std::string const& s : not_ends_with)
   {
     options.filter.push_back
-      ( [&s] (we::type::transition_t const& t)
+      ( [&s] (we::type::Transition const& t)
       {
         return fhg::util::ends_with (s, t.name());
       }
       );
   }
 
-  we::type::activity_t const act
+  we::type::Activity const act
     ( input == "-"
-    ? we::type::activity_t (std::cin)
-    : we::type::activity_t (boost::filesystem::path (input))
+    ? we::type::Activity (std::cin)
+    : we::type::Activity (boost::filesystem::path (input))
     );
 
   if (output == "-")

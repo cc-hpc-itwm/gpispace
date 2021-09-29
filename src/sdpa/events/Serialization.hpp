@@ -33,11 +33,11 @@
 
 #define SAVE_CONSTRUCT_DATA_DEF(TYPE, VARIABLE_NAME)                    \
   template<class Archive> inline void save_construct_data               \
-    (Archive& _archive, const TYPE* VARIABLE_NAME, const unsigned int)
+    (Archive& _archive, const TYPE* VARIABLE_NAME, unsigned int)
 
 #define LOAD_CONSTRUCT_DATA_DEF(TYPE, VARIABLE_NAME)              \
   template<class Archive> inline void load_construct_data         \
-    (Archive& _archive, TYPE* VARIABLE_NAME, const unsigned int)
+    (Archive& _archive, TYPE* VARIABLE_NAME, unsigned int)
 
 
 #define SAVE_SDPAEVENT_CONSTRUCT_DATA(EVENT_VARIABLE) \

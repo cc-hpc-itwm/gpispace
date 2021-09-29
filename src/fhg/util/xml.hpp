@@ -35,11 +35,11 @@ namespace fhg
         struct tag
         {
         public:
-          tag (const std::string& tag);
+          tag (std::string const& tag);
 
-          const std::string& string() const;
-          const bool& has_content() const;
-          const bool& has_text_content() const;
+          std::string const& string() const;
+          bool const& has_content() const;
+          bool const& has_text_content() const;
           void has_content (bool x);
           void has_text_content (bool x);
 
@@ -56,11 +56,11 @@ namespace fhg
         xmlstream (std::ostream& s);
         ~xmlstream();
 
-        void open (const std::string& tag);
+        void open (std::string const& tag);
         void close();
 
         template<typename Key, typename Val>
-        void attr (const Key& key, const Val& val) const
+        void attr (Key const& key, Val const& val) const
         {
           assert_nonempty ("attr");
 
@@ -70,7 +70,7 @@ namespace fhg
         }
 
         template<typename Key, typename Val>
-          void attr (const Key& key, const boost::optional<Val>& val) const
+          void attr (Key const& key, boost::optional<Val> const& val) const
         {
           if (val)
           {
@@ -79,7 +79,7 @@ namespace fhg
         }
 
         template<typename Key>
-          void attr (const Key&, const boost::none_t&) const
+          void attr (Key const&, boost::none_t const&) const
         {
         }
 
@@ -100,9 +100,9 @@ namespace fhg
         void endl() const;
         void newline() const;
 
-        void assert_nonempty (const std::string& msg) const;
+        void assert_nonempty (std::string const& msg) const;
 
-        void add_content (const bool text);
+        void add_content (bool text);
       };
     }
   }

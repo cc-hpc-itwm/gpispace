@@ -50,7 +50,7 @@ namespace fhg
         }
 
         Qt::ItemFlags dual_list_move_and_drag_proxy::flags
-          (const QModelIndex& index) const
+          (QModelIndex const& index) const
         {
           return mvc::id_proxy::flags (index)
             | (index.isValid() ? Qt::ItemIsDragEnabled : Qt::NoItemFlags)
@@ -77,7 +77,7 @@ namespace fhg
         }
 
         QMimeData* dual_list_move_and_drag_proxy::mimeData
-          (const QModelIndexList& indices) const
+          (QModelIndexList const& indices) const
         {
           QByteArray encoded;
           QDataStream stream (&encoded, QIODevice::WriteOnly);
@@ -100,7 +100,7 @@ namespace fhg
           , Qt::DropAction IF_FHG_ASSERT (action)
           , int IF_FHG_ASSERT (row)
           , int IF_FHG_ASSERT (column)
-          , const QModelIndex& parent
+          , QModelIndex const& parent
           )
         {
           fhg_assert (data->hasFormat (mime_type()), "only able to drag&drop from same model");
@@ -159,7 +159,7 @@ namespace fhg
       {
         void move_selected_entries_list ( QAbstractItemView* from_view
                                         , QAbstractItemView* to
-                                        , const QModelIndexList selection
+                                        , QModelIndexList selection
                                         )
         {
           {
@@ -200,7 +200,7 @@ namespace fhg
 
         void move_entry ( QAbstractItemView* from_view
                         , QAbstractItemView* to
-                        , const QModelIndex index
+                        , QModelIndex index
                         )
         {
           move_selected_entries_list (from_view, to, QModelIndexList() << index);

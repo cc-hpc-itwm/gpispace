@@ -19,7 +19,7 @@
 #include <sdpa/events/JobEvent.hpp>
 #include <sdpa/events/EventHandler.hpp>
 
-#include <we/type/activity.hpp>
+#include <we/type/Activity.hpp>
 #include <we/type/net.hpp>
 
 namespace sdpa
@@ -31,8 +31,8 @@ namespace sdpa
     public:
       typedef boost::shared_ptr<JobFinishedEvent> Ptr;
 
-      JobFinishedEvent ( const sdpa::job_id_t& a_job_id
-                       , we::type::activity_t job_result
+      JobFinishedEvent ( sdpa::job_id_t const& a_job_id
+                       , we::type::Activity job_result
                        )
         : sdpa::events::JobEvent (a_job_id)
         , result_ (std::move (job_result))
@@ -44,13 +44,13 @@ namespace sdpa
         handler->handleJobFinishedEvent (source, this);
       }
 
-      const we::type::activity_t& result() const
+      we::type::Activity const& result() const
       {
         return result_;
       }
 
     private:
-      we::type::activity_t result_;
+      we::type::Activity result_;
     };
 
     SAVE_CONSTRUCT_DATA_DEF (JobFinishedEvent, e)
@@ -62,7 +62,7 @@ namespace sdpa
     LOAD_CONSTRUCT_DATA_DEF (JobFinishedEvent, e)
     {
       LOAD_JOBEVENT_CONSTRUCT_DATA (job_id);
-      LOAD_FROM_ARCHIVE (we::type::activity_t, result);
+      LOAD_FROM_ARCHIVE (we::type::Activity, result);
 
       ::new (e) JobFinishedEvent (job_id, std::move (result));
     }

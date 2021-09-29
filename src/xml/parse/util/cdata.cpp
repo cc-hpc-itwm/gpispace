@@ -25,7 +25,7 @@ namespace xml
   namespace parse
   {
     std::list<std::string> parse_cdata ( const xml_node_type* node
-                                       , const state::type& state
+                                       , state::type const& state
                                        )
     {
       std::list<std::string> v;

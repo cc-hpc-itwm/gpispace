@@ -19,7 +19,7 @@
 #include <util-generic/finally.hpp>
 
 #include <we/plugin/Plugins.hpp>
-#include <we/type/activity.hpp>
+#include <we/type/Activity.hpp>
 #include <we/type/id.hpp>
 #include <we/type/net.hpp>
 #include <we/type/schedule_data.hpp>
@@ -53,11 +53,11 @@ namespace we
       typedef sdpa::job_id_t id_type;
 
       layer ( // submit: external activities from submitted net -> child jobs
-              std::function<void (id_type, type::activity_t)> rts_submit
+              std::function<void (id_type, type::Activity)> rts_submit
               // reply to cancel (parent)/on failure (child) -> child jobs
             , std::function<void (id_type)> rts_cancel
               // reply to submit on success -> top level
-            , std::function<void (id_type, type::activity_t)> rts_finished
+            , std::function<void (id_type, type::Activity)> rts_finished
               // reply to submit on failure (of child) -> top level
             , std::function<void (id_type, std::string reason)> rts_failed
               // reply to cancel (parent) -> top level
@@ -71,13 +71,13 @@ namespace we
             );
 
       // initial from exec_layer -> top level
-      void submit (id_type, type::activity_t);
+      void submit (id_type, type::Activity);
 
       // initial from exec_layer -> top level
       void cancel (id_type);
 
       // reply to _rts_submit -> childs only
-      void finished (id_type, type::activity_t);
+      void finished (id_type, type::Activity);
 
       // reply to _rts_submit -> childs only
       void failed (id_type, std::string reason);
@@ -101,16 +101,16 @@ namespace we
                                      );
 
     private:
-      std::function<void (id_type, type::activity_t)> _rts_submit;
+      std::function<void (id_type, type::Activity)> _rts_submit;
       std::function<void (id_type)> _rts_cancel;
-      std::function<void (id_type, type::activity_t)> _rts_finished;
+      std::function<void (id_type, type::Activity)> _rts_finished;
       std::function<void (id_type, std::string)> _rts_failed;
       std::function<void (id_type)> _rts_canceled;
       std::function<void (std::string, boost::optional<std::exception_ptr>)> _rts_token_put;
       std::function<void (std::string workflow_response_id, boost::variant<std::exception_ptr, pnet::type::value::value_type>)> _rts_workflow_response;
       std::function<id_type()> _rts_id_generator;
 
-      void rts_finished_and_forget (id_type, type::activity_t);
+      void rts_finished_and_forget (id_type, type::Activity);
       void rts_failed_and_forget (id_type, std::string);
       void rts_canceled_and_forget (id_type);
 
@@ -135,20 +135,20 @@ namespace we
       struct activity_data_type
       {
         activity_data_type ( id_type id
-                           , std::unique_ptr<type::activity_t> activity
+                           , std::unique_ptr<type::Activity> activity
                            )
           : _id (id)
           , _activity (std::move (activity))
         {}
 
         void child_finished
-          ( type::activity_t
+          ( type::Activity
           , we::workflow_response_callback const&
           , we::eureka_response_callback const&
           );
 
         id_type _id;
-        std::unique_ptr<type::activity_t> _activity;
+        std::unique_ptr<type::Activity> _activity;
       };
 
       struct async_remove_queue
@@ -162,11 +162,11 @@ namespace we
 
           struct ToFinish
           {
-            ToFinish (layer*, id_type, type::activity_t, id_type);
+            ToFinish (layer*, id_type, type::Activity, id_type);
 
             layer* _that;
             id_type _parent;
-            type::activity_t _result;
+            type::Activity _result;
             id_type _id;
           };
 
@@ -196,7 +196,7 @@ namespace we
           , std::function<void (std::exception_ptr)> = &std::rethrow_exception
           );
 
-        void forget (id_type);
+        void forget (id_type, std::string reason);
 
         struct interrupted{};
         void interrupt();

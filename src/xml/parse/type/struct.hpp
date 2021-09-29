@@ -42,15 +42,15 @@ namespace xml
       struct structure_type : with_position_of_definition
       {
       public:
-        structure_type ( const util::position_type&
-                       , const pnet::type::signature::structured_type& sig
+        structure_type ( util::position_type const&
+                       , pnet::type::signature::structured_type const& sig
                        );
 
-        const pnet::type::signature::structured_type& signature() const;
-        const std::string& name() const;
+        pnet::type::signature::structured_type const& signature() const;
+        std::string const& name() const;
 
-        void specialize (const std::unordered_map<std::string, std::string>&);
-        void resolve (const std::unordered_map<std::string, structure_type>&);
+        void specialize (std::unordered_map<std::string, std::string> const&);
+        void resolve (std::unordered_map<std::string, structure_type> const&);
 
       private:
         pnet::type::signature::structured_type _sig;
@@ -61,7 +61,7 @@ namespace xml
       namespace dump
       {
         void dump ( ::fhg::util::xml::xmlstream & s
-                  , const structure_type & st
+                  , structure_type const& st
                   );
       }
     }
@@ -71,7 +71,7 @@ namespace xml
       typedef std::unordered_map<std::string, type::structure_type> set_type;
       typedef std::unordered_map<std::string, std::string> forbidden_type;
 
-      set_type make (const type::structs_type & structs, state::type const&);
+      set_type make (type::structs_type const& structs, state::type const&);
 
       set_type join (set_type const& above, set_type const& below);
     }

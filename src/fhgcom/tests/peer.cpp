@@ -22,7 +22,6 @@
 #include <test/certificates_data.hpp>
 
 #include <util-generic/connectable_to_address_string.hpp>
-#include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/finally.hpp>
 #include <util-generic/functor_visitor.hpp>
 #include <util-generic/hostname.hpp>
@@ -57,7 +56,7 @@ BOOST_DATA_TEST_CASE
   fhg::util::testing::require_exception
     ( [&certificates]
       {
-        fhg::com::peer_t ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+        fhg::com::peer_t ( std::make_unique<boost::asio::io_service>()
                          , fhg::com::host_t ("NONONONONONONONONONO")
                          , fhg::com::port_t ("NONONONONONONONONONO")
                          , certificates
@@ -71,7 +70,7 @@ BOOST_DATA_TEST_CASE
 BOOST_DATA_TEST_CASE (constructing_one_works, certificates_data, certificates)
 {
   using namespace fhg::com;
-  peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+  peer_t peer_1 ( std::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("12351")
                 , certificates
@@ -82,13 +81,13 @@ BOOST_DATA_TEST_CASE (constructing_two_works, certificates_data, certificates)
 {
   using namespace fhg::com;
 
-  peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+  peer_t peer_1 ( std::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
                 , certificates
                 );
 
-  peer_t peer_2 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+  peer_t peer_2 ( std::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
                 , certificates
@@ -155,13 +154,13 @@ BOOST_DATA_TEST_CASE ( peer_run_two
 {
   using namespace fhg::com;
 
-  peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+  peer_t peer_1 ( std::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
                 , certificates
                 );
 
-  peer_t peer_2 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+  peer_t peer_2 ( std::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
                 , certificates
@@ -239,7 +238,7 @@ namespace fhg
                          , certificates
                          )
     {
-      peer_t const a ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+      peer_t const a ( std::make_unique<boost::asio::io_service>()
                      , host_t ("localhost")
                      , port_t ("0")
                      , certificates
@@ -248,7 +247,7 @@ namespace fhg
       auto const h (host (lp));
       auto const p (port (lp));
 
-      channel const b ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+      channel const b ( std::make_unique<boost::asio::io_service>()
                       , host_t ("localhost")
                       , port_t ("0")
                       , certificates
@@ -268,14 +267,14 @@ namespace fhg
                          , message
                          )
     {
-      peer_t a ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+      peer_t a ( std::make_unique<boost::asio::io_service>()
                , host_t ("localhost")
                , port_t ("0")
                , certificates
                );
       auto const lp (a.local_endpoint());
 
-      channel b ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+      channel b ( std::make_unique<boost::asio::io_service>()
                 , host_t ("localhost")
                 , port_t ("0")
                 , certificates
@@ -319,7 +318,7 @@ BOOST_DATA_TEST_CASE (peer_loopback_forbidden, certificates_data, certificates)
   using namespace fhg::com;
 
   fhg::com::peer_t peer_1
-    ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+    ( std::make_unique<boost::asio::io_service>()
     , fhg::com::host_t ("localhost")
     , fhg::com::port_t ("0")
     , certificates
@@ -341,7 +340,7 @@ BOOST_DATA_TEST_CASE
 {
   using namespace fhg::com;
 
-  peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+  peer_t peer_1 ( std::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
                 , certificates
@@ -407,7 +406,7 @@ BOOST_DATA_TEST_CASE
                  > record_receive;
 
     fhg::com::peer_t parent
-      ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+      ( std::make_unique<boost::asio::io_service>()
       , fhg::com::host_t ("localhost")
       , fhg::com::port_t ("0")
       , certificates
@@ -433,7 +432,7 @@ BOOST_DATA_TEST_CASE
     while (repetitions --> 0)
     {
       fhg::com::peer_t child
-        ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+        ( std::make_unique<boost::asio::io_service>()
         , fhg::com::host_t ("localhost")
         , fhg::com::port_t ("0")
         , certificates
@@ -472,10 +471,11 @@ BOOST_DATA_TEST_CASE
           BOOST_CHECK_MESSAGE
             ( ec == boost::asio::error::misc_errors::eof
            || ec == boost::system::errc::operation_canceled
+           || ec == boost::system::errc::network_down
            || ec == boost_asio_ssl_error_stream_truncated
             , ec
             << " shall be one of [asio.misc.eof, generic.operation_canceled, "
-               "asio.ssl.stream_truncated]"
+               ", generic::network_down, asio.ssl.stream_truncated]"
             );
         }
       , [&] (fhg::com::message_t const& message)
@@ -496,7 +496,7 @@ BOOST_AUTO_TEST_CASE (require_certificates_location_to_exist)
   fhg::util::temporary_path const empty_directory;
 
   BOOST_REQUIRE_EXCEPTION
-    ( peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+    ( peer_t peer_1 ( std::make_unique<boost::asio::io_service>()
                     , host_t ("localhost")
                     , port_t ("0")
                     , fhg::com::Certificates
@@ -519,7 +519,7 @@ BOOST_AUTO_TEST_CASE
   fhg::util::temporary_path const empty_directory;
 
   BOOST_REQUIRE_EXCEPTION
-    ( peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+    ( peer_t peer_1 ( std::make_unique<boost::asio::io_service>()
                     , host_t ("localhost")
                     , port_t ("0")
                     , fhg::com::Certificates {empty_directory}
@@ -546,7 +546,7 @@ BOOST_AUTO_TEST_CASE (using_empty_Certificates_throws)
     (boost::filesystem::path (certificates_directory) / "server.key");
 
   BOOST_REQUIRE_EXCEPTION
-    ( peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+    ( peer_t peer_1 ( std::make_unique<boost::asio::io_service>()
                     , host_t ("localhost")
                     , port_t ("0")
                     , fhg::com::Certificates {certificates_directory}
@@ -567,14 +567,14 @@ BOOST_AUTO_TEST_CASE
   using namespace fhg::com;
 
   peer_t peer_1
-    ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+    ( std::make_unique<boost::asio::io_service>()
     , host_t ("localhost")
     , port_t ("0")
     , gspc::testing::no_certs()
     );
 
   peer_t peer_2
-    ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+    ( std::make_unique<boost::asio::io_service>()
     , host_t ("localhost")
     , port_t ("0")
     , gspc::testing::yes_certs()

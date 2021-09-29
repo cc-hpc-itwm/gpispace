@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-set (_cmake_minimum_required_version "3.13")
+set (_cmake_minimum_required_version "3.15")
 
 if (NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   if (CMAKE_MINIMUM_REQUIRED_VERSION VERSION_LESS _cmake_minimum_required_version)
@@ -104,6 +104,7 @@ if (${_project_entry}_INSTALL)
       "${PROJECT_SOURCE_DIR}/include"
     DESTINATION
       ${_project_config_install_dir}
+    USE_SOURCE_PERMISSIONS
   )
 
   configure_package_config_file (

@@ -23,7 +23,6 @@
 
 #include <fhg/util/xml.fwd.hpp>
 
-#include <boost/lexical_cast.hpp>
 #include <boost/optional/optional_fwd.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/map.hpp>
@@ -45,8 +44,8 @@ namespace we
         value_type const& value() const;
         pnet::type::value::structured_type const& list() const;
 
-        void set (const path_type& path, const value_type&);
-        boost::optional<const value_type&> get (const path_type& path) const;
+        void set (path_type const& path, value_type const&);
+        boost::optional<value_type const&> get (path_type const& path) const;
         bool is_true (path_type const&) const;
 
       private:
@@ -54,7 +53,7 @@ namespace we
 
         friend class boost::serialization::access;
         template<typename Archive>
-        void serialize (Archive& ar, const unsigned int)
+        void serialize (Archive& ar, unsigned int)
         {
           ar & _value;
         }
@@ -62,10 +61,10 @@ namespace we
 
       namespace dump
       {
-        void dump (::fhg::util::xml::xmlstream&, const type&);
+        void dump (::fhg::util::xml::xmlstream&, type const&);
       }
 
-      std::ostream& operator<< (std::ostream& s, const type& t);
+      std::ostream& operator<< (std::ostream& s, type const& t);
     }
   }
 }

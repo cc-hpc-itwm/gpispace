@@ -26,10 +26,10 @@ namespace pnet
   {
     namespace value
     {
-      value_type unary (const expr::token::type&, const value_type&);
-      value_type binary ( const expr::token::type&
-                        , const value_type&
-                        , const value_type&
+      value_type unary (expr::token::type const&, value_type const&);
+      value_type binary ( expr::token::type const&
+                        , value_type const&
+                        , value_type const&
                         );
     }
   }

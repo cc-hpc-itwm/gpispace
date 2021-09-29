@@ -24,7 +24,6 @@
 #include <we/type/value/read.hpp>
 #include <we/type/value/serialize.hpp>
 
-#include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
 
 #include <exception>

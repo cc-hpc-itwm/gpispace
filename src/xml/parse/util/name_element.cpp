@@ -24,7 +24,7 @@ namespace xml
   namespace parse
   {
     std::string name_element ( xml_node_type*& node
-                             , const state::type& state
+                             , state::type const& state
                              )
     {
       expect_none_or (node, rapidxml::node_element, state);

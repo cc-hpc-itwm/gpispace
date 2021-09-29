@@ -130,7 +130,7 @@ namespace fhg
       }
 
       void execution_monitor_proxy::source_dataChanged
-        (const QModelIndex& from, const QModelIndex& to)
+        (QModelIndex const& from, QModelIndex const& to)
       {
         const util::qt::scoped_disconnect disconnecter
           ( this, SIGNAL (dataChanged (QModelIndex,QModelIndex))
@@ -148,12 +148,12 @@ namespace fhg
         }
       }
 
-      int execution_monitor_proxy::columnCount (const QModelIndex&) const
+      int execution_monitor_proxy::columnCount (QModelIndex const&) const
       {
         return _column_count;
       }
 
-      QModelIndex execution_monitor_proxy::index (int r, int c, const QModelIndex& p) const
+      QModelIndex execution_monitor_proxy::index (int r, int c, QModelIndex const& p) const
       {
         if (r >= rowCount (p) || c >= columnCount (p))
         {
@@ -163,14 +163,14 @@ namespace fhg
         const QModelIndex base (id_proxy::index (r, 0, p));
         return createIndex (base.row(), c, base.internalPointer());
       }
-      QModelIndex execution_monitor_proxy::mapToSource (const QModelIndex& proxy) const
+      QModelIndex execution_monitor_proxy::mapToSource (QModelIndex const& proxy) const
       {
         return id_proxy::mapToSource
           (createIndex (proxy.row(), 0, proxy.internalPointer()));
       }
 
       bool execution_monitor_proxy::insertColumns
-        (int column, int count, const QModelIndex& parent)
+        (int column, int count, QModelIndex const& parent)
       {
         if (parent.isValid())
         {
@@ -206,7 +206,7 @@ namespace fhg
 
 
       bool execution_monitor_proxy::removeColumns
-        (int column, int count, const QModelIndex& parent)
+        (int column, int count, QModelIndex const& parent)
       {
         if (parent.isValid() || _column_count - count < 1)
         {
@@ -287,7 +287,7 @@ namespace fhg
 
       bool execution_monitor_proxy::setHeaderData ( int section
                                                   , Qt::Orientation orientation
-                                                  , const QVariant& variant
+                                                  , QVariant const& variant
                                                   , int role
                                                   )
       {
@@ -384,7 +384,7 @@ namespace fhg
 
       void execution_monitor_proxy::move_tick()
       {
-        for (const util::qt::mvc::section_index& index : _auto_moving)
+        for (util::qt::mvc::section_index const& index : _auto_moving)
         {
           index.data ( QDateTime::currentDateTime()
                      , execution_monitor_proxy::visible_range_to_role
@@ -454,13 +454,13 @@ namespace fhg
           return t;
         }
 
-        bool intersects_or_touches (const QRectF& lhs, const QRectF& rhs)
+        bool intersects_or_touches (QRectF const& lhs, QRectF const& rhs)
         {
           return lhs.right() >= rhs.left() && rhs.right() >= lhs.left();
         }
 
-        bool overlaps ( const paint_description::block& block
-                      , const QRectF& rect
+        bool overlaps ( paint_description::block const& block
+                      , QRectF const& rect
                       , qreal threshold
                       )
         {
@@ -530,7 +530,7 @@ namespace fhg
 
           for (worker_model::subrange_getter_type range : subrange_getters)
           {
-            for (const worker_model::value_type& data : range (from, to))
+            for (worker_model::value_type const& data : range (from, to))
             {
               const qreal left (std::max (from, data.timestamp()));
               paint_description::block block
@@ -595,8 +595,8 @@ namespace fhg
       }
 
       void execution_monitor_delegate::paint ( QPainter* painter
-                                             , const QStyleOptionViewItem& option
-                                             , const QModelIndex& index
+                                             , QStyleOptionViewItem const& option
+                                             , QModelIndex const& index
                                              ) const
       {
         const util::qt::mvc::section_index section_index
@@ -640,13 +640,13 @@ namespace fhg
             paint_description descr
               (prepare_gantt_row (index, option.rect, painter->pen()));
 
-            for ( const worker_model::state_type state
+            for ( worker_model::state_type state
                 : sorted (descr.blocks.keys())
                 )
             {
               painter->setBrush (color_for_state (state));
 
-              for (const paint_description::block& block : descr.blocks[state])
+              for (paint_description::block const& block : descr.blocks[state])
               {
                 painter->drawRect (shrunken_by_pen (block.rect, painter->pen()));
               }
@@ -696,7 +696,7 @@ namespace fhg
               (option.rect.adjusted (inset, inset, -inset, -inset));
 
             qreal x_pos (0.0);
-            for (const worker_model::state_type state : sorted (in_state.keys()))
+            for (worker_model::state_type state : sorted (in_state.keys()))
             {
               x_pos += 3.0;
               const QString text (QString ("%1").arg (in_state[state]));
@@ -746,13 +746,13 @@ namespace fhg
         }
 
         bool maybe_show_tooltip
-          ( const worker_model::state_type state
-          , const paint_description& descr
+          ( worker_model::state_type state
+          , paint_description const& descr
           , QHelpEvent* event
           , QAbstractItemView* view
           )
         {
-          for (const paint_description::block& block : descr.blocks[state])
+          for (paint_description::block const& block : descr.blocks[state])
           {
             if ( block.rect.left() <= event->pos().x()
                && event->pos().x() <= block.rect.right()
@@ -777,8 +777,8 @@ namespace fhg
       bool execution_monitor_delegate::helpEvent
         ( QHelpEvent* event
         , QAbstractItemView* view
-        , const QStyleOptionViewItem& option
-        , const QModelIndex& index
+        , QStyleOptionViewItem const& option
+        , QModelIndex const& index
         )
       {
         if (index.isValid() && event->type() == QEvent::ToolTip)
@@ -947,9 +947,9 @@ namespace fhg
       }
 
       QWidget* execution_monitor_delegate::create_editor
-        ( const QRect&
+        ( QRect const&
         , util::qt::mvc::delegating_header_view* parent
-        , const util::qt::mvc::section_index& index
+        , util::qt::mvc::section_index const& index
         )
       {
         fhg_assert (can_edit_section (index), "only create editors for editable sections");
@@ -980,7 +980,7 @@ namespace fhg
       }
 
       void execution_monitor_delegate::release_editor
-        (const util::qt::mvc::section_index&, QWidget* editor)
+        (util::qt::mvc::section_index const&, QWidget* editor)
       {
         delete editor;
       }
@@ -994,7 +994,7 @@ namespace fhg
 
       namespace
       {
-        const QString& format_for_distance (const long dist)
+        QString const& format_for_distance (long dist)
         {
           const unsigned long abs_dist ( dist < 0
                                        ? static_cast<unsigned long> (-dist)
@@ -1036,8 +1036,8 @@ namespace fhg
 
       void execution_monitor_delegate::paint
         ( QPainter* painter
-        , const QRect& rect
-        , const util::qt::mvc::section_index& index
+        , QRect const& rect
+        , util::qt::mvc::section_index const& index
         )
       {
         switch ( util::qt::value<execution_monitor_proxy::column_type>
@@ -1068,7 +1068,7 @@ namespace fhg
             const long small_tick_interval (std::max (3L, visible_range / maximum_ticks / 10 * 10));
             const long large_tick_interval (small_tick_interval * 10);
 
-            const QString& format (format_for_distance (large_tick_interval));
+            QString const& format (format_for_distance (large_tick_interval));
 
             for ( double i (from - from % large_tick_interval - large_tick_interval)
                 ; i < to + large_tick_interval

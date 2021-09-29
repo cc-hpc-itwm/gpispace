@@ -33,28 +33,28 @@ namespace bitsetofint
   struct GSPC_DLLEXPORT type
   {
   public:
-    explicit type (const std::size_t = 0);
+    explicit type (std::size_t = 0);
 
     void push_back (uint64_t);
 
-    type& ins (const unsigned long&);
-    type& del (const unsigned long&);
-    bool is_element (const unsigned long&) const;
+    type& ins (unsigned long const&);
+    type& del (unsigned long const&);
+    bool is_element (unsigned long const&) const;
     std::size_t count() const;
     void list (std::ostream&) const;
-    void list (const std::function<void (const unsigned long&)>&) const;
+    void list (std::function<void (unsigned long const&)> const&) const;
     std::set<unsigned long> elements() const;
 
-    GSPC_DLLEXPORT friend type operator| (const type&, const type&);
-    GSPC_DLLEXPORT friend type operator& (const type&, const type&);
-    GSPC_DLLEXPORT friend type operator^ (const type&, const type&);
+    GSPC_DLLEXPORT friend type operator| (type const&, type const&);
+    GSPC_DLLEXPORT friend type operator& (type const&, type const&);
+    GSPC_DLLEXPORT friend type operator^ (type const&, type const&);
 
-    GSPC_DLLEXPORT friend std::ostream& operator<< (std::ostream&, const type&);
-    GSPC_DLLEXPORT friend std::size_t hash_value (const type&);
-    GSPC_DLLEXPORT friend bool operator== (const type&, const type&);
-    GSPC_DLLEXPORT friend std::string to_hex (const type&);
+    GSPC_DLLEXPORT friend std::ostream& operator<< (std::ostream&, type const&);
+    GSPC_DLLEXPORT friend std::size_t hash_value (type const&);
+    GSPC_DLLEXPORT friend bool operator== (type const&, type const&);
+    GSPC_DLLEXPORT friend std::string to_hex (type const&);
 
-    GSPC_DLLEXPORT friend bool operator< (const type&, const type&);
+    GSPC_DLLEXPORT friend bool operator< (type const&, type const&);
 
     template<typename Archive>
       void serialize (Archive& ar, unsigned int)
@@ -66,21 +66,21 @@ namespace bitsetofint
     std::vector<uint64_t> _container;
   };
 
-  GSPC_DLLEXPORT type operator| (const type&, const type&);
-  GSPC_DLLEXPORT type operator& (const type&, const type&);
-  GSPC_DLLEXPORT type operator^ (const type&, const type&);
+  GSPC_DLLEXPORT type operator| (type const&, type const&);
+  GSPC_DLLEXPORT type operator& (type const&, type const&);
+  GSPC_DLLEXPORT type operator^ (type const&, type const&);
 
-  GSPC_DLLEXPORT bool operator== (const type&, const type&);
-  GSPC_DLLEXPORT bool operator< (const type&, const type&);
+  GSPC_DLLEXPORT bool operator== (type const&, type const&);
+  GSPC_DLLEXPORT bool operator< (type const&, type const&);
 
-  GSPC_DLLEXPORT std::size_t hash_value (const type&);
+  GSPC_DLLEXPORT std::size_t hash_value (type const&);
 
-  GSPC_DLLEXPORT std::ostream& operator<< (std::ostream&, const type&);
+  GSPC_DLLEXPORT std::ostream& operator<< (std::ostream&, type const&);
 
-  GSPC_DLLEXPORT std::string to_hex (const type&);
-  GSPC_DLLEXPORT type from_hex (const std::string&);
+  GSPC_DLLEXPORT std::string to_hex (type const&);
+  GSPC_DLLEXPORT type from_hex (std::string const&);
   GSPC_DLLEXPORT boost::optional<type> from_hex
     ( std::string::const_iterator& pos
-    , const std::string::const_iterator& end
+    , std::string::const_iterator const& end
     );
 }

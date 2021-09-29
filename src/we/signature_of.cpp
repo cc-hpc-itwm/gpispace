@@ -23,24 +23,24 @@ namespace pnet
   namespace
   {
     type::signature::structured_type
-      structured (const std::string&, const type::value::structured_type&);
+      structured (std::string const&, type::value::structured_type const&);
 
     class visitor_structured
       : public boost::static_visitor<type::signature::field_type>
     {
     public:
-      visitor_structured (const std::string& name)
+      visitor_structured (std::string const& name)
         : _name (name)
       {}
 
       type::signature::field_type
-        operator() (const type::value::structured_type& v) const
+        operator() (type::value::structured_type const& v) const
       {
         return structured (_name, v);
       }
 
       template<typename T>
-        type::signature::field_type operator() (const T& x) const
+        type::signature::field_type operator() (T const& x) const
       {
         return std::make_pair (_name, type::value::name_of (x));
       }
@@ -50,13 +50,13 @@ namespace pnet
     };
 
     type::signature::structured_type
-      structured ( const std::string& name
-                 , const type::value::structured_type& v
+      structured ( std::string const& name
+                 , type::value::structured_type const& v
                  )
     {
       type::signature::structure_type s;
 
-      for (const type::value::structured_type::value_type& f : v)
+      for (type::value::structured_type::value_type const& f : v)
       {
         s.emplace_back (boost::apply_visitor ( visitor_structured (f.first)
                                              , f.second
@@ -72,13 +72,13 @@ namespace pnet
     {
     public:
       type::signature::signature_type
-        operator() (const type::value::structured_type& v) const
+        operator() (type::value::structured_type const& v) const
       {
         return structured ("struct", v);
       }
 
       template<typename T>
-        type::signature::signature_type operator() (const T& x) const
+        type::signature::signature_type operator() (T const& x) const
       {
         return type::value::name_of (x);
       }
@@ -86,7 +86,7 @@ namespace pnet
   }
 
   type::signature::signature_type
-    signature_of (const type::value::value_type& value)
+    signature_of (type::value::value_type const& value)
   {
     return boost::apply_visitor (visitor_signature(), value);
   }

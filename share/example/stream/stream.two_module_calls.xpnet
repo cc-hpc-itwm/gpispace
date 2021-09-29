@@ -71,7 +71,7 @@
 
     <transition name="process">
       <defun>
-        <require key="process" mandatory="true"/>
+        <require key="process"/>
         <in name="work_package" type="work_package"/>
         <out name="work_package_processed"
              type="work_package_with_timestamp_and_id"/>
@@ -121,7 +121,7 @@
            type="work_package_with_timestamp_and_id"/>
 
     <transition name="collect_round_trip_time">
-      <require key="mark_free" mandatory="true"/>
+      <require key="mark_free"/>
       <defun>
         <in name="work_package_with_timestamp_and_id"
             type="work_package_with_timestamp_and_id"/>
@@ -169,7 +169,7 @@
     <place name="work_package_to_mark_free" type="work_package"/>
 
     <transition name="mark_free">
-      <require key="mark_free" mandatory="true"/>
+      <require key="mark_free"/>
       <include-function href="stream/mark_free.xpnet"/>
       <connect-in port="work_package"
                   place="work_package_to_mark_free"/>

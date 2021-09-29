@@ -31,10 +31,10 @@ gspc_add_library (NAME fhg-project_configuration
 gspc_add_library (NAME fhg-util
   TYPE STATIC
   SOURCES "util/backtracing_exception.cpp"
-          "util/signal_handler_manager.cpp"
-          "util/remove_prefix.cpp"
           "util/read_bool.cpp"
-          "util/now.cpp"
+          "util/remove_prefix.cpp"
+          "util/signal_handler_manager.cpp"
+          "util/starts_with.cpp"
 
           "util/parse/position.cpp"
           "util/parse/error.cpp"

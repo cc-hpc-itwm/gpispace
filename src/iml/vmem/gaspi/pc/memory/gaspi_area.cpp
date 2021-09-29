@@ -123,9 +123,9 @@ namespace gpi
       }
 
       bool
-      gaspi_area_t::is_range_local( const gpi::pc::type::handle::descriptor_t &hdl
-                                  , const iml::MemoryOffset begin
-                                  , const iml::MemoryOffset end
+      gaspi_area_t::is_range_local( gpi::pc::type::handle::descriptor_t const& hdl
+                                  , iml::MemoryOffset begin
+                                  , iml::MemoryOffset end
                                   ) const
       {
         auto my_rank = _gaspi_context.rank ();
@@ -146,8 +146,8 @@ namespace gpi
       }
 
       iml::MemorySize
-      gaspi_area_t::get_local_size ( const iml::MemorySize size
-                                   , const gpi::pc::type::flags_t flgs
+      gaspi_area_t::get_local_size ( iml::MemorySize size
+                                   , gpi::pc::type::flags_t flgs
                                    ) const
       {
         if (flgs == is_global::yes)
@@ -170,9 +170,9 @@ namespace gpi
           //! \todo lazy iteration, …
           api::gaspi_t::transfers_t split_by_rank
             ( iml::MemorySize local_offset
-            , const iml::MemorySize remote_base
+            , iml::MemorySize remote_base
             , iml::MemorySize offset
-            , const iml::MemorySize per_node_size
+            , iml::MemorySize per_node_size
             , iml::MemorySize amount
             )
           {
@@ -204,11 +204,11 @@ namespace gpi
           }
 
           void dma_read_and_wait_for_readable
-            ( const gpi::pc::type::handle::descriptor_t & src_hdl
-            , const iml::MemorySize src_offset
-            , const gpi::pc::type::handle::descriptor_t & dst_hdl
-            , const iml::MemorySize dst_offset
-            , const iml::MemorySize amount
+            ( gpi::pc::type::handle::descriptor_t const& src_hdl
+            , iml::MemorySize src_offset
+            , gpi::pc::type::handle::descriptor_t const& dst_hdl
+            , iml::MemorySize dst_offset
+            , iml::MemorySize amount
             , api::gaspi_t& gaspi
             )
           {
@@ -224,11 +224,11 @@ namespace gpi
           }
 
           void do_write_dma_and_wait_remote_written
-            ( const gpi::pc::type::handle::descriptor_t & src_hdl
-            , const iml::MemorySize src_offset
-            , const gpi::pc::type::handle::descriptor_t & dst_hdl
-            , const iml::MemorySize dst_offset
-            , const iml::MemorySize amount
+            ( gpi::pc::type::handle::descriptor_t const& src_hdl
+            , iml::MemorySize src_offset
+            , gpi::pc::type::handle::descriptor_t const& dst_hdl
+            , iml::MemorySize dst_offset
+            , iml::MemorySize amount
             , api::gaspi_t& gaspi
             )
           {
@@ -344,8 +344,8 @@ namespace gpi
 
       std::packaged_task<void()> gaspi_area_t::get_send_task
         ( area_t & src_area
-        , const iml::MemoryLocation src
-        , const iml::MemoryLocation dst
+        , iml::MemoryLocation src
+        , iml::MemoryLocation dst
         , iml::MemorySize amount
         )
       {
@@ -366,8 +366,8 @@ namespace gpi
 
       std::packaged_task<void()> gaspi_area_t::get_recv_task
         ( area_t & dst_area
-        , const iml::MemoryLocation dst
-        , const iml::MemoryLocation src
+        , iml::MemoryLocation dst
+        , iml::MemoryLocation src
         , iml::MemorySize amount
         )
       {
@@ -401,8 +401,8 @@ namespace gpi
         }
       }
 
-      double gaspi_area_t::get_transfer_costs ( const iml::MemoryRegion& transfer
-                                              , const gpi::rank_t rank
+      double gaspi_area_t::get_transfer_costs ( iml::MemoryRegion const& transfer
+                                              , gpi::rank_t rank
                                               ) const
       {
         const gpi::pc::type::handle::descriptor_t allocation

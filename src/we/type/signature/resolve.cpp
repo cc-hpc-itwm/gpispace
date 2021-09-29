@@ -30,9 +30,9 @@ namespace pnet
       {
         using type::value::path::append;
 
-        signature_type get ( const resolver_type& resolver
-                           , const std::list<std::string>& path
-                           , const std::string& s
+        signature_type get ( resolver_type const& resolver
+                           , std::list<std::string> const& path
+                           , std::string const& s
                            )
         {
           const boost::optional<signature_type> signature (resolver (s));
@@ -48,43 +48,43 @@ namespace pnet
         class resolve_structured : public boost::static_visitor<structured_type>
         {
         public:
-          resolve_structured (const resolver_type&, std::list<std::string>&);
-          structured_type operator() (const structured_type&) const;
+          resolve_structured (resolver_type const&, std::list<std::string>&);
+          structured_type operator() (structured_type const&) const;
 
         private:
-          const resolver_type& _resolver;
+          resolver_type const& _resolver;
           std::list<std::string>& _path;
         };
 
         class mk_field : public boost::static_visitor<field_type>
         {
         public:
-          mk_field (const std::string& name)
+          mk_field (std::string const& name)
             : _name (name)
           {}
-          field_type operator() (const std::string& t) const
+          field_type operator() (std::string const& t) const
           {
             return std::make_pair (_name, t);
           }
-          field_type operator() (const structured_type& s) const
+          field_type operator() (structured_type const& s) const
           {
             return structured_type (std::make_pair (_name, s.second));
           }
         private:
-          const std::string& _name;
+          std::string const& _name;
         };
 
         class resolve_field : public boost::static_visitor<field_type>
         {
         public:
-          resolve_field ( const resolver_type& resolver
+          resolve_field ( resolver_type const& resolver
                         , std::list<std::string>& path
                         )
             : _resolver (resolver)
             , _path (path)
           {}
           field_type operator()
-            (const std::pair<std::string, std::string>& f) const
+            (std::pair<std::string, std::string> const& f) const
           {
             if (is_literal (f.second))
             {
@@ -99,29 +99,29 @@ namespace pnet
 
             return boost::apply_visitor (mk_field (f.first), s);
           }
-          field_type operator () (const structured_type& s) const
+          field_type operator () (structured_type const& s) const
           {
             return resolve_structured (_resolver, _path) (s);
           }
 
         private:
-          const resolver_type& _resolver;
+          resolver_type const& _resolver;
           std::list<std::string>& _path;
         };
 
         resolve_structured::resolve_structured
-          ( const resolver_type& resolver
+          ( resolver_type const& resolver
           , std::list<std::string>& path
           )
           : _resolver (resolver)
           , _path (path)
         {}
         structured_type resolve_structured::operator()
-          (const structured_type& s) const
+          (structured_type const& s) const
         {
           structure_type l;
 
-          for (const field_type& f : s.second)
+          for (field_type const& f : s.second)
           {
             l.push_back
               (boost::apply_visitor (resolve_field ( _resolver
@@ -136,8 +136,8 @@ namespace pnet
         }
       }
 
-      signature_type resolve ( const structured_type& signature
-                             , const resolver_type& resolver
+      signature_type resolve ( structured_type const& signature
+                             , resolver_type const& resolver
                              )
       {
         std::list<std::string> path;

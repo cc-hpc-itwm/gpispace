@@ -19,19 +19,24 @@
 #include <we/exception.hpp>
 #include <we/expr/eval/context.hpp>
 #include <we/expr/parse/parser.hpp>
+#include <we/expr/token/type.hpp>
 #include <we/type/value/boost/test/printer.hpp>
-#include <we/type/value/show.hpp>
 #include <we/type/value/read.hpp>
+#include <we/type/value/show.hpp>
 
+#include <util-generic/functor_visitor.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/random.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
+#include <boost/format.hpp>
+
 #include <functional>
+#include <iterator>
 #include <limits>
 #include <random>
-#include <string>
 #include <stack>
+#include <string>
 
 namespace
 {
@@ -54,6 +59,11 @@ namespace
   {
     return require_evaluating_to (format.str(), value);
   }
+}
+
+BOOST_AUTO_TEST_CASE (empty_expression_evaluates_to_control)
+{
+  require_evaluating_to ("", we::type::literal::control{});
 }
 
 BOOST_AUTO_TEST_CASE (round_is_away_from_zero)
@@ -1083,7 +1093,7 @@ namespace
 {
   template<typename T, typename R>
     void check_unary_for_fractional ( std::string const operation_string
-                                    , std::function <R (const T&)> operation
+                                    , std::function <R (T const&)> operation
                                     )
   {
     for (int i (0); i < 100; ++i)
@@ -1994,6 +2004,66 @@ BOOST_AUTO_TEST_CASE (token_set_is_subset)
     ("set_is_subset (set_insert (Set{}, 1), set_insert (Set{}, 2))", false);
 }
 
+BOOST_AUTO_TEST_CASE
+  (to_retrieve_non_existing_keys_from_empty_map_throws_informative_exception)
+{
+  std::map<pnet::type::value::value_type, pnet::type::value::value_type> m;
+
+  auto const missing_key (fhg::util::testing::random<int>{}());
+
+  fhg::util::testing::require_exception
+    ( [&]
+      {
+        (void) expr::parse::parser
+          (str ( boost::format ("map_get_assignment (%1%, %2%)")
+               % pnet::type::value::show (m)
+               % pnet::type::value::show (missing_key)
+               )
+          ).eval_all();
+      }
+    , pnet::exception::eval (expr::token::_map_get_assignment, m, missing_key)
+    );
+}
+
+BOOST_AUTO_TEST_CASE
+  (to_retrieve_non_existing_keys_from_non_empty_map_throws_informative_exception)
+{
+  struct identifier
+  {
+    std::string operator()() const
+    {
+      return fhg::util::testing::random_identifier();
+    }
+  };
+
+  fhg::util::testing::unique_random<std::string, identifier> uniq_key;
+  auto N (fhg::util::testing::random<std::size_t>{} (1000));
+
+  std::map<pnet::type::value::value_type, pnet::type::value::value_type> m;
+
+  auto random_int (fhg::util::testing::random<int>{});
+
+  while (N --> 0)
+  {
+    m.emplace (uniq_key(), random_int());
+  }
+
+  auto const missing_key (uniq_key());
+
+  fhg::util::testing::require_exception
+    ( [&]
+      {
+        (void) expr::parse::parser
+          (str ( boost::format ("map_get_assignment (%1%, %2%)")
+               % pnet::type::value::show (m)
+               % pnet::type::value::show (missing_key)
+               )
+          ).eval_all();
+      }
+    , pnet::exception::eval (expr::token::_map_get_assignment, m, missing_key)
+    );
+}
+
 //! \todo add more tests
 
 BOOST_AUTO_TEST_CASE (is_const_true)
@@ -2006,4 +2076,105 @@ BOOST_AUTO_TEST_CASE (is_const_true)
     (false, expr::parse::parser ("${a} :eq: ${a}").is_const_true());
 
   BOOST_REQUIRE_EQUAL (false, expr::parse::parser ("${a}").is_const_true());
+}
+
+BOOST_AUTO_TEST_CASE (to_eval_stack_top_of_empty_list_throws_eval_error)
+{
+  fhg::util::testing::require_exception
+    ( []
+      {
+        expr::parse::parser ("stack_top (List())").eval_all();
+      }
+    , pnet::exception::eval
+      ( expr::token::_stack_top
+      , std::list<pnet::type::value::value_type>{}
+      )
+    );
+}
+BOOST_AUTO_TEST_CASE (to_eval_stack_pop_of_empty_list_throws_eval_error)
+{
+  fhg::util::testing::require_exception
+    ( []
+      {
+        expr::parse::parser ("stack_pop (List())").eval_all();
+      }
+    , pnet::exception::eval
+      ( expr::token::_stack_pop
+      , std::list<pnet::type::value::value_type>{}
+      )
+    );
+}
+BOOST_AUTO_TEST_CASE (to_eval_set_top_of_empty_set_throws_eval_error)
+{
+  fhg::util::testing::require_exception
+    ( []
+      {
+        expr::parse::parser ("set_top (Set{})").eval_all();
+      }
+    , pnet::exception::eval
+      ( expr::token::_set_top
+      , std::set<pnet::type::value::value_type>{}
+      )
+    );
+}
+BOOST_AUTO_TEST_CASE (to_eval_set_pop_of_empty_set_throws_eval_error)
+{
+  fhg::util::testing::require_exception
+    ( []
+      {
+        expr::parse::parser ("set_pop (Set{})").eval_all();
+      }
+    , pnet::exception::eval
+      ( expr::token::_set_pop
+      , std::set<pnet::type::value::value_type>{}
+      )
+    );
+}
+
+#define REQUIRE_NODE_IS_VALUE(n,v)                                        \
+  fhg::util::visit<void>                                                  \
+    ( n                                                                   \
+    , [] (pnet::type::value::value_type const& value)                     \
+      {                                                                   \
+        BOOST_REQUIRE_EQUAL (value, pnet::type::value::value_type (v));   \
+      }                                                                   \
+    , [] (auto const& node)                                               \
+      {                                                                   \
+        BOOST_FAIL                                                        \
+          (  "Expected value " << v << " but got node "                   \
+          << expr::parse::node::type (node)                               \
+          );                                                              \
+      }                                                                   \
+    )
+
+BOOST_AUTO_TEST_CASE (constants_are_folded_by_default)
+{
+  expr::parse::parser const p ("4 + 5");
+
+  BOOST_REQUIRE (p.begin() !=  p.end());
+  BOOST_REQUIRE (std::next (p.begin()) == p.end());
+  REQUIRE_NODE_IS_VALUE (*p.begin(), 9);
+}
+BOOST_AUTO_TEST_CASE (constant_folding_can_be_disabled)
+{
+  expr::parse::parser const p
+    (expr::parse::parser::DisableConstantFolding{}, "4 + 5");
+
+  BOOST_REQUIRE (p.begin() !=  p.end());
+  BOOST_REQUIRE (std::next (p.begin()) == p.end());
+
+  fhg::util::visit<void>
+    ( *p.begin()
+    , [] (expr::parse::node::binary_t const& b)
+      {
+        BOOST_REQUIRE_EQUAL (b.token, ::expr::token::add);
+        REQUIRE_NODE_IS_VALUE (b.l, 4);
+        REQUIRE_NODE_IS_VALUE (b.r, 5);
+      }
+    , [] (auto const& node)
+      {
+        BOOST_FAIL
+          ("Expected '+' but got node " << expr::parse::node::type (node));
+      }
+    );
 }

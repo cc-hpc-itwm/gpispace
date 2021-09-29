@@ -226,29 +226,29 @@ namespace fhg
         }
       }
 
-      int worker_model::rowCount (const QModelIndex& parent) const
+      int worker_model::rowCount (QModelIndex const& parent) const
       {
         return parent.isValid() ? 0 : _workers.size();
       }
-      int worker_model::columnCount (const QModelIndex& parent) const
+      int worker_model::columnCount (QModelIndex const& parent) const
       {
         return parent.isValid() ? 0 : 1;
       }
 
       namespace
       {
-        bool is_before ( const worker_model::timestamp_type t
-                       , const worker_model::value_type val
+        bool is_before ( worker_model::timestamp_type t
+                       , worker_model::value_type val
                        )
         {
           return !val.duration() || t < (val.timestamp() + *val.duration());
         }
 
         worker_model::subrange_type find_subrange
-          ( const std::vector<worker_model::value_type>::const_iterator begin
-          , const std::vector<worker_model::value_type>::const_iterator end
-          , const worker_model::timestamp_type from
-          , const worker_model::timestamp_type to
+          ( std::vector<worker_model::value_type>::const_iterator begin
+          , std::vector<worker_model::value_type>::const_iterator end
+          , worker_model::timestamp_type from
+          , worker_model::timestamp_type to
           )
         {
           const std::vector<worker_model::value_type>::const_iterator lower
@@ -270,7 +270,7 @@ namespace fhg
         }
       }
 
-      QVariant worker_model::data (const QModelIndex& index, int role) const
+      QVariant worker_model::data (QModelIndex const& index, int role) const
       {
         if (index.isValid())
         {
@@ -309,14 +309,14 @@ namespace fhg
       }
 
       QModelIndex worker_model::index
-        (int row, int column, const QModelIndex& parent) const
+        (int row, int column, QModelIndex const& parent) const
       {
         return !hasIndex (row, column, parent)
           ? QModelIndex()
           : createIndex (row, column, nullptr);
       }
 
-      QModelIndex worker_model::parent (const QModelIndex&) const
+      QModelIndex worker_model::parent (QModelIndex const&) const
       {
         return QModelIndex();
       }
@@ -332,7 +332,7 @@ namespace fhg
         endResetModel();
       }
       bool worker_model::removeRows
-        (int row, int count, const QModelIndex& parent)
+        (int row, int count, QModelIndex const& parent)
       {
         beginRemoveRows (parent, row, row + count - 1);
         while (count --> 0)

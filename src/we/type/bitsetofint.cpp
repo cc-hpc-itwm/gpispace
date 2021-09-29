@@ -29,7 +29,7 @@
 
 namespace bitsetofint
 {
-  type::type (const std::size_t n)
+  type::type (std::size_t n)
     : _container (n)
   {}
 
@@ -38,7 +38,7 @@ namespace bitsetofint
     _container.push_back (v);
   }
 
-  type& type::ins (const unsigned long& x)
+  type& type::ins (unsigned long const& x)
   {
     if ((x >> 6) >= _container.size())
     {
@@ -48,7 +48,7 @@ namespace bitsetofint
 
     return *this;
   }
-  type& type::del (const unsigned long& x)
+  type& type::del (unsigned long const& x)
   {
     if ((x >> 6) < _container.size())
     {
@@ -62,7 +62,7 @@ namespace bitsetofint
 
     return *this;
   }
-  bool type::is_element (const unsigned long& x) const
+  bool type::is_element (unsigned long const& x) const
   {
     return ((x >> 6) < _container.size())
       && ((_container[(x >> 6)] & (1UL << (x & 63))) != 0);
@@ -93,7 +93,7 @@ namespace bitsetofint
   {
     list ([&s] (unsigned long const& x) { s << x << std::endl; });
   }
-  void type::list (const std::function<void (const unsigned long&)>& f) const
+  void type::list (std::function<void (unsigned long const&)> const& f) const
   {
     unsigned long x (0);
 
@@ -118,7 +118,7 @@ namespace bitsetofint
     return s;
   }
 
-  type operator| (const type& lhs, const type& rhs)
+  type operator| (type const& lhs, type const& rhs)
   {
     type result (std::max (lhs._container.size(), rhs._container.size()));
 
@@ -134,7 +134,7 @@ namespace bitsetofint
 
     return result;
   }
-  type operator& (const type& lhs, const type& rhs)
+  type operator& (type const& lhs, type const& rhs)
   {
     type result (std::max (lhs._container.size(), rhs._container.size()));
 
@@ -151,7 +151,7 @@ namespace bitsetofint
     return result;
   }
 
-  type operator^ (const type& lhs, const type& rhs)
+  type operator^ (type const& lhs, type const& rhs)
   {
     type result (std::max (lhs._container.size(), rhs._container.size()));
 
@@ -168,22 +168,22 @@ namespace bitsetofint
     return result;
   }
 
-  std::ostream& operator<< (std::ostream& s, const type& t)
+  std::ostream& operator<< (std::ostream& s, type const& t)
   {
     s << "{";
-    for (const uint64_t v : t._container)
+    for (uint64_t v : t._container)
     {
       s << " " << v;
     }
     return s << "}";
   }
-  std::string to_hex (const type& t)
+  std::string to_hex (type const& t)
   {
     std::ostringstream oss;
 
     oss << "0x/";
 
-    for (const uint64_t v : t._container)
+    for (uint64_t v : t._container)
     {
       oss.flags (std::ios::hex);
       oss.width (16);
@@ -195,7 +195,7 @@ namespace bitsetofint
   }
 
   boost::optional<type> from_hex ( std::string::const_iterator& pos
-                                 , const std::string::const_iterator& end
+                                 , std::string::const_iterator const& end
                                  )
   {
     if (  (pos + 0) != end && *(pos + 0) == '0'
@@ -239,10 +239,10 @@ namespace bitsetofint
     return boost::none;
   }
 
-  type from_hex (const std::string& s)
+  type from_hex (std::string const& s)
   {
     std::string::const_iterator pos (s.begin());
-    const std::string::const_iterator& end (s.end());
+    std::string::const_iterator const& end (s.end());
 
     boost::optional<type> mtype (from_hex (pos, end));
 
@@ -262,14 +262,14 @@ namespace bitsetofint
     return *mtype;
   }
 
-  std::size_t hash_value (const type& t)
+  std::size_t hash_value (type const& t)
   {
     boost::hash<std::vector<uint64_t>> h;
 
-    return h(t._container);
+    return h (t._container);
   }
 
-  bool operator== (const type& x, const type& y)
+  bool operator== (type const& x, type const& y)
   {
     std::vector<uint64_t>::const_iterator pos_x (x._container.begin());
     const std::vector<uint64_t>::const_iterator& end_x (x._container.end());
@@ -310,7 +310,7 @@ namespace bitsetofint
     return true;
   }
 
-  bool operator< (const type& x, const type& y)
+  bool operator< (type const& x, type const& y)
   {
     return x._container < y._container;
   }

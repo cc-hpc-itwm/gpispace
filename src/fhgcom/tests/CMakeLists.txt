@@ -14,16 +14,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-fhg_add_test (NAME fhgcom_message
-  SOURCES message.cpp
-  USE_BOOST
-  LIBRARIES fhgcom
-)
-
 fhg_add_test (NAME fhgcom_p2p
   SOURCES p2p.cpp
   USE_BOOST
   LIBRARIES fhgcom
+            Util::Generic-Headers
 )
 
 fhg_add_test (NAME fhgcom_peer
@@ -31,7 +26,7 @@ fhg_add_test (NAME fhgcom_peer
   USE_BOOST
   LIBRARIES fhgcom
             fhg-util
-            test-utilities
+            test-util-certificates
             Boost::filesystem
             Boost::serialization
             Boost::date_time

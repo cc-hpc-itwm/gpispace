@@ -32,7 +32,7 @@ namespace pnet
         class GSPC_DLLEXPORT append
         {
         public:
-          append (std::list<std::string>&, const std::string&);
+          append (std::list<std::string>&, std::string const&);
           ~append();
           operator std::list<std::string>&() const;
         private:

@@ -31,19 +31,19 @@ namespace pnet
           get_names_rec (std::unordered_set<std::string>& names)
             : _names (names)
           {}
-          void _struct (const std::pair<std::string, structure_type>& s) const
+          void _struct (std::pair<std::string, structure_type> const& s) const
           {
-            for (const field_type& f : s.second)
+            for (field_type const& f : s.second)
             {
               traverse (*this, f);
             }
           }
-          void _field (const std::pair<std::string, std::string>& f) const
+          void _field (std::pair<std::string, std::string> const& f) const
           {
             _names.insert (f.second);
           }
           void _field_struct
-            (const std::pair<std::string, structure_type>& s) const
+            (std::pair<std::string, structure_type> const& s) const
           {
             traverse (*this, s);
           }
@@ -58,11 +58,11 @@ namespace pnet
           get_names (std::unordered_set<std::string>& names)
             : _names (names)
           {}
-          void operator() (const std::string& tname) const
+          void operator() (std::string const& tname) const
           {
             _names.insert (tname);
           }
-          void operator() (const structured_type& s) const
+          void operator() (structured_type const& s) const
           {
             traverse (get_names_rec (_names), s);
           }
@@ -72,7 +72,7 @@ namespace pnet
         };
       }
 
-      std::unordered_set<std::string> names (const signature_type& signature)
+      std::unordered_set<std::string> names (signature_type const& signature)
       {
         std::unordered_set<std::string> names;
 

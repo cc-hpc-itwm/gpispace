@@ -26,7 +26,7 @@ namespace pnet
     {
       namespace path
       {
-        std::list<std::string> split (const std::string& path)
+        std::list<std::string> split (std::string const& path)
         {
           return fhg::util::split<std::string, std::string> (path, '.');
         }
