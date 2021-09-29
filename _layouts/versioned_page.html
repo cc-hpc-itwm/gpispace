@@ -1,0 +1,46 @@
+---
+layout: default
+---
+
+{% assign page_name = page.name | replace: '.md', '' %}
+{% assign latest_release = '/' | append: site.download_branch | append: '/' %}
+
+<article class="post">
+
+  <header class="post-header">
+    <select id="page_version" onchange="update()">
+      <option value="{{ '/v21.06/' | append: page_name | relative_url }}">v21.06</option>
+      <option value="{{ '/v21.09/' | append: page_name | relative_url }}">v21.09</option>
+      <option value="{{ latest_release | append: page_name | relative_url }}">latest release ({{
+        site.download_branch }})</option>
+    </select>
+    <h1 class="post-title">{{ page.title | escape }}</h1>
+    <script type="text/javascript">
+      function selectCurrent() {
+        let select = document.getElementById("page_version");
+        let options = select.options;
+        let current = "{{ page.url | relative_url }}";
+
+        let selected = 0;
+        for (let i = 0; i < options.length; i++) {
+          if (options[i].value == current) {
+            selected = i;
+          }
+        }
+        select.selectedIndex = selected;
+      }
+
+      function update() {
+        let select = document.getElementById("page_version");
+        location = select.options[select.selectedIndex].value;
+      }
+
+      selectCurrent();
+    </script>
+  </header>
+
+  <div class="post-content">
+    {{ content }}
+  </div>
+
+</article>

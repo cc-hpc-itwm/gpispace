@@ -1,0 +1,21 @@
+---
+layout: default
+---
+
+{% assign page_name = page.name | replace: '.md', '' %}
+{% assign latest_release = '/' | append: site.download_branch | append: '/' %}
+
+<article class="post">
+
+  <header class="post-header">
+    <h1 class="post-title">{{ page.title | escape }}</h1>
+    <script type="text/javascript">
+      location = "{{ latest_release | append: page_name | relative_url }}"
+    </script>
+  </header>
+
+  <div class="post-content">
+    {{ content }}
+  </div>
+
+</article>

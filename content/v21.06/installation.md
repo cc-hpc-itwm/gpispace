@@ -1,7 +1,7 @@
 ---
-layout: page
+layout: versioned_page
 title: Installation
-permalink: /installation
+permalink: /v21.06/installation
 ---
 
 GPI-Space targets x86-64 Linux systems. Other architectures are not
@@ -40,12 +40,9 @@ some dependencies needed. Also see the "Building GPI-Space" section
 and subsection "Optional Components" below.
 
 * [GCC](https://gcc.gnu.org/) (>= 4.9.4), or compatible compiler
-* [CMake](https://cmake.org/) (>= 3.15)
+* [CMake](https://cmake.org/) (>= 3.13)
   * Some distributions name the binary `cmake3` while others use
     `cmake`. Snippets below assume `cmake`.
-* [pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/) (>= 0.23)
-  , or an equivalent [pkgconf](http://pkgconf.org/). Both offer the `pkg-config`
-  program.
 * [OpenSSL](https://www.openssl.org/) (>= 0.9)
   * When using OpenSSL >= 1.1, Boost >= 1.62 and libssh2 (>= 1.8) are
     required for compatibility.
