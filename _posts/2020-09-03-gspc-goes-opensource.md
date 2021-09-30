@@ -1,7 +1,7 @@
 ---
 layout: post
 title: GPI-Space goes Open Source
-teaser_image: assets/img/logo/720px-GPLv3_Logo.svg.png
+teaser_image: assets/img/teaser/720px-GPLv3_Logo.svg.png
 ---
 
 Thanks to the efforts of our development team, the much-anticipated open source release of GPI-Space is finally here.
