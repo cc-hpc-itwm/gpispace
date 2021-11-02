@@ -40,7 +40,7 @@ some dependencies needed. Also see the "Building GPI-Space" section
 and subsection "Optional Components" below.
 
 * [GCC](https://gcc.gnu.org/) (>= 4.9.4), or compatible compiler
-* [CMake](https://cmake.org/) (>= 3.13)
+* [CMake](https://cmake.org/) (>= 3.15)
   * Some distributions name the binary `cmake3` while others use
     `cmake`. Snippets below assume `cmake`.
 * [pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/) (>= 0.23)
