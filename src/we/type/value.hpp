@@ -33,7 +33,7 @@ namespace pnet
   {
     namespace value
     {
-      typedef boost::make_recursive_variant
+      typedef ::boost::make_recursive_variant
               < we::type::literal::control
               , bool
               , int
@@ -46,10 +46,10 @@ namespace pnet
               , std::string
               , bitsetofint::type
               , we::type::bytearray
-              , std::list<boost::recursive_variant_>
-              , std::set<boost::recursive_variant_>
-              , std::map<boost::recursive_variant_, boost::recursive_variant_>
-              , std::list<std::pair<std::string, boost::recursive_variant_> >
+              , std::list<::boost::recursive_variant_>
+              , std::set<::boost::recursive_variant_>
+              , std::map<::boost::recursive_variant_, ::boost::recursive_variant_>
+              , std::list<std::pair<std::string, ::boost::recursive_variant_> >
               >::type value_type;
 
       typedef std::list<std::pair<std::string, value_type> > structured_type;

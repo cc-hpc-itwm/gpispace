@@ -19,12 +19,12 @@
 #include <sdpa/client.hpp>
 #include <sdpa/com/NetworkStrategy.hpp>
 #include <sdpa/daemon/Agent.hpp>
+#include <sdpa/test/sdpa/UNSAFE_thread_event.hpp>
 
 #include <fhgcom/peer.hpp>
 
 #include <logging/stdout_sink.hpp>
 
-#include <fhg/util/thread/event.hpp>
 #include <util-generic/threadsafe_queue.hpp>
 
 #include <we/type/Activity.hpp>
@@ -48,10 +48,6 @@ namespace boost
   {
     namespace tt_detail
     {
-      template<> struct print_log_value<fhg::com::p2p::address_t>
-      {
-        void operator() (std::ostream&, fhg::com::p2p::address_t const&) const;
-      };
       template<> struct print_log_value<sdpa::Capability>
       {
         void operator() (std::ostream&, sdpa::Capability const&) const;
@@ -143,7 +139,7 @@ namespace utils
       event_thread (basic_drts_component_no_logic&);
 
       basic_drts_component_no_logic& _component;
-      boost::strict_scoped_thread<> _event_thread;
+      ::boost::strict_scoped_thread<> _event_thread;
       decltype (basic_drts_component_no_logic::_event_queue)::interrupt_on_scope_exit
         _interrupt_thread;
     };
@@ -185,7 +181,7 @@ namespace utils
     void wait_for_workers_to_shutdown();
 
   protected:
-    boost::optional<fhg::com::p2p::address_t> _parent;
+    ::boost::optional<fhg::com::p2p::address_t> _parent;
     std::unordered_set<fhg::com::p2p::address_t> _accepted_workers;
 
     struct event_thread_and_worker_join
@@ -297,7 +293,7 @@ namespace utils
       void finish_and_wait_for_ack (std::string name);
 
     private:
-      fhg::util::thread::event<std::string> _finished_ack;
+      fhg::util::thread::UNSAFE_event<std::string> _finished_ack;
     };
   }
 

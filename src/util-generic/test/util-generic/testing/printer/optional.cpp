@@ -23,17 +23,17 @@
 BOOST_AUTO_TEST_CASE (unset)
 {
   FHG_UTIL_TESTING_REQUIRE_PRINTED_AS
-    ("Nothing", boost::none);
+    ("Nothing", ::boost::none);
   FHG_UTIL_TESTING_REQUIRE_PRINTED_AS
-    ("Nothing", boost::optional<int>{});
+    ("Nothing", ::boost::optional<int>{});
   FHG_UTIL_TESTING_REQUIRE_PRINTED_AS
-    ("Nothing", boost::optional<std::string>{});
+    ("Nothing", ::boost::optional<std::string>{});
 }
 
 BOOST_AUTO_TEST_CASE (set)
 {
   FHG_UTIL_TESTING_REQUIRE_PRINTED_AS
-    ("Just 1", boost::optional<int> {1});
+    ("Just 1", ::boost::optional<int> {1});
   FHG_UTIL_TESTING_REQUIRE_PRINTED_AS
-    ("Just foo", boost::optional<std::string> {"foo"});
+    ("Just foo", ::boost::optional<std::string> {"foo"});
 }

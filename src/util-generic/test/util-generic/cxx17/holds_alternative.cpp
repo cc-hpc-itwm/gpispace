@@ -27,7 +27,7 @@ namespace fhg
     {
       BOOST_AUTO_TEST_CASE (holds_queried_type)
       {
-        boost::variant<int> const variant;
+        ::boost::variant<int> const variant;
         BOOST_REQUIRE_EQUAL ( holds_alternative<int> (variant)
                             , true
                             );
@@ -35,7 +35,7 @@ namespace fhg
 
       BOOST_AUTO_TEST_CASE (does_not_hold_queried_type)
       {
-        boost::variant<int> const variant;
+        ::boost::variant<int> const variant;
         BOOST_REQUIRE_EQUAL ( holds_alternative<long> (variant)
                             , false
                             );
@@ -43,7 +43,7 @@ namespace fhg
 
       BOOST_AUTO_TEST_CASE (works_when_holding_multiple_types)
       {
-        boost::variant<int, long> const variant;
+        ::boost::variant<int, long> const variant;
         BOOST_REQUIRE_EQUAL ( holds_alternative<int> (variant)
                             , true
                             );
@@ -54,7 +54,7 @@ namespace fhg
 
       BOOST_AUTO_TEST_CASE (works_after_assignment)
       {
-        boost::variant<int, long> const  variant {2L};
+        ::boost::variant<int, long> const  variant {2L};
         BOOST_REQUIRE_EQUAL ( holds_alternative<int> (variant)
                             , false
                             );

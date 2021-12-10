@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <sdpa/daemon/Implementation.hpp>
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/types.hpp>
 
@@ -50,7 +51,7 @@ namespace sdpa
         void replace_worker
           ( worker_id_t const& current_worker
           , worker_id_t const& new_worker
-          , boost::optional<std::string> const& implementation
+          , Implementation const& implementation
           , std::function<bool (std::string const& capability)> const&
               supports_implementation
           );
@@ -78,7 +79,7 @@ namespace sdpa
         void store_result (worker_id_t const&, terminal_state);
         void mark_as_canceled_if_no_result_stored_yet (worker_id_t const&);
 
-        boost::optional<job_result_type>
+        ::boost::optional<job_result_type>
           get_aggregated_results_if_all_terminated() const;
 
         bool apply_to_workers_without_result

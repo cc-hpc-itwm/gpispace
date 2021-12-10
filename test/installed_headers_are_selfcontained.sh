@@ -30,7 +30,7 @@ cxx_args+=("--std=c++14")
 cxx_args+=("-I" "${install_prefix}/include")
 cxx_args+=("-I" "${install_prefix}/external/boost/include")
 
-width=$(cd "${install_prefix}/include"; find * -type f | sed -e 's,.,X,g' | sort | tail -n 1 | wc -c)
+width=$(cd "${install_prefix}/include"; find -name "*" -type f -not -path "*/util-qt/*" | sed -e 's,.,X,g' | sort | tail -n 1 | wc -c)
 
 process_pool_locks=()
 outputs=()
@@ -58,7 +58,7 @@ do
   pids+=(${!})
 
   lock_id=$(((lock_id + 1) % ${#process_pool_locks[@]}))
-done < <(cd "${install_prefix}/include"; find * -type f | grep -v 'ipp$')
+done < <(cd "${install_prefix}/include"; find -name "*" -type f -not -path "*/util-qt/*" | grep -v 'ipp$')
 
 ec=0
 for ((i = 0; i < ${#pids[@]}; ++i))

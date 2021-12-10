@@ -32,7 +32,7 @@ if (BUILD_TESTING)
     TYPE STATIC
     SOURCES "jobserver/client.cpp"
     LIBRARIES
-      PRIVATE RPC
+      PRIVATE Util::RPC
       PRIVATE Util::Generic
   )
   gspc_add_library (NAME we_test_eureka_jobserver_provider
@@ -40,7 +40,7 @@ if (BUILD_TESTING)
     NAMESPACE GSPC
     SOURCES "jobserver/provider.cpp"
     LIBRARIES
-      PRIVATE RPC
+      PRIVATE Util::RPC
       PRIVATE Util::Generic
   )
 endif()
@@ -50,7 +50,7 @@ macro (add_we_eureka_test what)
     SOURCES "${what}.cpp"
     USE_BOOST
     ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
-         --source-directory "${CMAKE_SOURCE_DIR}/src"
+         --source-directory "${PROJECT_SOURCE_DIR}/src"
          --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
          --jobserver-client "$<TARGET_FILE:GSPC-we_test_eureka_jobserver_client>"
     LIBRARIES PRIVATE GSPC::we_test_eureka_Fixture

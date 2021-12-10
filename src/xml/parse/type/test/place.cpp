@@ -43,12 +43,12 @@ BOOST_AUTO_TEST_CASE (dump_no_virtual)
       , name
       , type
       , false
-      , boost::none
+      , ::boost::none
       )
     );
 
   std::string const expected
-    ( ( boost::format (R"EOS(<place name="%1%" type="%2%" virtual="false"/>)EOS")
+    ( ( ::boost::format (R"EOS(<place name="%1%" type="%2%" virtual="false"/>)EOS")
       % name
       % type
       ).str()
@@ -73,12 +73,12 @@ BOOST_AUTO_TEST_CASE (dump_virtual)
       , name
       , type
       , true
-      , boost::none
+      , ::boost::none
       )
     );
 
   std::string const expected
-    ( ( boost::format (R"EOS(<place name="%1%" type="%2%" virtual="true"/>)EOS")
+    ( ( ::boost::format (R"EOS(<place name="%1%" type="%2%" virtual="true"/>)EOS")
       % name
       % type
       ).str()
@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE (dump_token)
     , name
     , type
     , true
-    , boost::none
+    , ::boost::none
     );
 
   std::string const token (fhg::util::testing::random_content_string());
@@ -111,7 +111,7 @@ BOOST_AUTO_TEST_CASE (dump_token)
   xml::parse::type::dump::dump (os, place);
 
   std::string const expected
-    ( ( boost::format (R"EOS(<place name="%1%" type="%2%" virtual="true">
+    ( ( ::boost::format (R"EOS(<place name="%1%" type="%2%" virtual="true">
   <token>
     <value>%3%</value>
   </token>
@@ -139,7 +139,7 @@ BOOST_AUTO_TEST_CASE (dump_tokens)
     , name
     , type
     , true
-    , boost::none
+    , ::boost::none
     );
 
   std::list<std::string> const tokens
@@ -155,7 +155,7 @@ BOOST_AUTO_TEST_CASE (dump_tokens)
   BOOST_REQUIRE_EQUAL (tokens.size(), 2);
 
   std::string const expected
-    ( ( boost::format (R"EOS(<place name="%1%" type="%2%" virtual="true">
+    ( ( ::boost::format (R"EOS(<place name="%1%" type="%2%" virtual="true">
   <token>
     <value>%3%</value>
   </token>

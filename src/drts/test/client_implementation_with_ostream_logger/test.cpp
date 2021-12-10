@@ -24,12 +24,12 @@
 
 #include <logging/stream_receiver.hpp>
 
-#include <test/certificates_data.hpp>
-#include <test/make.hpp>
-#include <test/parse_command_line.hpp>
-#include <test/scoped_nodefile_from_environment.hpp>
-#include <test/shared_directory.hpp>
-#include <test/source_directory.hpp>
+#include <testing/certificates_data.hpp>
+#include <testing/make.hpp>
+#include <testing/parse_command_line.hpp>
+#include <testing/scoped_nodefile_from_environment.hpp>
+#include <testing/shared_directory.hpp>
+#include <testing/source_directory.hpp>
 
 #include <util-generic/hostname.hpp>
 #include <util-generic/join.hpp>
@@ -39,8 +39,8 @@
 #include <util-generic/testing/printer/optional.hpp>
 #include <util-generic/testing/random.hpp>
 
-#include <fhg/util/boost/program_options/validators/existing_path.hpp>
-#include <fhg/util/boost/program_options/generic.hpp>
+#include <util-generic/boost/program_options/validators/existing_path.hpp>
+#include <util-generic/boost/program_options/generic.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
@@ -52,7 +52,7 @@
 BOOST_DATA_TEST_CASE
   (client_implementation_with_ostream_logger, certificates_data, certificates)
 {
-  boost::program_options::options_description options_description;
+  ::boost::program_options::options_description options_description;
 
   options_description.add (test::options::source_directory());
   options_description.add (test::options::shared_directory());
@@ -62,15 +62,15 @@ BOOST_DATA_TEST_CASE
   //! \todo switch to generic interface
   options_description.add_options()
     ( "implementation"
-    , boost::program_options::value
+    , ::boost::program_options::value
       <fhg::util::boost::program_options::existing_path>()->required()
     , "implementation"
     );
 
-  boost::program_options::variables_map vm
+  ::boost::program_options::variables_map vm
     ( test::parse_command_line
-        ( boost::unit_test::framework::master_test_suite().argc
-        , boost::unit_test::framework::master_test_suite().argv
+        ( ::boost::unit_test::framework::master_test_suite().argc
+        , ::boost::unit_test::framework::master_test_suite().argv
         , options_description
         )
     );
@@ -84,8 +84,8 @@ BOOST_DATA_TEST_CASE
     (shared_directory, vm);
 
   fhg::util::temporary_path const _installation_dir
-    (shared_directory / boost::filesystem::unique_path());
-  boost::filesystem::path const installation_dir (_installation_dir);
+    (shared_directory / ::boost::filesystem::unique_path());
+  ::boost::filesystem::path const installation_dir (_installation_dir);
 
   gspc::set_application_search_path (vm, installation_dir);
 
@@ -126,7 +126,7 @@ BOOST_DATA_TEST_CASE
       }
     );
 
-  boost::filesystem::path const implementation
+  ::boost::filesystem::path const implementation
     ( vm.at ("implementation")
     . as<fhg::util::boost::program_options::existing_path>()
     );

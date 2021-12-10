@@ -64,18 +64,18 @@ namespace xml
         port_type ( util::position_type const&
                   , std::string const& name
                   , std::string const& _type
-                  , boost::optional<std::string> const& _place
+                  , ::boost::optional<std::string> const& _place
                   , we::type::PortDirection const& direction
                   , we::type::property::type const& properties
                   = we::type::property::type()
-                  , boost::optional<pnet::type::signature::signature_type> = boost::none
+                  , ::boost::optional<pnet::type::signature::signature_type> = ::boost::none
                   );
 
         port_type specialized ( type::type_map_type const& map_in
                               , state::type const&
                               ) const;
 
-        void type_check ( boost::filesystem::path const&
+        void type_check ( ::boost::filesystem::path const&
                         , state::type const&
                         , function_type const& parent
                         ) const;
@@ -90,7 +90,7 @@ namespace xml
 
         we::type::PortDirection const& direction() const;
 
-        boost::optional<place_type const&> resolved_place
+        ::boost::optional<place_type const&> resolved_place
           (net_type const& parent) const;
 
         we::type::property::type const& properties() const;
@@ -104,11 +104,11 @@ namespace xml
       private:
         std::string const _name;
         std::string _type;
-        boost::optional<pnet::type::signature::signature_type> _signature;
+        ::boost::optional<pnet::type::signature::signature_type> _signature;
 
         //! \todo All these should be private with accessors.
       public:
-        boost::optional<std::string> place;
+        ::boost::optional<std::string> place;
 
       private:
         we::type::PortDirection const _direction;

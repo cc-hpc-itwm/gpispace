@@ -27,9 +27,9 @@
 #include <iml/rif/strategy/pbsdsh.hpp>
 #include <iml/rif/strategy/ssh.hpp>
 
-#include <rpc/service_tcp_provider.hpp>
-#include <rpc/service_dispatcher.hpp>
-#include <rpc/service_handler.hpp>
+#include <util-rpc/service_tcp_provider.hpp>
+#include <util-rpc/service_dispatcher.hpp>
+#include <util-rpc/service_handler.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -58,10 +58,10 @@ namespace fhg
             std::function
               < std::unordered_map<std::string, std::exception_ptr>
                   ( std::vector<std::string> const&
-                  , boost::optional<unsigned short> const&
+                  , ::boost::optional<unsigned short> const&
                   , std::string const&
                   , unsigned short
-                  , boost::filesystem::path const&
+                  , ::boost::filesystem::path const&
                   , std::vector<std::string> const&
                   , std::ostream&
                   )
@@ -96,7 +96,7 @@ namespace fhg
 
         std::vector<std::string> available_strategies()
         {
-          auto const _ (strategies | boost::adaptors::map_keys);
+          auto const _ (strategies | ::boost::adaptors::map_keys);
           return {_.begin(), _.end()};
         }
 
@@ -123,7 +123,7 @@ namespace fhg
                    > bootstrap
           ( std::string const& strategy
           , std::vector<std::string> const& hostnames_in
-          , boost::optional<unsigned short> const& port
+          , ::boost::optional<unsigned short> const& port
           , std::vector<std::string> const& parameters
           , std::ostream& out
           )
@@ -163,7 +163,7 @@ namespace fhg
           fhg::rpc::service_tcp_provider rpc_server
             (io_service, service_dispatcher);
 
-          boost::asio::ip::tcp::endpoint const local_endpoint
+          ::boost::asio::ip::tcp::endpoint const local_endpoint
             (rpc_server.local_endpoint());
 
           ::iml::detail::Installation const installation;

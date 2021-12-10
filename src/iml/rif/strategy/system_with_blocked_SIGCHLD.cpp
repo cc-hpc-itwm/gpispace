@@ -52,7 +52,7 @@ namespace fhg
         if (int ec = std::system (command.c_str()))
         {
           throw std::runtime_error
-            (( boost::format ("Could not run '%1%': error code '%2%'")
+            (( ::boost::format ("Could not run '%1%': error code '%2%'")
              % command
              % ec
              ).str()

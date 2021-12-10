@@ -28,7 +28,7 @@ namespace iml
   //! \see gaspi::SegmentDescription, beegfs::SegmentDescription,
   //! Client::create_segment()
   using SegmentDescription
-    = boost::variant < gaspi::SegmentDescription
+    = ::boost::variant < gaspi::SegmentDescription
                      , beegfs::SegmentDescription
                      >;
 }

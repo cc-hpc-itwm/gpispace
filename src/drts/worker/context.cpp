@@ -158,10 +158,10 @@ namespace drts
               {
                 fhg::util::syscall::kill (child, SIGUSR2);
               }
-              catch (boost::system::system_error const& se)
+              catch (::boost::system::system_error const& se)
               {
                 // ignore: race with normally exiting child (waited below)
-                if (se.code() != boost::system::errc::no_such_process)
+                if (se.code() != ::boost::system::errc::no_such_process)
                 {
                   throw;
                 }
@@ -177,7 +177,7 @@ namespace drts
         if (fhg::util::syscall::waitpid (child, &status, 0) != child)
         {
           throw std::logic_error
-            ((boost::format ("wait (%1%) != %1%") % child).str());
+            ((::boost::format ("wait (%1%) != %1%") % child).str());
         }
 
         if (fhg::util::wifsignaled (status))
@@ -193,8 +193,8 @@ namespace drts
         {
           if (fhg::util::wexitstatus (status) == 1)
           {
-            boost::iostreams::stream<boost::iostreams::file_descriptor_source>
-              pipe_read (pipe_fds[0], boost::iostreams::never_close_handle);
+            ::boost::iostreams::stream<::boost::iostreams::file_descriptor_source>
+              pipe_read (pipe_fds[0], ::boost::iostreams::never_close_handle);
 
             pipe_read >> std::noskipws;
 
@@ -235,8 +235,8 @@ namespace drts
         }
         catch (...)
         {
-          boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
-            (pipe_fds[1], boost::iostreams::never_close_handle) <<
+          ::boost::iostreams::stream<::boost::iostreams::file_descriptor_sink>
+            (pipe_fds[1], ::boost::iostreams::never_close_handle) <<
               fhg::util::serialization::exception::serialize
                 (std::current_exception());
 

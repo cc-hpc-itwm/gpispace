@@ -73,7 +73,7 @@ namespace we
       explicit Activity () = default;
       explicit Activity (we::type::Transition);
 
-      explicit Activity (boost::filesystem::path const&);
+      explicit Activity (::boost::filesystem::path const&);
       explicit Activity (std::istream&);
       explicit Activity (std::string const&);
 
@@ -92,7 +92,7 @@ namespace we
 
       //! evaluates the eureka expression once and memorizes the value
       //! for subsequent calls
-      boost::optional<eureka_id_type> const& eureka_id();
+      ::boost::optional<eureka_id_type> const& eureka_id();
 
       void set_wait_for_output();
       void put_token
@@ -101,7 +101,7 @@ namespace we
                   , workflow_response_callback
                   , eureka_response_callback
                   );
-      boost::optional<Activity>
+      ::boost::optional<Activity>
         extract ( std::mt19937&
                 , workflow_response_callback const&
                 , eureka_response_callback const&
@@ -129,7 +129,7 @@ namespace we
         ( we::loader::loader&
         , iml::Client /*const*/ *
         , iml::SharedMemoryAllocation /* const */ *
-        , boost::optional<std::string> target_implementation
+        , ::boost::optional<std::string> target_implementation
         , drts::worker::context*
         );
 
@@ -152,21 +152,21 @@ namespace we
       we::type::Transition& mutable_transition();
 
       we::type::Transition _transition;
-      boost::optional<we::transition_id_type> _transition_id;
+      ::boost::optional<we::transition_id_type> _transition_id;
 
       friend class net_type;
       TokensOnPorts _input;
       TokensOnPorts _output;
 
       bool _evaluation_context_requested {false};
-      boost::optional<eureka_id_type> _eureka_id;
+      ::boost::optional<eureka_id_type> _eureka_id;
 
       explicit Activity
         ( we::type::Transition
-        , boost::optional<we::transition_id_type>
+        , ::boost::optional<we::transition_id_type>
         );
 
-      friend class boost::serialization::access;
+      friend class ::boost::serialization::access;
       template<class Archive>
         void serialize (Archive&, unsigned int);
 

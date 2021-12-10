@@ -36,13 +36,13 @@ namespace fhg
         {
         public:
           open ( fhg::util::indenter&
-               , boost::optional<std::string> const& = boost::none
+               , ::boost::optional<std::string> const& = ::boost::none
                );
           virtual std::ostream& operator() (std::ostream&) const override;
 
         private:
           fhg::util::indenter& _indent;
-          const boost::optional<std::string> _tag;
+          const ::boost::optional<std::string> _tag;
         };
 
         class close : public ostream::modifier

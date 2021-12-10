@@ -41,7 +41,6 @@
 #include <we/type/signature.hpp>
 #include <we/type/signature/show.hpp>
 
-#include <fhg/util/boost/optional.hpp>
 #include <util-generic/join.hpp>
 
 #include <rapidxml.hpp>
@@ -51,6 +50,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
 #include <boost/optional.hpp>
+#include <boost/optional/optional_io.hpp>
 
 namespace xml
 {
@@ -65,7 +65,7 @@ namespace xml
           : std::runtime_error ("ERROR: " + msg)
         { }
 
-        generic (boost::format const& bf)
+        generic (::boost::format const& bf)
           : generic (bf.str())
         { }
 
@@ -73,16 +73,16 @@ namespace xml
           : generic (pre + ": " + msg)
         { }
 
-        generic ( boost::format const& format
-                , boost::filesystem::path const& path
+        generic ( ::boost::format const& format
+                , ::boost::filesystem::path const& path
                 )
-          : generic (boost::format ("%1% in %2%") % format % path)
+          : generic (::boost::format ("%1% in %2%") % format % path)
         {}
 
-        generic ( boost::format const& format
+        generic ( ::boost::format const& format
                 , util::position_type const& position
                 )
-          : generic (boost::format ("%1% in %2%") % format % position)
+          : generic (::boost::format ("%1% in %2%") % format % position)
         {}
       };
 
@@ -119,7 +119,7 @@ namespace xml
       class no_elements_given : public generic
       {
       public:
-        no_elements_given (std::string const&, boost::filesystem::path const&);
+        no_elements_given (std::string const&, ::boost::filesystem::path const&);
       };
 
       // ******************************************************************* //
@@ -178,9 +178,9 @@ namespace xml
       class file_already_there : public generic
       {
       public:
-        explicit file_already_there (boost::filesystem::path const& file)
+        explicit file_already_there (::boost::filesystem::path const& file)
           : generic
-            ( boost::format ("file %1% already there with a different content")
+            ( ::boost::format ("file %1% already there with a different content")
             % file
             )
         {}
@@ -226,9 +226,9 @@ namespace xml
       {
       public:
         struct_field_redefined ( std::string const& name
-                               , boost::filesystem::path const& path
+                               , ::boost::filesystem::path const& path
                                )
-          : generic ( boost::format ("struct field '%1%' redefined")
+          : generic ( ::boost::format ("struct field '%1%' redefined")
                     % name , path
                     )
         {}
@@ -247,11 +247,11 @@ namespace xml
       public:
         parse_lift ( std::string const& place
                    , std::string const& field
-                   , boost::filesystem::path const& path
+                   , ::boost::filesystem::path const& path
                    , std::string const& msg
                    )
           : generic
-            ( boost::format
+            ( ::boost::format
               ("when reading a value for place %1%%2% from %3%: %4%")
             % place
             % (field.empty() ? "" : (" for field " + field))
@@ -281,9 +281,9 @@ namespace xml
       public:
         generic_duplicate ( T const& early
                           , T const& late
-                          , boost::format const& fmt
+                          , ::boost::format const& fmt
                           )
-          : generic ( boost::format ( "duplicate %1% at %2%"
+          : generic ( ::boost::format ( "duplicate %1% at %2%"
                                       ", earlier definition is at %3%"
                                     )
                     % fmt
@@ -403,10 +403,10 @@ namespace xml
         port_with_unknown_type ( we::type::PortDirection const& direction
                                , std::string const& port
                                , std::string const& type
-                               , boost::filesystem::path const& path
+                               , ::boost::filesystem::path const& path
                                )
           : generic
-            ( boost::format ("%1% %2% with unknown type %3%")
+            ( ::boost::format ("%1% %2% with unknown type %3%")
             % direction
             % port
             % type
@@ -425,10 +425,10 @@ namespace xml
         , std::string const& port_name
         , std::string const& mod_name
         , std::string const& mod_function
-        , boost::filesystem::path const& path
+        , ::boost::filesystem::path const& path
         )
           : generic
-            ( boost::format
+            ( ::boost::format
               ("unknown %1% port %2% in description of function %3%.%4%")
             % port_type
             % port_name
@@ -445,11 +445,11 @@ namespace xml
       {
       public:
         port_connected_place_nonexistent ( type::port_type const&
-                                         , boost::filesystem::path const&
+                                         , ::boost::filesystem::path const&
                                          );
 
       private:
-        const boost::filesystem::path _path;
+        const ::boost::filesystem::path _path;
       };
 
       // ******************************************************************* //
@@ -459,11 +459,11 @@ namespace xml
       public:
         tunnel_connected_non_virtual ( type::port_type const&
                                      , type::place_type const&
-                                     , boost::filesystem::path const&
+                                     , ::boost::filesystem::path const&
                                      );
 
       private:
-        const boost::filesystem::path _path;
+        const ::boost::filesystem::path _path;
       };
 
       // ******************************************************************* //
@@ -473,11 +473,11 @@ namespace xml
       public:
         tunnel_name_mismatch ( type::port_type const&
                              , type::place_type const&
-                             , boost::filesystem::path const&
+                             , ::boost::filesystem::path const&
                              );
 
       private:
-        const boost::filesystem::path _path;
+        const ::boost::filesystem::path _path;
       };
 
       // ******************************************************************* //
@@ -485,10 +485,10 @@ namespace xml
       class port_not_connected : public generic
       {
       public:
-        port_not_connected (type::port_type const&, boost::filesystem::path const&);
+        port_not_connected (type::port_type const&, ::boost::filesystem::path const&);
 
       private:
-        const boost::filesystem::path _path;
+        const ::boost::filesystem::path _path;
       };
 
       // ******************************************************************* //
@@ -498,11 +498,11 @@ namespace xml
       public:
         port_connected_type_error ( type::port_type const&
                                   , type::place_type const&
-                                  , boost::filesystem::path const&
+                                  , ::boost::filesystem::path const&
                                   );
 
       private:
-        const boost::filesystem::path _path;
+        const ::boost::filesystem::path _path;
       };
 
       // ******************************************************************* //
@@ -514,10 +514,10 @@ namespace xml
                                  , pnet::type::signature::signature_type const& sig_virtual
                                  , std::string const& name_real
                                  , pnet::type::signature::signature_type const& sig_real
-                                 , boost::filesystem::path const& path
+                                 , ::boost::filesystem::path const& path
                                  )
           : generic
-            ( boost::format
+            ( ::boost::format
               ( "type error: virtual place %1% of type %2%"
               " identified with real place %3% of type %4%"
               )
@@ -629,6 +629,10 @@ namespace xml
                                    , util::position_type const&
                                    );
         virtual ~memory_buffer_without_size() noexcept override = default;
+        memory_buffer_without_size (memory_buffer_without_size const&) = delete;
+        memory_buffer_without_size (memory_buffer_without_size&&) = default;
+        memory_buffer_without_size& operator= (memory_buffer_without_size const&) = delete;
+        memory_buffer_without_size& operator= (memory_buffer_without_size&&) = delete;
 
       private:
         std::string const _name;
@@ -640,6 +644,10 @@ namespace xml
       public:
         memory_buffer_for_non_module (type::function_type const&);
         ~memory_buffer_for_non_module() noexcept override = default;
+        memory_buffer_for_non_module (memory_buffer_for_non_module const&) = delete;
+        memory_buffer_for_non_module (memory_buffer_for_non_module&&) = default;
+        memory_buffer_for_non_module& operator= (memory_buffer_for_non_module const&) = delete;
+        memory_buffer_for_non_module& operator= (memory_buffer_for_non_module&&) = delete;
       };
 
       class memory_transfer_for_non_module : public generic
@@ -647,6 +655,10 @@ namespace xml
       public:
         memory_transfer_for_non_module (type::function_type const&);
         ~memory_transfer_for_non_module() noexcept override = default;
+        memory_transfer_for_non_module (memory_transfer_for_non_module const&) = delete;
+        memory_transfer_for_non_module (memory_transfer_for_non_module&&) = default;
+        memory_transfer_for_non_module& operator= (memory_transfer_for_non_module const&) = delete;
+        memory_transfer_for_non_module& operator= (memory_transfer_for_non_module&&) = delete;
       };
 
       class memory_buffer_with_same_name_as_port : public generic
@@ -655,6 +667,10 @@ namespace xml
         memory_buffer_with_same_name_as_port
           (type::memory_buffer_type const&, type::port_type const&);
         virtual ~memory_buffer_with_same_name_as_port() noexcept override = default;
+        memory_buffer_with_same_name_as_port (memory_buffer_with_same_name_as_port const&) = delete;
+        memory_buffer_with_same_name_as_port (memory_buffer_with_same_name_as_port&&) = default;
+        memory_buffer_with_same_name_as_port& operator= (memory_buffer_with_same_name_as_port const&) = delete;
+        memory_buffer_with_same_name_as_port& operator= (memory_buffer_for_non_module&&) = delete;
       };
 
       // ******************************************************************* //
@@ -664,10 +680,10 @@ namespace xml
       public:
         property_generic ( std::string const& msg
                          , we::type::property::path_type const& key
-                         , boost::filesystem::path const& path
+                         , ::boost::filesystem::path const& path
                          )
           : generic
-            ( boost::format ("%1% for property %2%")
+            ( ::boost::format ("%1% for property %2%")
             % msg
             % fhg::util::join (key, '.')
             , path
@@ -683,10 +699,10 @@ namespace xml
         type_map_mismatch ( std::string const& from
                           , std::string const& to_old
                           , std::string const& to_new
-                          , boost::filesystem::path const& path
+                          , ::boost::filesystem::path const& path
                           )
           : generic
-            ( boost::format ("type map mismatch, type %1% mapped to type %3%"
+            ( ::boost::format ("type map mismatch, type %1% mapped to type %3%"
                             " and earlier to type %3%"
                             )
             % from
@@ -704,10 +720,10 @@ namespace xml
       public:
         missing_type_out ( std::string const& type
                          , std::string const& spec
-                         , boost::filesystem::path const& path
+                         , ::boost::filesystem::path const& path
                          )
           : generic
-            ( boost::format ("missing type-out %1% in specialization %2%")
+            ( ::boost::format ("missing type-out %1% in specialization %2%")
             % type
             % spec
             , path
@@ -722,10 +738,10 @@ namespace xml
       public:
         invalid_prefix ( std::string const& name
                        , std::string const& type
-                       , boost::filesystem::path const& path
+                       , ::boost::filesystem::path const& path
                        )
           : generic
-            ( boost::format ("%2% %1% with invalid prefix")
+            ( ::boost::format ("%2% %1% with invalid prefix")
             % name
             % type
             , path
@@ -740,10 +756,10 @@ namespace xml
       public:
         invalid_name ( std::string const& name
                      , std::string const& type
-                     , boost::filesystem::path const& path
+                     , ::boost::filesystem::path const& path
                      )
           : generic
-            ( boost::format
+            ( ::boost::format
               ("%2% %1% is invalid (not of the form: [a-zA-Z_][a-zA-Z_0-9]^*)")
             % name
             % type
@@ -758,9 +774,9 @@ namespace xml
       {
       public:
         invalid_field_name ( std::string const& name
-                           , boost::filesystem::path const& path
+                           , ::boost::filesystem::path const& path
                            )
-          : generic (boost::format (" invalid field name %1%") % name, path)
+          : generic (::boost::format (" invalid field name %1%") % name, path)
         {}
       };
 
@@ -770,10 +786,10 @@ namespace xml
       {
       public:
         no_map_for_virtual_place ( std::string const& name
-                                 , boost::filesystem::path const& path
+                                 , ::boost::filesystem::path const& path
                                  )
           : generic
-            ( boost::format (" missing map for virtual place %1%") % name
+            ( ::boost::format (" missing map for virtual place %1%") % name
             , path
             )
         {}
@@ -797,10 +813,10 @@ namespace xml
         real_place_missing ( std::string const& place_virtual
                            , std::string const& place_real
                            , std::string const& trans
-                           , boost::filesystem::path const& path
+                           , ::boost::filesystem::path const& path
                            )
           : generic
-            ( boost::format
+            ( ::boost::format
               (" missing real place %2% to replace virtual place %1%"
               " in transition %3%"
               )
@@ -823,10 +839,10 @@ namespace xml
                     , std::string const& function
                     , std::string const& what
                     , std::size_t const& k
-                    , boost::filesystem::path const& path
+                    , ::boost::filesystem::path const& path
                     )
             : generic
-              ( boost::format
+              ( ::boost::format
                 (R"EOS(error while parsing a function description for module name %1% in %5%:
 %2%
 %4%^
@@ -849,7 +865,7 @@ namespace xml
                    , std::string const& function
                    , std::string const& what
                    , std::size_t const& k
-                   , boost::filesystem::path const& path
+                   , ::boost::filesystem::path const& path
                    )
             : formatted ( name
                         , function
@@ -866,12 +882,12 @@ namespace xml
       class could_not_open_file : public generic
       {
       public:
-        could_not_open_file (boost::filesystem::path const& file)
+        could_not_open_file (::boost::filesystem::path const& file)
           : could_not_open_file (file.string())
         {}
 
         could_not_open_file (std::string const& file)
-          : generic (boost::format ("could not open file %1%") % file)
+          : generic (::boost::format ("could not open file %1%") % file)
         {}
       };
 
@@ -880,8 +896,8 @@ namespace xml
       class could_not_create_directory : public generic
       {
       public:
-        could_not_create_directory (boost::filesystem::path const& path)
-          : generic (boost::format ("could not create directory %1%") % path)
+        could_not_create_directory (::boost::filesystem::path const& path)
+          : generic (::boost::format ("could not create directory %1%") % path)
         {}
       };
 
@@ -890,11 +906,11 @@ namespace xml
       class template_without_function : public generic
       {
       public:
-        template_without_function ( boost::optional<std::string> const& name
-                                  , boost::filesystem::path const& path
+        template_without_function ( ::boost::optional<std::string> const& name
+                                  , ::boost::filesystem::path const& path
                                   )
           : generic
-            (boost::format ("template %1% without a function") % name, path)
+            (::boost::format ("template %1% without a function") % name, path)
         {}
       };
 

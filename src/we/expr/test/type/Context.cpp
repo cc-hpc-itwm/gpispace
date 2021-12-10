@@ -214,12 +214,12 @@ namespace expr
             }
           , fhg::util::testing::make_nested
             ( exception::type::error
-              ( boost::format ("expr::type::Context::bind (%1%, '%2%')")
+              ( ::boost::format ("expr::type::Context::bind (%1%, '%2%')")
               % path
               % typeB
               )
             , exception::type::error
-              ( boost::format ("At %3%: Can not assign a value of type '%2%' to a value of type '%1%'")
+              ( ::boost::format ("At %3%: Can not assign a value of type '%2%' to a value of type '%1%'")
               % typeA
               % typeB
               % path
@@ -256,12 +256,12 @@ namespace expr
           }
         , fhg::util::testing::make_nested
           ( exception::type::error
-            ( boost::format ("expr::type::Context::bind (%1%, '%2%')")
+            ( ::boost::format ("expr::type::Context::bind (%1%, '%2%')")
             % Path {prefix}
             % typeB
             )
           , exception::type::error
-            ( boost::format ("At %3%: Can not assign a value of type '%2%' to a value of type '%1%'")
+            ( ::boost::format ("At %3%: Can not assign a value of type '%2%' to a value of type '%1%'")
             % chain (std::begin (suffix), std::end (suffix), typeA)
             % typeB
             % Path {prefix}
@@ -296,12 +296,12 @@ namespace expr
           }
         , fhg::util::testing::make_nested
           ( exception::type::error
-            ( boost::format ("expr::type::Context::bind (${%1%}, '%2%')")
+            ( ::boost::format ("expr::type::Context::bind (${%1%}, '%2%')")
             % fhg::util::join (path, ".")
             % deeper
             )
           , exception::type::error
-            ( boost::format ("Not a struct at ${%1%}: '%2%'")
+            ( ::boost::format ("Not a struct at ${%1%}: '%2%'")
             % fhg::util::join (prefix, ".")
             % leaf
             )

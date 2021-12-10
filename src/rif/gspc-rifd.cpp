@@ -21,8 +21,8 @@
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/exit_status.hpp>
 #include <util-generic/syscall.hpp>
-#include <fhg/util/boost/program_options/validators/positive_integral.hpp>
-#include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
+#include <util-generic/boost/program_options/validators/positive_integral.hpp>
+#include <util-generic/boost/program_options/validators/nonempty_string.hpp>
 #include <util-generic/hostname.hpp>
 #include <util-generic/join.hpp>
 #include <util-generic/nest_exceptions.hpp>
@@ -38,13 +38,13 @@
 #include <rif/protocol.hpp>
 #include <rif/strategy/meta.hpp>
 
-#include <rpc/future.hpp>
-#include <rpc/remote_function.hpp>
-#include <rpc/remote_socket_endpoint.hpp>
-#include <rpc/remote_tcp_endpoint.hpp>
-#include <rpc/service_dispatcher.hpp>
-#include <rpc/service_handler.hpp>
-#include <rpc/service_tcp_provider.hpp>
+#include <util-rpc/future.hpp>
+#include <util-rpc/remote_function.hpp>
+#include <util-rpc/remote_socket_endpoint.hpp>
+#include <util-rpc/remote_tcp_endpoint.hpp>
+#include <util-rpc/service_dispatcher.hpp>
+#include <util-rpc/service_handler.hpp>
+#include <util-rpc/service_tcp_provider.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -110,50 +110,50 @@ namespace
 int main (int argc, char** argv)
 try
 {
-  boost::program_options::options_description options_description;
+  ::boost::program_options::options_description options_description;
   options_description.add_options()
     ( option::port
-    , boost::program_options::value
+    , ::boost::program_options::value
         <fhg::util::boost::program_options::positive_integral<unsigned short>>()
     , "port to listen on"
     )
     ( option::register_host
-    , boost::program_options::value<std::string>()->required()
+    , ::boost::program_options::value<std::string>()->required()
     , "host register server is running on"
     )
     ( option::register_port
-    , boost::program_options::value
+    , ::boost::program_options::value
         <fhg::util::boost::program_options::positive_integral<unsigned short>>()
         ->required()
     , "port register server is listening on"
     )
     ( option::register_key
-    , boost::program_options::value
+    , ::boost::program_options::value
         <fhg::util::boost::program_options::nonempty_string>()
         ->required()
     , "key to register with"
     )
     ;
 
-  boost::program_options::variables_map vm;
-  boost::program_options::store
-    ( boost::program_options::command_line_parser (argc, argv)
+  ::boost::program_options::variables_map vm;
+  ::boost::program_options::store
+    ( ::boost::program_options::command_line_parser (argc, argv)
       .options (options_description)
       .run()
     , vm
     );
 
-  boost::program_options::notify (vm);
+  ::boost::program_options::notify (vm);
 
-  boost::optional<unsigned short> const port
+  ::boost::optional<unsigned short> const port
     ( vm.count (option::port)
-    ? boost::make_optional<unsigned short>
+    ? ::boost::make_optional<unsigned short>
       ( static_cast<unsigned short>
         ( vm.at (option::port)
         . as<fhg::util::boost::program_options::positive_integral<unsigned short>>()
         )
       )
-    : boost::none
+    : ::boost::none
     );
 
   if (port)
@@ -184,7 +184,7 @@ try
   fhg::rpc::service_handler<fhg::rif::protocol::execute_and_get_startup_messages_and_wait>
     execute_and_get_startup_messages_and_wait_service
       ( service_dispatcher
-      , [] ( boost::filesystem::path command
+      , [] ( ::boost::filesystem::path command
            , std::vector<std::string> arguments
            , std::unordered_map<std::string, std::string> environment
            )
@@ -231,10 +231,10 @@ try
     start_agent_service
       ( service_dispatcher
       , [] ( std::string const& name
-           , boost::optional<unsigned short> const& agent_port
-           , boost::optional<boost::filesystem::path> const& gpi_socket
+           , ::boost::optional<unsigned short> const& agent_port
+           , ::boost::optional<::boost::filesystem::path> const& gpi_socket
            , gspc::Certificates const& certificates
-           , boost::filesystem::path const& command
+           , ::boost::filesystem::path const& command
            )
         {
           std::vector<std::string> arguments
@@ -271,7 +271,7 @@ try
           fhg::rif::protocol::start_scheduler_result result;
           result.pid = startup_result.pid;
           result.hostinfo
-            = {messages[0], boost::lexical_cast<unsigned short> (messages[1])};
+            = {messages[0], ::boost::lexical_cast<unsigned short> (messages[1])};
           result.logger_registration_endpoint = messages[2];
           return result;
         }
@@ -282,7 +282,7 @@ try
     start_worker_service
       ( service_dispatcher
       , [] ( std::string name
-           , boost::filesystem::path command
+           , ::boost::filesystem::path command
            , std::vector<std::string> arguments
            , std::unordered_map<std::string, std::string> environment
            )
@@ -321,7 +321,7 @@ try
     start_logging_demultiplexer_service
       ( service_dispatcher
       , [&add_emitters_endpoints, &io_service]
-          (boost::asio::yield_context yield, boost::filesystem::path exe)
+          (::boost::asio::yield_context yield, ::boost::filesystem::path exe)
         {
           auto const startup_result
             ( fhg::rif::execute_and_get_startup_messages
@@ -359,7 +359,7 @@ try
     add_emitter_to_logging_demultiplexer_service
       ( service_dispatcher
       , [&add_emitters_endpoints]
-          ( boost::asio::yield_context yield
+          ( ::boost::asio::yield_context yield
           , pid_t pid
           , std::vector<fhg::logging::endpoint> emitters
           )
@@ -390,7 +390,7 @@ try
     fhg::rpc::remote_tcp_endpoint endpoint
       (io_service_parent, register_host, register_port);
 
-    boost::asio::ip::tcp::endpoint const local_endpoint
+    ::boost::asio::ip::tcp::endpoint const local_endpoint
       (server.local_endpoint());
 
     fhg::rpc::sync_remote_function<fhg::rif::strategy::bootstrap_callback>

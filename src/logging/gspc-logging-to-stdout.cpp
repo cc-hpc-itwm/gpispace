@@ -18,7 +18,7 @@
 #include <logging/stdout_sink.hpp>
 #include <logging/tcp_server_providing_add_emitters.hpp>
 
-#include <fhg/util/boost/program_options/generic.hpp>
+#include <util-generic/boost/program_options/generic.hpp>
 #include <util-generic/print_exception.hpp>
 #include <util-generic/syscall.hpp>
 #include <util-generic/syscall/process_signal_block.hpp>
@@ -47,7 +47,7 @@ try
   fhg::util::syscall::signal_set const signals {SIGINT, SIGTERM};
   fhg::util::syscall::process_signal_block const signal_block (signals);
 
-  boost::program_options::variables_map const vm
+  ::boost::program_options::variables_map const vm
     ( fhg::util::boost::program_options::options ("GPI-Space Logging to stdout")
     . add (option::emitters)
     . add (option::port)
@@ -56,12 +56,12 @@ try
 
   fhg::logging::stdout_sink impl (option::emitters.get_from_or_value (vm, {}));
 
-  boost::optional<fhg::logging::tcp_server_providing_add_emitters>
+  ::boost::optional<fhg::logging::tcp_server_providing_add_emitters>
     tcp_server_providing_add_emitters;
   auto const port (option::port.get<unsigned short> (vm));
   if (port)
   {
-    tcp_server_providing_add_emitters = boost::in_place (&impl, *port);
+    tcp_server_providing_add_emitters = ::boost::in_place (&impl, *port);
   }
 
   fhg::util::syscall::sigwaitinfo (&signals._, nullptr);

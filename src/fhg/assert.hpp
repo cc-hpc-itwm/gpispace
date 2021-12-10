@@ -59,7 +59,7 @@
     if (! (cond))                                                       \
     {                                                                   \
       throw std::logic_error                                            \
-        ( ( boost::format ("[%1%:%2%] assertion '%3%' failed%4%%5%.")   \
+        ( ( ::boost::format ("[%1%:%2%] assertion '%3%' failed%4%%5%.")   \
           % __FILE__                                                    \
           % __LINE__                                                    \
           % FHG_ASSERT_STR (cond)                                       \

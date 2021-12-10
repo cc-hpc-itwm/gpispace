@@ -28,14 +28,14 @@
 
 BOOST_AUTO_TEST_CASE (scoped_rifd_from_command_line)
 {
-  boost::program_options::options_description options_description;
+  ::boost::program_options::options_description options_description;
 
   options_description.add (iml::Rifs::options());
 
-  boost::program_options::variables_map vm
+  ::boost::program_options::variables_map vm
     ( iml_test::parse_command_line
-        ( boost::unit_test::framework::master_test_suite().argc
-        , boost::unit_test::framework::master_test_suite().argv
+        ( ::boost::unit_test::framework::master_test_suite().argc
+        , ::boost::unit_test::framework::master_test_suite().argv
         , options_description
         )
     );

@@ -66,28 +66,28 @@ namespace gpi
         }
         namespace
         {
-          boost::filesystem::path lock_info_path (boost::filesystem::path const& path)
+          ::boost::filesystem::path lock_info_path (::boost::filesystem::path const& path)
           {
             return lock_path (path) / "info";
           }
 
           struct lock_info
           {
-            lock_info (boost::filesystem::path const& path)
+            lock_info (::boost::filesystem::path const& path)
             {
               std::string const content
                 (fhg::util::read_file (detail::lock_info_path (path)));
               std::istringstream iss (content);
-              boost::archive::text_iarchive ia (iss);
+              ::boost::archive::text_iarchive ia (iss);
               ia & hostname;
               ia & pid;
             }
 
             static void write_local_information
-              (boost::filesystem::path const& path)
+              (::boost::filesystem::path const& path)
             {
               std::ostringstream oss;
-              boost::archive::text_oarchive oa (oss);
+              ::boost::archive::text_oarchive oa (oss);
               oa & fhg::util::hostname();
               oa & fhg::util::syscall::getpid();
               fhg::util::write_file
@@ -103,7 +103,7 @@ namespace gpi
       {
         struct scoped_file
         {
-          scoped_file ( boost::filesystem::path const& path
+          scoped_file ( ::boost::filesystem::path const& path
                       , int flags
                       , unsigned int perms
                       )
@@ -170,7 +170,7 @@ namespace gpi
       }
       catch (...)
       {
-        boost::optional<std::string> additional_information;
+        ::boost::optional<std::string> additional_information;
         try
         {
           detail::lock_info const existing (area.m_path);
@@ -191,7 +191,7 @@ namespace gpi
         std::throw_with_nested
           ( std::runtime_error
               ( "segment is still locked or creating lock at directory "
-              + static_cast<boost::filesystem::path const&> (*this).string()
+              + static_cast<::boost::filesystem::path const&> (*this).string()
               + " failed" + additional_information.get_value_or ("")
               )
           );
@@ -201,14 +201,14 @@ namespace gpi
       {
         if (_is_creator)
         {
-          if (boost::filesystem::exists (m_path))
+          if (::boost::filesystem::exists (m_path))
           {
             throw std::runtime_error ( "unable to create BeeGFS segment: "
                                      + m_path.string() + " already exists"
                                      );
           }
 
-          boost::filesystem::create_directories (m_path);
+          ::boost::filesystem::create_directories (m_path);
 
           {
             fhg::util::write_file ( detail::version_path (m_path)
@@ -231,9 +231,9 @@ namespace gpi
             {
               if (!succeeded && _is_creator)
               {
-                boost::filesystem::remove (detail::data_path (m_path));
-                boost::filesystem::remove (detail::version_path (m_path));
-                boost::filesystem::remove (m_path);
+                ::boost::filesystem::remove (detail::data_path (m_path));
+                ::boost::filesystem::remove (detail::version_path (m_path));
+                ::boost::filesystem::remove (m_path);
               }
             }
           );
@@ -244,7 +244,7 @@ namespace gpi
 
         {
           auto const found_version
-            ( [&]() -> boost::optional<std::string>
+            ( [&]() -> ::boost::optional<std::string>
               {
                 try
                 {
@@ -253,7 +253,7 @@ namespace gpi
                 }
                 catch (...)
                 {
-                  return boost::none;
+                  return ::boost::none;
                 }
               }()
             );
@@ -307,12 +307,12 @@ namespace gpi
       {
         if (_is_creator)
         {
-          boost::filesystem::remove (detail::data_path (m_path));
-          boost::filesystem::remove (detail::version_path (m_path));
+          ::boost::filesystem::remove (detail::data_path (m_path));
+          ::boost::filesystem::remove (detail::version_path (m_path));
 
           _lock_file.reset();
 
-          boost::filesystem::remove (m_path);
+          ::boost::filesystem::remove (m_path);
         }
       }
 

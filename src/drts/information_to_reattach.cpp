@@ -39,15 +39,15 @@ namespace gspc
     template <typename T>
     T const& get_or_throw (std::list<std::string> const& path, pnet::type::value::value_type const& value)
     {
-      boost::optional<pnet::type::value::value_type const&> const v
+      ::boost::optional<pnet::type::value::value_type const&> const v
         (pnet::type::value::peek (path, value));
       if (v)
       {
         try
         {
-          return boost::get<T> (*v);
+          return ::boost::get<T> (*v);
         }
-        catch (boost::bad_get const&)
+        catch (::boost::bad_get const&)
         {
           throw std::logic_error
             ( "value did not had correct type at path: "

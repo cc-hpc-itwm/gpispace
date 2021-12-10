@@ -40,10 +40,10 @@ namespace fhg
         {
           std::unordered_map<std::string, std::exception_ptr>
             bootstrap ( std::vector<std::string> const& hostnames
-                      , boost::optional<unsigned short> const& port
+                      , ::boost::optional<unsigned short> const& port
                       , std::string const& register_host
                       , unsigned short register_port
-                      , boost::filesystem::path const& binary
+                      , ::boost::filesystem::path const& binary
                       , std::vector<std::string> const& parameters
                       , std::ostream&
                       );

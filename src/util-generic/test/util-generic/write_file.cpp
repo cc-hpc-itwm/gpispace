@@ -41,7 +41,7 @@ FHG_UTIL_TESTING_TEMPLATED_CASE (write_file_stores_content, int, std::string)
 {
   fhg::util::temporary_path const path;
   fhg::util::temporary_file const file
-    (path / boost::filesystem::unique_path());
+    (path / ::boost::filesystem::unique_path());
 
   auto const content (fhg::util::testing::random<T>{}());
 
@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_CASE (write_file_overwrites)
 {
   fhg::util::temporary_path const path;
   fhg::util::temporary_file const file
-    (path / boost::filesystem::unique_path());
+    (path / ::boost::filesystem::unique_path());
 
   std::string const base {fhg::util::testing::random<std::string>()()};
 
@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE (write_file_overwrites)
 
 BOOST_AUTO_TEST_CASE (write_file_throws_when_file_can_not_opened)
 {
-  boost::filesystem::path const file ("/");
+  ::boost::filesystem::path const file ("/");
 
   fhg::util::testing::require_exception
     ( [&file]()
@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE (write_file_throws_when_file_can_not_opened)
         fhg::util::write_file (file, fhg::util::testing::random<int>()());
       }
     , std::runtime_error
-        ((boost::format ("Could not open %1% for writing.") % file).str())
+        ((::boost::format ("Could not open %1% for writing.") % file).str())
     );
 }
 
@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE (write_file_throws_on_output_failure)
 {
   fhg::util::temporary_path const path;
   fhg::util::temporary_file const file
-    (path / boost::filesystem::unique_path());
+    (path / ::boost::filesystem::unique_path());
 
   std::string const message {random_cstr_comparable()};
 
@@ -118,7 +118,7 @@ BOOST_AUTO_TEST_CASE (write_file_throws_on_output_failure)
     , std::logic_error (message)
     );
 
-  BOOST_REQUIRE (boost::filesystem::exists (file));
+  BOOST_REQUIRE (::boost::filesystem::exists (file));
 }
 
 namespace
@@ -126,18 +126,18 @@ namespace
   class file_removing_ostream_modifier : public fhg::util::ostream::modifier
   {
   public:
-    file_removing_ostream_modifier (boost::filesystem::path const& file)
+    file_removing_ostream_modifier (::boost::filesystem::path const& file)
       : _file (file)
     {}
     virtual std::ostream& operator() (std::ostream& os) const override
     {
-      boost::filesystem::remove (_file);
+      ::boost::filesystem::remove (_file);
 
       return os << fhg::util::testing::random<std::string>()();
     }
 
   private:
-    boost::filesystem::path const _file;
+    ::boost::filesystem::path const _file;
   };
 }
 
@@ -145,12 +145,12 @@ BOOST_AUTO_TEST_CASE (write_file_has_file_open_when_doing_output)
 {
   fhg::util::temporary_path const path;
   fhg::util::temporary_file const _
-    (path / boost::filesystem::unique_path());
-  boost::filesystem::path const file (_);
+    (path / ::boost::filesystem::unique_path());
+  ::boost::filesystem::path const file (_);
 
   fhg::util::write_file (file, file_removing_ostream_modifier (file));
 
-  BOOST_REQUIRE (!boost::filesystem::exists (file));
+  BOOST_REQUIRE (!::boost::filesystem::exists (file));
 }
 
 //! \todo how to test write errors? disk full?

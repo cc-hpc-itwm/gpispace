@@ -194,7 +194,7 @@ namespace bitsetofint
     return oss.str();
   }
 
-  boost::optional<type> from_hex ( std::string::const_iterator& pos
+  ::boost::optional<type> from_hex ( std::string::const_iterator& pos
                                  , std::string::const_iterator const& end
                                  )
   {
@@ -236,7 +236,7 @@ namespace bitsetofint
       return std::move (bs);
     }
 
-    return boost::none;
+    return ::boost::none;
   }
 
   type from_hex (std::string const& s)
@@ -244,7 +244,7 @@ namespace bitsetofint
     std::string::const_iterator pos (s.begin());
     std::string::const_iterator const& end (s.end());
 
-    boost::optional<type> mtype (from_hex (pos, end));
+    ::boost::optional<type> mtype (from_hex (pos, end));
 
     if (!mtype)
     {
@@ -264,7 +264,7 @@ namespace bitsetofint
 
   std::size_t hash_value (type const& t)
   {
-    boost::hash<std::vector<uint64_t>> h;
+    ::boost::hash<std::vector<uint64_t>> h;
 
     return h (t._container);
   }

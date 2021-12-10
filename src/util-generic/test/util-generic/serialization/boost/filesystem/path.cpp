@@ -24,23 +24,23 @@
 
 BOOST_AUTO_TEST_CASE (empty)
 {
-  FHG_UTIL_TESTING_REQUIRE_SERIALIZED_TO_ID ({}, boost::filesystem::path);
+  FHG_UTIL_TESTING_REQUIRE_SERIALIZED_TO_ID ({}, ::boost::filesystem::path);
 }
 
 BOOST_AUTO_TEST_CASE (current_path)
 {
   FHG_UTIL_TESTING_REQUIRE_SERIALIZED_TO_ID
-    ({boost::filesystem::current_path()}, boost::filesystem::path);
+    ({::boost::filesystem::current_path()}, ::boost::filesystem::path);
 }
 
 BOOST_AUTO_TEST_CASE (relative)
 {
   FHG_UTIL_TESTING_REQUIRE_SERIALIZED_TO_ID
-    ({"this/is/a/relative/path"}, boost::filesystem::path);
+    ({"this/is/a/relative/path"}, ::boost::filesystem::path);
 }
 
 BOOST_AUTO_TEST_CASE (absolute)
 {
   FHG_UTIL_TESTING_REQUIRE_SERIALIZED_TO_ID
-    ({"/this/is/an/absolute/path"}, boost::filesystem::path);
+    ({"/this/is/an/absolute/path"}, ::boost::filesystem::path);
 }

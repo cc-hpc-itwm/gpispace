@@ -47,14 +47,14 @@ namespace iml_client
       class invalid_argument : public std::invalid_argument
       {
       public:
-        invalid_argument (boost::format const& f)
+        invalid_argument (::boost::format const& f)
           : std::invalid_argument (f.str())
         {}
       };
       class runtime_error : public std::runtime_error
       {
       public:
-        runtime_error (boost::format const& f)
+        runtime_error (::boost::format const& f)
           : std::runtime_error (f.str())
         {}
       };
@@ -65,7 +65,7 @@ namespace iml_client
 
      public:
         unknown_handle (Handle_t handle)
-          : invalid_argument ( boost::format ("Unknown Handle '%1%'")
+          : invalid_argument ( ::boost::format ("Unknown Handle '%1%'")
                              % handle
                              )
           , _handle (handle)
@@ -80,7 +80,7 @@ namespace iml_client
 
         public:
           duplicate_handle (Handle_t handle)
-            : invalid_argument ( boost::format ("Duplicate Handle '%1%'")
+            : invalid_argument ( ::boost::format ("Duplicate Handle '%1%'")
                                % handle
                                )
           {}
@@ -100,7 +100,7 @@ namespace iml_client
                                          , MemSize_t mem_free
                                          )
             : runtime_error
-              ( boost::format ("Insufficient contiguous memory:"
+              ( ::boost::format ("Insufficient contiguous memory:"
                               " Trying to alloc '%2%' (aligned: '%3%') bytes"
                               " for handle '%1%' and mem_free '%4%',"
                               " but no free block of memory is large enough"
@@ -131,7 +131,7 @@ namespace iml_client
                               , MemSize_t mem_free
                               )
             : runtime_error
-              ( boost::format ("Insufficient memory:"
+              ( ::boost::format ("Insufficient memory:"
                               " Trying to alloc '%2%' (aligned: '%3%') bytes"
                               " for handle '%1%', but mem_free is '%4%'"
                               )
@@ -164,7 +164,7 @@ namespace iml_client
                          , MemSize_t mem_free
                          )
             : runtime_error
-              ( boost::format ("Resize below memory used:"
+              ( ::boost::format ("Resize below memory used:"
                               " Trying to resize to '%1%' (aligned: '%2%') bytes"
                               " but mem_size is '%3%' and mem_free '%4%'"
                               )
@@ -192,7 +192,7 @@ namespace iml_client
                            , MemSize_t high_water
                            )
             : runtime_error
-              ( boost::format ("Resize below high water:"
+              ( ::boost::format ("Resize below high water:"
                               " Trying to resize to '%1%' (aligned: '%2%') bytes"
                               " but high_water is '%3%'"
                               )

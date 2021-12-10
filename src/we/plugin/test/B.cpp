@@ -28,7 +28,7 @@ namespace gspc
       struct B : public Base
       {
         B (Context const& context, PutToken put_token)
-          : _ (boost::get<std::string> (context.value ({"B"})))
+          : _ (::boost::get<std::string> (context.value ({"B"})))
           , _put_token (std::move (put_token))
         {}
 

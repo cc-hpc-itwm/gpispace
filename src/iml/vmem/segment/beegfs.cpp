@@ -37,7 +37,7 @@ namespace fhg
         {
           namespace
           {
-            boost::filesystem::path config_file (int fd)
+            ::boost::filesystem::path config_file (int fd)
             {
               char* raw_path (nullptr);
               if (!beegfs_getRuntimeConfigFile (fd, &raw_path))
@@ -47,7 +47,7 @@ namespace fhg
                   + std::string (strerror (errno))
                   );
               }
-              boost::filesystem::path path (raw_path);
+              ::boost::filesystem::path path (raw_path);
               free (raw_path);
               return path;
             }
@@ -84,7 +84,7 @@ namespace fhg
             }
           }
 
-          void check_requirements (boost::filesystem::path const& path)
+          void check_requirements (::boost::filesystem::path const& path)
           try
           {
             util::syscall::directory const directory (path);

@@ -20,7 +20,7 @@
 
 namespace
 {
-  class visitor_show : public boost::static_visitor<std::ostream&>
+  class visitor_show : public ::boost::static_visitor<std::ostream&>
   {
   public:
     visitor_show (std::ostream& os)
@@ -61,7 +61,7 @@ std::ostream& operator<< (std::ostream& os, fhg::util::num_type const& v)
 {
   const std::ios_base::fmtflags ff (os.flags());
   os << std::showpoint;
-  boost::apply_visitor (visitor_show (os), v);
+  ::boost::apply_visitor (visitor_show (os), v);
   os.flags (ff);
   return os;
 }

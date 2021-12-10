@@ -35,16 +35,16 @@ BOOST_AUTO_TEST_CASE (entries)
 
       BOOST_REQUIRE_EQUAL_COLLECTIONS
         ( entry.command_line().begin(), entry.command_line().end()
-        , boost::unit_test::framework::master_test_suite().argv
-        , boost::unit_test::framework::master_test_suite().argv
-        + boost::unit_test::framework::master_test_suite().argc
+        , ::boost::unit_test::framework::master_test_suite().argv
+        , ::boost::unit_test::framework::master_test_suite().argv
+        + ::boost::unit_test::framework::master_test_suite().argc
         );
 
 #else
 
       BOOST_REQUIRE_EQUAL
         ( entry.command_line().front()
-        , boost::unit_test::framework::master_test_suite().argv[0]
+        , ::boost::unit_test::framework::master_test_suite().argv[0]
         );
 
       BOOST_REQUIRE_EQUAL_COLLECTIONS
@@ -54,9 +54,9 @@ BOOST_AUTO_TEST_CASE (entries)
                                )
                     )
         , entry.command_line().end()
-        , std::next (boost::unit_test::framework::master_test_suite().argv)
-        , boost::unit_test::framework::master_test_suite().argv
-        + boost::unit_test::framework::master_test_suite().argc
+        , std::next (::boost::unit_test::framework::master_test_suite().argv)
+        , ::boost::unit_test::framework::master_test_suite().argv
+        + ::boost::unit_test::framework::master_test_suite().argc
         );
 
 #endif

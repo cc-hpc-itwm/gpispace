@@ -34,7 +34,7 @@
   [[noreturn]] void unexpected_eureka (we::type::eureka_ids_type const& ids)
   {
     throw std::logic_error
-      (str ( boost::format ("Unexpected call to eureka: %1%")
+      (str ( ::boost::format ("Unexpected call to eureka: %1%")
            % fhg::util::print_container ("{", ", ", "}", ids)
            )
       );

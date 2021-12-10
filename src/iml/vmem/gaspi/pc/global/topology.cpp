@@ -18,7 +18,7 @@
 
 #include <iml/vmem/gaspi/pc/memory/manager.hpp>
 
-#include <rpc/remote_function.hpp>
+#include <util-rpc/remote_function.hpp>
 
 #include <util-generic/wait_and_collect_exceptions.hpp>
 

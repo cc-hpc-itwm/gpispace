@@ -25,7 +25,7 @@ namespace pnet
     namespace signature
     {
       template<typename P>
-        class traverse_field : public boost::static_visitor<>
+        class traverse_field : public ::boost::static_visitor<>
       {
       public:
         traverse_field (P p)
@@ -47,7 +47,7 @@ namespace pnet
       template<typename P>
         void traverse (P p, field_type const& field)
       {
-        boost::apply_visitor (traverse_field<P> (p), field);
+        ::boost::apply_visitor (traverse_field<P> (p), field);
       }
       template<typename P>
         void traverse (P p, structured_type const& s)

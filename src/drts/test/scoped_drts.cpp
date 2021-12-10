@@ -21,10 +21,10 @@
 
 #include <boost/program_options.hpp>
 
-#include <test/certificates_data.hpp>
-#include <test/parse_command_line.hpp>
-#include <test/scoped_nodefile_from_environment.hpp>
-#include <test/shared_directory.hpp>
+#include <testing/certificates_data.hpp>
+#include <testing/parse_command_line.hpp>
+#include <testing/scoped_nodefile_from_environment.hpp>
+#include <testing/shared_directory.hpp>
 
 #include <util-generic/read_lines.hpp>
 #include <util-generic/split.hpp>
@@ -44,16 +44,16 @@ BOOST_DATA_TEST_CASE
   , certificates
   )
 {
-  boost::program_options::options_description options_description;
+  ::boost::program_options::options_description options_description;
 
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::scoped_rifd());
   options_description.add (test::options::shared_directory());
 
-  boost::program_options::variables_map vm
+  ::boost::program_options::variables_map vm
     ( test::parse_command_line
-        ( boost::unit_test::framework::master_test_suite().argc
-        , boost::unit_test::framework::master_test_suite().argv
+        ( ::boost::unit_test::framework::master_test_suite().argc
+        , ::boost::unit_test::framework::master_test_suite().argv
         , options_description
         )
     );
@@ -84,16 +84,16 @@ BOOST_DATA_TEST_CASE
   , certificates
   )
 {
-  boost::program_options::options_description options_description;
+  ::boost::program_options::options_description options_description;
 
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::scoped_rifd());
   options_description.add (test::options::shared_directory());
 
-  boost::program_options::variables_map vm
+  ::boost::program_options::variables_map vm
     ( test::parse_command_line
-        ( boost::unit_test::framework::master_test_suite().argc
-        , boost::unit_test::framework::master_test_suite().argv
+        ( ::boost::unit_test::framework::master_test_suite().argc
+        , ::boost::unit_test::framework::master_test_suite().argv
         , options_description
         )
     );
@@ -125,7 +125,7 @@ BOOST_DATA_TEST_CASE
       ( vm
       , installation
       , "worker:1"
-      , boost::none
+      , ::boost::none
       , parent.entry_point()
       , info_output_stream
       , certificates
@@ -176,7 +176,7 @@ BOOST_DATA_TEST_CASE
 
     BOOST_REQUIRE_EQUAL
       ( info_output[3]
-      , ( boost::format ("I: starting agent: agent-%1%-0"
+      , ( ::boost::format ("I: starting agent: agent-%1%-0"
                         " on rif entry point %1%"
                         )
         % entry_point_parent
@@ -186,7 +186,7 @@ BOOST_DATA_TEST_CASE
     BOOST_REQUIRE
       ( std::regex_match
         ( info_output[4]
-        , std::regex { ( boost::format ("terminating agent on %1%: [0-9]+")
+        , std::regex { ( ::boost::format ("terminating agent on %1%: [0-9]+")
                        % entry_point_parent
                        ).str()
                      }
@@ -196,7 +196,7 @@ BOOST_DATA_TEST_CASE
     BOOST_REQUIRE
       ( std::regex_match
         ( info_output[5]
-        , std::regex { ( boost::format ("terminating logging-demultiplexer on %1%: [0-9]+")
+        , std::regex { ( ::boost::format ("terminating logging-demultiplexer on %1%: [0-9]+")
                        % entry_point_parent
                        ).str()
                      }
@@ -211,16 +211,16 @@ BOOST_DATA_TEST_CASE
   , certificates
   )
 {
-  boost::program_options::options_description options_description;
+  ::boost::program_options::options_description options_description;
 
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::scoped_rifd());
   options_description.add (test::options::shared_directory());
 
-  boost::program_options::variables_map vm
+  ::boost::program_options::variables_map vm
     ( test::parse_command_line
-        ( boost::unit_test::framework::master_test_suite().argc
-        , boost::unit_test::framework::master_test_suite().argv
+        ( ::boost::unit_test::framework::master_test_suite().argc
+        , ::boost::unit_test::framework::master_test_suite().argv
         , options_description
         )
     );
@@ -310,7 +310,7 @@ BOOST_DATA_TEST_CASE
 
     BOOST_REQUIRE_EQUAL
       ( info_output[3]
-      , ( boost::format ("I: starting agent: agent-%1%-0"
+      , ( ::boost::format ("I: starting agent: agent-%1%-0"
                         " on rif entry point %1%"
                         )
         % entry_point_parent
@@ -327,7 +327,7 @@ BOOST_DATA_TEST_CASE
              ( info_output[4]
              , match
              , std::regex
-               ( ( boost::format ("I: starting %2% workers"
+               ( ( ::boost::format ("I: starting %2% workers"
                                  " \\(parent agent-%1%-0, 1/host, unlimited, 0 SHM\\)"
                                  " with parent agent-%1%-0"
                                  " on rif entry point ((.+) [0-9]+ [0-9]+)"
@@ -348,7 +348,7 @@ BOOST_DATA_TEST_CASE
     BOOST_REQUIRE
       ( std::regex_match
         ( info_output[5]
-        , std::regex { ( boost::format ("terminating drts-kernel on %1%: [0-9]+")
+        , std::regex { ( ::boost::format ("terminating drts-kernel on %1%: [0-9]+")
                        % entry_point_worker
                        ).str()
                      }
@@ -358,7 +358,7 @@ BOOST_DATA_TEST_CASE
     BOOST_REQUIRE
       ( std::regex_match
         ( info_output[6]
-        , std::regex { ( boost::format ("terminating agent on %1%: [0-9]+")
+        , std::regex { ( ::boost::format ("terminating agent on %1%: [0-9]+")
                        % entry_point_parent
                        ).str()
                      }
@@ -368,7 +368,7 @@ BOOST_DATA_TEST_CASE
     BOOST_REQUIRE
       ( std::regex_match
         ( info_output[7]
-        , std::regex { ( boost::format ("terminating logging-demultiplexer on %1%: [0-9]+")
+        , std::regex { ( ::boost::format ("terminating logging-demultiplexer on %1%: [0-9]+")
                        % entry_point_parent
                        ).str()
                      }

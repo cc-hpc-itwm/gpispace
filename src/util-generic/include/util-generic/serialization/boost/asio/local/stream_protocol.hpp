@@ -27,17 +27,17 @@ namespace boost
   {
     template<typename Archive>
       void load ( Archive& ar
-                , boost::asio::local::stream_protocol::endpoint& ep
+                , ::boost::asio::local::stream_protocol::endpoint& ep
                 , const unsigned int
                 )
     {
       std::string path;
       ar & path;
-      ep = boost::asio::local::stream_protocol::endpoint (path);
+      ep = ::boost::asio::local::stream_protocol::endpoint (path);
     }
     template<typename Archive>
       void save ( Archive& ar
-                , boost::asio::local::stream_protocol::endpoint const& ep
+                , ::boost::asio::local::stream_protocol::endpoint const& ep
                 , const unsigned int
                 )
     {
@@ -47,4 +47,4 @@ namespace boost
   }
 }
 
-BOOST_SERIALIZATION_SPLIT_FREE (boost::asio::local::stream_protocol::endpoint)
+BOOST_SERIALIZATION_SPLIT_FREE (::boost::asio::local::stream_protocol::endpoint)

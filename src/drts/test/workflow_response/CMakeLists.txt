@@ -20,7 +20,7 @@ fhg_add_test (NAME drts_workflow_response_using_secure_communication
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
        --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
-       --rpc-lib "$<TARGET_FILE:RPC>"
+       --rpc-lib "$<TARGET_FILE:Util::RPC>"
        --ssl-cert "no"
        --xpnet "workflow_response"
        --topology "worker:2"
@@ -40,7 +40,7 @@ fhg_add_test (NAME drts_workflow_response_one_response_waits
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
        --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
-       --rpc-lib "$<TARGET_FILE:RPC>"
+       --rpc-lib "$<TARGET_FILE:Util::RPC>"
        --ssl-cert "no"
   LIBRARIES gspc
             test-utilities
@@ -58,7 +58,7 @@ fhg_add_test (NAME drts_workflow_response_workflow_response_fails
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
        --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
-       --rpc-lib "$<TARGET_FILE:RPC>"
+       --rpc-lib "$<TARGET_FILE:Util::RPC>"
        --ssl-cert "no"
   LIBRARIES gspc
             test-utilities
@@ -76,7 +76,7 @@ fhg_add_test (NAME drts_workflow_response_with_ssl_cert_using_secure_communicati
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
        --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
-       --rpc-lib "$<TARGET_FILE:RPC>"
+       --rpc-lib "$<TARGET_FILE:Util::RPC>"
        --ssl-cert "yes"
        --xpnet "workflow_response_expression"
        --topology "worker:1"
@@ -96,7 +96,7 @@ fhg_add_test (NAME drts_workflow_response_with_ssl_cert_one_response_waits
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
        --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
-       --rpc-lib "$<TARGET_FILE:RPC>"
+       --rpc-lib "$<TARGET_FILE:Util::RPC>"
        --ssl-cert "yes"
   LIBRARIES gspc
             test-utilities
@@ -114,7 +114,7 @@ fhg_add_test (NAME drts_workflow_response_with_ssl_cert_workflow_response_fails
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
        --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
-       --rpc-lib "$<TARGET_FILE:RPC>"
+       --rpc-lib "$<TARGET_FILE:Util::RPC>"
        --ssl-cert "yes"
   LIBRARIES gspc
             test-utilities

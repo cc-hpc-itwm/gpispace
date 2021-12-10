@@ -16,10 +16,10 @@
 
 #include <logging/stream_emitter.hpp>
 
-#include <rpc/future.hpp>
-#include <rpc/remote_function.hpp>
-#include <rpc/remote_socket_endpoint.hpp>
-#include <rpc/remote_tcp_endpoint.hpp>
+#include <util-rpc/future.hpp>
+#include <util-rpc/remote_function.hpp>
+#include <util-rpc/remote_socket_endpoint.hpp>
+#include <util-rpc/remote_tcp_endpoint.hpp>
 
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/functor_visitor.hpp>
@@ -93,7 +93,7 @@ namespace fhg
       return emit_message_impl<std::future> (_receivers, forwarded_message);
     }
     void stream_emitter::emit_message
-      (message const& forwarded_message, boost::asio::yield_context yield)
+      (message const& forwarded_message, ::boost::asio::yield_context yield)
     {
       return emit_message_impl<rpc::future>
         (_receivers, forwarded_message, yield);
@@ -107,7 +107,7 @@ namespace fhg
     }
 
     void stream_emitter::register_receiver
-      (boost::asio::yield_context yield, endpoint const& endpoint)
+      (::boost::asio::yield_context yield, endpoint const& endpoint)
     {
       util::visit<void>
         ( endpoint.best (_local_endpoint.as_socket->host)

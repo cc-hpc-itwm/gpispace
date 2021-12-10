@@ -47,7 +47,7 @@ BOOST_FIXTURE_TEST_CASE
   auto const eureka_groups (random.unique_eureka_groups (number_of_groups));
   unsigned int total_number_of_tasks (0);
 
-  for (auto group : eureka_groups | boost::adaptors::indexed (0))
+  for (auto group : eureka_groups | ::boost::adaptors::indexed (0))
   {
     auto const number_of_tasks
       (random.between (0, worker_per_node_per_group * NUMBER_OF_NODES()));

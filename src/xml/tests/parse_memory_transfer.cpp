@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE (memory_get_is_stored_in_function)
   std::string const local (fhg::util::testing::random_content_string());
 
   std::string const input
-    ( ( boost::format (R"EOS(
+    ( ( ::boost::format (R"EOS(
 <defun>
   <memory-get><global>%1%</global><local>%2%</local></memory-get>
   <module name="%3%" function="%4%"/>
@@ -63,10 +63,10 @@ BOOST_AUTO_TEST_CASE (memory_get_is_stored_in_function)
 namespace
 {
   std::string const attr_not_modified_in_module_call
-    (boost::optional<bool> not_modified_in_module_call)
+    (::boost::optional<bool> not_modified_in_module_call)
   {
     return not_modified_in_module_call
-      ? ( boost::format (" not-modified-in-module-call=\"%1%\"")
+      ? ( ::boost::format (" not-modified-in-module-call=\"%1%\"")
         % (*not_modified_in_module_call ? "true" : "false")
         ).str()
       : ""
@@ -74,13 +74,13 @@ namespace
   }
 
   void check_memory_put_is_stored_in_function
-    (boost::optional<bool> not_modified_in_module_call)
+    (::boost::optional<bool> not_modified_in_module_call)
   {
     std::string const global (fhg::util::testing::random_content_string());
     std::string const local (fhg::util::testing::random_content_string());
 
     std::string const input
-      ( ( boost::format (R"EOS(
+      ( ( ::boost::format (R"EOS(
 <defun>
   <memory-put%3%><global>%1%</global><local>%2%</local></memory-put>
   <module name="%4%" function="%5%"/>
@@ -111,7 +111,7 @@ namespace
 
 BOOST_AUTO_TEST_CASE (memory_put_is_stored_in_function)
 {
-  check_memory_put_is_stored_in_function (boost::none);
+  check_memory_put_is_stored_in_function (::boost::none);
   check_memory_put_is_stored_in_function (true);
   check_memory_put_is_stored_in_function (false);
 }
@@ -119,13 +119,13 @@ BOOST_AUTO_TEST_CASE (memory_put_is_stored_in_function)
 namespace
 {
   void check_memory_getput_is_stored_in_function
-    (boost::optional<bool> not_modified_in_module_call)
+    (::boost::optional<bool> not_modified_in_module_call)
   {
     std::string const global (fhg::util::testing::random_content_string());
     std::string const local (fhg::util::testing::random_content_string());
 
     std::string const input
-      ( ( boost::format (R"EOS(
+      ( ( ::boost::format (R"EOS(
 <defun>
   <memory-getput%3%><global>%1%</global><local>%2%</local></memory-getput>
   <module name="%4%" function="%5%"/>
@@ -156,7 +156,7 @@ namespace
 
 BOOST_AUTO_TEST_CASE (memory_getput_is_stored_in_function)
 {
-  check_memory_getput_is_stored_in_function (boost::none);
+  check_memory_getput_is_stored_in_function (::boost::none);
   check_memory_getput_is_stored_in_function (true);
   check_memory_getput_is_stored_in_function (false);
 }
@@ -186,7 +186,7 @@ namespace
       input += "<memory-getput><global/><local/></memory-getput>";
     }
 
-    input += ( boost::format (R"EOS(<module name="%1%" function="%2%"/>)EOS")
+    input += ( ::boost::format (R"EOS(<module name="%1%" function="%2%"/>)EOS")
              % fhg::util::testing::random_identifier()
              % fhg::util::testing::random_identifier()
              ).str();
@@ -228,7 +228,7 @@ namespace
     std::string const name_function (fhg::util::testing::random_identifier());
 
     std::string const input
-      ( ( boost::format (R"EOS(
+      ( ( ::boost::format (R"EOS(
 <defun name="%1%">
   <memory-get><global/><local/></memory-get>
   <%2%/>
@@ -246,7 +246,7 @@ namespace
       { std::istringstream input_stream (input);
         xml::parse::just_parse (state, input_stream);
       }
-      , boost::format ("ERROR: non module call function 'Just %1%'"
+      , ::boost::format ("ERROR: non module call function ' %1%'"
                       " with %2% memory transfer%3%"
                       ", function defined at %4%"
                       ", memory transfer%3% defined at: get: %5%"
@@ -265,7 +265,7 @@ namespace
     std::string const name_function (fhg::util::testing::random_identifier());
 
     std::string const input
-      ( ( boost::format (R"EOS(
+      ( ( ::boost::format (R"EOS(
 <defun name="%1%">
   <memory-put><global/><local/></memory-put>
   <memory-getput><global/><local/></memory-getput>
@@ -286,7 +286,7 @@ namespace
       { std::istringstream input_stream (input);
         xml::parse::just_parse (state, input_stream);
       }
-      , boost::format ("ERROR: non module call function 'Just %1%'"
+      , ::boost::format ("ERROR: non module call function ' %1%'"
                       " with %2% memory transfer%3%"
                       ", function defined at %4%"
                       ", memory transfer%3% defined at: put: %5%, getput: %6%"

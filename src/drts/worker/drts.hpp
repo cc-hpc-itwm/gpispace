@@ -59,7 +59,7 @@ public:
 
     Job ( std::string const& jobid
         , we::type::Activity const& activity_
-        , boost::optional<std::string> const& target_impl_
+        , ::boost::optional<std::string> const& target_impl_
         , std::set<std::string> const& workers_
         )
       : id (jobid)
@@ -73,7 +73,7 @@ public:
 
     std::string const id;
     we::type::Activity activity;
-    boost::optional<std::string> const target_impl;
+    ::boost::optional<std::string> const target_impl;
     std::set<std::string> const workers;
     std::atomic<state_t> state;
     we::type::Activity result;
@@ -87,14 +87,14 @@ public:
 
   DRTSImpl
     ( std::function<void()> request_stop
-    , std::unique_ptr<boost::asio::io_service> peer_io_service
+    , std::unique_ptr<::boost::asio::io_service> peer_io_service
     , std::string const& kernel_name
     , unsigned short comm_port
     , iml::Client /*const*/* virtual_memory_socket
     , iml::SharedMemoryAllocation /*const*/* shared_memory
     , std::tuple<fhg::com::host_t, fhg::com::port_t> const& parent
     , std::vector<std::string> const& capability_names
-    , std::vector<boost::filesystem::path> const& library_path
+    , std::vector<::boost::filesystem::path> const& library_path
     , fhg::logging::stream_emitter& log_emitter
     , fhg::com::Certificates const& certificates
     );
@@ -149,9 +149,9 @@ private:
 
   fhg::com::channel _peer;
 
-  boost::strict_scoped_thread<> m_event_thread;
+  ::boost::strict_scoped_thread<> m_event_thread;
   decltype (m_event_queue)::interrupt_on_scope_exit _interrupt_event_thread;
-  boost::strict_scoped_thread<> m_execution_thread;
+  ::boost::strict_scoped_thread<> m_execution_thread;
   decltype (m_pending_jobs)::interrupt_on_scope_exit _interrupt_execution_thread;
 
   std::promise<void> _registration_response;

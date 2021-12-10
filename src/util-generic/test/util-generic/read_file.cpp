@@ -28,9 +28,9 @@ namespace
 {
   void test (std::string const& content)
   {
-    boost::filesystem::path const path ("temporary_file-read_file");
+    ::boost::filesystem::path const path ("temporary_file-read_file");
 
-    BOOST_REQUIRE (!boost::filesystem::exists (path));
+    BOOST_REQUIRE (!::boost::filesystem::exists (path));
 
     fhg::util::temporary_file const _ (path);
 
@@ -52,23 +52,23 @@ BOOST_AUTO_TEST_CASE (read_file)
 
 BOOST_AUTO_TEST_CASE (read_file_as)
 {
-  boost::filesystem::path const path ("temporary_file-read_file");
+  ::boost::filesystem::path const path ("temporary_file-read_file");
 
-  BOOST_REQUIRE (!boost::filesystem::exists (path));
+  BOOST_REQUIRE (!::boost::filesystem::exists (path));
 
   fhg::util::temporary_file const _ (path);
 
   std::ofstream (path.string()) << path;
 
   BOOST_REQUIRE_EQUAL
-    (fhg::util::read_file_as<boost::filesystem::path> (path), path);
+    (fhg::util::read_file_as<::boost::filesystem::path> (path), path);
 }
 
 BOOST_AUTO_TEST_CASE (read_into_vector_of_char)
 {
-  boost::filesystem::path const path ("temporary_file-read_file");
+  ::boost::filesystem::path const path ("temporary_file-read_file");
 
-  BOOST_REQUIRE (!boost::filesystem::exists (path));
+  BOOST_REQUIRE (!::boost::filesystem::exists (path));
 
   fhg::util::temporary_file const _ (path);
 

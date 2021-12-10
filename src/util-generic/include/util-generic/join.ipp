@@ -81,8 +81,8 @@ namespace fhg
                      = ostream::callback::id<Value<C>>()
                      , std::string const& open = ""
                      , std::string const& close = ""
-                     , boost::optional<size_type> const& max_elements_to_print
-                     = boost::none
+                     , ::boost::optional<size_type> const& max_elements_to_print
+                     = ::boost::none
                      )
         : _container (container)
         , _separator (separator)
@@ -133,7 +133,7 @@ namespace fhg
       ostream::callback::print_function<Value<C>> const _print;
       std::string const _open;
       std::string const _close;
-      boost::optional<size_type> _max_elements_to_print;
+      ::boost::optional<size_type> _max_elements_to_print;
     };
 
     template<typename Container, typename Separator>
@@ -143,7 +143,7 @@ namespace fhg
              , ostream::callback::print_function<Value<Container>> const& print
              , std::string const& open
              , std::string const& close
-             , boost::optional<Difference<Container>> const& max_elements_to_print
+             , ::boost::optional<Difference<Container>> const& max_elements_to_print
              )
     {
       return join_reference<Container, Separator>

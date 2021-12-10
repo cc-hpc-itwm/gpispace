@@ -23,7 +23,7 @@ namespace fhg
   namespace util
   {
     std::string connectable_to_address_string
-      (boost::asio::ip::address const& address)
+      (::boost::asio::ip::address const& address)
     {
       if (address.is_unspecified())
       {

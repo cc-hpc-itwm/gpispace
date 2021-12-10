@@ -20,7 +20,6 @@
 #include <we/type/value/poke.hpp>
 #include <we/type/value/dump.hpp>
 
-#include <fhg/util/boost/variant.hpp>
 #include <fhg/util/xml.hpp>
 
 #include <boost/optional.hpp>
@@ -46,7 +45,7 @@ namespace we
 
       pnet::type::value::structured_type const& type::list() const
       {
-        return boost::get<pnet::type::value::structured_type> (_value);
+        return ::boost::get<pnet::type::value::structured_type> (_value);
       }
 
       void type::set (path_type const& path, value_type const& val)
@@ -54,7 +53,7 @@ namespace we
         pnet::type::value::poke (path.begin(), path.end(), _value, val);
       }
 
-      boost::optional<value_type const&>
+      ::boost::optional<value_type const&>
         type::get (path_type const& path) const
       {
         return pnet::type::value::peek (path.begin(), path.end(), _value);
@@ -64,7 +63,7 @@ namespace we
       {
         auto const value (get (path));
 
-        return !!value && boost::get<bool> (*value);
+        return !!value && ::boost::get<bool> (*value);
       }
 
       namespace dump

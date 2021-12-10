@@ -22,7 +22,9 @@ gspc_add_library (NAME fhgcom
           "fhgcom/channel.cpp"
           "fhgcom/connection.cpp"
           "fhgcom/header.cpp"
+          "fhgcom/message.cpp"
           "fhgcom/peer.cpp"
+          "fhgcom/peer_info.cpp"
   LIBRARIES
     PRIVATE Util::Generic
     PRIVATE OpenSSL::Crypto
@@ -177,7 +179,7 @@ gspc_add_library (NAME pnet
             Boost::date_time
             Boost::program_options
             Boost::serialization
-            RPC
+            Util::RPC
             ${CMAKE_DL_LIBS}
             rapidxml
   COMPILE_DEFINITIONS -DHAS_STD_ALIGN=$<BOOL:${HAS_STD_ALIGN}>
@@ -216,7 +218,7 @@ gspc_add_library (NAME logging
           "logging/tcp_server_providing_add_emitters.cpp"
   LIBRARIES rif-started_process_promise
             Util::Generic
-            RPC
+            Util::RPC
             Boost::base
             Boost::program_options
 )

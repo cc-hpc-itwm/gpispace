@@ -21,17 +21,17 @@
 #include <drts/scoped_rifd.hpp>
 #include <drts/virtual_memory.hpp>
 
-#include <test/make.hpp>
-#include <test/parse_command_line.hpp>
-#include <test/scoped_nodefile_from_environment.hpp>
-#include <test/shared_directory.hpp>
-#include <test/source_directory.hpp>
-#include <test/virtual_memory_socket_name_for_localhost.hpp>
+#include <testing/make.hpp>
+#include <testing/parse_command_line.hpp>
+#include <testing/scoped_nodefile_from_environment.hpp>
+#include <testing/shared_directory.hpp>
+#include <testing/source_directory.hpp>
+#include <testing/virtual_memory_socket_name_for_localhost.hpp>
 
 #include <we/type/value.hpp>
 #include <we/type/value/boost/test/printer.hpp>
 
-#include <fhg/util/boost/program_options/validators/positive_integral.hpp>
+#include <util-generic/boost/program_options/validators/positive_integral.hpp>
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/multimap.hpp>
@@ -47,7 +47,7 @@
 
 BOOST_AUTO_TEST_CASE (many_ranges_in_memory_transfer)
 {
-  boost::program_options::options_description options_description;
+  ::boost::program_options::options_description options_description;
 
   constexpr char const* const S ("size-of-range");
   constexpr char const* const D ("distance-between-ranges");
@@ -57,9 +57,9 @@ BOOST_AUTO_TEST_CASE (many_ranges_in_memory_transfer)
     fhg::util::boost::program_options::positive_integral<unsigned long>;
 
   options_description.add_options()
-    (S, boost::program_options::value<PositiveUL>()->required())
-    (D, boost::program_options::value<unsigned long>()->required())
-    (N, boost::program_options::value<PositiveUL>()->required())
+    (S, ::boost::program_options::value<PositiveUL>()->required())
+    (D, ::boost::program_options::value<unsigned long>()->required())
+    (N, ::boost::program_options::value<PositiveUL>()->required())
     ;
   options_description.add (test::options::shared_directory());
   options_description.add (test::options::source_directory());
@@ -68,10 +68,10 @@ BOOST_AUTO_TEST_CASE (many_ranges_in_memory_transfer)
   options_description.add (gspc::options::scoped_rifd());
   options_description.add (gspc::options::virtual_memory());
 
-  boost::program_options::variables_map vm
+  ::boost::program_options::variables_map vm
     ( test::parse_command_line
-        ( boost::unit_test::framework::master_test_suite().argc
-        , boost::unit_test::framework::master_test_suite().argv
+        ( ::boost::unit_test::framework::master_test_suite().argc
+        , ::boost::unit_test::framework::master_test_suite().argv
         , options_description
         )
     );
@@ -83,8 +83,8 @@ BOOST_AUTO_TEST_CASE (many_ranges_in_memory_transfer)
     (shared_directory, vm);
 
   fhg::util::temporary_path const _installation_dir
-    (shared_directory / boost::filesystem::unique_path());
-  boost::filesystem::path const installation_dir (_installation_dir);
+    (shared_directory / ::boost::filesystem::unique_path());
+  ::boost::filesystem::path const installation_dir (_installation_dir);
 
   gspc::set_application_search_path (vm, installation_dir);
   test::set_virtual_memory_socket_name_for_localhost (vm);

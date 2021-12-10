@@ -51,17 +51,25 @@ BOOST_AUTO_TEST_CASE (add_worker)
 
   sdpa::daemon::WorkerManager worker_manager;
 
+  fhg::util::testing::random<std::string> const random_string;
+  fhg::util::testing::random<unsigned short> const random_ushort;
+
   auto&& add_worker
     ( [&] ( sdpa::worker_id_t const& worker_id
           , std::string const& capability_name
           )
-      {
+    {
+      auto const hostname {random_string()};
+
         worker_manager.add_worker
           ( worker_id
           , {sdpa::capability_t (capability_name)}
           , fhg::util::testing::random<unsigned long>{}()
-          , fhg::util::testing::random_string()
-          , fhg::util::testing::random_string()
+          , hostname
+          , fhg::com::p2p::address_t
+              { fhg::com::host_t {hostname}
+              , fhg::com::port_t {random_ushort()}
+              }
           );
       }
     );
@@ -92,17 +100,25 @@ BOOST_AUTO_TEST_CASE (delete_worker)
 
   sdpa::daemon::WorkerManager worker_manager;
 
+  fhg::util::testing::random<std::string> const random_string;
+  fhg::util::testing::random<unsigned short> const random_ushort;
+
   auto&& add_worker
     ( [&] ( sdpa::worker_id_t const& worker_id
           , std::string const& capability_name
           )
       {
+        auto const hostname {random_string()};
+
         worker_manager.add_worker
           ( worker_id
           , {sdpa::capability_t (capability_name)}
           , fhg::util::testing::random<unsigned long>{}()
-          , fhg::util::testing::random_string()
-          , fhg::util::testing::random_string()
+          , hostname
+          , fhg::com::p2p::address_t
+              { fhg::com::host_t {hostname}
+              , fhg::com::port_t {random_ushort()}
+              }
           );
       }
     );
@@ -134,11 +150,17 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_worker)
   const std::vector<std::string> worker_ids (generate_worker_names (1));
 
   sdpa::daemon::WorkerManager worker_manager;
+  fhg::util::testing::random<std::string> const random_string;
+  fhg::util::testing::random<unsigned short> const random_ushort;
+  auto const hostname {random_string()};
   worker_manager.add_worker ( worker_ids[0]
                             , {sdpa::capability_t ("A")}
                             , fhg::util::testing::random<unsigned long>{}()
-                            , fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
+                            , hostname
+                            , fhg::com::p2p::address_t
+                                { fhg::com::host_t {hostname}
+                                , fhg::com::port_t {random_ushort()}
+                                }
                             );
 
   const sdpa::job_id_t job_id (fhg::util::testing::random_string());
@@ -169,13 +191,20 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_coallocated_workers)
 
   sdpa::daemon::WorkerSet workers;
 
+  fhg::util::testing::random<std::string> const random_string;
+  fhg::util::testing::random<unsigned short> const random_ushort;
+
   for (unsigned int k=0; k<N; k++)
   {
+    auto const hostname {random_string()};
     worker_manager.add_worker ( worker_ids[k]
                               , {sdpa::capability_t ("A")}
                               , fhg::util::testing::random<unsigned long>{}()
-                              , fhg::util::testing::random_string()
-                              , fhg::util::testing::random_string()
+                              , hostname
+                              , fhg::com::p2p::address_t
+                                  { fhg::com::host_t {hostname}
+                                  , fhg::com::port_t {random_ushort()}
+                                  }
                               );
 
     workers.emplace ( worker_ids[k]);
@@ -245,15 +274,23 @@ BOOST_AUTO_TEST_CASE (issue_675_reference_to_popped_queue_element)
 
   std::unordered_map<sdpa::job_id_t, std::unique_ptr<sdpa::daemon::scheduler::Reservation>> reservations;
 
+  fhg::util::testing::random<std::string> const random_string;
+  fhg::util::testing::random<unsigned short> const random_ushort;
+
   std::string const capability_name (fhg::util::testing::random_string());
   auto&& add_worker ( [&] (sdpa::worker_id_t worker_id)
                       {
+                        auto const hostname {random_string()};
+
                         worker_manager.add_worker
                           ( worker_id
                           , {sdpa::capability_t (capability_name)}
                           , fhg::util::testing::random<unsigned long>{}()
-                          , fhg::util::testing::random_string()
-                          , fhg::util::testing::random_string()
+                          , hostname
+                          , fhg::com::p2p::address_t
+                              { fhg::com::host_t {hostname}
+                              , fhg::com::port_t {random_ushort()}
+                              }
                           );
                       }
                     );

@@ -25,7 +25,7 @@
 #include <thread>
 
 BOOST_AUTO_TEST_CASE
-  (zero_threads_are_fine_if_just_not_used, *boost::unit_test::timeout (10))
+  (zero_threads_are_fine_if_just_not_used, *::boost::unit_test::timeout (10))
 {
   fhg::util::scoped_boost_asio_io_service_with_threads io_service (0);
 
@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE
   BOOST_REQUIRE (called);
 }
 
-BOOST_AUTO_TEST_CASE (normal_procedure, *boost::unit_test::timeout (10))
+BOOST_AUTO_TEST_CASE (normal_procedure, *::boost::unit_test::timeout (10))
 {
   fhg::util::scoped_boost_asio_io_service_with_threads io_service (1);
 
@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE (normal_procedure, *boost::unit_test::timeout (10))
 }
 
 BOOST_AUTO_TEST_CASE ( actually_starts_multiple_threads_if_asked_to
-                     , *boost::unit_test::timeout (10)
+                     , *::boost::unit_test::timeout (10)
                      )
 {
   std::size_t const thread_count (10);
@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE ( actually_starts_multiple_threads_if_asked_to
 }
 
 BOOST_AUTO_TEST_CASE ( deferred_with_zero_does_not_make_sense_due_to_api
-                     , *boost::unit_test::timeout (10)
+                     , *::boost::unit_test::timeout (10)
                      )
 {
   fhg::util::testing::require_exception
@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE ( deferred_with_zero_does_not_make_sense_due_to_api
 }
 
 BOOST_AUTO_TEST_CASE ( deferred_with_one_thread_runs_in_main_thread
-                     , *boost::unit_test::timeout (10)
+                     , *::boost::unit_test::timeout (10)
                      )
 {
   fhg::util::scoped_boost_asio_io_service_with_threads_and_deferred_startup
@@ -124,7 +124,7 @@ BOOST_AUTO_TEST_CASE ( deferred_with_one_thread_runs_in_main_thread
 }
 
 BOOST_AUTO_TEST_CASE ( deferred_runs_in_main_thread_and_n_minus_one_more
-                     , *boost::unit_test::timeout (10)
+                     , *::boost::unit_test::timeout (10)
                      )
 {
   std::size_t const thread_count (10);

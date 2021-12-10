@@ -28,7 +28,7 @@ namespace sdpa
     class WorkerRegistrationEvent : public MgmtEvent
     {
     public:
-      typedef boost::shared_ptr<WorkerRegistrationEvent> Ptr;
+      typedef ::boost::shared_ptr<WorkerRegistrationEvent> Ptr;
 
       WorkerRegistrationEvent
         ( std::string const& name

@@ -29,7 +29,7 @@ namespace pnet
   {
     namespace signature
     {
-      typedef std::function< boost::optional<signature_type>
+      typedef std::function< ::boost::optional<signature_type>
                                (std::string const&)
                            > resolver_type;
 

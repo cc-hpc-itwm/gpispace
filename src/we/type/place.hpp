@@ -20,7 +20,6 @@
 #include <we/type/property.hpp>
 
 #include <boost/optional.hpp>
-#include <boost/serialization/nvp.hpp>
 
 #include <string>
 
@@ -48,7 +47,7 @@ namespace place
     type () = default;
     type ( std::string const& name
          , pnet::type::signature::signature_type const& signature
-         , boost::optional<bool> put_token
+         , ::boost::optional<bool> put_token
          , we::type::property::type const& prop = we::type::property::type ()
 	 )
       : _name (name)
@@ -67,17 +66,17 @@ namespace place
     // into a base class
     std::string _name;
     pnet::type::signature::signature_type _signature;
-    boost::optional<bool> _put_token;
+    ::boost::optional<bool> _put_token;
     we::type::property::type _prop;
 
-    friend class boost::serialization::access;
+    friend class ::boost::serialization::access;
     template<typename Archive>
     void serialize (Archive& ar, unsigned int)
     {
-      ar & BOOST_SERIALIZATION_NVP(_name);
-      ar & BOOST_SERIALIZATION_NVP(_signature);
-      ar & BOOST_SERIALIZATION_NVP(_put_token);
-      ar & BOOST_SERIALIZATION_NVP(_prop);
+      ar & _name;
+      ar & _signature;
+      ar & _put_token;
+      ar & _prop;
     }
   };
 }

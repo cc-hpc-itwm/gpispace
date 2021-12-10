@@ -41,7 +41,7 @@ namespace fhg
 
         private:
           fhg::util::indenter& _indent;
-          const boost::optional<std::string> _tag;
+          const ::boost::optional<std::string> _tag;
         };
 
         class close : public ostream::modifier

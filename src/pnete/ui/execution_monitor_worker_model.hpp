@@ -75,23 +75,23 @@ namespace fhg
 
         struct value_type
         {
-          value_type ( timestamp_type, boost::optional<duration_type>
+          value_type ( timestamp_type, ::boost::optional<duration_type>
                      , QString id, QString name, state_type
                      );
 
           timestamp_type timestamp() const;
-          boost::optional<duration_type> duration() const;
+          ::boost::optional<duration_type> duration() const;
 
           QString id() const;
 
           state_type state() const;
 
         private:
-          void duration (boost::optional<duration_type> d);
+          void duration (::boost::optional<duration_type> d);
           void state (state_type state_, timestamp_type now);
 
           timestamp_type _timestamp;
-          boost::optional<duration_type> _duration;
+          ::boost::optional<duration_type> _duration;
 
           QString _id;
           QString _name;
@@ -100,7 +100,7 @@ namespace fhg
           friend class worker_model;
         };
 
-        typedef boost::iterator_range<std::vector<value_type>::const_iterator>
+        typedef ::boost::iterator_range<std::vector<value_type>::const_iterator>
           subrange_type;
         typedef std::function<subrange_type (timestamp_type, timestamp_type)>
           subrange_getter_type;
@@ -121,6 +121,6 @@ namespace fhg
 }
 
 //! \note current_interval_role
-Q_DECLARE_METATYPE (boost::optional<fhg::pnete::ui::worker_model::value_type>)
+Q_DECLARE_METATYPE (::boost::optional<fhg::pnete::ui::worker_model::value_type>)
 //! \note range_getter_role
 Q_DECLARE_METATYPE (fhg::pnete::ui::worker_model::subrange_getter_type)

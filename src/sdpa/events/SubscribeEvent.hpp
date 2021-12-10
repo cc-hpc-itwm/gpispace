@@ -26,7 +26,7 @@ namespace sdpa
     class SubscribeEvent : public MgmtEvent
     {
     public:
-      typedef boost::shared_ptr<SubscribeEvent> Ptr;
+      typedef ::boost::shared_ptr<SubscribeEvent> Ptr;
 
       SubscribeEvent (job_id_t const& job_id)
         : MgmtEvent()

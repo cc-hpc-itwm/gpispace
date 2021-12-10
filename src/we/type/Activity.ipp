@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <boost/serialization/nvp.hpp>
 #include <boost/serialization/optional.hpp>
 #include <boost/serialization/variant.hpp>
 
@@ -25,12 +24,12 @@ namespace we
     template<class Archive>
       void Activity::serialize (Archive& ar, unsigned int)
     {
-      ar & BOOST_SERIALIZATION_NVP (_transition);
-      ar & BOOST_SERIALIZATION_NVP (_transition_id);
-      ar & BOOST_SERIALIZATION_NVP (_input);
-      ar & BOOST_SERIALIZATION_NVP (_output);
-      ar & BOOST_SERIALIZATION_NVP (_evaluation_context_requested);
-      ar & BOOST_SERIALIZATION_NVP (_eureka_id);
+      ar & _transition;
+      ar & _transition_id;
+      ar & _input;
+      ar & _output;
+      ar & _evaluation_context_requested;
+      ar & _eureka_id;
     }
   }
 }

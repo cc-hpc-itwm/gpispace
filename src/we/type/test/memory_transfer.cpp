@@ -61,7 +61,7 @@ namespace
       )
   {
     return str
-      ( boost::format
+      ( ::boost::format
           ("Expression '%1%' has incompatible type '%2%'."
           " Expected type '%3%'."
           )

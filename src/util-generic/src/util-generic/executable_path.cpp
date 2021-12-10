@@ -23,22 +23,22 @@ namespace fhg
 {
   namespace util
   {
-    boost::filesystem::path executable_path()
+    ::boost::filesystem::path executable_path()
     {
       //! \todo Other systems. See
       //! http://stackoverflow.com/questions/1023306/finding-current-executables-path-without-proc-self-exe
 
-      return boost::filesystem::canonical ( boost::filesystem::path ("/")
+      return ::boost::filesystem::canonical ( ::boost::filesystem::path ("/")
                                           / "proc"
                                           / std::to_string (syscall::getpid())
                                           / "exe"
                                           );
     }
 
-    boost::filesystem::path executable_path (void* symbol_in_executable)
+    ::boost::filesystem::path executable_path (void* symbol_in_executable)
     try
     {
-      return boost::filesystem::canonical
+      return ::boost::filesystem::canonical
         (syscall::dladdr (symbol_in_executable).dli_fname);
     }
     catch (...)

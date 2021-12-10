@@ -47,23 +47,23 @@ namespace xml
         }
       }
 
-      boost::filesystem::path type::expand (std::string const& file) const
+      ::boost::filesystem::path type::expand (std::string const& file) const
       {
-        const boost::filesystem::path absolute (file);
+        const ::boost::filesystem::path absolute (file);
 
         if (absolute.is_absolute())
         {
-          if (boost::filesystem::exists (absolute))
+          if (::boost::filesystem::exists (absolute))
           {
             return absolute;
           }
         }
         else
         {
-          const boost::filesystem::path from_actual_file
+          const ::boost::filesystem::path from_actual_file
             (file_in_progress().parent_path() / file);
 
-          if (boost::filesystem::exists (from_actual_file))
+          if (::boost::filesystem::exists (from_actual_file))
           {
             return from_actual_file;
           }
@@ -71,15 +71,15 @@ namespace xml
           {
             for (std::string const& search_path : _search_path)
             {
-              if (!boost::filesystem::exists (search_path))
+              if (!::boost::filesystem::exists (search_path))
               {
                 continue;
               }
 
-              const boost::filesystem::path pre (search_path);
-              const boost::filesystem::path path (pre / file);
+              const ::boost::filesystem::path pre (search_path);
+              const ::boost::filesystem::path path (pre / file);
 
-              if (boost::filesystem::exists (path))
+              if (::boost::filesystem::exists (path))
               {
                 return path;
               }
@@ -242,12 +242,12 @@ namespace xml
 
           if (pos != end && *pos == "search_path")
           {
-            std::string const value_str (boost::get<std::string> (value));
-            const boost::filesystem::path absolute (value_str);
+            std::string const value_str (::boost::get<std::string> (value));
+            const ::boost::filesystem::path absolute (value_str);
 
             if (absolute.is_absolute())
             {
-              if (boost::filesystem::exists (absolute))
+              if (::boost::filesystem::exists (absolute))
               {
                 _search_path.push_back (absolute.string());
               }
@@ -259,10 +259,10 @@ namespace xml
             }
             else
             {
-              const boost::filesystem::path from_actual_file
+              const ::boost::filesystem::path from_actual_file
                 (file_in_progress().parent_path() / value_str);
 
-              if (boost::filesystem::exists (from_actual_file))
+              if (::boost::filesystem::exists (from_actual_file))
               {
                 _search_path.push_back (from_actual_file.string());
               }
@@ -292,20 +292,20 @@ namespace xml
         }
       }
 
-      void type::set_input (boost::filesystem::path const& path)
+      void type::set_input (::boost::filesystem::path const& path)
       {
         _in_progress.push_back (path);
       }
 
       void type::set_input (std::string const& file)
       {
-        set_input (boost::filesystem::path (file));
+        set_input (::boost::filesystem::path (file));
       }
 
-      boost::filesystem::path type::file_in_progress() const
+      ::boost::filesystem::path type::file_in_progress() const
       {
         return (_in_progress.empty())
-          ? boost::filesystem::path("<stdin>")
+          ? ::boost::filesystem::path("<stdin>")
           : _in_progress.back()
           ;
       }
@@ -349,7 +349,7 @@ namespace xml
         return p;
       }
 
-      std::set<boost::filesystem::path> const& type::dependencies() const
+      std::set<::boost::filesystem::path> const& type::dependencies() const
       {
         return _dependencies;
       }
@@ -471,7 +471,7 @@ namespace xml
 #undef WARN
 
       void
-      type::check_for_include_loop (boost::filesystem::path const& path) const
+      type::check_for_include_loop (::boost::filesystem::path const& path) const
       {
         for ( in_progress_type::const_iterator pos (_in_progress.begin())
             ; pos != _in_progress.end()
@@ -486,18 +486,18 @@ namespace xml
         }
       }
 
-      void type::add_options (boost::program_options::options_description& desc)
+      void type::add_options (::boost::program_options::options_description& desc)
       {
 #define TYPEDVAL(t,x)                                                   \
-        boost::program_options::value<t>(&_ ## x)->default_value (_ ## x)
+        ::boost::program_options::value<t>(&_ ## x)->default_value (_ ## x)
 #define BOOLVAL(x)                              \
         TYPEDVAL (bool,x)->implicit_value(true)
 #define STRINGVAL(x)                            \
         TYPEDVAL (std::string,x)
 #define STRINGVECVAL(x)                                                 \
-        boost::program_options::value<std::vector<std::string>> (&_ ## x)
+        ::boost::program_options::value<std::vector<std::string>> (&_ ## x)
 
-        boost::program_options::options_description warnings ("Warnings");
+        ::boost::program_options::options_description warnings ("Warnings");
 
         warnings.add_options()
           ( _option_Werror.c_str()
@@ -616,16 +616,16 @@ namespace xml
           )
           ;
 
-        boost::program_options::options_description
+        ::boost::program_options::options_description
           generate ("Wrapper generation");
 
         generate.add_options()
           ( _option_gen_ldflags.c_str()
-          , boost::program_options::value<gen_param_type>(&_gen_ldflags)
+          , ::boost::program_options::value<gen_param_type>(&_gen_ldflags)
           , "ldflags for generated makefile"
           )
           ( _option_gen_cxxflags.c_str()
-          , boost::program_options::value<gen_param_type>(&_gen_cxxflags)
+          , ::boost::program_options::value<gen_param_type>(&_gen_cxxflags)
           , "cxxflags for generated makefile"
           )
           ( _option_path_to_cpp.c_str()
@@ -638,7 +638,7 @@ namespace xml
           )
           ;
 
-        boost::program_options::options_description xml ("XML mirroring");
+        ::boost::program_options::options_description xml ("XML mirroring");
 
         xml.add_options()
           ( _option_dump_xml_file.c_str()
@@ -647,7 +647,7 @@ namespace xml
           )
           ;
 
-        boost::program_options::options_description
+        ::boost::program_options::options_description
           depend ("Dependency generation");
 
         depend.add_options()
@@ -679,7 +679,7 @@ namespace xml
           )
           ;
 
-        boost::program_options::options_description net ("Network handling");
+        ::boost::program_options::options_description net ("Network handling");
 
         net.add_options()
           ( _option_ignore_properties.c_str()
@@ -696,7 +696,7 @@ namespace xml
           )
           ;
 
-        boost::program_options::options_description file ("File handling");
+        ::boost::program_options::options_description file ("File handling");
 
         file.add_options()
           ( _option_force_overwrite_file.c_str()
@@ -715,7 +715,7 @@ namespace xml
 
         desc.add_options()
           ( _option_search_path.c_str()
-          , boost::program_options::value<search_path_type>(&_search_path)
+          , ::boost::program_options::value<search_path_type>(&_search_path)
           , "search path"
           )
           ;
@@ -732,16 +732,16 @@ namespace xml
         desc.add (warnings);
       }
 
-      boost::filesystem::path type::strip_path_prefix
-        (boost::filesystem::path const& path) const
+      ::boost::filesystem::path type::strip_path_prefix
+        (::boost::filesystem::path const& path) const
       {
         auto const try_strip
-          ([&path] (boost::filesystem::path const& to_strip)
-           -> boost::optional<boost::filesystem::path>
+          ([&path] (::boost::filesystem::path const& to_strip)
+           -> ::boost::optional<::boost::filesystem::path>
            {
-             boost::filesystem::path::const_iterator
+             ::boost::filesystem::path::const_iterator
                pos_path (path.begin());
-             boost::filesystem::path::const_iterator
+             ::boost::filesystem::path::const_iterator
                pos_to_strip (to_strip.begin());
 
              while (  pos_path != path.end()
@@ -760,9 +760,9 @@ namespace xml
 
              if (pos_to_strip == to_strip.end())
              {
-               //! \note return boost::filesystem::path {pos_path,
+               //! \note return ::boost::filesystem::path {pos_path,
                //! path.end()} does not compile, \todo why?
-               boost::filesystem::path stripped;
+               ::boost::filesystem::path stripped;
 
                for (; pos_path != path.end(); ++pos_path)
                {
@@ -772,13 +772,13 @@ namespace xml
                return std::move (stripped);
              }
 
-             return boost::none;
+             return ::boost::none;
            }
           );
 
-        for (boost::filesystem::path to_strip : _path_prefixes_to_strip)
+        for (::boost::filesystem::path to_strip : _path_prefixes_to_strip)
         {
-          boost::optional<boost::filesystem::path> const stripped
+          ::boost::optional<::boost::filesystem::path> const stripped
             (try_strip (to_strip));
 
           if (!!stripped)

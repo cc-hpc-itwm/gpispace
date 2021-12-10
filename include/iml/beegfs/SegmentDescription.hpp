@@ -32,7 +32,7 @@ namespace iml
       //! metadata will be stored in a directory at the given \a path.
       //! \note The mountpoint needs the \c tuneUseGlobalFileLocks
       //! option enabled.
-      SegmentDescription (boost::filesystem::path path);
+      SegmentDescription (::boost::filesystem::path path);
 
       //! \note For serialization only.
       SegmentDescription() = default;
@@ -41,7 +41,7 @@ namespace iml
       template<typename BoostArchive>
         void serialize (BoostArchive&, unsigned int);
 
-      boost::filesystem::path path;
+      ::boost::filesystem::path path;
     };
   }
 }

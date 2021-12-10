@@ -219,7 +219,7 @@ namespace expr
     {
       return _types.empty();
     }
-    template<> boost::optional<Type> TypesT<Type>::singleton() const
+    template<> ::boost::optional<Type> TypesT<Type>::singleton() const
     {
       if (_types.size() == 1)
       {

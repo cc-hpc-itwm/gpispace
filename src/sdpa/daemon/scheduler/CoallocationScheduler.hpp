@@ -34,7 +34,7 @@ namespace sdpa
 {
   namespace daemon
   {
-    class CoallocationScheduler : boost::noncopyable
+    class CoallocationScheduler : ::boost::noncopyable
     {
     public:
       CoallocationScheduler
@@ -45,7 +45,7 @@ namespace sdpa
 
       void store_result
         (fhg::com::p2p::address_t const&, job_id_t const&, terminal_state);
-      boost::optional<job_result_type>
+      ::boost::optional<job_result_type>
         get_aggregated_results_if_all_terminated (job_id_t const&);
 
       // -- used by daemon and self
@@ -115,7 +115,7 @@ namespace sdpa
         , std::lock_guard<std::mutex> const&
         ) const;
 
-      std::pair<boost::optional<double>, boost::optional<std::string>>
+      std::pair<::boost::optional<double>, ::boost::optional<std::string>>
         match_requirements_and_preferences
           ( Requirements_and_preferences const&
           , std::set<std::string> const&

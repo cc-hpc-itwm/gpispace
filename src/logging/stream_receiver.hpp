@@ -20,10 +20,10 @@
 #include <logging/message.hpp>
 #include <logging/protocol.hpp>
 
-#include <rpc/service_dispatcher.hpp>
-#include <rpc/service_handler.hpp>
-#include <rpc/service_socket_provider.hpp>
-#include <rpc/service_tcp_provider.hpp>
+#include <util-rpc/service_dispatcher.hpp>
+#include <util-rpc/service_handler.hpp>
+#include <util-rpc/service_socket_provider.hpp>
+#include <util-rpc/service_tcp_provider.hpp>
 
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 
@@ -43,13 +43,13 @@ namespace fhg
       //! an `io_service` sharing anything with `this->_io_service`.
       using callback_t = std::function<void (message const&)>;
       using yielding_callback_t
-        = std::function<void (boost::asio::yield_context, message const&)>;
+        = std::function<void (::boost::asio::yield_context, message const&)>;
       stream_receiver (callback_t);
       stream_receiver (yielding_callback_t);
       stream_receiver (endpoint, callback_t);
       stream_receiver (std::vector<endpoint>, callback_t);
 
-      void add_emitters (boost::asio::yield_context, std::vector<endpoint>);
+      void add_emitters (::boost::asio::yield_context, std::vector<endpoint>);
       void add_emitters_blocking (std::vector<endpoint>);
 
     private:

@@ -14,18 +14,18 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <test/make.hpp>
-#include <test/parse_command_line.hpp>
-#include <test/scoped_nodefile_from_environment.hpp>
-#include <test/shared_directory.hpp>
-#include <test/source_directory.hpp>
+#include <testing/make.hpp>
+#include <testing/parse_command_line.hpp>
+#include <testing/scoped_nodefile_from_environment.hpp>
+#include <testing/shared_directory.hpp>
+#include <testing/source_directory.hpp>
 
 #include <drts/client.hpp>
 #include <drts/drts.hpp>
 #include <drts/scoped_rifd.hpp>
 
-#include <fhg/util/boost/program_options/generic.hpp>
-#include <fhg/util/boost/program_options/validators/nonempty_file.hpp>
+#include <util-generic/boost/program_options/generic.hpp>
+#include <util-generic/boost/program_options/validators/nonempty_file.hpp>
 
 #include <util-generic/temporary_path.hpp>
 
@@ -40,7 +40,7 @@
     , "the object that contains the jobserver client implementation"    \
     };                                                                  \
                                                                         \
-  boost::program_options::options_description options_description;      \
+  ::boost::program_options::options_description options_description;      \
                                                                         \
   options_description.add (test::options::source_directory());          \
   options_description.add (test::options::shared_directory());          \
@@ -49,29 +49,29 @@
   options_description.add (gspc::options::scoped_rifd());               \
   options_description.add_options()                                     \
     ( jobserver_client.name().c_str()                                   \
-    , boost::program_options::value<po::nonempty_file>()->required()    \
+    , ::boost::program_options::value<po::nonempty_file>()->required()    \
     , jobserver_client.description().c_str()                            \
     );                                                                  \
                                                                         \
-  boost::program_options::variables_map vm                              \
+  ::boost::program_options::variables_map vm                              \
     ( test::parse_command_line                                          \
-      ( boost::unit_test::framework::master_test_suite().argc           \
-      , boost::unit_test::framework::master_test_suite().argv           \
+      ( ::boost::unit_test::framework::master_test_suite().argc           \
+      , ::boost::unit_test::framework::master_test_suite().argv           \
       , options_description                                             \
       )                                                                 \
     );                                                                  \
                                                                         \
   fhg::util::temporary_path const shared_directory                      \
     ( test::shared_directory (vm)                                       \
-    / boost::unit_test::framework::current_test_case().full_name()      \
+    / ::boost::unit_test::framework::current_test_case().full_name()      \
     );                                                                  \
                                                                         \
   test::scoped_nodefile_from_environment const                          \
     nodefile_from_environment (shared_directory, vm);                   \
                                                                         \
   fhg::util::temporary_path const _installation_dir                     \
-    (shared_directory / boost::filesystem::unique_path());              \
-  boost::filesystem::path const installation_dir (_installation_dir);   \
+    (shared_directory / ::boost::filesystem::unique_path());              \
+  ::boost::filesystem::path const installation_dir (_installation_dir);   \
                                                                         \
   gspc::set_application_search_path (vm, installation_dir);             \
                                                                         \

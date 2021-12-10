@@ -22,7 +22,7 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/test/unit_test.hpp>
 
-namespace ip = boost::asio::ip;
+namespace ip = ::boost::asio::ip;
 
 BOOST_AUTO_TEST_CASE (port_is_passed_through)
 {

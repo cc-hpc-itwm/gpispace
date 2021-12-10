@@ -30,12 +30,12 @@ namespace sdpa
     class SubmitJobEvent : public SDPAEvent
     {
     public:
-      typedef boost::shared_ptr<SubmitJobEvent> Ptr;
+      typedef ::boost::shared_ptr<SubmitJobEvent> Ptr;
 
       SubmitJobEvent
-        ( boost::optional<sdpa::job_id_t> const& a_job_id
+        ( ::boost::optional<sdpa::job_id_t> const& a_job_id
         , we::type::Activity activity
-        , boost::optional<std::string> const& implementation
+        , ::boost::optional<std::string> const& implementation
         , std::set<worker_id_t> const& workers = {}
         )
           : SDPAEvent()
@@ -45,7 +45,7 @@ namespace sdpa
           , _workers (workers)
       {}
 
-      boost::optional<sdpa::job_id_t> const& job_id() const
+      ::boost::optional<sdpa::job_id_t> const& job_id() const
       {
         return _job_id;
       }
@@ -53,7 +53,7 @@ namespace sdpa
       {
         return _activity;
       }
-      boost::optional<std::string> const& implementation() const
+      ::boost::optional<std::string> const& implementation() const
       {
         return _implementation;
       }
@@ -69,9 +69,9 @@ namespace sdpa
       }
 
     private:
-      boost::optional<sdpa::job_id_t> _job_id;
+      ::boost::optional<sdpa::job_id_t> _job_id;
       we::type::Activity _activity;
-      boost::optional<std::string> _implementation;
+      ::boost::optional<std::string> _implementation;
       std::set<worker_id_t> _workers;
     };
 
@@ -87,9 +87,9 @@ namespace sdpa
     LOAD_CONSTRUCT_DATA_DEF (SubmitJobEvent, e)
     {
       LOAD_SDPAEVENT_CONSTRUCT_DATA();
-      LOAD_FROM_ARCHIVE (boost::optional<sdpa::job_id_t>, job_id);
+      LOAD_FROM_ARCHIVE (::boost::optional<sdpa::job_id_t>, job_id);
       LOAD_FROM_ARCHIVE (we::type::Activity, activity);
-      LOAD_FROM_ARCHIVE (boost::optional<std::string>, implementation);
+      LOAD_FROM_ARCHIVE (::boost::optional<std::string>, implementation);
       LOAD_FROM_ARCHIVE (std::set<sdpa::worker_id_t>, workers);
 
       ::new (e) SubmitJobEvent (job_id, std::move (activity), implementation, workers);

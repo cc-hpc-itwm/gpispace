@@ -16,7 +16,7 @@
 
 #include <sdpa/test/sdpa/utils.hpp>
 
-#include <test/certificates_data.hpp>
+#include <testing/certificates_data.hpp>
 
 #include <util-generic/testing/printer/generic.hpp>
 #include <util-generic/testing/printer/list.hpp>
@@ -34,6 +34,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <functional>
+#include <future>
 #include <limits>
 #include <list>
 #include <memory>
@@ -63,18 +64,17 @@ namespace
 
     template<typename Event>
       using Events
-        = fhg::util::threadsafe_queue
-            <std::pair<fhg::com::p2p::address_t, Event>>;
+        = fhg::util::threadsafe_queue<::boost::optional<std::string>>;
 
-    Events<sdpa::events::SubmitJobEvent> jobs_submitted;
+    Events<sdpa::events::SubmitJobEvent> implementations_submitted;
 
   private:
     virtual void handleSubmitJobEvent
-      ( fhg::com::p2p::address_t const& source
+      ( fhg::com::p2p::address_t const& // source
       , sdpa::events::SubmitJobEvent const* event
       ) override
     {
-      jobs_submitted.put (source, *event);
+      implementations_submitted.put (event->implementation());
     }
 
     utils::basic_drts_component::event_thread_and_worker_join _ = {*this};
@@ -106,7 +106,7 @@ namespace
 
   we::type::Activity activity_with_preferences
     ( std::list<std::string> const& preferences
-    , boost::optional<unsigned long> worker_count = boost::none
+    , ::boost::optional<unsigned long> worker_count = ::boost::none
     )
   {
     fhg::util::testing::random<std::string> random_string;
@@ -159,7 +159,7 @@ namespace
       auto const port_id
         (transition.add_port ({random_string(), we::type::port::direction::In{}, type, we::type::property::type{}}));
       net.add_connection
-        ( we::edge::PT
+        ( we::edge::PT{}
         , net.add_transition (std::move (transition))
         , place_id
         , port_id
@@ -169,7 +169,7 @@ namespace
 
     return we::type::Activity
       (we::type::Transition (random_string(), net, {}, {}, {}
-                              , boost::optional<we::type::eureka_id_type>{}
+                              , ::boost::optional<we::type::eureka_id_type>{}
                               , std::list<we::type::Preference>{}
                               ));
   }
@@ -262,8 +262,8 @@ BOOST_DATA_TEST_CASE
   auto const activity (activity_with_preferences (preferences));
   utils::client (agent, certificates).submit_job (activity);
 
-  auto const submitted (observer.jobs_submitted.get());
-  BOOST_REQUIRE_EQUAL (submitted.second.implementation(), chosen_preference);
+  BOOST_REQUIRE_EQUAL
+    (observer.implementations_submitted.get(), chosen_preference);
 }
 
 namespace
@@ -276,7 +276,7 @@ namespace
         ( utils::agent const& parent
         , fhg::com::Certificates const& certificates
         , std::string capability
-        , fhg::util::thread::event<boost::optional<std::string>>& job_submitted
+        , std::promise<::boost::optional<std::string>>& job_submitted
         )
       : basic_drts_component (parent, {capability}, certificates)
       , _job_submitted (job_submitted)
@@ -290,7 +290,7 @@ namespace
       _network.perform<sdpa::events::SubmitJobAckEvent>
         (source, *event->job_id());
 
-      _job_submitted.notify (event->implementation());
+      _job_submitted.set_value (event->implementation());
     }
 
     virtual void handleJobFinishedAckEvent
@@ -300,7 +300,7 @@ namespace
     {}
 
   private:
-    fhg::util::thread::event<boost::optional<std::string>>& _job_submitted;
+    std::promise<::boost::optional<std::string>>& _job_submitted;
     basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
 }
@@ -322,7 +322,7 @@ BOOST_DATA_TEST_CASE
 
   utils::agent const agent (certificates);
 
-  std::list<fhg::util::thread::event<boost::optional<std::string>>> jobs_submitted;
+  std::list<std::promise<::boost::optional<std::string>>> jobs_submitted;
   std::list<fake_drts_worker_notifying_implementation_reception> workers;
   std::vector<std::string> expected_preferences;
 
@@ -360,13 +360,13 @@ BOOST_DATA_TEST_CASE
     (net_with_n_children_and_preferences (n_total_workers, preferences));
 
   for ( auto const job_submitted_and_preference
-      : boost::combine (jobs_submitted, expected_preferences)
+      : ::boost::combine (jobs_submitted, expected_preferences)
       )
   {
-    auto& job_submitted (boost::get<0> (job_submitted_and_preference));
-    auto const preference (boost::get<1> (job_submitted_and_preference));
+    auto& job_submitted (::boost::get<0> (job_submitted_and_preference));
+    auto const preference (::boost::get<1> (job_submitted_and_preference));
 
-    auto const submission (job_submitted.wait());
+    auto const submission (job_submitted.get_future().get());
     BOOST_CHECK_EQUAL (submission, preference);
   }
 }

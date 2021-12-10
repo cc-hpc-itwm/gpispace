@@ -38,7 +38,7 @@ namespace xml
       public:
         explicit check_no_change_fstream
           ( state::type const&
-          , boost::filesystem::path const&
+          , ::boost::filesystem::path const&
           , std::function<bool (std::string const&, std::string const&)>
           = [](std::string const& l, std::string const& r) { return l == r; }
           );
@@ -53,7 +53,7 @@ namespace xml
 
       private:
         state::type const& _state;
-        const boost::filesystem::path _file;
+        const ::boost::filesystem::path _file;
         std::function<bool (std::string const&, std::string const&)> _equal;
         std::ostringstream _oss;
 

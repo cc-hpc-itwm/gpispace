@@ -38,7 +38,7 @@ namespace fhg
       {
         flatten_nested_exceptions()
         {
-          boost::unit_test::unit_test_monitor
+          ::boost::unit_test::unit_test_monitor
             .register_exception_translator<std::exception>
               ( [] (std::exception const& ex)
                 {
@@ -57,14 +57,18 @@ namespace fhg
                     {
                       return _what.c_str();
                     }
-                  } flattened (current_exception_printer (": ").string());
+                  } flattened (fhg::util::current_exception_printer (": ").string());
                   throw flattened;
                 }
               );
         }
       };
-
-      BOOST_GLOBAL_FIXTURE (flatten_nested_exceptions);
     }
   }
+}
+
+namespace
+{
+  using fhg::util::testing::flatten_nested_exceptions;
+  BOOST_GLOBAL_FIXTURE (flatten_nested_exceptions);
 }

@@ -24,16 +24,16 @@ namespace fhg
 {
   namespace util
   {
-    class temporary_file : boost::noncopyable
+    class temporary_file : ::boost::noncopyable
     {
     public:
-      temporary_file (boost::filesystem::path const& path)
-        : _path (boost::filesystem::absolute (path))
+      temporary_file (::boost::filesystem::path const& path)
+        : _path (::boost::filesystem::absolute (path))
       {
-        if (boost::filesystem::exists (_path))
+        if (::boost::filesystem::exists (_path))
         {
           throw std::logic_error
-            (( boost::format ("Temporary file %1% already exists.")
+            (( ::boost::format ("Temporary file %1% already exists.")
              % path
              ).str()
             );
@@ -42,16 +42,16 @@ namespace fhg
 
       ~temporary_file()
       {
-        boost::filesystem::remove (_path);
+        ::boost::filesystem::remove (_path);
       }
 
-      operator boost::filesystem::path() const
+      operator ::boost::filesystem::path() const
       {
         return _path;
       }
 
     private:
-      boost::filesystem::path _path;
+      ::boost::filesystem::path _path;
     };
   }
 }

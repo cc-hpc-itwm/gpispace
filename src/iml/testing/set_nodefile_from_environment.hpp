@@ -21,6 +21,6 @@
 
 namespace iml_test
 {
-  boost::filesystem::path set_nodefile_from_environment
-    (boost::program_options::variables_map&);
+  ::boost::filesystem::path set_nodefile_from_environment
+    (::boost::program_options::variables_map&);
 }

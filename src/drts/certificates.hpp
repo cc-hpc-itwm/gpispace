@@ -21,5 +21,5 @@
 
 namespace gspc
 {
-  using Certificates = boost::optional<boost::filesystem::path>;
+  using Certificates = ::boost::optional<::boost::filesystem::path>;
 }

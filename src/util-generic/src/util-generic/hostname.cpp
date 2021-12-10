@@ -44,7 +44,7 @@ namespace fhg
         }
 
         throw std::runtime_error
-          ( (boost::format ("Could not get hostname: %1%") % strerror (errno))
+          ( (::boost::format ("Could not get hostname: %1%") % strerror (errno))
           . str()
           );
       }

@@ -26,7 +26,7 @@ namespace std
 {
   namespace
   {
-    struct hash_value_visitor : boost::static_visitor<std::size_t>
+    struct hash_value_visitor : ::boost::static_visitor<std::size_t>
     {
       template<typename T>
         std::size_t operator() (T const& x) const
@@ -37,14 +37,14 @@ namespace std
   }
 
   template<typename... Values>
-    struct hash<boost::variant<Values...>>
+    struct hash<::boost::variant<Values...>>
   {
-    std::size_t operator() (boost::variant<Values...> const& variant) const
+    std::size_t operator() (::boost::variant<Values...> const& variant) const
     {
       std::size_t seed (0);
-      boost::hash_combine (seed, variant.which());
-      boost::hash_combine
-        (seed, boost::apply_visitor (hash_value_visitor{}, variant));
+      ::boost::hash_combine (seed, variant.which());
+      ::boost::hash_combine
+        (seed, ::boost::apply_visitor (hash_value_visitor{}, variant));
       return seed;
     }
   };

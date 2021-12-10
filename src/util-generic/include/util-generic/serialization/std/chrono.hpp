@@ -51,7 +51,7 @@ namespace boost
                      , const unsigned int version
                      )
     {
-      boost::serialization::split_free (ar, duration, version);
+      ::boost::serialization::split_free (ar, duration, version);
     }
 
 
@@ -81,7 +81,7 @@ namespace boost
                      , const unsigned int version
                      )
     {
-      boost::serialization::split_free (ar, time_point, version);
+      ::boost::serialization::split_free (ar, time_point, version);
     }
   }
 }

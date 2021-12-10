@@ -34,7 +34,7 @@ namespace fhg
     {
       worker_model::value_type::value_type
         ( timestamp_type t
-        , boost::optional<duration_type> d
+        , ::boost::optional<duration_type> d
         , QString id, QString name, state_type state_
         )
           : _timestamp (t)
@@ -51,11 +51,11 @@ namespace fhg
         return _timestamp;
       }
 
-      void worker_model::value_type::duration (boost::optional<duration_type> d)
+      void worker_model::value_type::duration (::boost::optional<duration_type> d)
       {
         _duration = d;
       }
-      boost::optional<worker_model::duration_type>
+      ::boost::optional<worker_model::duration_type>
         worker_model::value_type::duration() const
       {
         return _duration;
@@ -127,7 +127,7 @@ namespace fhg
 
       void worker_model::handle_events()
       {
-        boost::optional<QModelIndex> ul, br;
+        ::boost::optional<QModelIndex> ul, br;
 
         QVector<logging::message> events;
         {
@@ -204,7 +204,7 @@ namespace fhg
 
               container.push_back
                 ( value_type ( time
-                             , boost::none
+                             , ::boost::none
                              , activity_id
                              , QString::fromStdString (event.activity_name())
                              , event.activity_state()
@@ -280,7 +280,7 @@ namespace fhg
           }
           else if (role == current_interval_role)
           {
-            return QVariant::fromValue<boost::optional<value_type>>
+            return QVariant::fromValue<::boost::optional<value_type>>
               (_worker_containers[_workers[index.row()]].back());
           }
           else if (role == range_getter_role)

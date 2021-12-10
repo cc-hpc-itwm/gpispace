@@ -32,7 +32,7 @@
 #include <sdpa/client.hpp>
 
 #include <fhg/project_version.hpp>
-#include <fhg/util/boost/program_options/require_all_if_one.hpp>
+#include <util-generic/boost/program_options/require_all_if_one.hpp>
 #include <util-generic/make_optional.hpp>
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_exception.hpp>
@@ -52,15 +52,15 @@
 namespace gspc
 {
   installation::installation
-    (boost::filesystem::path const& gspc_home)
-      : _gspc_home (boost::filesystem::canonical (gspc_home))
+    (::boost::filesystem::path const& gspc_home)
+      : _gspc_home (::boost::filesystem::canonical (gspc_home))
   {
-    boost::filesystem::path const path_version (_gspc_home / "version");
+    ::boost::filesystem::path const path_version (_gspc_home / "version");
 
-    if (!boost::filesystem::exists (path_version))
+    if (!::boost::filesystem::exists (path_version))
     {
       throw std::invalid_argument
-        (( boost::format ("GSPC version mismatch: File '%1%' does not exist.")
+        (( ::boost::format ("GSPC version mismatch: File '%1%' does not exist.")
          % path_version
          ).str());
     }
@@ -70,7 +70,7 @@ namespace gspc
     if (version != fhg::project_version())
     {
       throw std::invalid_argument
-        (( boost::format ( "GSPC version mismatch: Expected '%1%'"
+        (( ::boost::format ( "GSPC version mismatch: Expected '%1%'"
                          ", installation in '%2%' has version '%3%'"
                          )
          % fhg::project_version()
@@ -81,12 +81,12 @@ namespace gspc
     }
   }
   installation::installation
-    (boost::program_options::variables_map const& vm)
+    (::boost::program_options::variables_map const& vm)
       : installation (require_gspc_home (vm))
   {}
 
   scoped_runtime_system::scoped_runtime_system
-      ( boost::program_options::variables_map const& vm
+      ( ::boost::program_options::variables_map const& vm
       , installation const& installation
       , std::string const& topology_description
       , std::ostream& info_output
@@ -102,7 +102,7 @@ namespace gspc
         )
   {}
   scoped_runtime_system::scoped_runtime_system
-    ( boost::program_options::variables_map const& vm
+    ( ::boost::program_options::variables_map const& vm
     , installation const& installation
     , std::string const& topology_description
     , rifd_entry_points const& entry_points
@@ -131,10 +131,10 @@ namespace gspc
           )
   {}
   scoped_runtime_system::scoped_runtime_system
-    ( boost::program_options::variables_map const& vm
+    ( ::boost::program_options::variables_map const& vm
     , installation const& installation
     , std::string const& topology_description
-    , boost::optional<rifd_entry_points> const& entry_points
+    , ::boost::optional<rifd_entry_points> const& entry_points
     , rifd_entry_point const& parent
     , std::ostream& info_output
     , Certificates const& certificates
@@ -170,19 +170,19 @@ namespace gspc
   }
 
   scoped_runtime_system::implementation::started_runtime_system::started_runtime_system
-      ( boost::optional<unsigned short> const& agent_port
-      , boost::optional<boost::filesystem::path> gpi_socket
-      , std::vector<boost::filesystem::path> app_path
+      ( ::boost::optional<unsigned short> const& agent_port
+      , ::boost::optional<::boost::filesystem::path> gpi_socket
+      , std::vector<::boost::filesystem::path> app_path
       , std::vector<std::string> worker_env_copy_variable
       , bool worker_env_copy_current
-      , std::vector<boost::filesystem::path> worker_env_copy_file
+      , std::vector<::boost::filesystem::path> worker_env_copy_file
       , std::vector<std::string> worker_env_set_variable
       , gspc::installation_path installation_path
       , std::vector<worker_description> worker_descriptions
       , std::vector<fhg::rif::entry_point> const& rif_entry_points
       , fhg::rif::entry_point const& parent
       , std::ostream& info_output
-      , boost::optional<fhg::rif::entry_point> logging_rif_entry_point
+      , ::boost::optional<fhg::rif::entry_point> logging_rif_entry_point
       , std::vector<fhg::logging::endpoint> default_log_receivers
       , Certificates const& certificates
       )
@@ -334,7 +334,7 @@ namespace gspc
   namespace
   {
     std::vector<fhg::logging::endpoint> extract_default_receivers
-      (boost::program_options::variables_map const& vm)
+      (::boost::program_options::variables_map const& vm)
     {
       fhg::util::boost::program_options::require_all_if_one
         (vm, {"log-host", "log-port"});
@@ -350,10 +350,10 @@ namespace gspc
   }
 
   scoped_runtime_system::implementation::implementation
-    ( boost::program_options::variables_map const& vm
+    ( ::boost::program_options::variables_map const& vm
     , installation const& installation
     , std::string const& topology_description
-    , boost::optional<rifd_entry_points> const& entry_points
+    , ::boost::optional<rifd_entry_points> const& entry_points
     , rifd_entry_point const& parent
     , std::ostream& info_output
     , Certificates const& certificates
@@ -372,9 +372,9 @@ namespace gspc
           ( get_agent_port (vm)
           , _virtual_memory_socket
           , get_application_search_path (vm)
-          ? std::vector<boost::filesystem::path>
-            ({boost::filesystem::canonical (get_application_search_path (vm).get())})
-          : std::vector<boost::filesystem::path>()
+          ? std::vector<::boost::filesystem::path>
+            ({::boost::filesystem::canonical (get_application_search_path (vm).get())})
+          : std::vector<::boost::filesystem::path>()
           , get_worker_env_copy_variable (vm).get_value_or ({})
           , get_worker_env_copy_current (vm).get_value_or (false)
           , get_worker_env_copy_file (vm).get_value_or ({})
@@ -563,7 +563,7 @@ namespace gspc
   namespace
   {
     std::unique_ptr<iml::Rifs> make_iml_scoped_rifds
-      (boost::program_options::variables_map vm)
+      (::boost::program_options::variables_map vm)
     {
       return std::make_unique<iml::Rifs>
         ( fhg::util::read_lines (require_nodefile (vm))
@@ -574,7 +574,7 @@ namespace gspc
     }
 
     std::unique_ptr<iml::RuntimeSystem> make_iml_rts
-      ( boost::program_options::variables_map const& vm
+      ( ::boost::program_options::variables_map const& vm
       , std::ostream& info_output
       , iml::Rifs const& rifds
       )
@@ -591,7 +591,7 @@ namespace gspc
   }
 
   iml_runtime_system::iml_runtime_system
-      ( boost::program_options::variables_map const& vm
+      ( ::boost::program_options::variables_map const& vm
       , std::ostream& info_output
       )
     : rifds (make_iml_scoped_rifds (vm))

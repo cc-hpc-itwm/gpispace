@@ -16,29 +16,24 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <test_callback.hpp>
-
 #include <drts/client.hpp>
 #include <drts/drts.hpp>
 #include <drts/scoped_rifd.hpp>
 
-#include <test/certificates_data.hpp>
-#include <test/make.hpp>
-#include <test/parse_command_line.hpp>
-#include <test/scoped_nodefile_from_environment.hpp>
-#include <test/source_directory.hpp>
-#include <test/shared_directory.hpp>
+#include <testing/certificates_data.hpp>
+#include <testing/make.hpp>
+#include <testing/parse_command_line.hpp>
+#include <testing/scoped_nodefile_from_environment.hpp>
+#include <testing/source_directory.hpp>
+#include <testing/shared_directory.hpp>
 
-#include <fhg/util/thread/event.hpp>
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/finally.hpp>
+#include <util-generic/latch.hpp>
 #include <util-generic/read_lines.hpp>
-#include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
-#include <util-generic/temporary_file.hpp>
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/multimap.hpp>
-#include <util-generic/testing/printer/optional.hpp>
 #include <util-generic/testing/require_container_is_permutation.hpp>
 
 #include <we/type/value/boost/test/printer.hpp>
@@ -50,12 +45,14 @@
 #include <boost/test/data/test_case.hpp>
 #include <boost/thread/scoped_thread.hpp>
 
+#include <iostream>
 #include <list>
+#include <string>
 #include <vector>
 
 BOOST_AUTO_TEST_CASE (add_worker)
 {
-  boost::program_options::options_description options_description;
+  ::boost::program_options::options_description options_description;
 
   options_description.add (test::options::source_directory());
   options_description.add (test::options::shared_directory());
@@ -65,19 +62,19 @@ BOOST_AUTO_TEST_CASE (add_worker)
   options_description.add (gspc::options::scoped_rifd());
   options_description.add_options()
     ( "rpc-lib"
-    , boost::program_options::value<boost::filesystem::path>()->required()
+    , ::boost::program_options::value<::boost::filesystem::path>()->required()
     , "rpc library to link against"
     );
   options_description.add_options()
     ( "ssl-cert"
-    , boost::program_options::value<std::string>()->required()
+    , ::boost::program_options::value<std::string>()->required()
     , "enable or disable SSL certificate"
     );
 
-  boost::program_options::variables_map vm
+  ::boost::program_options::variables_map vm
     ( test::parse_command_line
-        ( boost::unit_test::framework::master_test_suite().argc
-        , boost::unit_test::framework::master_test_suite().argv
+        ( ::boost::unit_test::framework::master_test_suite().argc
+        , ::boost::unit_test::framework::master_test_suite().argv
         , options_description
         )
     );
@@ -96,8 +93,8 @@ BOOST_AUTO_TEST_CASE (add_worker)
     (shared_directory, vm);
 
   fhg::util::temporary_path const _installation_dir
-    (shared_directory / boost::filesystem::unique_path());
-  boost::filesystem::path const installation_dir (_installation_dir);
+    (shared_directory / ::boost::filesystem::unique_path());
+  ::boost::filesystem::path const installation_dir (_installation_dir);
 
   gspc::set_application_search_path (vm, installation_dir);
 
@@ -151,17 +148,17 @@ BOOST_AUTO_TEST_CASE (add_worker)
                           );
 
   gspc::scoped_runtime_system drts
-    (vm, installation, "worker:1", boost::none, parent.entry_point(), std::cerr, certificates);
+    (vm, installation, "worker:1", ::boost::none, parent.entry_point(), std::cerr, certificates);
 
-  boost::asio::io_service io_service;
-  boost::asio::io_service::work const work (io_service);
+  ::boost::asio::io_service io_service;
+  ::boost::asio::io_service::work const work (io_service);
 
-  boost::strict_scoped_thread<> const
+  ::boost::strict_scoped_thread<> const
     io_service_thread ([&io_service] { io_service.run(); });
 
   FHG_UTIL_FINALLY ([&] { io_service.stop(); });
 
-  boost::asio::ip::tcp::acceptor acceptor (io_service, {});
+  ::boost::asio::ip::tcp::acceptor acceptor (io_service, {});
 
   gspc::client client (drts, certificates);
 
@@ -180,16 +177,17 @@ BOOST_AUTO_TEST_CASE (add_worker)
     );
 
   {
-    std::list<boost::asio::ip::tcp::socket> connections;
-    fhg::util::thread::event<> connected;
+    std::list<::boost::asio::ip::tcp::socket> connections;
 
     for (gspc::scoped_rifds const& rifd : rifds)
     {
+      fhg::util::latch connected (1);
+
       connections.emplace_back (io_service);
       acceptor.async_accept ( connections.back()
-                            , [&connected] (boost::system::error_code)
+                            , [&connected] (::boost::system::error_code)
                               {
-                                connected.notify();
+                                connected.count_down();
                               }
                             );
 
@@ -201,8 +199,7 @@ BOOST_AUTO_TEST_CASE (add_worker)
     }
   }
 
-  std::multimap<std::string, pnet::type::value::value_type> const result
-    (client.wait_and_extract (job_id));
+  auto const result (client.wait_and_extract (job_id));
 
   decltype (result) const expected {{"done", we::type::literal::control()}};
   FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION (expected, result);

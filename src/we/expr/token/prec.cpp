@@ -50,7 +50,7 @@ namespace expr
         case token::neg: return 25;
         case token::define: return -98;
         default: throw std::runtime_error
-            ((boost::format ("prec (%1%)") % expr::token::show (token)).str());
+            ((::boost::format ("prec (%1%)") % expr::token::show (token)).str());
         }
     }
   }

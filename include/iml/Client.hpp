@@ -55,21 +55,21 @@ namespace iml
   {
   public:
     //! Create a client connecting via a socket at \a socket_path.
-    Client (boost::filesystem::path const& socket_path);
+    Client (::boost::filesystem::path const& socket_path);
 
     //! Create a client connecting with the information given as
     //! command line arguments parsed into the given \a vm.
     //! \see options()
-    Client (boost::program_options::variables_map const& vm);
+    Client (::boost::program_options::variables_map const& vm);
 
     //! Command line options for use in Boost.ProgramOptions, which
     //! can be used to produce the input for the \c vm overload of the
     //! constructor.
     //! \see set_socket()
-    static boost::program_options::options_description options();
+    static ::boost::program_options::options_description options();
     //! Overwrite the socket to be used to connect to the server.
     static void set_socket
-      (boost::program_options::variables_map&, boost::filesystem::path);
+      (::boost::program_options::variables_map&, ::boost::filesystem::path);
 
     //! Create a local shared memory segment that can be used to
     //! transfer data up to \a size bytes from global segments into

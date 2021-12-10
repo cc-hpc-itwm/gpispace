@@ -33,7 +33,7 @@ namespace fhg
       //!       wanting to be demonized. exiting after closing pipe is
       //!       not an error
       std::pair<pid_t, std::vector<std::string>> execute_and_get_startup_messages
-        ( boost::filesystem::path command
+        ( ::boost::filesystem::path command
         , std::vector<std::string> arguments
         , std::unordered_map<std::string, std::string> environment
         );

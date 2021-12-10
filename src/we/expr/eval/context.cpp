@@ -80,7 +80,7 @@ namespace expr
 
         if (pos != _ref_container.end())
         {
-          boost::optional<pnet::type::value::value_type const&>
+          ::boost::optional<pnet::type::value::value_type const&>
             v (pnet::type::value::peek (key_pos, key_vec.end(), *pos->second));
 
           if (v)
@@ -95,7 +95,7 @@ namespace expr
 
         if (pos != _container.end())
         {
-          boost::optional<pnet::type::value::value_type const&>
+          ::boost::optional<pnet::type::value::value_type const&>
             v (pnet::type::value::peek (key_pos, key_vec.end(), pos->second));
 
           if (v)

@@ -78,7 +78,7 @@ namespace fhg
 
     BOOST_DATA_TEST_CASE
       ( constructing_from_bad_string_throws
-      , boost::unit_test::data::make
+      , ::boost::unit_test::data::make
           ( { "" // empty
             , "onlyhost" // no colon
             , ":" // only colon

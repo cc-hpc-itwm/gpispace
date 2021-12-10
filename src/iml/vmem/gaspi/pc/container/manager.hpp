@@ -37,7 +37,7 @@ namespace gpi
   {
     namespace container
     {
-      class manager_t : boost::noncopyable
+      class manager_t : ::boost::noncopyable
       {
       public:
         manager_t ( std::string const& p

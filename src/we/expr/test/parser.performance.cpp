@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE (performance_parse_once_eval_often)
       {
         context.bind_and_discard_ref ({"a"}, i++);
       }
-      while (boost::get<bool> (parser.eval_all (context)));
+      while (::boost::get<bool> (parser.eval_all (context)));
     }
   };
 }
@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE (performance_often_parse_and_eval)
       {
         context.bind_and_discard_ref ({"a"}, i++);
       }
-      while (boost::get<bool> (expr::parse::parser (input).eval_all (context)));
+      while (::boost::get<bool> (expr::parse::parser (input).eval_all (context)));
     }
   };
 }

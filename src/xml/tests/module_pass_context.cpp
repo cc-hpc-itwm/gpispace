@@ -35,7 +35,7 @@
 
 namespace
 {
-  std::vector<boost::optional<bool>> tribool_values()
+  std::vector<::boost::optional<bool>> tribool_values()
   {
     return {{false, false}, {true, false}, {true, true}};
   }
@@ -45,7 +45,7 @@ BOOST_DATA_TEST_CASE
   (pass_context_is_generating_correctly, tribool_values(), pass_context)
 {
   std::istringstream input_stream
-    ( str ( boost::format
+    ( str ( ::boost::format
               (R"EOS(
 <defun name="f">
   <module name="m" function="f()" %1%>
@@ -61,7 +61,7 @@ BOOST_DATA_TEST_CASE
     );
 
   auto const expected_generated_cpp
-    ( str ( boost::format
+    ( str ( ::boost::format
               (R"EOS(#include <we/loader/macros.hpp>
 
 #include <pnetc/op/m/f.hpp>
@@ -99,7 +99,7 @@ WE_MOD_INITIALIZE_END()
     );
 
   fhg::util::temporary_path const scoped_gen_output_path;
-  boost::filesystem::path const gen_output_path
+  ::boost::filesystem::path const gen_output_path
     (scoped_gen_output_path);
 
   xml::parse::state::type state;
@@ -120,7 +120,7 @@ BOOST_DATA_TEST_CASE
   (pass_context_is_linking_correctly, tribool_values(), pass_context)
 {
   std::istringstream input_stream
-    ( str ( boost::format
+    ( str ( ::boost::format
               (R"EOS(
 <defun name="f">
   <module name="m" function="f()" %1%>
@@ -143,7 +143,7 @@ BOOST_DATA_TEST_CASE
     );
 
   fhg::util::temporary_path const scoped_gen_output_path;
-  boost::filesystem::path const gen_output_path
+  ::boost::filesystem::path const gen_output_path
     (scoped_gen_output_path);
 
   xml::parse::state::type state;

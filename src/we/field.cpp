@@ -25,7 +25,7 @@ namespace pnet
     , type::signature::signature_type const& signature
     )
   {
-    boost::optional<type::value::value_type const&> field
+    ::boost::optional<type::value::value_type const&> field
       (type::value::peek (f, v));
 
     if (!field)

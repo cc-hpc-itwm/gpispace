@@ -87,7 +87,7 @@ namespace fhg
             if (std::string (lhs.what()) != rhs.what())
             {
               throw std::logic_error
-                ( ( boost::format ("'%1%' != '%2%'")
+                ( ( ::boost::format ("'%1%' != '%2%'")
                   % to_string (lhs)
                   % to_string (rhs)
                   ).str()
@@ -104,7 +104,7 @@ namespace fhg
             if (!(lhs == rhs))
             {
               throw std::logic_error
-                ( ( boost::format ("'%1%' != '%2%'")
+                ( ( ::boost::format ("'%1%' != '%2%'")
                   % to_string (lhs)
                   % to_string (rhs)
                   ).str()
@@ -135,7 +135,7 @@ namespace fhg
           catch (std::exception const& ex)
           {
             throw std::logic_error
-              ( ( boost::format ("nested exception of wrong type: got %1%, expected %2%")
+              ( ( ::boost::format ("nested exception of wrong type: got %1%, expected %2%")
                 % typeid (ex).name()
                 % typeid (ToCatch).name()
                 ).str()
@@ -144,14 +144,14 @@ namespace fhg
           catch (...)
           {
             throw std::logic_error
-              ( ( boost::format ("nested exception of wrong type: got unknown, expected %1%")
+              ( ( ::boost::format ("nested exception of wrong type: got unknown, expected %1%")
                 % typeid (ToCatch).name()
                 ).str()
               );
           }
 
           throw std::logic_error
-            ( ( boost::format ("missing nested exception of type %1%")
+            ( ( ::boost::format ("missing nested exception of type %1%")
               % typeid (ToCatch).name()
               ).str()
             );
@@ -223,7 +223,7 @@ namespace fhg
           catch (...)
           {
             throw std::logic_error
-              ( ( boost::format ("missing exception '%1%' of type %2%: %3%")
+              ( ( ::boost::format ("missing exception '%1%' of type %2%: %3%")
                 % expected_string
                 % typeid (Exception).name()
                 % current_exception_printer (": ")
@@ -322,7 +322,7 @@ namespace fhg
               if (std::find (whats.begin(), whats.end(), what) == whats.end())
               {
                 throw std::logic_error
-                  ( ( boost::format ("mismatching message: '%2%' != one of %1%")
+                  ( ( ::boost::format ("mismatching message: '%2%' != one of %1%")
                     % joined_whats
                     % what
                     ).str()
@@ -336,11 +336,11 @@ namespace fhg
       template<typename Exception, typename Fun>
         void require_exception_with_message_in
           ( Fun&& fun
-          , std::list<boost::format> const& fmts
+          , std::list<::boost::format> const& fmts
           )
       {
         std::list<std::string> whats;
-        for (boost::format const& fmt : fmts)
+        for (::boost::format const& fmt : fmts)
         {
           whats.emplace_back (fmt.str());
         }
@@ -360,7 +360,7 @@ namespace fhg
 
       template<typename Exception, typename Fun>
         void require_exception_with_message ( Fun&& fun
-                                            , boost::format const& fmt
+                                            , ::boost::format const& fmt
                                             )
       {
         require_exception_with_message<Exception>

@@ -29,7 +29,6 @@
 
 #include <boost/optional.hpp>
 #include <boost/serialization/list.hpp>
-#include <boost/serialization/nvp.hpp>
 #include <boost/serialization/variant.hpp>
 #include <boost/variant.hpp>
 #include <boost/variant/recursive_wrapper.hpp>
@@ -47,10 +46,10 @@ namespace we
     struct Transition
     {
     private:
-      typedef boost::variant< ModuleCall
+      typedef ::boost::variant< ModuleCall
                             , MultiModuleCall
                             , Expression
-                            , boost::recursive_wrapper<we::type::net_type>
+                            , ::boost::recursive_wrapper<we::type::net_type>
                             > data_type;
 
     public:
@@ -61,10 +60,10 @@ namespace we
       template <typename Type>
       Transition ( std::string const& name
                    , Type const& typ
-                   , boost::optional<Expression> const& _condition
+                   , ::boost::optional<Expression> const& _condition
                    , we::type::property::type const& prop
                    , we::priority_type priority
-                   , boost::optional<eureka_id_type> const& _eureka_id
+                   , ::boost::optional<eureka_id_type> const& _eureka_id
                    , std::list<we::type::Preference> const& preferences
                    )
         try
@@ -98,12 +97,12 @@ namespace we
       data_type const& data() const;
       we::type::net_type& mutable_net();
 
-      boost::optional<Expression const&> expression() const;
-      boost::optional<we::type::net_type const&> net() const;
-      boost::optional<ModuleCall const&> module_call() const;
+      ::boost::optional<Expression const&> expression() const;
+      ::boost::optional<we::type::net_type const&> net() const;
+      ::boost::optional<ModuleCall const&> module_call() const;
 
-      boost::optional<Expression> const& condition() const;
-      boost::optional<eureka_id_type> const& eureka_id() const;
+      ::boost::optional<Expression> const& condition() const;
+      ::boost::optional<eureka_id_type> const& eureka_id() const;
 
       we::port_id_type add_port (Port const&);
 
@@ -134,7 +133,7 @@ namespace we
     private:
       std::string name_;
       data_type data_;
-      boost::optional<Expression> condition_;
+      ::boost::optional<Expression> condition_;
 
       PortByID _ports_input;
       PortByID _ports_output;
@@ -147,24 +146,24 @@ namespace we
       std::list<we::type::Preference> _preferences;
       we::priority_type _priority;
 
-      boost::optional<eureka_id_type> eureka_id_;
+      ::boost::optional<eureka_id_type> eureka_id_;
 
-      friend class boost::serialization::access;
+      friend class ::boost::serialization::access;
       template <typename Archive>
       void serialize (Archive & ar, unsigned int)
       {
-        ar & BOOST_SERIALIZATION_NVP (name_);
-        ar & BOOST_SERIALIZATION_NVP (data_);
-        ar & BOOST_SERIALIZATION_NVP (condition_);
-        ar & BOOST_SERIALIZATION_NVP(_ports_input);
-        ar & BOOST_SERIALIZATION_NVP(_ports_output);
-        ar & BOOST_SERIALIZATION_NVP(_ports_tunnel);
-        ar & BOOST_SERIALIZATION_NVP (port_id_counter_);
-        ar & BOOST_SERIALIZATION_NVP (prop_);
-        ar & BOOST_SERIALIZATION_NVP(_requirements);
-        ar & BOOST_SERIALIZATION_NVP(_preferences);
-        ar & BOOST_SERIALIZATION_NVP(_priority);
-        ar & BOOST_SERIALIZATION_NVP (eureka_id_);
+        ar & name_;
+        ar & data_;
+        ar & condition_;
+        ar & _ports_input;
+        ar & _ports_output;
+        ar & _ports_tunnel;
+        ar & port_id_counter_;
+        ar & prop_;
+        ar & _requirements;
+        ar & _preferences;
+        ar & _priority;
+        ar & eureka_id_;
       }
     };
   }

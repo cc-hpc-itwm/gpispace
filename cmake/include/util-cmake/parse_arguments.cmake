@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-include (CMakeParseArguments)
+include_guard()
 
 #! Equivalent to CMakeParseArguments's `cmake_parse_arguments()`,
 #! except that it forbids unknown arguments and allows to specify
@@ -173,3 +173,270 @@ macro (_parse_arguments_with_unknown _prefix _options _one_value_options _multi_
     endif()
   endforeach()
 endmacro()
+
+###############################################################################
+# Includes
+###############################################################################
+
+set (_include_dir ${CMAKE_CURRENT_LIST_DIR})
+
+include (${_include_dir}/colors.cmake)
+
+###############################################################################
+# Private
+###############################################################################
+
+get_filename_component (_filename
+  ${CMAKE_CURRENT_LIST_FILE}
+  NAME_WLE
+)
+
+###############################################################################
+# Public
+###############################################################################
+
+#[============================================================================[
+### Description
+`cmake_parse_arguments` wrapper with a more powerful and flexible argument
+definition syntax.
+It features:
+
+- required arguments
+- a flag to trigger an error message in case of unparsed arguments
+- a flag to trigger an error message in case of keywords with missing values
+- automatic generation of a usage message
+- a flag to trigger the usage message in case the `HELP` argument is set
+- default values
+- appending of additional values to the default
+
+#### Command:
+```cmake
+util_cmake_parse_arguments (
+  <prefix>
+  <arguments-to-parse>
+  [<argument-type> [<argument-identifier>] [<argument-attributes>...]]...
+)
+```
+`<argument-identifier>`s need to be valid CMake variable name string.
+They can't be equivalent to any `<argument-type>` or `<argument-attribute>`
+identifiers. Argument types and attributes are case insensitive!
+
+#### Argument Types:
+- ```
+  OPTION <argument-identifier> [<argument-attribute>...]
+  ```
+  Defines a flag. Only the `DESCRIPTION` attribute makes sense for options.
+  Other attributes are ignored and will issue a WARNING.
+- ```
+  SINGLE_VALUE <argument-identifier> [<argument-attribute>...]
+  ```
+  Defines an argument taking a single value.
+- ```
+  MULTI_VALUE <argument-identifier> [<argument-attribute>...]
+  ```
+  Defines an argument taking multiple values.
+- ```
+  ENABLE_HELP
+  ```
+  Flag to enables the `HELP` argument.
+- ```
+  NO_UNPARSED_ARGUMENTS
+  ```
+  Flag to enable the no unparsed arguments check.
+- ```
+  NO_MISSING_VALUES
+  ```
+  Flag to enable the no missing values check.
+
+#### Argument Attributes:
+- ```
+  REQUIRED
+  ```
+  An error is triggered if the attributed argument is not present.
+- ```
+  DESCRIPTION <description-string>
+  ```
+  An arguments description string is used to populate the usage message.
+- ```
+  DEFAULT <value>...
+  ```
+  Default values for the attributed argument. `MULTI_VALUE` arguments may take
+  multiple values in the form of a list.
+- ```
+  APPEND
+  ```
+  If this attribute and a default value are set, the default value is appended
+  to the argument values. Duplicate values will be removed.
+#]============================================================================]
+function (util_cmake_parse_arguments
+  _prefix
+  _args
+)
+  set (_internal "${_prefix}_internal")
+  set (_detail_dir "${_include_dir}/detail/${_filename}")
+  set (_attributes_dir "${_detail_dir}/attributes")
+  set (_types_dir "${_detail_dir}/types")
+
+  # get available argument types
+  file (GLOB
+    _keywords
+    LIST_DIRECTORIES false
+    RELATIVE ${_types_dir}
+    "${_types_dir}/*.cmake"
+  )
+  foreach (_keyword ${_keywords})
+    get_filename_component (_keyword
+      ${_keyword}
+      NAME_WLE
+    )
+    list (APPEND ${_internal}_types ${_keyword})
+  endforeach()
+
+  # get available argument attributes
+  file (GLOB
+    _keywords
+    LIST_DIRECTORIES false
+    RELATIVE ${_attributes_dir}
+    "${_attributes_dir}/*.cmake"
+  )
+  foreach (_keyword ${_keywords})
+    get_filename_component (_keyword
+      ${_keyword}
+      NAME_WLE
+    )
+    list (APPEND ${_internal}_attributes ${_keyword})
+  endforeach()
+
+  # create argument definitions
+  while (ARGN)
+    list (POP_FRONT ARGN _type)
+    string (TOLOWER "${_type}" _type)
+    if (_type IN_LIST ${_internal}_types)
+      include (${_types_dir}/${_type}.cmake)
+    else()
+      message (FATAL_ERROR
+        "unknown argument type: ${_type} not in {${${_internal}_types}}"
+      )
+    endif()
+  endwhile()
+
+  # create required and optional argument strings
+  set (_arg_column_size 30)
+  foreach (_arg
+    ${${_internal}_options}
+    ${${_internal}_single_values}
+    ${${_internal}_multi_values}
+  )
+    if (_arg IN_LIST ${_internal}_required)
+      set (_usage_var "_required_args")
+    else()
+      set (_usage_var "_optional_args")
+    endif()
+    string (LENGTH "  ${_arg}" _length)
+    string (APPEND ${_usage_var} "  ${_arg}")
+    if (NOT _arg IN_LIST ${_internal}_options)
+      string (APPEND ${_usage_var} " <value>")
+      math (EXPR _length "${_length} + 8")
+    endif()
+    if (_arg IN_LIST ${_internal}_multi_values)
+      string (APPEND ${_usage_var} "...")
+      math (EXPR _length "${_length} + 3")
+    endif()
+    math (EXPR _length "${_arg_column_size} - ${_length}")
+    if (${_internal}_${_arg}_description OR ${_internal}_${_arg}_default)
+      if (_length LESS_EQUAL 0)
+        string (APPEND ${_usage_var} "\n")
+        set (_length ${_arg_column_size})
+      endif()
+      foreach (_space RANGE 1 ${_length})
+        string (APPEND ${_usage_var} " ")
+      endforeach()
+      string (APPEND
+        ${_usage_var}
+        "${${_internal}_${_arg}_description}"
+      )
+      if (${_internal}_${_arg}_default)
+        string (APPEND
+          ${_usage_var}
+          " (default: ${${_internal}_${_arg}_default})"
+        )
+      endif()
+    endif()
+    string (APPEND ${_usage_var} "\n")
+  endforeach()
+
+  # assemble usage string
+  util_cmake_color_string (${_internal}_usage bold_blue "[[ USAGE ]]\n\n")
+  util_cmake_color_string (_header bold_white "Required Arguments:")
+  string (APPEND ${_internal}_usage "${_header}\n${_required_args}\n")
+  util_cmake_color_string (_header bold_white "Optional Arguments:")
+  string (APPEND ${_internal}_usage "${_header}\n${_optional_args}\n")
+
+  # parse arguments
+  cmake_parse_arguments (${_prefix}
+    "${${_internal}_options}"
+    "${${_internal}_single_values}"
+    "${${_internal}_multi_values}"
+    ${_args}
+  )
+
+  # verify no unparsed arguments
+  if (${_internal}_no_unparsed_arguments AND ${_prefix}_UNPARSED_ARGUMENTS)
+    message (STATUS "${${_internal}_usage}")
+    message (FATAL_ERROR
+      "Invalid arguments: ${${_prefix}_UNPARSED_ARGUMENTS}"
+    )
+  endif()
+
+  # verify no missing arguments
+  if (${_internal}_no_missing_values AND ${_prefix}_KEYWORDS_MISSING_VALUES)
+    message (STATUS "${${_internal}_usage}")
+    message (FATAL_ERROR
+      "The following arguments are missing values: ${${_prefix}_KEYWORDS_MISSING_VALUES}"
+    )
+  endif()
+
+  # verify required arguments
+  if (${_internal}_required)
+    foreach (_required ${${_internal}_required})
+      if (NOT ${_prefix}_${_required})
+        list (APPEND _missing ${_required})
+      endif()
+    endforeach()
+
+    if (_missing)
+      message (STATUS "${${_internal}_usage}")
+      message (FATAL_ERROR
+        "Missing required arguments: ${_missing}"
+      )
+    endif()
+  endif()
+
+  # check if help call was triggered
+  if (${_internal}_enable_help AND ${_prefix}_HELP)
+    message (STATUS "${${_internal}_usage}")
+    message (FATAL_ERROR
+      "Help message was triggered!"
+    )
+  endif()
+
+  # return parsed results
+  foreach (_arg
+    ${${_internal}_options}
+    ${${_internal}_single_values}
+    ${${_internal}_multi_values}
+  )
+    if (${_prefix}_${_arg})
+      if (${_internal}_${_arg}_append AND ${_internal}_${_arg}_default)
+        list (APPEND ${_prefix}_${_arg} ${${_internal}_${_arg}_default})
+        list (REMOVE_DUPLICATES ${_prefix}_${_arg})
+      endif()
+      set (${_prefix}_${_arg} ${${_prefix}_${_arg}} PARENT_SCOPE)
+    elseif (${_internal}_${_arg}_default)
+      set (${_prefix}_${_arg} ${${_internal}_${_arg}_default} PARENT_SCOPE)
+    endif()
+  endforeach()
+  if (${_prefix}_UNPARSED_ARGUMENTS)
+    set (${_prefix}_UNPARSED_ARGUMENTS ${${_prefix}_UNPARSED_ARGUMENTS} PARENT_SCOPE)
+  endif()
+endfunction()

@@ -17,13 +17,13 @@
 #include <logging/stream_receiver.hpp>
 #include <logging/test/message.hpp>
 
-#include <rpc/remote_function.hpp>
-#include <rpc/remote_socket_endpoint.hpp>
-#include <rpc/remote_tcp_endpoint.hpp>
-#include <rpc/service_dispatcher.hpp>
-#include <rpc/service_handler.hpp>
-#include <rpc/service_socket_provider.hpp>
-#include <rpc/service_tcp_provider.hpp>
+#include <util-rpc/remote_function.hpp>
+#include <util-rpc/remote_socket_endpoint.hpp>
+#include <util-rpc/remote_tcp_endpoint.hpp>
+#include <util-rpc/service_dispatcher.hpp>
+#include <util-rpc/service_handler.hpp>
+#include <util-rpc/service_socket_provider.hpp>
+#include <util-rpc/service_tcp_provider.hpp>
 
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/testing/printer/future.hpp>
@@ -35,7 +35,7 @@
 #include <boost/test/unit_test.hpp>
 
 //! \todo src/util-generic/testing/printer/boost/system_error.hpp?
-FHG_BOOST_TEST_LOG_VALUE_PRINTER (boost::system::error_code, os, ec)
+FHG_BOOST_TEST_LOG_VALUE_PRINTER (::boost::system::error_code, os, ec)
 {
   os << ec << " (\""<< ec.message() << "\")";
 }
@@ -108,15 +108,15 @@ namespace fhg
       //! only use that to get the right type catched.
       struct
       {
-        void operator() ( boost::system::system_error const&
-                        , boost::system::system_error const& catched
+        void operator() ( ::boost::system::system_error const&
+                        , ::boost::system::system_error const& catched
                         )
         {
           FHG_UTIL_TESTING_REQUIRE_STARTS_WITH (catched.what(), "resolve:");
           FHG_UTIL_TESTING_REQUIRE_EQUAL_ONE_OF
             ( catched.code()
-            , boost::asio::error::host_not_found
-            , boost::asio::error::host_not_found_try_again
+            , ::boost::asio::error::host_not_found
+            , ::boost::asio::error::host_not_found_try_again
             );
         }
 
@@ -128,8 +128,8 @@ namespace fhg
             stream_receiver const receiver
               (tcp_endpoint ("x.invalid", 0), [] (message const&) {});
           }
-        , boost::system::system_error
-            (boost::asio::error::host_not_found, "resolve")
+        , ::boost::system::system_error
+            (::boost::asio::error::host_not_found, "resolve")
         , comparator
         );
     }

@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/testing/printer/generic.hpp>
 
 #include <boost/archive/binary_iarchive.hpp>
@@ -24,6 +23,7 @@
 #include <boost/serialization/unique_ptr.hpp>
 #include <boost/test/test_tools.hpp>
 
+#include <memory>
 #include <sstream>
 
 namespace fhg
@@ -48,7 +48,7 @@ namespace fhg
 
           template<typename... Args>
             as_pointer (Args&&... args)
-              : impl (cxx14::make_unique<T> (std::forward<Args> (args)...))
+              : impl (std::make_unique<T> (std::forward<Args> (args)...))
           {}
 
           bool operator== (as_pointer<T> const& other) const
@@ -81,10 +81,10 @@ FHG_BOOST_TEST_TEMPLATED_LOG_VALUE_PRINTER
           do                                                                \
           {                                                                 \
             std::stringstream ss;                                           \
-            boost::archive::ar_ ## _oarchive oa {ss};                       \
+            ::boost::archive::ar_ ## _oarchive oa {ss};                       \
             t_ const original init_;                                        \
             oa << original;                                                 \
-            boost::archive::ar_ ## _iarchive ia {ss};                       \
+            ::boost::archive::ar_ ## _iarchive ia {ss};                       \
             t_ deserialized def_init_;                                      \
             ia >> deserialized;                                             \
             BOOST_REQUIRE_EQUAL (deserialized, original);                   \

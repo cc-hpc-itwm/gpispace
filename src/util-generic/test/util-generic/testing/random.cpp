@@ -256,7 +256,7 @@ namespace fhg
       }
 
       BOOST_AUTO_TEST_CASE ( unique_random_uniqueness_is_per_object
-                           , *boost::unit_test::timeout (30)
+                           , *::boost::unit_test::timeout (30)
                            )
       {
         struct constant_value_generator

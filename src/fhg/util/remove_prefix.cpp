@@ -26,7 +26,7 @@ namespace fhg
                                                , std::string prefix
                                                )
       : std::runtime_error
-        ( ( boost::format
+        ( ( ::boost::format
             ("remove_prefix failed, rest: prefix = %1%, word = %2%")
           % word
           % prefix

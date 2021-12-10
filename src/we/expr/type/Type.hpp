@@ -97,7 +97,7 @@ namespace expr
       TypesT (Types types);
 
       bool is_any() const;                     // no type
-      boost::optional<Type> singleton() const; // exactly one type
+      ::boost::optional<Type> singleton() const; // exactly one type
       bool is_multi() const;                   // more than one type
 
       Types _types;
@@ -105,7 +105,7 @@ namespace expr
 
     //! \todo remove we::signature, use this type instead
     //! \todo parse homogeneous types, e.g. 'list|int|'
-    using TypeV = boost::make_recursive_variant
+    using TypeV = ::boost::make_recursive_variant
         < Control
         , Boolean
         , Int
@@ -118,11 +118,11 @@ namespace expr
         , String
         , Bitset
         , Bytearray
-        , ListT<boost::recursive_variant_>
-        , SetT<boost::recursive_variant_>
-        , MapT<boost::recursive_variant_>
-        , StructT<boost::recursive_variant_>
-        , TypesT<boost::recursive_variant_>
+        , ListT<::boost::recursive_variant_>
+        , SetT<::boost::recursive_variant_>
+        , MapT<::boost::recursive_variant_>
+        , StructT<::boost::recursive_variant_>
+        , TypesT<::boost::recursive_variant_>
         >::type;
   }
 }
@@ -253,7 +253,7 @@ namespace expr
     template<> TypesT<Type>::TypesT (Type type);
     template<> TypesT<Type>::TypesT (Types types);
     template<> bool TypesT<Type>::is_any() const;
-    template<> boost::optional<Type> TypesT<Type>::singleton() const;
+    template<> ::boost::optional<Type> TypesT<Type>::singleton() const;
     template<> bool TypesT<Type>::is_multi() const;
   }
 }

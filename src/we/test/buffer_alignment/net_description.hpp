@@ -31,7 +31,7 @@ namespace we
       {
         std::string name;
         unsigned long size;
-        boost::optional<unsigned long> alignment;
+        ::boost::optional<unsigned long> alignment;
       };
 
       std::string create_net_description (std::vector<BufferInfo> const&);

@@ -36,7 +36,7 @@ namespace fhg
           generic (std::string const& msg, position const& inp)
             : std::runtime_error (inp.error_message (msg))
           {}
-          generic (boost::format const& msg, position const& inp)
+          generic (::boost::format const& msg, position const& inp)
             : std::runtime_error (inp.error_message (msg.str()))
           {}
         };
@@ -52,7 +52,7 @@ namespace fhg
         {
         public:
           value_too_big (From const& f, position const& pos)
-            : generic ( boost::format ("value %1% larger than maximum %2%")
+            : generic ( ::boost::format ("value %1% larger than maximum %2%")
                       % f
                       % std::numeric_limits<To>::max()
                       , pos
@@ -65,7 +65,7 @@ namespace fhg
         {
         public:
           unexpected_digit (position const& pos)
-            : generic ( boost::format
+            : generic ( ::boost::format
                         ( "unexpected digit"
                         " (parsed value would be larger than %1%)"
                         )

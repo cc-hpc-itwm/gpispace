@@ -17,7 +17,7 @@
 #include <sdpa/test/sdpa/utils.hpp>
 #include <sdpa/types.hpp>
 
-#include <test/certificates_data.hpp>
+#include <testing/certificates_data.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/optional.hpp>

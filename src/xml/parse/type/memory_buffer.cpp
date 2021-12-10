@@ -31,7 +31,7 @@ namespace xml
         , std::string const& name
         , std::string const& size
         , std::string const& alignment
-        , boost::optional<bool> const& read_only
+        , ::boost::optional<bool> const& read_only
         , we::type::property::type const& properties
         )
         : with_position_of_definition (position_of_definition)
@@ -54,7 +54,7 @@ namespace xml
       {
         return _alignment;
       }
-      boost::optional<bool> const& memory_buffer_type::read_only() const
+      ::boost::optional<bool> const& memory_buffer_type::read_only() const
       {
         return _read_only;
       }

@@ -32,12 +32,12 @@ namespace pnet
       namespace
       {
         class visitor_dump
-          : public boost::static_visitor<fhg::util::xml::xmlstream&>
+          : public ::boost::static_visitor<fhg::util::xml::xmlstream&>
         {
         public:
           visitor_dump ( fhg::util::xml::xmlstream& os
                        , unsigned int depth
-                       , boost::optional<std::string const&> parent = boost::none
+                       , ::boost::optional<std::string const&> parent = ::boost::none
                        )
             : _os (os)
             , _depth (depth)
@@ -54,7 +54,7 @@ namespace pnet
 
             for (std::pair<std::string, value_type> const& kv : m)
             {
-              boost::apply_visitor
+              ::boost::apply_visitor
                 (visitor_dump (_os, _depth + 1, kv.first), kv.second);
             }
 
@@ -71,7 +71,7 @@ namespace pnet
             if (!_parent)
             {
               throw std::runtime_error
-                ( ( boost::format ("cannot dump the plain value '%1%'")
+                ( ( ::boost::format ("cannot dump the plain value '%1%'")
                   % show (value)
                   ).str()
                 );
@@ -79,7 +79,7 @@ namespace pnet
             if (_depth < 2)
             {
               throw std::runtime_error
-                ( (boost::format ("cannot dump the single level property"
+                ( (::boost::format ("cannot dump the single level property"
                                  " with key '%1%' and value '%2%'"
                                  ) % *_parent % show (value)
                   ).str()
@@ -101,7 +101,7 @@ namespace pnet
         private:
           fhg::util::xml::xmlstream& _os;
           unsigned int _depth;
-          boost::optional<std::string const&> _parent;
+          ::boost::optional<std::string const&> _parent;
         };
       }
 
@@ -109,7 +109,7 @@ namespace pnet
                                       , value_type const& value
                                       )
       {
-        return boost::apply_visitor (visitor_dump (os, 0), value);
+        return ::boost::apply_visitor (visitor_dump (os, 0), value);
       }
     }
   }

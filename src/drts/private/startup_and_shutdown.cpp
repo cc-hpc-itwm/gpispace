@@ -36,9 +36,9 @@
 #include <util-generic/unreachable.hpp>
 #include <util-generic/wait_and_collect_exceptions.hpp>
 
-#include <rpc/remote_function.hpp>
-#include <rpc/remote_tcp_endpoint.hpp>
-#include <rpc/remote_socket_endpoint.hpp>
+#include <util-rpc/remote_function.hpp>
+#include <util-rpc/remote_tcp_endpoint.hpp>
+#include <util-rpc/remote_socket_endpoint.hpp>
 
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/filesystem.hpp>
@@ -84,7 +84,7 @@ namespace fhg
           );
       }
     }
-    boost::optional<pid_t> processes_storage::pidof
+    ::boost::optional<pid_t> processes_storage::pidof
       (fhg::rif::entry_point const& entry_point, std::string const& name)
     {
       std::lock_guard<std::mutex> const guard (_guard);
@@ -93,14 +93,14 @@ namespace fhg
 
       if (pos_entry_point == _.end())
       {
-        return boost::none;
+        return ::boost::none;
       }
 
       auto pos_name (pos_entry_point->second.find (name));
 
       if (pos_name == pos_entry_point->second.end())
       {
-        return boost::none;
+        return ::boost::none;
       }
 
       return pos_name->second;
@@ -113,7 +113,7 @@ namespace
   std::string build_parent_with_hostinfo
     (std::string const& name, fhg::drts::hostinfo_type const& hostinfo)
   {
-    return ( boost::format ("%1%%%%2%%%%3%")
+    return ( ::boost::format ("%1%%%%2%%%%3%")
            % name
            % hostinfo.first
            % hostinfo.second
@@ -124,12 +124,12 @@ namespace
     ( fhg::rif::entry_point const& rif_entry_point
     , fhg::rif::client& rif_client
     , std::string const& name
-    , boost::optional<unsigned short> const& agent_port
-    , boost::optional<boost::filesystem::path> const& gpi_socket
+    , ::boost::optional<unsigned short> const& agent_port
+    , ::boost::optional<::boost::filesystem::path> const& gpi_socket
     , gspc::installation_path const& installation_path
     , fhg::drts::processes_storage& processes
     , std::ostream& info_output
-    , boost::optional<std::pair<fhg::rif::client&, pid_t>> top_level_log
+    , ::boost::optional<std::pair<fhg::rif::client&, pid_t>> top_level_log
     , gspc::Certificates const& certificates
     )
   {
@@ -174,15 +174,15 @@ namespace fhg
     , fhg::drts::hostinfo_type parent_hostinfo
     , gspc::worker_description const& description_
     , fhg::drts::processes_storage& processes
-    , boost::optional<boost::filesystem::path> const& gpi_socket
-    , std::vector<boost::filesystem::path> const& app_path
+    , ::boost::optional<::boost::filesystem::path> const& gpi_socket
+    , std::vector<::boost::filesystem::path> const& app_path
     , std::vector<std::string> const& worker_env_copy_variable
     , bool worker_env_copy_current
-    , std::vector<boost::filesystem::path> const& worker_env_copy_file
+    , std::vector<::boost::filesystem::path> const& worker_env_copy_file
     , std::vector<std::string> const& worker_env_set_variable
     , gspc::installation_path const& installation_path
     , std::ostream& info_output
-    , boost::optional<std::pair<fhg::rif::entry_point, pid_t>> top_level_log
+    , ::boost::optional<std::pair<fhg::rif::entry_point, pid_t>> top_level_log
     , gspc::Certificates const& certificates
     )
   {
@@ -190,7 +190,7 @@ namespace fhg
 
      std::string name_prefix (fhg::util::join (description.capabilities, '+').string());
      std::replace_if
-       (name_prefix.begin(), name_prefix.end(), boost::is_any_of ("+#.-"), '_');
+       (name_prefix.begin(), name_prefix.end(), ::boost::is_any_of ("+#.-"), '_');
 
      info_output << "I: starting " << name_prefix << " workers (parent "
                  << parent_name << ", "
@@ -203,7 +203,7 @@ namespace fhg
                  << parent_name << " on rif entry point "
                  << fhg::util::join
                       ( entry_points
-                      | boost::adaptors::transformed
+                      | ::boost::adaptors::transformed
                           ( [] (fhg::rif::entry_point const& entry_point)
                             {
                               return entry_point.string();
@@ -219,7 +219,7 @@ namespace fhg
      arguments.emplace_back
        (build_parent_with_hostinfo (parent_name, parent_hostinfo));
 
-     for (boost::filesystem::path const& path : app_path)
+     for (::boost::filesystem::path const& path : app_path)
      {
        arguments.emplace_back ("--library-search-path");
        arguments.emplace_back (path.string());
@@ -319,7 +319,7 @@ namespace fhg
             std::string const storage_name ("drts-kernel-" + name);
 
             {
-              boost::optional<pid_t> const mpid
+              ::boost::optional<pid_t> const mpid
                 (processes.pidof (connection.second, storage_name));
 
               if (!!mpid)
@@ -458,7 +458,7 @@ namespace fhg
     namespace
     {
       std::unique_ptr<rpc::remote_endpoint> connect
-        (boost::asio::io_service& io_service, logging::endpoint ep)
+        (::boost::asio::io_service& io_service, logging::endpoint ep)
       {
         return util::visit<std::unique_ptr<rpc::remote_endpoint>>
           ( ep.best (util::hostname())
@@ -477,8 +477,8 @@ namespace fhg
     }
 
     startup_result startup
-      ( boost::optional<unsigned short> const& agent_port
-      , boost::optional<boost::filesystem::path> gpi_socket
+      ( ::boost::optional<unsigned short> const& agent_port
+      , ::boost::optional<::boost::filesystem::path> gpi_socket
       , gspc::installation_path const& installation_path
       , fhg::util::signal_handler_manager& signal_handler_manager
       , std::vector<fhg::rif::entry_point> const& rif_entry_points
@@ -487,7 +487,7 @@ namespace fhg
       , std::string& parent_agent_name
       , fhg::drts::hostinfo_type& parent_agent_hostinfo
       , std::ostream& info_output
-      , boost::optional<fhg::rif::entry_point> log_rif_entry_point
+      , ::boost::optional<fhg::rif::entry_point> log_rif_entry_point
       , std::vector<logging::endpoint> default_log_receivers
       , gspc::Certificates const& certificates
       )
@@ -509,12 +509,12 @@ namespace fhg
 
       rif::client parent_rif_client (io_service, parent);
 
-      boost::optional<rif::client> logging_rif_client;
-      boost::optional<rif::protocol::start_logging_demultiplexer_result>
+      ::boost::optional<rif::client> logging_rif_client;
+      ::boost::optional<rif::protocol::start_logging_demultiplexer_result>
         logging_rif_info;
       if (log_rif_entry_point)
       {
-        logging_rif_client = boost::in_place
+        logging_rif_client = ::boost::in_place
           (std::ref (io_service), *log_rif_entry_point);
 
         info_output << "I: starting top level gspc logging demultiplexer on "
@@ -830,7 +830,7 @@ namespace fhg
               for (auto const& fails : failure.second.second)
               {
                 _info_output <<
-                  ( boost::format ("Could not terminate %1%[%2%] on %3%: %4%")
+                  ( ::boost::format ("Could not terminate %1%[%2%] on %3%: %4%")
                   % failure.second.first
                   % fails.first
                   % failure.first

@@ -62,7 +62,7 @@ namespace iml
         {
           fd = fhg::util::syscall::shm_open (_name.c_str(), O_RDWR | O_CREAT | O_EXCL, mode);
         }
-        catch (boost::system::system_error const&)
+        catch (::boost::system::system_error const&)
         {
           std::throw_with_nested
             ( std::runtime_error
@@ -83,7 +83,7 @@ namespace iml
         {
           fhg::util::syscall::ftruncate (fd, _size);
         }
-        catch (boost::system::system_error const&)
+        catch (::boost::system::system_error const&)
         {
           std::throw_with_nested
             ( std::runtime_error
@@ -103,7 +103,7 @@ namespace iml
                                            , 0
                                            );
         }
-        catch (boost::system::system_error const&)
+        catch (::boost::system::system_error const&)
         {
           std::throw_with_nested
             ( std::runtime_error
@@ -120,7 +120,7 @@ namespace iml
         {
           fd = fhg::util::syscall::shm_open (_name.c_str(), O_RDWR, 0);
         }
-        catch (boost::system::system_error const&)
+        catch (::boost::system::system_error const&)
         {
           std::throw_with_nested
             ( std::runtime_error
@@ -147,7 +147,7 @@ namespace iml
                                            , 0
                                            );
         }
-        catch (boost::system::system_error const&)
+        catch (::boost::system::system_error const&)
         {
           std::throw_with_nested
             ( std::runtime_error

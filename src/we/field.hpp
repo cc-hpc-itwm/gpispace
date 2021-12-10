@@ -41,7 +41,7 @@ namespace pnet
   {
     type::value::value_type const& value (field (f, v, signature));
 
-    const T* x (boost::get<T> (&value));
+    const T* x (::boost::get<T> (&value));
 
     if (!x)
     {

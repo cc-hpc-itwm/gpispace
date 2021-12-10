@@ -21,11 +21,11 @@
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/syscall.hpp>
 #include <util-generic/wait_and_collect_exceptions.hpp>
-#include <fhg/util/boost/program_options/generic.hpp>
-#include <fhg/util/boost/program_options/validators/existing_path.hpp>
-#include <fhg/util/boost/program_options/validators/nonempty_file.hpp>
-#include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
-#include <fhg/util/boost/program_options/validators/positive_integral.hpp>
+#include <util-generic/boost/program_options/generic.hpp>
+#include <util-generic/boost/program_options/validators/existing_path.hpp>
+#include <util-generic/boost/program_options/validators/nonempty_file.hpp>
+#include <util-generic/boost/program_options/validators/nonempty_string.hpp>
+#include <util-generic/boost/program_options/validators/positive_integral.hpp>
 
 #include <rif/strategy/ssh/session.hpp>
 
@@ -142,7 +142,7 @@ namespace fhg
                 auto const name ("ssh-username");
                 auto const description ("username to use for remote host");
 
-                boost::optional<std::string> const user (util::getenv ("USER"));
+                ::boost::optional<std::string> const user (util::getenv ("USER"));
                 if (user && !user->empty())
                 {
                   return {name, description, *user};
@@ -153,25 +153,25 @@ namespace fhg
                 }
               }
 
-              boost::optional<boost::filesystem::path> maybe_default_key
+              ::boost::optional<::boost::filesystem::path> maybe_default_key
                 (std::string suffix)
               {
                 auto const home (util::getenv ("HOME"));
                 if (home)
                 {
-                  auto const key_path ( boost::filesystem::path (*home)
+                  auto const key_path ( ::boost::filesystem::path (*home)
                                       / ".ssh"
                                       / ("id_rsa" + suffix)
                                       );
-                  if (boost::filesystem::exists (key_path))
+                  if (::boost::filesystem::exists (key_path))
                   {
                     return key_path;
                   }
                 }
-                return boost::none;
+                return ::boost::none;
               }
 
-              po::option<boost::filesystem::path, po::existing_path> public_key()
+              po::option<::boost::filesystem::path, po::existing_path> public_key()
               {
                 auto const name ("ssh-public-key");
                 auto const description ("public key file used for authentication");
@@ -186,7 +186,7 @@ namespace fhg
                 }
               }
 
-              po::option<boost::filesystem::path, po::existing_path> private_key()
+              po::option<::boost::filesystem::path, po::existing_path> private_key()
               {
                 auto const name ("ssh-private-key");
                 auto const description ("private key file used for authentication");
@@ -223,10 +223,10 @@ namespace fhg
 
         std::unordered_map<std::string, std::exception_ptr>
           bootstrap ( std::vector<std::string> const& all_hostnames
-                    , boost::optional<unsigned short> const& port
+                    , ::boost::optional<unsigned short> const& port
                     , std::string const& register_host
                     , unsigned short register_port
-                    , boost::filesystem::path const& binary
+                    , ::boost::filesystem::path const& binary
                     , std::vector<std::string> const& parameters
                     , std::ostream& out
                     )
@@ -248,7 +248,7 @@ namespace fhg
                                          , {public_key, private_key}
                                          );
                 out << session.execute_and_require_success_and_no_stderr_output
-                         (( boost::format
+                         (( ::boost::format
                             ( "%1% %2% --register-host %3% --register-port %4%"
                             " --register-key %5%"
                             )
@@ -290,7 +290,7 @@ namespace fhg
                                          , {public_key, private_key}
                                          );
                 session.execute_and_require_success_and_no_output
-                  (( boost::format ("/bin/kill -TERM %1%")
+                  (( ::boost::format ("/bin/kill -TERM %1%")
                    % entry_point.second.pid
                    ).str()
                   );

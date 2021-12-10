@@ -47,7 +47,7 @@ namespace xml
 
       position_type::position_type ( const char* begin
                                    , const char* pos
-                                   , boost::filesystem::path const& path
+                                   , ::boost::filesystem::path const& path
                                    , unsigned int const& line
                                    , unsigned int const& column
                                    )
@@ -66,7 +66,7 @@ namespace xml
       {
         return _column;
       }
-      boost::filesystem::path const& position_type::path() const
+      ::boost::filesystem::path const& position_type::path() const
       {
         return _path;
       }

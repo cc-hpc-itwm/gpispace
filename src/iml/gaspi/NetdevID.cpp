@@ -16,7 +16,7 @@
 
 #include <iml/gaspi/NetdevID.hpp>
 
-#include <fhg/util/boost/program_options/validators.hpp>
+#include <util-generic/boost/program_options/validators.hpp>
 
 #include <boost/any.hpp>
 #include <boost/program_options/errors.hpp>
@@ -30,7 +30,7 @@ namespace iml
     {
       if (option != "auto" && value != 0 && value != 1)
       {
-        throw boost::program_options::invalid_option_value
+        throw ::boost::program_options::invalid_option_value
           ("Expected 'auto' or '0' or '1', got '" + option + "'");
       }
     }
@@ -46,7 +46,7 @@ namespace iml
     }
 
     void validate
-      (boost::any& v, std::vector<std::string> const& values, NetdevID*, int)
+      (::boost::any& v, std::vector<std::string> const& values, NetdevID*, int)
     {
       fhg::util::boost::program_options::validate<NetdevID> (v, values);
     }

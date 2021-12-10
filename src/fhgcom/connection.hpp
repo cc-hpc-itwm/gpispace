@@ -19,8 +19,6 @@
 #include <fhgcom/address.hpp>
 #include <fhgcom/message.hpp>
 
-#include <fhg/util/thread/event.hpp>
-
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/strand.hpp>
@@ -35,9 +33,9 @@
 #include <cstddef>
 #include <exception>
 #include <functional>
+#include <future>
 #include <list>
 #include <memory>
-#include <vector>
 
 namespace boost
 {
@@ -57,40 +55,40 @@ namespace fhg
   {
     class peer_t;
 
-    using tcp_socket_t = boost::asio::ip::tcp::socket;
-    using ssl_stream_t = boost::asio::ssl::stream<tcp_socket_t>;
-    using socket_t = boost::variant<std::unique_ptr<tcp_socket_t>, std::unique_ptr<ssl_stream_t>>;
+    using tcp_socket_t = ::boost::asio::ip::tcp::socket;
+    using ssl_stream_t = ::boost::asio::ssl::stream<tcp_socket_t>;
+    using socket_t = ::boost::variant<std::unique_ptr<tcp_socket_t>, std::unique_ptr<ssl_stream_t>>;
 
-    class handshake_exception : public boost::system::system_error
+    class handshake_exception : public ::boost::system::system_error
     {
     public:
-      handshake_exception (boost::system::error_code const& ec)
-        : boost::system::system_error (ec)
+      handshake_exception (::boost::system::error_code const& ec)
+        : ::boost::system::system_error (ec)
       {}
     };
 
-    class connection_t : private boost::noncopyable
-                       , public boost::enable_shared_from_this<connection_t>
+    class connection_t : private ::boost::noncopyable
+                       , public ::boost::enable_shared_from_this<connection_t>
     {
     public:
-      typedef boost::shared_ptr<connection_t> ptr_t;
+      typedef ::boost::shared_ptr<connection_t> ptr_t;
 
-      typedef std::function <void (boost::system::error_code const&)> completion_handler_t;
+      typedef std::function <void (::boost::system::error_code const&)> completion_handler_t;
 
       explicit
       connection_t
-        ( boost::asio::io_service & io_service
-        , boost::asio::ssl::context* ctx
-        , boost::asio::io_service::strand const& strand
+        ( ::boost::asio::io_service & io_service
+        , ::boost::asio::ssl::context* ctx
+        , ::boost::asio::io_service::strand const& strand
         , std::function<void (ptr_t connection, std::unique_ptr<message_t>)> handle_hello_message
         , std::function<void (ptr_t connection, std::unique_ptr<message_t>)> handle_user_data
-        , std::function<void (ptr_t connection, boost::system::error_code const&)> handle_error
+        , std::function<void (ptr_t connection, ::boost::system::error_code const&)> handle_error
         , peer_t* peer
         );
 
       ~connection_t ();
 
-      boost::asio::ip::tcp::socket & socket();
+      ::boost::asio::ip::tcp::socket & socket();
 
       void async_send (message_t msg, completion_handler_t hdl);
 
@@ -116,7 +114,7 @@ namespace fhg
       //! peer_t::request_handshake_response via strand, never from
       //! within this call stack.
       void request_handshake
-        (std::shared_ptr<util::thread::event<std::exception_ptr>> connect_done);
+        (std::shared_ptr<std::promise<std::exception_ptr>> connect_done);
       //! Assumes to be called from within strand. Will call back
       //! peer_t::acknowledge_handshake_response via strand, never
       //! from within this call stack.
@@ -129,29 +127,28 @@ namespace fhg
 
         completion_handler_t handler;
         message_t _message;
-        std::vector<boost::asio::const_buffer> buffers;
       };
 
       void start_read ();
-      void start_send ();
+      void start_send (message_t const&);
 
-      void handle_read_header ( boost::system::error_code const& ec
+      void handle_read_header ( ::boost::system::error_code const& ec
                               , std::size_t bytes_transferred
                               );
-      void handle_read_data ( boost::system::error_code const& ec
+      void handle_read_data ( ::boost::system::error_code const& ec
                             , std::size_t bytes_transferred
                             );
 
-      void handle_write ( boost::system::error_code const& ec );
+      void handle_write ( ::boost::system::error_code const& ec );
 
       peer_t* _peer;
 
-      boost::asio::io_service::strand strand_;
+      ::boost::asio::io_service::strand strand_;
       socket_t socket_;
       tcp_socket_t& _raw_socket;
       std::function<void (ptr_t connection, std::unique_ptr<message_t>)> _handle_hello_message;
       std::function<void (ptr_t connection, std::unique_ptr<message_t>)> _handle_user_data;
-      std::function<void (ptr_t connection, boost::system::error_code const&)> _handle_error;
+      std::function<void (ptr_t connection, ::boost::system::error_code const&)> _handle_error;
       std::unique_ptr<message_t> in_message_;
 
       std::list <to_send_t> to_send_;

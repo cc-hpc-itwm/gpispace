@@ -260,7 +260,7 @@ namespace fhg
           }
         }
 
-        boost::optional<int> delegating_header_view::current_editor() const
+        ::boost::optional<int> delegating_header_view::current_editor() const
         {
           return _editor.section;
         }
@@ -289,7 +289,7 @@ namespace fhg
             delete _editor.close_button;
             _editor.close_button = nullptr;
 
-            _editor.section = boost::none;
+            _editor.section = ::boost::none;
 
             invalidate_cached_size_hint();
           }

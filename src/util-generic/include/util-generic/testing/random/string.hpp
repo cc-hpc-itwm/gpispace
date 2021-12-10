@@ -117,7 +117,7 @@ namespace fhg
       //! (random<std::string>::content_string())` instead.
       std::string random_content_string();
 
-      //! \note that boost::format as well as std::string::operator+ have
+      //! \note that ::boost::format as well as std::string::operator+ have
       //! problems with the zero
       //! \note: deprecated Use `random<std::string>{}
       //! (random<char>::any_without_zero());` instead.

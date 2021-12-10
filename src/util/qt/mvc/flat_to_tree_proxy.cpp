@@ -66,7 +66,7 @@ namespace fhg
           if (role == function_role)
           {
             _items[index.row()].function
-              = value<boost::shared_ptr<transform_function>> (variant);
+              = value<::boost::shared_ptr<transform_function>> (variant);
           }
           else if (role == Qt::DisplayRole)
           {
@@ -107,7 +107,7 @@ namespace fhg
         }
 
         transform_functions_model::item::item
-          (QString name_, boost::shared_ptr<transform_function> function_)
+          (QString name_, ::boost::shared_ptr<transform_function> function_)
             : name (name_)
             , function (function_)
         { }
@@ -176,27 +176,27 @@ namespace fhg
 
           bool is_leaf() const
           {
-            return boost::get<index_type> (&_data);
+            return ::boost::get<index_type> (&_data);
           }
           bool is_branch() const
           {
-            return boost::get<name_and_child_type> (&_data);
+            return ::boost::get<name_and_child_type> (&_data);
           }
 
           const QVector<index_tree_item*>& children() const
           {
             fhg_assert (is_branch(), "children() only to be called on branch");
-            return boost::get<name_and_child_type> (_data).second;
+            return ::boost::get<name_and_child_type> (_data).second;
           }
           QString const& name() const
           {
             fhg_assert (is_branch(), "name() only to be called on branch");
-            return boost::get<name_and_child_type> (_data).first;
+            return ::boost::get<name_and_child_type> (_data).first;
           }
           QPersistentModelIndex const& index() const
           {
             fhg_assert (is_leaf(), "index() only to be called on leaf");
-            return boost::get<index_type> (_data);
+            return ::boost::get<index_type> (_data);
           }
 
           index_tree_item* parent() const
@@ -227,7 +227,7 @@ namespace fhg
           {
             fhg_assert (is_branch(), "remove_child() only to be called on branch");
 
-            boost::get<name_and_child_type> (_data).second.remove (index);
+            ::boost::get<name_and_child_type> (_data).second.remove (index);
           }
 
         private:
@@ -236,7 +236,7 @@ namespace fhg
             if (_parent)
             {
               fhg_assert (_parent->is_branch(), "parent needs to be a branch");
-              boost::get<name_and_child_type> (_parent->_data).second << this;
+              ::boost::get<name_and_child_type> (_parent->_data).second << this;
             }
           }
 
@@ -260,7 +260,7 @@ namespace fhg
           typedef std::pair<QString, QVector<index_tree_item*>> name_and_child_type;
           typedef QPersistentModelIndex index_type;
 
-          boost::variant<name_and_child_type, index_type> _data;
+          ::boost::variant<name_and_child_type, index_type> _data;
         };
 
         flat_to_tree_proxy::flat_to_tree_proxy
@@ -479,8 +479,8 @@ namespace fhg
         void flat_to_tree_proxy::insert_from_source
           (int begin, int end, QModelIndex parent, bool emit_per_row)
         {
-          const QList<boost::shared_ptr<transform_functions_model::transform_function>> transform_functions
-            ( value_of_all_rows<boost::shared_ptr<transform_functions_model::transform_function>>
+          const QList<::boost::shared_ptr<transform_functions_model::transform_function>> transform_functions
+            ( value_of_all_rows<::boost::shared_ptr<transform_functions_model::transform_function>>
               ( _transform_functions
               , transform_functions_model::function_role
               , 0
@@ -492,7 +492,7 @@ namespace fhg
             const QModelIndex index (_source->index (row, 0, parent));
 
             QStringList path;
-            for ( boost::shared_ptr<transform_functions_model::transform_function> fun
+            for ( ::boost::shared_ptr<transform_functions_model::transform_function> fun
                 : transform_functions
                 )
             {

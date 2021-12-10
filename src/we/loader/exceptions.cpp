@@ -29,11 +29,11 @@ namespace we
   namespace loader
   {
     module_load_failed::module_load_failed
-        ( boost::filesystem::path const& file
+        ( ::boost::filesystem::path const& file
         , std::string const& reason
         )
       : std::runtime_error
-          ( ( boost::format ("could not load module '%1%': %2%")
+          ( ( ::boost::format ("could not load module '%1%': %2%")
             % file
             % reason
             ).str()
@@ -41,11 +41,11 @@ namespace we
     {}
 
     module_not_found::module_not_found
-        ( boost::filesystem::path const& file
+        ( ::boost::filesystem::path const& file
         , std::string const& search_path
         )
       : std::runtime_error
-          ( ( boost::format ("module '%1%' not found in '%2%'")
+          ( ( ::boost::format ("module '%1%' not found in '%2%'")
             % file
             % search_path
             ).str()
@@ -53,11 +53,11 @@ namespace we
     {}
 
     function_not_found::function_not_found
-        ( boost::filesystem::path const& module
+        ( ::boost::filesystem::path const& module
         , std::string const& name
         )
       : std::runtime_error
-          ( ( boost::format ("function %1%::%2% not found")
+          ( ( ::boost::format ("function %1%::%2% not found")
             % module
             % name
             ).str()
@@ -65,11 +65,11 @@ namespace we
     {}
 
     duplicate_function::duplicate_function
-        ( boost::filesystem::path const& module
+        ( ::boost::filesystem::path const& module
         , std::string const& name
         )
       : std::runtime_error
-          ( ( boost::format ("duplicate function %1%::%2%")
+          ( ( ::boost::format ("duplicate function %1%::%2%")
             % module
             % name
             ).str()
@@ -93,18 +93,18 @@ namespace we
     }
 
     module_does_not_unload::module_does_not_unload
-        ( boost::filesystem::path module
-        , std::vector<boost::filesystem::path> before
-        , std::vector<boost::filesystem::path> after
+        ( ::boost::filesystem::path module
+        , std::vector<::boost::filesystem::path> before
+        , std::vector<::boost::filesystem::path> after
         )
       : module_does_not_unload (module, left_overs (after, before))
     {}
     module_does_not_unload::module_does_not_unload
-        ( boost::filesystem::path module
-        , std::vector<boost::filesystem::path> left_over
+        ( ::boost::filesystem::path module
+        , std::vector<::boost::filesystem::path> left_over
         )
       : std::runtime_error
-          ( ( boost::format ( "module '%1%' does not properly unload on dlclose"
+          ( ( ::boost::format ( "module '%1%' does not properly unload on dlclose"
                               ", leaking %2% loaded in the process"
                             )
             % module
@@ -116,8 +116,8 @@ namespace we
     function_does_not_unload::function_does_not_unload
         ( std::string module
         , std::string name
-        , std::vector<boost::filesystem::path> before
-        , std::vector<boost::filesystem::path> after
+        , std::vector<::boost::filesystem::path> before
+        , std::vector<::boost::filesystem::path> after
         )
       : function_does_not_unload
           (module, name, left_overs (after, before))
@@ -125,10 +125,10 @@ namespace we
     function_does_not_unload::function_does_not_unload
         ( std::string module
         , std::string name
-        , std::vector<boost::filesystem::path> left_over
+        , std::vector<::boost::filesystem::path> left_over
         )
       : std::runtime_error
-          ( ( boost::format ( "function %1%::%2% dynamically opened libraries "
+          ( ( ::boost::format ( "function %1%::%2% dynamically opened libraries "
                               "but did not properly unload, leaking %3% "
                               "loaded in the process"
                             )

@@ -57,8 +57,8 @@
         <module name="task_A"
                 function="task_A (host, port, done_A)"
                 pass_context="true">
-          <cinclude href="rpc/remote_function.hpp"/>
-          <cinclude href="rpc/remote_tcp_endpoint.hpp"/>
+          <cinclude href="util-rpc/remote_function.hpp"/>
+          <cinclude href="util-rpc/remote_tcp_endpoint.hpp"/>
           <cinclude href="test_callback.hpp"/>
           <cinclude href="util-generic/scoped_boost_asio_io_service_with_threads.hpp"/>
           <code><![CDATA[
@@ -92,8 +92,8 @@
         <module name="task_B"
                 function="task_B (host, port, done_B)"
                 pass_context="true">
-          <cinclude href="rpc/remote_function.hpp"/>
-          <cinclude href="rpc/remote_tcp_endpoint.hpp"/>
+          <cinclude href="util-rpc/remote_function.hpp"/>
+          <cinclude href="util-rpc/remote_tcp_endpoint.hpp"/>
           <cinclude href="test_callback.hpp"/>
           <cinclude href="util-generic/scoped_boost_asio_io_service_with_threads.hpp"/>
           <code><![CDATA[
@@ -121,8 +121,8 @@
         <module name="task_C"
                 function="task_C (host, port, done_C)"
                 pass_context="true">
-          <cinclude href="rpc/remote_function.hpp"/>
-          <cinclude href="rpc/remote_tcp_endpoint.hpp"/>
+          <cinclude href="util-rpc/remote_function.hpp"/>
+          <cinclude href="util-rpc/remote_tcp_endpoint.hpp"/>
           <cinclude href="test_callback.hpp"/>
           <cinclude href="util-generic/scoped_boost_asio_io_service_with_threads.hpp"/>
           <code><![CDATA[

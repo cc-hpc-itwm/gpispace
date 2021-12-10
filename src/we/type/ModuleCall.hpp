@@ -77,7 +77,7 @@ namespace we { namespace type {
     bool _require_function_unloads_without_rest;
     bool _require_module_unloads_without_rest;
 
-    friend class boost::serialization::access;
+    friend class ::boost::serialization::access;
     template<typename Archive> void serialize (Archive&, unsigned int);
   };
 

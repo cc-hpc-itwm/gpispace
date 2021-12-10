@@ -45,13 +45,13 @@ namespace we
         pnet::type::value::structured_type const& list() const;
 
         void set (path_type const& path, value_type const&);
-        boost::optional<value_type const&> get (path_type const& path) const;
+        ::boost::optional<value_type const&> get (path_type const& path) const;
         bool is_true (path_type const&) const;
 
       private:
         value_type _value;
 
-        friend class boost::serialization::access;
+        friend class ::boost::serialization::access;
         template<typename Archive>
         void serialize (Archive& ar, unsigned int)
         {

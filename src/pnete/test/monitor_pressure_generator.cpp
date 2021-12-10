@@ -46,15 +46,15 @@ static uint64_t id_counter;
 struct activity
 {
   activity (std::string const& worker)
-    : _id ((boost::format ("%1%") % ++id_counter).str())
+    : _id ((::boost::format ("%1%") % ++id_counter).str())
     , _workers()
     , _state (NotificationEvent::STATE_STARTED)
     , _act ( we::type::Transition ( "activity-" + _id
                                     , we::type::Expression()
-                                    , boost::none
+                                    , ::boost::none
                                     , we::type::property::type()
                                     , we::priority_type()
-                                    , boost::optional<we::type::eureka_id_type>{}
+                                    , ::boost::optional<we::type::eureka_id_type>{}
                                     , std::list<we::type::Preference>{}
                                     )
            )
@@ -110,7 +110,7 @@ std::string worker_gen()
   static const char* names[] = {"calc", "load", "store", "foo", "bar", "baz"};
 
   const auto r (fhg::util::testing::random<std::size_t>{}() % sizeof (names)/sizeof(*names));
-  return (boost::format ("%1%-ip-127-0-0-1 %3% 50501-%2%") % names[r] % ++ids[r] % fhg::util::syscall::getpid()).str();
+  return (::boost::format ("%1%-ip-127-0-0-1 %3% 50501-%2%") % names[r] % ++ids[r] % fhg::util::syscall::getpid()).str();
 }
 
 int main (int ac, char **av)
@@ -133,7 +133,7 @@ try
 
   std::cout << emitter.local_endpoint().to_string() << "\n";
 
-  std::map<std::string, boost::optional<activity>> workers;
+  std::map<std::string, ::boost::optional<activity>> workers;
 
   for (;;)
   {
@@ -148,7 +148,7 @@ try
 
     if (!workers[worker]->next_state())
     {
-      workers[worker] = boost::none;
+      workers[worker] = ::boost::none;
     }
 
     std::this_thread::sleep_for (std::chrono::milliseconds (duration));

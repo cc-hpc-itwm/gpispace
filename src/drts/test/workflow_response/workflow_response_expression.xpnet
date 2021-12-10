@@ -49,8 +49,8 @@
         <in name="host" type="string"/>
         <in name="port" type="unsigned int"/>
         <module name="workflow_response" function="notify_running (host, port)">
-          <cinclude href="rpc/remote_function.hpp"/>
-          <cinclude href="rpc/remote_tcp_endpoint.hpp"/>
+          <cinclude href="util-rpc/remote_function.hpp"/>
+          <cinclude href="util-rpc/remote_tcp_endpoint.hpp"/>
           <cinclude href="test_start_callback.hpp"/>
           <cinclude href="util-generic/scoped_boost_asio_io_service_with_threads.hpp"/>
           <code><![CDATA[

@@ -18,10 +18,10 @@
 
 #include <util-generic/latch.hpp>
 
-#include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
 #include <future>
+#include <memory>
 #include <thread>
 
 BOOST_AUTO_TEST_CASE (latch_zero_constructible_and_can_be_waited_for)
@@ -189,7 +189,7 @@ BOOST_AUTO_TEST_CASE (two_latches_form_a_startup_barrier)
   }
 
   barrier.wait();
-  counter = fhg::util::cxx14::make_unique<fhg::util::latch> (num_threads);
+  counter = std::make_unique<fhg::util::latch> (num_threads);
   barrier.release();
 
   counter->wait();
@@ -259,7 +259,7 @@ namespace fhg
     //! quite some luck with the kernel scheduling a yield there.
     BOOST_AUTO_TEST_CASE
       ( shall_not_segfault_or_timeout_if_destructed_after_wait_on_countdown
-      , *boost::unit_test::timeout (10)
+      , *::boost::unit_test::timeout (10)
       )
     {
       std::aligned_storage<sizeof (latch), alignof (latch)>::type storage;

@@ -70,20 +70,19 @@
 namespace sdpa {
   namespace daemon {
     class Agent final : public sdpa::events::EventHandler
-                              , boost::noncopyable
+                      , ::boost::noncopyable
     {
     public:
-      Agent( std::string name
-                   , std::string url
-                   , std::unique_ptr<boost::asio::io_service> peer_io_service
-                   , boost::optional<boost::filesystem::path> const& vmem_socket
-                   , bool create_wfe
-                   , fhg::com::Certificates const& certificates
-                   );
+      Agent ( std::string name
+            , std::string url
+            , std::unique_ptr<::boost::asio::io_service> peer_io_service
+            , ::boost::optional<::boost::filesystem::path> const& vmem_socket
+            , fhg::com::Certificates const& certificates
+            );
       virtual ~Agent() override = default;
 
       std::string const& name() const;
-      boost::asio::ip::tcp::endpoint peer_local_endpoint() const;
+      ::boost::asio::ip::tcp::endpoint peer_local_endpoint() const;
       fhg::logging::endpoint logger_registration_endpoint() const;
       fhg::logging::stream_emitter& log_emitter();
 
@@ -95,10 +94,10 @@ namespace sdpa {
       void failed( we::layer::id_type const& wfId, std::string const& reason);
       void canceled (we::layer::id_type const& id);
       void token_put
-        (std::string put_token_id, boost::optional<std::exception_ptr>);
+        (std::string put_token_id, ::boost::optional<std::exception_ptr>);
       void workflow_response_response
         ( std::string workflow_response_id
-        , boost::variant<std::exception_ptr, pnet::type::value::value_type>
+        , ::boost::variant<std::exception_ptr, pnet::type::value::value_type>
         );
 
       void addCapability (capability_t const& cpb);
@@ -117,7 +116,7 @@ namespace sdpa {
 
         for  ( fhg::com::p2p::address_t const& subscriber
              : _subscriptions.right.equal_range (job_id)
-             | boost::adaptors::map_values
+             | ::boost::adaptors::map_values
              )
         {
           sendEventToOther<Event> (subscriber, std::forward<Args> (args)...);
@@ -203,9 +202,6 @@ namespace sdpa {
       void delay (std::function<void()>);
 
       // workflow engine
-      std::unique_ptr<we::layer> const& workflowEngine() const { return ptr_workflow_engine_; }
-      bool hasWorkflowEngine() const { return !!ptr_workflow_engine_;}
-
       bool workflow_engine_submit (job_id_t, Job*);
 
       void handle_job_termination (Job*);
@@ -216,10 +212,10 @@ namespace sdpa {
         (we::layer::id_type const&, std::string const&);
       void workflow_canceled (we::layer::id_type const&);
       void token_put_in_workflow
-        (std::string, boost::optional<std::exception_ptr>);
+        (std::string, ::boost::optional<std::exception_ptr>);
       void workflow_engine_workflow_response_response
         ( std::string
-        , boost::variant<std::exception_ptr, pnet::type::value::value_type>
+        , ::boost::variant<std::exception_ptr, pnet::type::value::value_type>
         );
 
       //! \todo aggregated results for coallocation jobs and sub jobs
@@ -264,10 +260,10 @@ namespace sdpa {
       std::string _name;
 
       using subscriber_relation_type =
-        boost::bimap
-        < boost::bimaps::unordered_multiset_of<fhg::com::p2p::address_t>
-        , boost::bimaps::unordered_multiset_of<job_id_t>
-        , boost::bimaps::set_of_relation<>
+        ::boost::bimap
+        < ::boost::bimaps::unordered_multiset_of<fhg::com::p2p::address_t>
+        , ::boost::bimaps::unordered_multiset_of<job_id_t>
+        , ::boost::bimaps::set_of_relation<>
         >;
 
       subscriber_relation_type _subscriptions;
@@ -297,7 +293,7 @@ namespace sdpa {
       bool _scheduling_requested;
       void request_scheduling();
 
-      boost::optional<std::mt19937> _random_extraction_engine;
+      std::mt19937 _random_extraction_engine;
 
       std::mutex mtx_subscriber_;
 
@@ -309,15 +305,15 @@ namespace sdpa {
 
       fhg::util::interruptible_threadsafe_queue
         < std::pair< fhg::com::p2p::address_t
-                   , boost::shared_ptr<events::SDPAEvent>
+                   , ::boost::shared_ptr<events::SDPAEvent>
                    >
         > _event_queue;
 
       sdpa::com::NetworkStrategy _network_strategy;
 
-      std::unique_ptr<we::layer> ptr_workflow_engine_;
+      we::layer _workflow_engine;
 
-      boost::strict_scoped_thread<> _scheduling_thread;
+      ::boost::strict_scoped_thread<> _scheduling_thread;
       fhg::util::finally_t<std::function<void()>> _interrupt_scheduling_thread;
       void scheduling_thread();
 
@@ -329,7 +325,7 @@ namespace sdpa {
 
       std::unique_ptr<iml::Client> _virtual_memory_api;
 
-      boost::strict_scoped_thread<> _event_handler_thread;
+      ::boost::strict_scoped_thread<> _event_handler_thread;
       decltype (_event_queue)::interrupt_on_scope_exit _interrupt_event_queue;
 
       struct child_proxy
@@ -337,12 +333,12 @@ namespace sdpa {
         child_proxy (Agent*, fhg::com::p2p::address_t const&);
 
         void worker_registration_response
-          (boost::optional<std::exception_ptr>) const;
+          (::boost::optional<std::exception_ptr>) const;
 
         void submit_job
-          ( boost::optional<job_id_t>
+          ( ::boost::optional<job_id_t>
           , we::type::Activity
-          , boost::optional<std::string> const&
+          , ::boost::optional<std::string> const&
           , std::set<worker_id_t> const&
           ) const;
         void cancel_job (job_id_t) const;
@@ -378,11 +374,11 @@ namespace sdpa {
         void submit_job_ack (job_id_t) const;
 
         void put_token_response ( std::string put_token_id
-                                , boost::optional<std::exception_ptr>
+                                , ::boost::optional<std::exception_ptr>
                                 ) const;
         void workflow_response_response
           ( std::string workflow_response_id
-          , boost::variant<std::exception_ptr, pnet::type::value::value_type>
+          , ::boost::variant<std::exception_ptr, pnet::type::value::value_type>
           ) const;
 
       private:

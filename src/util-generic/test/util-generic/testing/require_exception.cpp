@@ -215,13 +215,13 @@ namespace fhg
       SUCCESS ( by_message_fmt
               , require_exception_with_message<std::logic_error>
                   ( [] { throw std::logic_error ("foo"); }
-                  , boost::format ("%1%") % "foo"
+                  , ::boost::format ("%1%") % "foo"
                   )
               )
       FAILURE ( by_message_fmt
               , require_exception_with_message<std::logic_error>
                   ( [] { throw std::logic_error ("bar"); }
-                  , boost::format ("%1%") % "foo"
+                  , ::boost::format ("%1%") % "foo"
                   )
               )
 
@@ -251,8 +251,8 @@ namespace fhg
       FAILURE ( by_message_in_fmt
               , require_exception_with_message_in<std::logic_error>
                   ( [] { throw std::logic_error ("baz"); }
-                  , { boost::format ("%1%") % "foo"
-                    , boost::format ("%1%") % "bar"
+                  , { ::boost::format ("%1%") % "foo"
+                    , ::boost::format ("%1%") % "bar"
                     }
                   )
               )
@@ -272,7 +272,7 @@ namespace fhg
         require_exception
           ( [&] { require_exception ([]{}, expected); }
           , std::logic_error
-              ( ( boost::format ("missing exception '%1%' of type %2%: %3%")
+              ( ( ::boost::format ("missing exception '%1%' of type %2%: %3%")
                 % expected.what()
                 % typeid (expected).name()
                 % "got no exception at all"
@@ -289,7 +289,7 @@ namespace fhg
         require_exception
           ( [&] { require_exception ([&] { throw actual; }, expected); }
           , std::logic_error
-              ( ( boost::format ("missing exception '%1%' of type %2%: %3%")
+              ( ( ::boost::format ("missing exception '%1%' of type %2%: %3%")
                 % expected.what()
                 % typeid (expected).name()
                 % "got exception of wrong type: unknown exception type"
@@ -306,7 +306,7 @@ namespace fhg
         require_exception
           ( [&] { require_exception ([&] { throw actual; }, expected); }
           , std::logic_error
-              ( ( boost::format
+              ( ( ::boost::format
                     ("missing exception '%1%' of type %2%: %3%%4%: %5%")
                 % expected.what()
                 % typeid (expected).name()
@@ -333,7 +333,7 @@ namespace fhg
                 );
             }
           , std::logic_error
-              ( ( boost::format ("missing exception '%1%: %2%' of type %3%: missing nested exception of type %4%")
+              ( ( ::boost::format ("missing exception '%1%: %2%' of type %3%: missing nested exception of type %4%")
                 % expected_nesting.what()
                 % expected_nested.what()
                 % typeid (expected).name()
@@ -363,7 +363,7 @@ namespace fhg
                 );
             }
           , std::logic_error
-              ( ( boost::format ("missing exception '%1%: %2%' of type %3%: nested exception of wrong type: got %4%, expected %5%")
+              ( ( ::boost::format ("missing exception '%1%: %2%' of type %3%: nested exception of wrong type: got %4%, expected %5%")
                 % expected_nesting.what()
                 % expected_nested.what()
                 % typeid (expected).name()
@@ -394,7 +394,7 @@ namespace fhg
                 );
             }
           , std::logic_error
-              ( ( boost::format ("missing exception '%1%: %2%' of type %3%: nested exception of wrong type: got unknown, expected %4%")
+              ( ( ::boost::format ("missing exception '%1%: %2%' of type %3%: nested exception of wrong type: got unknown, expected %4%")
                 % expected_nesting.what()
                 % expected_nested.what()
                 % typeid (expected).name()

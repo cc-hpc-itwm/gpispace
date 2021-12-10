@@ -48,15 +48,15 @@ namespace
 
 BOOST_AUTO_TEST_CASE (iml_standalone_local_put_get)
 {
-  boost::program_options::options_description options_description;
+  ::boost::program_options::options_description options_description;
 
   options_description.add (iml::Rifs::options());
   options_description.add (iml::RuntimeSystem::options());
 
-  boost::program_options::variables_map vm
+  ::boost::program_options::variables_map vm
     ( iml_test::parse_command_line
-        ( boost::unit_test::framework::master_test_suite().argc
-        , boost::unit_test::framework::master_test_suite().argv
+        ( ::boost::unit_test::framework::master_test_suite().argc
+        , ::boost::unit_test::framework::master_test_suite().argv
         , options_description
         )
     );

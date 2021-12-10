@@ -58,10 +58,10 @@ namespace
         , true
         , true
         )
-      , boost::none
+      , ::boost::none
       , we::type::property::type()
       , we::priority_type()
-      , boost::optional<we::type::eureka_id_type>{}
+      , ::boost::optional<we::type::eureka_id_type>{}
       , std::list<we::type::Preference>{}
       );
     we::port_id_type const port_id_in
@@ -86,7 +86,7 @@ namespace
     we::place_id_type const place_id_in
       (net.add_place (place::type ("in", signature::CONTROL, true)));
     we::place_id_type const place_id_out
-      (net.add_place (place::type ("out", signature::CONTROL, boost::none)));
+      (net.add_place (place::type ("out", signature::CONTROL, ::boost::none)));
 
     for (std::size_t i (0); i < token_count; ++i)
     {
@@ -97,21 +97,19 @@ namespace
       (net.add_transition (transition));
 
     {
-      using we::edge::TP;
-      using we::edge::PT;
       we::type::property::type empty;
 
-      net.add_connection (TP, transition_id, place_id_out, port_id_out, empty);
-      net.add_connection (PT, transition_id, place_id_in, port_id_in, empty);
+      net.add_connection (we::edge::TP{}, transition_id, place_id_out, port_id_out, empty);
+      net.add_connection (we::edge::PT{}, transition_id, place_id_in, port_id_in, empty);
     }
 
     return std::make_tuple
       ( we::type::Transition ( "net"
                                , net
-                               , boost::none
+                               , ::boost::none
                                , we::type::property::type()
                                , we::priority_type()
-                               , boost::optional<we::type::eureka_id_type>{}
+                               , ::boost::optional<we::type::eureka_id_type>{}
                                , std::list<we::type::Preference>{}
                                )
       , transition

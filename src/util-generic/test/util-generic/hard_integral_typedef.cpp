@@ -328,6 +328,7 @@ namespace completely
   {
     FHG_UTIL_HARD_INTEGRAL_TYPEDEF (tester_t, std::size_t);
     FHG_UTIL_HARD_INTEGRAL_TYPEDEF_ISTREAM_OPERATOR (tester_t);
+    FHG_UTIL_HARD_INTEGRAL_TYPEDEF_OSTREAM_OPERATOR (tester_t);
 
     BOOST_AUTO_TEST_CASE (io_adl_works_for_typedefs_in_any_namespace)
     {
@@ -342,6 +343,10 @@ namespace completely
       is >> u;
       BOOST_REQUIRE (is.eof());
       BOOST_REQUIRE (t == u);
+
+      std::ostringstream oss;
+      oss << t;
+      BOOST_REQUIRE_EQUAL (oss.str(), to_string (t));
     }
   }
 

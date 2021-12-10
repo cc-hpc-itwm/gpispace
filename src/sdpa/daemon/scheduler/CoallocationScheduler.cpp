@@ -14,12 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+#include <sdpa/daemon/Implementation.hpp>
 #include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
 
 #include <fhgcom/address.hpp>
 
-#include <fhg/util/boost/optional.hpp>
-
+#include <boost/optional.hpp>
 #include <boost/range/algorithm.hpp>
 
 #include <algorithm>
@@ -33,6 +33,21 @@
 #include <tuple>
 #include <unordered_set>
 #include <vector>
+
+namespace
+{
+  template<typename Exception, typename T, typename... Args>
+    T get_or_throw (::boost::optional<T> const& optional, Args&&... args)
+  {
+    if (!optional)
+    {
+      throw Exception (args...);
+    }
+
+    return optional.get();
+  }
+}
+
 
 namespace sdpa
 {
@@ -48,7 +63,7 @@ namespace sdpa
             , unsigned long shared_memory_size
             , double last_time_idle
             , worker_id_t const& worker_id
-            , boost::optional<std::string>const& implementation
+            , Implementation const& implementation
             , double transfer_cost
             )
           : _cost (cost)
@@ -65,7 +80,7 @@ namespace sdpa
         unsigned long _shared_memory_size;
         double _last_time_idle;
         worker_id_t _worker_id;
-        boost::optional<std::string> _implementation;
+        Implementation _implementation;
         double _transfer_cost;
       };
 
@@ -418,7 +433,7 @@ namespace sdpa
       std::lock_guard<std::mutex> const lock_worker_man (_mtx_worker_man);
 
       auto const worker
-        ( fhg::util::boost::get_or_throw<std::invalid_argument>
+        ( get_or_throw<std::invalid_argument>
             ( _worker_manager.worker_by_address (worker_addr)
             , "attempting to store job result from unknown worker!"
             )
@@ -427,7 +442,7 @@ namespace sdpa
       it->second->store_result (worker->second, result);
     }
 
-    boost::optional<job_result_type>
+    ::boost::optional<job_result_type>
       CoallocationScheduler::get_aggregated_results_if_all_terminated (job_id_t const& job_id)
     {
       std::lock_guard<std::mutex> const _ (mtx_alloc_table_);
@@ -515,7 +530,7 @@ namespace sdpa
       std::lock_guard<std::mutex> const lock_worker_man (_mtx_worker_man);
 
       auto const worker
-        ( fhg::util::boost::get_or_throw<std::runtime_error>
+        ( get_or_throw<std::runtime_error>
             ( _worker_manager.worker_by_address (source)
             , "received job submission ack from unknown worker"
             )
@@ -647,7 +662,7 @@ namespace sdpa
       if (_worker_manager.number_of_workers() < num_required_workers)
       {
         return std::make_tuple<WorkerSet, Implementation, double>
-          ({}, boost::none, 0.0);
+          ({}, ::boost::none, 0.0);
       }
 
       bounded_priority_queue_t bpq (num_required_workers);
@@ -703,10 +718,10 @@ namespace sdpa
       }
 
       return std::make_tuple<WorkerSet, Implementation, double>
-        ({}, boost::none, 0.0);
+        ({}, ::boost::none, 0.0);
     }
 
-    std::pair<boost::optional<double>, boost::optional<std::string>>
+    std::pair<::boost::optional<double>, ::boost::optional<std::string>>
       CoallocationScheduler::match_requirements_and_preferences
         ( Requirements_and_preferences const& requirements_and_preferences
         , std::set<std::string> const& capabilities
@@ -718,7 +733,7 @@ namespace sdpa
       {
         if (!capabilities.count (req.value()))
         {
-          return std::make_pair (boost::none, boost::none);
+          return std::make_pair (::boost::none, ::boost::none);
         }
       }
 
@@ -728,7 +743,7 @@ namespace sdpa
       {
         return std::make_pair
           ( 1.0 / (capabilities.size() + 1.0)
-          , boost::none
+          , ::boost::none
           );
       }
 
@@ -744,10 +759,10 @@ namespace sdpa
 
       if (preference == preferences.cend())
       {
-        return std::make_pair (boost::none, boost::none);
+        return std::make_pair (::boost::none, ::boost::none);
       }
 
-      boost::optional<double> matching_req_and_pref_deg
+      ::boost::optional<double> matching_req_and_pref_deg
         ( ( std::distance (preference, preferences.end())
           + 1.0
           )

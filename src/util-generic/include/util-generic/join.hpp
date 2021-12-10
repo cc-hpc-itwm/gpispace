@@ -68,8 +68,8 @@ namespace fhg
              = ostream::callback::id<Value<Container>>()
              , std::string const& open = ""
              , std::string const& close = ""
-             , boost::optional<Difference<Container>> const& max_elements_to_print
-             = boost::none
+             , ::boost::optional<Difference<Container>> const& max_elements_to_print
+             = ::boost::none
              );
 
     //! Create an ostream modifier that outputs the elements between

@@ -74,25 +74,25 @@ BOOST_AUTO_TEST_CASE (combined_hash_is_as_fast_as_manual_combine)
             for (auto const& tuple : tuples)
             {
               std::size_t seed (0);
-              boost::hash_combine
+              ::boost::hash_combine
                 (seed, std::hash<std::string>() (tuple.entry[0]));
-              boost::hash_combine
+              ::boost::hash_combine
                 (seed, std::hash<std::string>() (tuple.entry[1]));
-              boost::hash_combine
+              ::boost::hash_combine
                 (seed, std::hash<std::string>() (tuple.entry[2]));
-              boost::hash_combine
+              ::boost::hash_combine
                 (seed, std::hash<std::string>() (tuple.entry[3]));
-              boost::hash_combine
+              ::boost::hash_combine
                 (seed, std::hash<std::string>() (tuple.entry[4]));
-              boost::hash_combine
+              ::boost::hash_combine
                 (seed, std::hash<std::string>() (tuple.entry[5]));
-              boost::hash_combine
+              ::boost::hash_combine
                 (seed, std::hash<std::string>() (tuple.entry[6]));
-              boost::hash_combine
+              ::boost::hash_combine
                 (seed, std::hash<std::string>() (tuple.entry[7]));
-              boost::hash_combine
+              ::boost::hash_combine
                 (seed, std::hash<std::string>() (tuple.entry[8]));
-              boost::hash_combine
+              ::boost::hash_combine
                 (seed, std::hash<std::string>() (tuple.entry[9]));
               accum += seed;
             }
@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE (combined_hash_is_as_fast_as_manual_combine)
               std::size_t seed (0);
               for (std::size_t i (0); i < 10; ++i)
               {
-                boost::hash_combine
+                ::boost::hash_combine
                   (seed, std::hash<std::string>() (tuple.entry[i]));
               }
               accum += seed;

@@ -24,7 +24,6 @@
 #include <sdpa/events/ErrorEvent.hpp>
 #include <sdpa/events/JobFailedEvent.hpp>
 #include <sdpa/events/JobFinishedEvent.hpp>
-#include <sdpa/events/JobStatusReplyEvent.hpp>
 #include <sdpa/events/SubmitJobAckEvent.hpp>
 #include <sdpa/events/SubmitJobEvent.hpp>
 #include <sdpa/events/SubscribeAckEvent.hpp>
@@ -48,13 +47,12 @@ namespace sdpa
   {
     Client::Client ( fhg::com::host_t const& top_level_agent_host
                    , fhg::com::port_t const& top_level_agent_port
-                   , std::unique_ptr<boost::asio::io_service> peer_io_service
+                   , std::unique_ptr<::boost::asio::io_service> peer_io_service
                    , fhg::com::Certificates const& certificates
                    )
       : _stopping (false)
       , m_peer ( std::move (peer_io_service)
-               , fhg::com::host_t ("*")
-               , fhg::com::port_t ("0")
+               , fhg::com::port_t (0)
                , certificates
                , top_level_agent_host
                , top_level_agent_port
@@ -63,8 +61,6 @@ namespace sdpa
       m_peer.async_recv ( std::bind ( &Client::handle_recv
                                     , this
                                     , std::placeholders::_1
-                                    , std::placeholders::_2
-                                    , std::placeholders::_3
                                     )
                         );
     }
@@ -74,34 +70,33 @@ namespace sdpa
       _stopping = true;
     }
 
-    void Client::handle_recv ( boost::system::error_code const& ec
-                             , boost::optional<fhg::com::p2p::address_t>
-                             , fhg::com::message_t message
-                             )
+    void Client::handle_recv (fhg::com::peer_t::Received received)
     {
       static sdpa::events::Codec const codec {};
 
-      if (! ec)
+      if (! received.ec())
       {
+        auto const& message {received.message()};
         sdpa::events::SDPAEvent::Ptr const evt
           (codec.decode (std::string (message.data.begin(), message.data.end())));
         m_incoming_events.put (evt);
       }
-      else if ( ec == boost::system::errc::operation_canceled
-              || ec == boost::system::errc::network_down
-              || ec == boost::asio::error::eof
-              || ec == boost::asio::error::connection_reset
+      else if ( received.ec() == ::boost::system::errc::operation_canceled
+              || received.ec() == ::boost::system::errc::network_down
+              || received.ec() == ::boost::asio::error::eof
+              || received.ec() == ::boost::asio::error::connection_reset
               )
       {
         _stopping = true;
       }
       else if (!_stopping)
       {
+        auto const& message {received.message()};
         if (message.header.src != m_peer.address())
         {
           sdpa::events::ErrorEvent::Ptr const
             error (new sdpa::events::ErrorEvent ( sdpa::events::ErrorEvent::SDPA_EUNKNOWN
-                                               , "receiving response failed: " + boost::lexical_cast<std::string>(ec)
+                                               , "receiving response failed: " + ::boost::lexical_cast<std::string>(received.ec())
                                                )
                  );
           m_incoming_events.put (error);
@@ -113,8 +108,6 @@ namespace sdpa
         m_peer.async_recv ( std::bind ( &Client::handle_recv
                                       , this
                                       , std::placeholders::_1
-                                      , std::placeholders::_2
-                                      , std::placeholders::_3
                                       )
                           );
       }
@@ -133,7 +126,7 @@ namespace sdpa
             ( "Error: reason := "
             + err->reason()
             + " code := "
-            + boost::lexical_cast<std::string>(err->error_code())
+            + ::boost::lexical_cast<std::string>(err->error_code())
             );
         }
 
@@ -206,7 +199,7 @@ namespace sdpa
     sdpa::job_id_t Client::submitJob (we::type::Activity activity)
     {
       return send_and_wait_for_reply<sdpa::events::SubmitJobAckEvent>
-        (sdpa::events::SubmitJobEvent (boost::none, std::move (activity), boost::none)).job_id();
+        (sdpa::events::SubmitJobEvent (::boost::none, std::move (activity), ::boost::none)).job_id();
     }
 
     void Client::cancelJob (job_id_t const& jid)
@@ -219,7 +212,7 @@ namespace sdpa
       (job_id_t job_id, std::string place_name, pnet::type::value::value_type value)
     {
       std::string const put_token_id
-        (boost::uuids::to_string (boost::uuids::random_generator()()));
+        (::boost::uuids::to_string (::boost::uuids::random_generator()()));
 
       sdpa::events::put_token_response const response
         ( send_and_wait_for_reply<sdpa::events::put_token_response>
@@ -243,7 +236,7 @@ namespace sdpa
       (job_id_t job_id, std::string place_name, pnet::type::value::value_type value)
     {
       std::string const workflow_response_id
-        (boost::uuids::to_string (boost::uuids::random_generator()()));
+        (::boost::uuids::to_string (::boost::uuids::random_generator()()));
 
       sdpa::events::workflow_response_response const response
         ( send_and_wait_for_reply<sdpa::events::workflow_response_response>

@@ -27,7 +27,7 @@ namespace pnet
       template<typename T>
         inline T from_value (value_type const& v)
       {
-        return boost::get<T> (v);
+        return ::boost::get<T> (v);
       }
 
       template<>

@@ -40,7 +40,7 @@ namespace xml
 
         multi_module_map const& modules() const;
 
-        boost::optional<we::type::eureka_id_type> const& eureka_id() const;
+        ::boost::optional<we::type::eureka_id_type> const& eureka_id() const;
 
       private:
         multi_module_map  _modules;

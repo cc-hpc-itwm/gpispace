@@ -1,0 +1,85 @@
+###############################################################################
+# CMake minimum required version verification
+###############################################################################
+
+if (CMAKE_MINIMUM_REQUIRED_VERSION VERSION_LESS @CMAKE_MINIMUM_REQUIRED_VERSION@)
+  set (${CMAKE_FIND_PACKAGE_NAME}_FOUND false)
+  set (${CMAKE_FIND_PACKAGE_NAME}_NOT_FOUND_MESSAGE
+    "The minimum required CMake version of the including project is too low! \
+    Projects using ${CMAKE_FIND_PACKAGE_NAME} are required to set CMake version \
+    @CMAKE_MINIMUM_REQUIRED_VERSION@ or above as their minimum required version! \
+    A line of code such as \
+    \
+      cmake_minimum_required(VERSION @CMAKE_MINIMUM_REQUIRED_VERSION@)'\
+    \
+    is required to be added at the top of the including project's root CMakeLists.txt."
+  )
+  return ()
+endif ()
+
+###############################################################################
+# Inclusion guard
+###############################################################################
+
+# TODO: Is this still required? Also present in util-generic-config.cmake
+if (${CMAKE_FIND_PACKAGE_NAME}_FOUND)
+  return ()
+endif ()
+
+@PACKAGE_INIT@
+
+###############################################################################
+# Includes
+###############################################################################
+
+include (CMakeFindDependencyMacro)
+include (GNUInstallDirs)
+
+###############################################################################
+# Library paths
+###############################################################################
+
+set_and_check (RPC_HOME "@PACKAGE__origin@")
+get_filename_component (RPC_HOME "${RPC_HOME}" REALPATH)
+
+###############################################################################
+# Dependencies
+###############################################################################
+
+find_dependency (util-cmake)
+find_dependency (util-generic)
+find_dependency (Boost 1.61
+  COMPONENTS
+    coroutine
+    filesystem
+    iostreams
+    serialization
+    thread
+)
+
+###############################################################################
+# Targets
+###############################################################################
+
+add_library (Util::RPC STATIC IMPORTED)
+target_include_directories (Util::RPC
+  INTERFACE "${RPC_HOME}/${CMAKE_INSTALL_INCLUDEDIR}"
+)
+target_link_libraries (Util::RPC
+  INTERFACE
+    Util::Generic
+    Boost::boost
+    Boost::coroutine
+    Boost::filesystem
+    Boost::iostreams
+    Boost::serialization
+    Boost::system
+    Boost::thread
+)
+set_target_properties (Util::RPC
+  PROPERTIES
+    IMPORTED_LOCATION "${RPC_HOME}/lib/libUtil-RPC.a"
+)
+target_compile_features (Util::RPC
+  INTERFACE "@_project_cxx_std@"
+)

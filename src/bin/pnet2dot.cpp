@@ -254,11 +254,11 @@ namespace
     , id_type&
     , options const&
     , fhg::util::indenter&
-    , boost::optional<we::type::TokensOnPorts> input
-    , boost::optional<we::type::TokensOnPorts> output
+    , ::boost::optional<we::type::TokensOnPorts> input
+    , ::boost::optional<we::type::TokensOnPorts> output
     );
 
-  class visit_transition : public boost::static_visitor<std::string>
+  class visit_transition : public ::boost::static_visitor<std::string>
   {
   private:
     id_type& id;
@@ -279,7 +279,7 @@ namespace
 
       s << _indent
         << name (id, "expression")
-        << node (shape::expression, quote (boost::lexical_cast<std::string> (expr)));
+        << node (shape::expression, quote (::boost::lexical_cast<std::string> (expr)));
 
       return s.str();
     }
@@ -290,7 +290,7 @@ namespace
 
       s << _indent
         << name (id, "modcall")
-        << node (shape::modcall, boost::lexical_cast<std::string> (mod_call));
+        << node (shape::modcall, ::boost::lexical_cast<std::string> (mod_call));
 
       return s.str();
     }
@@ -303,7 +303,7 @@ namespace
       {
         s << _indent
           << name (id, "modcall")
-          << node (shape::modcall, boost::lexical_cast<std::string> (mod_call.second));
+          << node (shape::modcall, ::boost::lexical_cast<std::string> (mod_call.second));
       }
 
       return s.str();
@@ -327,7 +327,7 @@ namespace
         if (opts.show_token)
         {
           for ( pnet::type::value::value_type const& t
-              : net.get_token (place_id) | boost::adaptors::map_values
+              : net.get_token (place_id) | ::boost::adaptors::map_values
               )
           {
             token << endl << pnet::type::value::show (t);
@@ -343,7 +343,7 @@ namespace
 
         s << fhg::util::deeper (_indent)
           << name ( id_net
-                  , "place_" + boost::lexical_cast<std::string> (place_id)
+                  , "place_" + ::boost::lexical_cast<std::string> (place_id)
                   )
           << node
              ( shape::place
@@ -361,7 +361,7 @@ namespace
         const id_type id_trans (++id);
 
         ++_indent;
-        s << to_dot (trans, id, opts, _indent, boost::none, boost::none);
+        s << to_dot (trans, id, opts, _indent, ::boost::none, ::boost::none);
         --_indent;
 
         if (net.port_to_place().find (trans_id) != net.port_to_place().end())
@@ -370,11 +370,11 @@ namespace
           {
             s << fhg::util::deeper (_indent)
               << name ( id_trans
-                      , "port_" + boost::lexical_cast<std::string> (port_to_place.first)
+                      , "port_" + ::boost::lexical_cast<std::string> (port_to_place.first)
                       )
               << arrow
               << name ( id_net
-                      , "place_" + boost::lexical_cast<std::string> (port_to_place.second.first)
+                      , "place_" + ::boost::lexical_cast<std::string> (port_to_place.second.first)
                       );
           }
         }
@@ -386,11 +386,11 @@ namespace
           {
             s << fhg::util::deeper (_indent)
               << name ( id_trans
-                      , "port_" + boost::lexical_cast<std::string> (port_to_place.first)
+                      , "port_" + ::boost::lexical_cast<std::string> (port_to_place.first)
                       )
               << arrow
               << name ( id_net
-                      , "place_" + boost::lexical_cast<std::string> (port_to_place.second.first)
+                      , "place_" + ::boost::lexical_cast<std::string> (port_to_place.second.first)
                       )
               << brackets (keyval ("color", color::tp_many));
           }
@@ -402,11 +402,11 @@ namespace
           {
             s << fhg::util::deeper (_indent)
               << name ( id_net
-                      , "place_" + boost::lexical_cast<std::string> (place_to_port.first)
+                      , "place_" + ::boost::lexical_cast<std::string> (place_to_port.first)
                       )
               << arrow
               << name ( id_trans
-                      , "port_" + boost::lexical_cast<std::string> (place_to_port.second.first)
+                      , "port_" + ::boost::lexical_cast<std::string> (place_to_port.second.first)
                       )
               << (  net.place_to_transition_read().find
                     ( we::type::net_type::adj_pt_type::value_type
@@ -437,8 +437,8 @@ namespace
     , id_type& id
     , options const& opts
     , fhg::util::indenter& indent
-    , boost::optional<we::type::TokensOnPorts> input
-    , boost::optional<we::type::TokensOnPorts> output
+    , ::boost::optional<we::type::TokensOnPorts> input
+    , ::boost::optional<we::type::TokensOnPorts> output
     )
   {
     std::ostringstream s;
@@ -497,7 +497,7 @@ namespace
       }
 
       s << fhg::util::deeper (indent)
-        << name (id_trans, "port_" + boost::lexical_cast<std::string> (p.first))
+        << name (id_trans, "port_" + ::boost::lexical_cast<std::string> (p.first))
         << node ( shape::port_in
                 , with_signature (p.second.name(), p.second.signature(), opts)
                 + quote (token.str())
@@ -519,7 +519,7 @@ namespace
       }
 
       s << fhg::util::deeper (indent)
-        << name (id_trans, "port_" + boost::lexical_cast<std::string> (p.first))
+        << name (id_trans, "port_" + ::boost::lexical_cast<std::string> (p.first))
         << node ( shape::port_out
                 , with_signature (p.second.name(), p.second.signature(), opts)
                 + quote (token.str())
@@ -528,7 +528,7 @@ namespace
     for (we::type::Transition::PortByID::value_type const& p : t.ports_tunnel())
     {
       s << fhg::util::deeper (indent)
-        << name (id_trans, "port_" + boost::lexical_cast<std::string> (p.first))
+        << name (id_trans, "port_" + ::boost::lexical_cast<std::string> (p.first))
         << node ( shape::port_tunnel
                 , with_signature (p.second.name(), p.second.signature(), opts)
                 );
@@ -537,7 +537,7 @@ namespace
     if (opts.should_be_expanded (t))
     {
       ++indent;
-      s << boost::apply_visitor (visit_transition (id, indent, opts), t.data());
+      s << ::boost::apply_visitor (visit_transition (id, indent, opts), t.data());
       --indent;
 
       for (we::type::Transition::PortByID::value_type const& p : t.ports_input())
@@ -545,11 +545,11 @@ namespace
         if (p.second.associated_place())
         {
           s << fhg::util::deeper (indent)
-            << name (id_trans, "port_" + boost::lexical_cast<std::string> (p.first))
+            << name (id_trans, "port_" + ::boost::lexical_cast<std::string> (p.first))
             << arrow
             << name (id_trans
                     , "place_"
-                    + boost::lexical_cast<std::string> (*p.second.associated_place())
+                    + ::boost::lexical_cast<std::string> (*p.second.associated_place())
                     )
             << association();
         }
@@ -559,11 +559,11 @@ namespace
         if (p.second.associated_place())
         {
           s << fhg::util::deeper (indent)
-            << name (id_trans, "port_" + boost::lexical_cast<std::string> (p.first))
+            << name (id_trans, "port_" + ::boost::lexical_cast<std::string> (p.first))
             << arrow
             << name (id_trans
                     , "place_"
-                    + boost::lexical_cast<std::string> (*p.second.associated_place())
+                    + ::boost::lexical_cast<std::string> (*p.second.associated_place())
                     )
             << association();
         }
@@ -573,11 +573,11 @@ namespace
         if (p.second.associated_place())
         {
           s << fhg::util::deeper (indent)
-            << name (id_trans, "port_" + boost::lexical_cast<std::string> (p.first))
+            << name (id_trans, "port_" + ::boost::lexical_cast<std::string> (p.first))
             << arrow
             << name (id_trans
                     , "place_"
-                    + boost::lexical_cast<std::string> (*p.second.associated_place())
+                    + ::boost::lexical_cast<std::string> (*p.second.associated_place())
                     )
             << association();
         }
@@ -633,12 +633,12 @@ try
 
   options options;
 
-  boost::program_options::options_description desc ("General");
-  boost::program_options::options_description show ("Show");
-  boost::program_options::options_description expand ("Expand");
+  ::boost::program_options::options_description desc ("General");
+  ::boost::program_options::options_description show ("Show");
+  ::boost::program_options::options_description expand ("Expand");
 
 #define BOOLVAL(x) \
-  boost::program_options::value<bool> (&x)->default_value (x)->implicit_value (true)
+  ::boost::program_options::value<bool> (&x)->default_value (x)->implicit_value (true)
 
   show.add_options()
     ( "full-signatures"
@@ -668,11 +668,11 @@ try
 
   expand.add_options()
     ( "not-starts-with"
-    , boost::program_options::value<vec_type> (&not_starts_with)
+    , ::boost::program_options::value<vec_type> (&not_starts_with)
     , "do not expand transitions that start with a certain prefix"
     )
     ( "not-ends-with"
-    , boost::program_options::value<vec_type> (&not_ends_with)
+    , ::boost::program_options::value<vec_type> (&not_ends_with)
     , "do not expand transitions that end with a certain suffix"
     );
 
@@ -680,11 +680,11 @@ try
     ( "help,h", "this message")
     ( "version,V", "print version information")
     ( "input,i"
-    , boost::program_options::value<std::string> (&input)->default_value ("-")
+    , ::boost::program_options::value<std::string> (&input)->default_value ("-")
     , "input file name, - for stdin, first positional parameter"
     )
     ( "output,o"
-    , boost::program_options::value<std::string> (&output)->default_value ("-")
+    , ::boost::program_options::value<std::string> (&output)->default_value ("-")
     , "output file name, - for stdout, second positional parameter"
     );
 
@@ -692,16 +692,16 @@ try
 
 #undef BOOLVAL
 
-  boost::program_options::positional_options_description p;
+  ::boost::program_options::positional_options_description p;
   p.add ("input", 1).add ("output", 2);
 
-  boost::program_options::variables_map vm;
-  boost::program_options::store
-    ( boost::program_options::command_line_parser (argc, argv)
+  ::boost::program_options::variables_map vm;
+  ::boost::program_options::store
+    ( ::boost::program_options::command_line_parser (argc, argv)
     . options (desc).positional (p).run()
     , vm
     );
-  boost::program_options::notify (vm);
+  ::boost::program_options::notify (vm);
 
   if (vm.count ("help"))
   {
@@ -740,7 +740,7 @@ try
   we::type::Activity const act
     ( input == "-"
     ? we::type::Activity (std::cin)
-    : we::type::Activity (boost::filesystem::path (input))
+    : we::type::Activity (::boost::filesystem::path (input))
     );
 
   if (output == "-")

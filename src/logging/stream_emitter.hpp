@@ -20,11 +20,11 @@
 #include <logging/message.hpp>
 #include <logging/protocol.hpp>
 
-#include <rpc/remote_endpoint.hpp>
-#include <rpc/service_dispatcher.hpp>
-#include <rpc/service_handler.hpp>
-#include <rpc/service_socket_provider.hpp>
-#include <rpc/service_tcp_provider.hpp>
+#include <util-rpc/remote_endpoint.hpp>
+#include <util-rpc/service_dispatcher.hpp>
+#include <util-rpc/service_handler.hpp>
+#include <util-rpc/service_socket_provider.hpp>
+#include <util-rpc/service_tcp_provider.hpp>
 
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 
@@ -43,7 +43,7 @@ namespace fhg
       endpoint local_endpoint() const;
 
       void emit_message (message const&);
-      void emit_message (message const&, boost::asio::yield_context);
+      void emit_message (message const&, ::boost::asio::yield_context);
       void emit (decltype (message::_content), decltype (message::_category));
 
     private:
@@ -52,7 +52,7 @@ namespace fhg
 
       std::list<std::unique_ptr<rpc::remote_endpoint>> _receivers;
 
-      void register_receiver (boost::asio::yield_context, endpoint const&);
+      void register_receiver (::boost::asio::yield_context, endpoint const&);
       rpc::service_handler<protocol::register_receiver> const
         _register_receiver;
 

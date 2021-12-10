@@ -32,9 +32,9 @@ namespace
   {
     template<typename Ex>
     void require_exception_from_generate_cpp
-      (boost::format const& expected_what)
+      (::boost::format const& expected_what)
     {
-      boost::filesystem::path const path
+      ::boost::filesystem::path const path
         (fhg::util::executable_path().parent_path() / "gen");
       state.path_to_cpp() = path.string();
 
@@ -49,7 +49,7 @@ namespace
 
     template<typename Ex>
     void require_exception_from_parse
-      (boost::format const& expected_what)
+      (::boost::format const& expected_what)
     {
       fhg::util::testing::require_exception_with_message<Ex>
         ( [this]
@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE (warning_struct_redefined)
   std::string const name_struct (fhg::util::testing::random_identifier());
 
   std::string const input
-    ( ( boost::format (R"EOS(
+    ( ( ::boost::format (R"EOS(
 <defun name="%1%">
   <struct name="%2%"><field name="%3%" type="%4%"/></struct>
   <struct name="%2%"><field name="%3%" type="%4%"/></struct>
@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE (warning_struct_redefined)
         auto function (xml::parse::just_parse (state, input_stream));
         xml::parse::post_processing_passes (function, &state);
       }
-    , boost::format ("WARNING: struct %1% at %2% redefined at %3%")
+    , ::boost::format ("WARNING: struct %1% at %2% redefined at %3%")
     % name_struct
     % "[<stdin>:3:3]"
     % "[<stdin>:4:3]"
@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE (error_struct_redefined)
   std::string const name_struct (fhg::util::testing::random_identifier());
 
   std::string const input
-    ( ( boost::format (R"EOS(
+    ( ( ::boost::format (R"EOS(
 <defun name="%1%">
   <struct name="%2%"><field name="a" type="%3%"/></struct>
   <struct name="%2%"><field name="b" type="%3%"/></struct>
@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE (error_struct_redefined)
         auto function (xml::parse::just_parse (state, input_stream));
         xml::parse::post_processing_passes (function, &state);
       }
-    , boost::format ("ERROR: struct %1% at %2% redefined at %3%")
+    , ::boost::format ("ERROR: struct %1% at %2% redefined at %3%")
     % name_struct
     % "[<stdin>:3:3]"
     % "[<stdin>:4:3]"
@@ -134,7 +134,7 @@ BOOST_AUTO_TEST_CASE (warning_struct_field_redefined)
   std::string const name_field {fhg::util::testing::random_identifier()};
 
   std::string const input
-    ( ( boost::format (R"EOS(
+    ( ( ::boost::format (R"EOS(
 <defun name="%1%">
   <struct name="%2%">
     <field name="%3%" type="%4%"/>
@@ -158,9 +158,9 @@ BOOST_AUTO_TEST_CASE (warning_struct_field_redefined)
         std::istringstream input_stream (input);
         xml::parse::just_parse (state, input_stream);
       }
-    , boost::format ("ERROR: struct field '%1%' redefined in %2%")
+    , ::boost::format ("ERROR: struct field '%1%' redefined in %2%")
     % name_field
-    % boost::filesystem::path ("<stdin>")
+    % ::boost::filesystem::path ("<stdin>")
     );
 }
 
@@ -173,7 +173,7 @@ BOOST_FIXTURE_TEST_CASE (warning_duplicate_external_function, fixture)
 
   require_exception_from_generate_cpp
     <xml::parse::warning::duplicate_external_function>
-    ( boost::format ( "WARNING: the external function f in module m"
+    ( ::boost::format ( "WARNING: the external function f in module m"
                       " has multiple occurences in %1% and %2%"
                     )
     % xml::parse::util::position_type (nullptr, nullptr, xpnet, 10, 9)
@@ -186,7 +186,7 @@ BOOST_AUTO_TEST_CASE (error_connect_response_with_unknown_port)
   std::string const port (fhg::util::testing::random_identifier());
 
   std::string const input
-    ( ( boost::format (R"EOS(
+    ( ( ::boost::format (R"EOS(
 <defun name="%1%">
   <net>
     <transition name="%2%">
@@ -212,7 +212,7 @@ BOOST_AUTO_TEST_CASE (error_connect_response_with_unknown_port)
         auto function (xml::parse::just_parse (state, input_stream));
         xml::parse::post_processing_passes (function, &state);
       }
-    , boost::format
+    , ::boost::format
       ("ERROR: connect-response from unknown output port '%1%' in %2%")
     % port
     % "[<stdin>:8:7]"
@@ -224,7 +224,7 @@ BOOST_AUTO_TEST_CASE (error_connect_response_with_unknown_to)
   std::string const to (fhg::util::testing::random_identifier());
 
   std::string const input
-    ( ( boost::format (R"EOS(
+    ( ( ::boost::format (R"EOS(
 <defun name="%1%">
   <net>
     <transition name="%2%">
@@ -251,7 +251,7 @@ BOOST_AUTO_TEST_CASE (error_connect_response_with_unknown_to)
         auto function (xml::parse::just_parse (state, input_stream));
         xml::parse::post_processing_passes (function, &state);
       }
-    , boost::format ("ERROR: unknown input port '%1%' in attribute 'to'"
+    , ::boost::format ("ERROR: unknown input port '%1%' in attribute 'to'"
                     " of connect-response in %2%"
                     )
     % to
@@ -266,7 +266,7 @@ BOOST_AUTO_TEST_CASE (error_connect_response_invalid_signature)
   std::string const name (fhg::util::testing::random_identifier());
 
   std::string const input
-    ( ( boost::format (R"EOS(
+    ( ( ::boost::format (R"EOS(
 <defun name="%1%">
   <net>
     <struct name="%2%"/>
@@ -296,7 +296,7 @@ BOOST_AUTO_TEST_CASE (error_connect_response_invalid_signature)
         auto function (xml::parse::just_parse (state, input_stream));
         xml::parse::post_processing_passes (function, &state);
       }
-    , boost::format
+    , ::boost::format
       ("ERROR: invalid signature for response to port '%1%'."
       " The type '%2%' with the signature '%2% :: []' does not provide"
       " the field 'response_id :: string' in %3%"
@@ -313,7 +313,7 @@ BOOST_FIXTURE_TEST_CASE (error_duplicate_external_function, fixture)
 
   require_exception_from_generate_cpp
     <xml::parse::error::duplicate_external_function>
-    ( boost::format ( "ERROR: duplicate external function f in module m"
+    ( ::boost::format ( "ERROR: duplicate external function f in module m"
                       " has conflicting definition at %1%"
                       ", earlier definition is at %2%"
                     )
@@ -326,7 +326,7 @@ BOOST_FIXTURE_TEST_CASE (error_duplicate_external_function, fixture)
   set_parse_input (_file);                                              \
                                                                         \
   require_exception_from_parse<xml::parse::error::duplicate_ ## _type>  \
-  ( boost::format ( "ERROR: duplicate " _msg " at %1%"                  \
+  ( ::boost::format ( "ERROR: duplicate " _msg " at %1%"                  \
                     ", earlier definition is at %2%"                    \
                   )                                                     \
   % xml::parse::util::position_type (nullptr, nullptr, xpnet, _ll, _cl)       \
@@ -400,7 +400,7 @@ BOOST_FIXTURE_TEST_CASE (error_duplicate_transition, fixture)
 
 BOOST_FIXTURE_TEST_CASE (error_duplicate_template, fixture)
 {
-  GENERIC_DUPLICATE (template,"template Just t",3,5,6,5);
+  GENERIC_DUPLICATE (template,"template  t",3,5,6,5);
 }
 
 BOOST_FIXTURE_TEST_CASE (error_duplicate_port, fixture)
@@ -418,7 +418,7 @@ BOOST_FIXTURE_TEST_CASE (error_duplicate_place_map, fixture)
 BOOST_FIXTURE_TEST_CASE (err1_invalid_closing_tag_name, fixture)
 {
   std::string const input
-    ( ( boost::format (R"EOS(
+    ( ( ::boost::format (R"EOS(
 <defun name="%1%">
   <expression>
 </defun>)EOS")
@@ -433,7 +433,7 @@ BOOST_FIXTURE_TEST_CASE (err1_invalid_closing_tag_name, fixture)
         std::istringstream input_stream (input);
         xml::parse::just_parse (state_empty, input_stream);
       }
-    , boost::format ("Parse error: %1%: invalid closing tag name")
+    , ::boost::format ("Parse error: %1%: invalid closing tag name")
     % "[<stdin>:4:7]"
     );
 }

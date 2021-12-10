@@ -26,11 +26,11 @@ namespace iml
 
   SegmentHandle::SegmentHandle (std::string const& serialized)
   {
-    *this = boost::lexical_cast<SegmentHandle> (serialized);
+    *this = ::boost::lexical_cast<SegmentHandle> (serialized);
   }
   std::string SegmentHandle::to_string() const
   {
-    return boost::lexical_cast<std::string> (*this);
+    return ::boost::lexical_cast<std::string> (*this);
   }
 
   bool operator== (SegmentHandle const& lhs, SegmentHandle const& rhs)

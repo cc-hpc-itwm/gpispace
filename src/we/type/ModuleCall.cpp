@@ -45,7 +45,7 @@ namespace we
                                   )
       {
         std::list<pnet::type::value::value_type> const values
-          ( boost::get<std::list<pnet::type::value::value_type>>
+          ( ::boost::get<std::list<pnet::type::value::value_type>>
             (expr::parse::parser (expression).eval_all (context))
           );
 
@@ -197,7 +197,7 @@ namespace we
               buffer.second.assert_correct_expression_types
                 (context_before_eval);
             }
-          , str ( boost::format ("In the <buffer> with name '%1%'")
+          , str ( ::boost::format ("In the <buffer> with name '%1%'")
                 % buffer.first
                 )
           );
@@ -227,7 +227,7 @@ namespace we
                 );
             }
           , str
-            ( boost::format ("In <memory-put>, evaluated %1% execution")
+            ( ::boost::format ("In <memory-put>, evaluated %1% execution")
             % ( memory_put.not_modified_in_module_call().get_value_or (false)
               ? "before"
               : "after"
@@ -240,7 +240,7 @@ namespace we
     {
       std::throw_with_nested
         ( std::runtime_error
-          (str ( boost::format ("In the function '%1%' of module '%2%'")
+          (str ( ::boost::format ("In the function '%1%' of module '%2%'")
                % function_
                % module_
                )

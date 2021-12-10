@@ -19,14 +19,14 @@
 #include <drts/drts.hpp>
 #include <drts/scoped_rifd.hpp>
 
-#include <fhg/util/boost/program_options/validators/existing_path.hpp>
-#include <fhg/util/boost/program_options/validators/existing_directory.hpp>
+#include <util-generic/boost/program_options/validators/existing_path.hpp>
+#include <util-generic/boost/program_options/validators/existing_directory.hpp>
 
 #include <boost/program_options.hpp>
 
-#include <test/parse_command_line.hpp>
-#include <test/scoped_nodefile_from_environment.hpp>
-#include <test/shared_directory.hpp>
+#include <testing/parse_command_line.hpp>
+#include <testing/scoped_nodefile_from_environment.hpp>
+#include <testing/shared_directory.hpp>
 
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/random.hpp>
@@ -37,7 +37,7 @@
 
 BOOST_AUTO_TEST_CASE (scoped_rifd_from_command_line)
 {
-  boost::program_options::options_description options_description;
+  ::boost::program_options::options_description options_description;
 
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::scoped_rifd());
@@ -45,16 +45,16 @@ BOOST_AUTO_TEST_CASE (scoped_rifd_from_command_line)
 
   options_description.add_options()
     ( "test-binary"
-    , boost::program_options::value
+    , ::boost::program_options::value
         <fhg::util::boost::program_options::existing_path>()->required()
     , "path to test binary"
     )
     ;
 
-  boost::program_options::variables_map vm
+  ::boost::program_options::variables_map vm
     ( test::parse_command_line
-        ( boost::unit_test::framework::master_test_suite().argc
-        , boost::unit_test::framework::master_test_suite().argv
+        ( ::boost::unit_test::framework::master_test_suite().argc
+        , ::boost::unit_test::framework::master_test_suite().argv
         , options_description
         )
     );
@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE (scoped_rifd_from_command_line)
 
   vm.notify();
 
-  boost::filesystem::path const test_binary
+  ::boost::filesystem::path const test_binary
     ( vm.at ("test-binary")
     . as<fhg::util::boost::program_options::existing_path>()
     );

@@ -26,10 +26,10 @@
 #include <we/require_type.hpp>
 
 #include <fhg/util/next.hpp>
-#include <fhg/util/macros.hpp>
 
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_container.hpp>
+#include <util-generic/functor_visitor.hpp>
 
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/join.hpp>
@@ -57,22 +57,31 @@ namespace we
 {
   namespace edge
   {
-    bool is_PT (type const& e)
+    bool is_incoming (type const& e)
     {
-      return (e == PT || e == PT_READ);
+      return fhg::util::visit<bool>
+        ( e
+        , [] (PT const&) { return true; }
+        , [] (PT_READ const&) { return true; }
+        , [] (auto&) { return false; }
+        );
     }
 
-    std::string enum_to_string (type const& e)
+    std::ostream& operator<< (std::ostream& os, PT const&)
     {
-      switch (e)
-      {
-      case PT: return "in";
-      case PT_READ: return "read";
-      case TP: return "out";
-      case TP_MANY: return "out-many";
-      }
-
-      INVALID_ENUM_VALUE (we::edge:type, e);
+      return os << "in";
+    }
+    std::ostream& operator<< (std::ostream& os, PT_READ const&)
+    {
+      return os << "read";
+    }
+    std::ostream& operator<< (std::ostream& os, TP const&)
+    {
+      return os << "out";
+    }
+    std::ostream& operator<< (std::ostream& os, TP_MANY const&)
+    {
+      return os << "out-many";
     }
   }
 
@@ -114,7 +123,7 @@ namespace we
         net_type& _net;
         transition_id_type _tid;
         we::type::Transition const& _transition;
-        boost::optional<Expression> const& _condition;
+        ::boost::optional<Expression> const& _condition;
         expr::parse::node::KeyRoots _key_roots;
 
         typedef std::unordered_map<place_id_type, iterators_type> map_type;
@@ -143,7 +152,7 @@ namespace we
       {
         //! \todo more specific exception
         throw std::invalid_argument
-          ( ( boost::format ("duplicate place with name '%1%'")
+          ( ( ::boost::format ("duplicate place with name '%1%'")
             % place.name()
             ).str()
           );
@@ -188,62 +197,66 @@ namespace we
                                   , we::type::property::type const& property
                                   )
     {
-      switch (type)
-      {
-      case edge::TP:
-        require_no_output_connection (_port_many_to_place, transition_id, port_id);
-        _adj_tp.emplace (place_id, transition_id);
-        if (!_port_to_place[transition_id].emplace
-             ( std::piecewise_construct
-             , std::forward_as_tuple (port_id)
-             , std::forward_as_tuple (place_id, property)
-             ).second
-           )
-        {
-          throw std::logic_error ("duplicate connection");
-        }
-        break;
-      case edge::TP_MANY:
-        require_no_output_connection (_port_to_place, transition_id, port_id);
-        _adj_tp.emplace (place_id, transition_id);
-        if (!_port_many_to_place[transition_id].emplace
-             ( std::piecewise_construct
-             , std::forward_as_tuple (port_id)
-             , std::forward_as_tuple (place_id, property)
-             ).second
-           )
-        {
-          throw std::logic_error ("duplicate connection");
-        }
-        break;
-      case edge::PT:
-        _adj_pt_consume.insert
-          (adj_pt_type::value_type (place_id, transition_id));
-        if (!_place_to_port[transition_id].emplace
-             ( std::piecewise_construct
-             , std::forward_as_tuple (place_id)
-             , std::forward_as_tuple (port_id, property)
-             ).second
-           )
-        {
-          throw std::logic_error ("duplicate connection");
-        }
-        update_enabled (transition_id);
-        break;
-      case edge::PT_READ:
-        _adj_pt_read.insert (adj_pt_type::value_type (place_id, transition_id));
-        if (!_place_to_port[transition_id].emplace
-             ( std::piecewise_construct
-             , std::forward_as_tuple (place_id)
-             , std::forward_as_tuple (port_id, property)
-             ).second
-           )
-        {
-          throw std::logic_error ("duplicate read connection");
-        }
-        update_enabled (transition_id);
-        break;
-      }
+      fhg::util::visit<void>
+        ( type
+        , [&] (edge::TP)
+          {
+            require_no_output_connection (_port_many_to_place, transition_id, port_id);
+            _adj_tp.emplace (place_id, transition_id);
+            if (!_port_to_place[transition_id].emplace
+                 ( std::piecewise_construct
+                 , std::forward_as_tuple (port_id)
+                 , std::forward_as_tuple (place_id, property)
+                 ).second
+               )
+            {
+              throw std::logic_error ("duplicate connection");
+            }
+          }
+        , [&] (edge::TP_MANY)
+          {
+            require_no_output_connection (_port_to_place, transition_id, port_id);
+            _adj_tp.emplace (place_id, transition_id);
+            if (!_port_many_to_place[transition_id].emplace
+                 ( std::piecewise_construct
+                 , std::forward_as_tuple (port_id)
+                 , std::forward_as_tuple (place_id, property)
+                 ).second
+               )
+            {
+              throw std::logic_error ("duplicate connection");
+            }
+          }
+        , [&] (edge::PT)
+          {
+            _adj_pt_consume.insert
+              (adj_pt_type::value_type (place_id, transition_id));
+            if (!_place_to_port[transition_id].emplace
+                 ( std::piecewise_construct
+                 , std::forward_as_tuple (place_id)
+                 , std::forward_as_tuple (port_id, property)
+                 ).second
+               )
+            {
+              throw std::logic_error ("duplicate connection");
+            }
+            update_enabled (transition_id);
+          }
+        , [&] (edge::PT_READ)
+          {
+            _adj_pt_read.insert (adj_pt_type::value_type (place_id, transition_id));
+            if (!_place_to_port[transition_id].emplace
+                 ( std::piecewise_construct
+                 , std::forward_as_tuple (place_id)
+                 , std::forward_as_tuple (port_id, property)
+                 ).second
+               )
+            {
+              throw std::logic_error ("duplicate read connection");
+            }
+            update_enabled (transition_id);
+          }
+        );
     }
 
     void net_type::add_response ( transition_id_type transition_id
@@ -335,7 +348,7 @@ namespace we
       if (pid == _place_id_by_name.end())
       {
         throw std::invalid_argument
-          ( ( boost::format ("put_token (\"%1%\", %2%): place not found")
+          ( ( ::boost::format ("put_token (\"%1%\", %2%): place not found")
             % place_name
             % pnet::type::value::show (value)
             ).str()
@@ -347,7 +360,7 @@ namespace we
       if (!place.is_marked_for_put_token())
       {
         throw std::invalid_argument
-          ( ( boost::format
+          ( ( ::boost::format
               ("put_token (\"%1%\", %2%): place not marked with attribute"
               " put_token=\"true\""
               )
@@ -375,11 +388,11 @@ namespace we
     void net_type::do_update (to_be_updated_type const& to_be_updated)
     {
       for ( transition_id_type tid
-          : boost::join
+          : ::boost::join
               ( _adj_pt_consume.left.equal_range (to_be_updated.first)
               , _adj_pt_read.left.equal_range (to_be_updated.first)
               )
-          | boost::adaptors::map_values
+          | ::boost::adaptors::map_values
           )
       {
         update_enabled_put_token (tid, to_be_updated);
@@ -413,7 +426,7 @@ namespace we
         ([&] (adj_pt_type const& adj, bool is_read_connection)
          {
            for ( place_id_type place_id
-               : adj.right.equal_range (tid) | boost::adaptors::map_values
+               : adj.right.equal_range (tid) | ::boost::adaptors::map_values
                )
            {
              token_by_id_type const& tokens (_token_by_place_id[place_id]);
@@ -469,7 +482,7 @@ namespace we
         ( [&] (adj_pt_type const& adj, bool is_read_connection)
           {
             for ( place_id_type place_id
-                : adj.right.equal_range (tid) | boost::adaptors::map_values
+                : adj.right.equal_range (tid) | ::boost::adaptors::map_values
                 )
             {
               if (place_id == to_be_updated.first)
@@ -584,11 +597,11 @@ namespace we
           )
       {
         for ( transition_id_type t
-            : boost::join
+            : ::boost::join
                 ( _adj_pt_consume.left.equal_range (token_to_be_deleted.first)
                 , _adj_pt_read.left.equal_range (token_to_be_deleted.first)
                 )
-            | boost::adaptors::map_values
+            | ::boost::adaptors::map_values
             )
         {
           auto const& priority (_tmap.at (t).priority());
@@ -658,7 +671,7 @@ namespace we
       };
     }
 
-    boost::optional<we::type::Activity>
+    ::boost::optional<we::type::Activity>
       net_type::fire_expressions_and_extract_activity_random
         ( std::mt19937& engine
         , we::workflow_response_callback const& workflow_response
@@ -693,10 +706,10 @@ namespace we
         }
       }
 
-      return boost::none;
+      return ::boost::none;
     }
 
-    boost::optional<we::type::Activity>
+    ::boost::optional<we::type::Activity>
       net_type::fire_expressions_and_extract_activity_random_TESTING_ONLY
         ( std::mt19937& engine
         , we::workflow_response_callback const& workflow_response
@@ -745,13 +758,13 @@ namespace we
           if (call_before_eval)
           {
             Expression const expression
-              (boost::get<std::string> (call_before_eval.get()));
+              (::boost::get<std::string> (call_before_eval.get()));
             auto const pids (expression.ast().eval_all (context));
 
-            for (auto const& pid : boost::get<values> (pids))
+            for (auto const& pid : ::boost::get<values> (pids))
             {
               plugins.before_eval
-                ( gspc::we::plugin::ID {boost::get<unsigned long> (pid)}
+                ( gspc::we::plugin::ID {::boost::get<unsigned long> (pid)}
                 , context
                 );
             }
@@ -762,7 +775,7 @@ namespace we
         {
           plugins.destroy
             ( gspc::we::plugin::ID
-                {boost::get<unsigned long> (context.value ({"plugin_id"}))}
+                {::boost::get<unsigned long> (context.value ({"plugin_id"}))}
             );
         }
       }
@@ -777,7 +790,7 @@ namespace we
             ( {"plugin_id"}
             , static_cast<unsigned long>
               ( plugins.create
-                ( boost::get<std::string> (context.value ({"plugin_path"}))
+                ( ::boost::get<std::string> (context.value ({"plugin_path"}))
                 , context
                 , std::move (put_token)
                 )
@@ -792,13 +805,13 @@ namespace we
           if (call_after_eval)
           {
             Expression const expression
-              (boost::get<std::string> (call_after_eval.get()));
+              (::boost::get<std::string> (call_after_eval.get()));
             auto const pids (expression.ast().eval_all (context));
 
-            for (auto const& pid : boost::get<values> (pids))
+            for (auto const& pid : ::boost::get<values> (pids))
             {
               plugins.after_eval
-                ( gspc::we::plugin::ID {boost::get<unsigned long> (pid)}
+                ( gspc::we::plugin::ID {::boost::get<unsigned long> (pid)}
                 , context
                 );
             }
@@ -828,7 +841,7 @@ namespace we
                 )
         {
           auto const& many_tokens
-            (boost::get<std::list<pnet::type::value::value_type>>
+            (::boost::get<std::list<pnet::type::value::value_type>>
               (context.value ({p.second.name()}))
             );
 
@@ -846,7 +859,7 @@ namespace we
                 )
         {
           auto const& ids
-            ( boost::get<std::set<pnet::type::value::value_type>>
+            ( ::boost::get<std::set<pnet::type::value::value_type>>
               (context.value ({p.second.name()}))
             );
 
@@ -914,7 +927,7 @@ namespace we
                 )
         {
           auto const& many_tokens
-            (boost::get<std::list<pnet::type::value::value_type>>
+            (::boost::get<std::list<pnet::type::value::value_type>>
               (token_on_port.first)
             );
 
@@ -934,7 +947,7 @@ namespace we
             ([&token_on_port]
              {
               auto const& ids
-              ( boost::get<std::set<pnet::type::value::value_type>>
+              ( ::boost::get<std::set<pnet::type::value::value_type>>
                  (token_on_port.first)
               );
 
@@ -987,7 +1000,7 @@ namespace we
 
     net_type& net_type::assert_correct_expression_types()
     {
-      for (auto& transition : _tmap | boost::adaptors::map_values)
+      for (auto& transition : _tmap | ::boost::adaptors::map_values)
       {
         transition.assert_correct_expression_types();
       }
@@ -1108,7 +1121,7 @@ namespace we
             );
         }
 
-        if (boost::get<bool> (_condition->ast().eval_all (context)))
+        if (::boost::get<bool> (_condition->ast().eval_all (context)))
         {
           return true;
         }

@@ -16,7 +16,6 @@
 
 #include <we/type/signature/serialize.hpp>
 
-#include <boost/serialization/nvp.hpp>
 #include <boost/serialization/optional.hpp>
 #include <boost/serialization/variant.hpp>
 
@@ -44,11 +43,11 @@ namespace we
     template<typename Archive>
       void Port::serialize (Archive& ar, unsigned int)
     {
-      ar & BOOST_SERIALIZATION_NVP (_name);
-      ar & BOOST_SERIALIZATION_NVP (_direction);
-      ar & BOOST_SERIALIZATION_NVP (_signature);
-      ar & BOOST_SERIALIZATION_NVP (_associated_place);
-      ar & BOOST_SERIALIZATION_NVP (_properties);
+      ar & _name;
+      ar & _direction;
+      ar & _signature;
+      ar & _associated_place;
+      ar & _properties;
     }
   }
 }

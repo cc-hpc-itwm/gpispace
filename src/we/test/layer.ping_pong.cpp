@@ -16,7 +16,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <test/source_directory.hpp>
+#include <testing/source_directory.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 
@@ -46,22 +46,22 @@ BOOST_AUTO_TEST_CASE (emulate_share_example_ping_pong)
 {
   unsigned long const N (1 << 15);
 
-  boost::program_options::options_description options_description;
+  ::boost::program_options::options_description options_description;
   options_description.add (test::options::source_directory());
-  boost::program_options::variables_map vm;
-  boost::program_options::store
-    ( boost::program_options::command_line_parser
-        ( boost::unit_test::framework::master_test_suite().argc
-        , boost::unit_test::framework::master_test_suite().argv
+  ::boost::program_options::variables_map vm;
+  ::boost::program_options::store
+    ( ::boost::program_options::command_line_parser
+        ( ::boost::unit_test::framework::master_test_suite().argc
+        , ::boost::unit_test::framework::master_test_suite().argv
         )
     . options (options_description)
     . run()
     , vm
     );
 
-  boost::filesystem::path const xpnet_path
+  ::boost::filesystem::path const xpnet_path
     ( test::source_directory (vm)
-    / "share" / "example" / "ping-pong" / "ping-pong.xpnet"
+    / "share" / "doc" / "example" / "ping-pong" / "ping-pong.xpnet"
     );
 
   std::mt19937 random_extraction_engine;
@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE (emulate_share_example_ping_pong)
 
   std::mutex current_state_guard;
   std::condition_variable current_activity_changed;
-  boost::optional<std::pair<we::layer::id_type, we::type::Activity>>
+  ::boost::optional<std::pair<we::layer::id_type, we::type::Activity>>
     current_activity;
 
   std::mutex finished_guard;
@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE (emulate_share_example_ping_pong)
                    , std::move (activity)
                    );
 
-    current_activity = boost::none;
+    current_activity = ::boost::none;
   }
 
   {

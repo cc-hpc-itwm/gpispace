@@ -28,12 +28,12 @@
 BOOST_AUTO_TEST_CASE (scoped_file_with_content)
 {
   fhg::util::temporary_path const temporary_directory
-    {boost::filesystem::unique_path()};
+    {::boost::filesystem::unique_path()};
 
-  boost::filesystem::path const path
-    {temporary_directory / boost::filesystem::unique_path()};
+  ::boost::filesystem::path const path
+    {temporary_directory / ::boost::filesystem::unique_path()};
 
-  BOOST_REQUIRE (!boost::filesystem::exists (path));
+  BOOST_REQUIRE (!::boost::filesystem::exists (path));
 
   {
     std::string const content {fhg::util::testing::random<std::string>{}()};
@@ -43,5 +43,5 @@ BOOST_AUTO_TEST_CASE (scoped_file_with_content)
     BOOST_REQUIRE_EQUAL (fhg::util::read_file (path), content);
   }
 
-  BOOST_REQUIRE (!boost::filesystem::exists (path));
+  BOOST_REQUIRE (!::boost::filesystem::exists (path));
 }

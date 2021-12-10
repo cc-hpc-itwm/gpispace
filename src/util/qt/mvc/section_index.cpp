@@ -85,9 +85,9 @@ namespace fhg
         size_t hash_value (section_index index)
         {
           size_t seed (0);
-          boost::hash_combine (seed, index._model);
-          boost::hash_combine (seed, index._orientation);
-          boost::hash_combine (seed, index._section);
+          ::boost::hash_combine (seed, index._model);
+          ::boost::hash_combine (seed, index._orientation);
+          ::boost::hash_combine (seed, index._section);
           return seed;
         }
 

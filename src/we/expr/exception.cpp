@@ -26,7 +26,7 @@ namespace expr
     {
       exception::exception (std::string const& msg, std::size_t k)
         : std::runtime_error
-            ((boost::format ("parse error [%1%]: %2%") % k % msg).str())
+            ((::boost::format ("parse error [%1%]: %2%") % k % msg).str())
         , eaten (k)
       {}
 
@@ -45,7 +45,7 @@ namespace expr
                                  , std::size_t k
                                  )
         : exception
-          ( ( boost::format ("unterminated %1%, opened at: %2%")
+          ( ( ::boost::format ("unterminated %1%, opened at: %2%")
             % what
             % open
             ).str()
@@ -67,7 +67,7 @@ namespace expr
       type_error::type_error (std::string const& msg)
         : std::runtime_error ("type error: " + msg)
       {}
-      type_error::type_error (boost::format const& msg)
+      type_error::type_error (::boost::format const& msg)
         : std::runtime_error ("type error: " + msg.str())
       {}
 
@@ -81,7 +81,7 @@ namespace expr
       error::error (std::string const& msg)
         : std::runtime_error ("type error: " + msg)
       {}
-      error::error (boost::format const& msg)
+      error::error (::boost::format const& msg)
         : error (msg.str())
       {}
     }

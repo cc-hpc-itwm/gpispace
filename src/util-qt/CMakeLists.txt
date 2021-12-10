@@ -14,47 +14,162 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-include (util-cmake/add_macros)
-include (util-cmake/add_unit_test)
+cmake_minimum_required (VERSION 3.15)
 
-include (util-cmake/beautify_find_boost)
-find_boost (1.59 REQUIRED QUIET COMPONENTS serialization)
-find_package (Qt5 COMPONENTS Core Gui Widgets REQUIRED QUIET)
-
-extended_add_library (NAME Qt
-  NAMESPACE Util
-  SOURCES "do_after_event_loop.cpp"
-          "make_drop_target.cpp"
-          "style.cpp"
-          "$<$<BOOL:${BUILD_TESTING}>:testing/Application.cpp>"
-          "$<$<BOOL:${BUILD_TESTING}>:testing/CoreApplication.cpp>"
-          "$<$<BOOL:${BUILD_TESTING}>:testing/detail/FakeCommandLineArguments.cpp>"
-          "$<$<BOOL:${BUILD_TESTING}>:testing/detail/MinimalPlatformInitializer.cpp>"
-          "widget/file_line_edit.cpp"
-          "widget/mini_button.cpp"
-  MOC "widget/file_line_edit.hpp"
-      "widget/mini_button.hpp"
-  LIBRARIES Boost::serialization
-            Util::Generic
-            Qt5::Core
-            Qt5::Gui
-            Qt5::Widgets
+project (util-qt
+  VERSION 1.0.0
+  LANGUAGES CXX
 )
 
-function (util_qt_unit_test _path)
-  _parse_arguments_with_unknown (ARG "" "" "LIBRARIES;SOURCES" "" ${ARGN})
-  string (REPLACE "/" "-" _name "util-qt-${_path}")
+###############################################################################
+# Bootstrap packages
+###############################################################################
 
-  add_unit_test (NAME "${_name}"
-    SOURCES "test/${_path}.cpp" ${ARG_SOURCES}
-    USE_BOOST
-    LIBRARIES Util::Qt ${ARG_LIBRARIES}
-    ${ARG_UNPARSED_ARGUMENTS}
+# TODO: temporary fix, should be removed once everything is standalone
+set (UTIL_GENERIC_BUILD_TESTING OFF CACHE BOOL "Build util-generic tests")
+
+# temporary compatibility fix
+# if the project is not root skip bootstrapping
+# NOTE: the find_package call can move to the find dependencies section later on
+if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+  include (${PROJECT_SOURCE_DIR}/bootstrap/packages.cmake)
+  find_package (util-cmake REQUIRED)
+  find_package (util-generic REQUIRED)
+endif ()
+
+###############################################################################
+# Set module paths
+###############################################################################
+
+list (APPEND CMAKE_MODULE_PATH
+  "${PROJECT_SOURCE_DIR}/cmake"
+)
+
+###############################################################################
+# Includes
+###############################################################################
+
+include (CMakePackageConfigHelpers)
+include (CTest)
+include (GNUInstallDirs)
+
+include (util-cmake/add_macros)
+include (util-cmake/projects)
+
+###############################################################################
+# Meta information
+###############################################################################
+
+util_cmake_is_project_root (_project_is_root)
+util_cmake_project_entry_name (_project_entry)
+
+###############################################################################
+# Options
+###############################################################################
+
+if (NOT DEFINED ${_project_entry}_BUILD_TESTING)
+  if (BUILD_TESTING)
+    set (${_project_entry}_BUILD_TESTING ${BUILD_TESTING} CACHE BOOL "Build ${PROJECT_NAME} tests")
+  else ()
+    set (${_project_entry}_BUILD_TESTING OFF CACHE BOOL "Build ${PROJECT_NAME} tests")
+  endif ()
+endif ()
+
+option (${_project_entry}_INSTALL
+  "Install ${PROJECT_NAME}"
+  ${_project_is_root}
+)
+mark_as_advanced (${_project_entry}_INSTALL)
+
+set (${_project_entry}_CONFIG_INSTALL_DIR
+  "${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake"
+  CACHE PATH
+  "${PROJECT_NAME} package configuration and cmake scripts installation path prefix. \
+  (default: ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake)"
+)
+mark_as_advanced (${_project_entry}_CONFIG_INSTALL_DIR)
+set (_project_config_install_dir ${${_project_entry}_CONFIG_INSTALL_DIR})
+
+set (${_project_entry}_CXX_STANDARD
+  14
+  CACHE STRING
+  "${PROJECT_NAME} C++ standard"
+)
+mark_as_advanced (${_project_entry}_CXX_STANDARD)
+set (_project_cxx_std "cxx_std_${${_project_entry}_CXX_STANDARD}")
+
+###############################################################################
+# Find dependencies
+###############################################################################
+
+find_package (Boost 1.61 REQUIRED
+  COMPONENTS
+    serialization
+)
+
+find_package (Qt5 REQUIRED
+  COMPONENTS
+    Core
+    Gui
+    Widgets
+)
+
+###############################################################################
+# Project targets and tests
+###############################################################################
+
+extended_add_library (NAME Qt-Headers
+  NAMESPACE Util
+  INCLUDE_DIRECTORIES
+    INTERFACE $<BUILD_INTERFACE: ${PROJECT_SOURCE_DIR}/include>
+    INTERFACE $<INSTALL_INTERFACE: ${CMAKE_INSTALL_INCLUDEDIR}>
+  LIBRARIES
+    INTERFACE
+      Boost::serialization
+      Util::Generic
+      Qt5::Core
+      Qt5::Gui
+      Qt5::Widgets
+)
+target_compile_features (Util-Qt-Headers
+  INTERFACE "${_project_cxx_std}"
+)
+
+add_subdirectory (src/util-qt)
+add_subdirectory (test/util-qt)
+
+###############################################################################
+# Install and configure package find script
+###############################################################################
+
+if (${_project_entry}_INSTALL)
+  install (
+    DIRECTORY
+      "${PROJECT_SOURCE_DIR}/include/"
+    DESTINATION
+      "${CMAKE_INSTALL_INCLUDEDIR}"
   )
-endfunction()
 
-util_qt_unit_test (do_after_event_loop)
+  set (_origin ".")
+  configure_package_config_file (
+    ${PROJECT_NAME}-config.cmake.in
+    ${PROJECT_NAME}-config.cmake
+    INSTALL_DESTINATION ${_project_config_install_dir}
+    PATH_VARS
+      _project_config_install_dir
+      _origin
+  )
 
-util_qt_unit_test (qdatastream_enum)
+  write_basic_package_version_file (
+    ${PROJECT_NAME}-config-version.cmake
+    COMPATIBILITY SameMajorVersion
+  )
 
-util_qt_unit_test (scoped_signal_block)
+  install (
+    FILES
+      ${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
+      ${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake
+    DESTINATION
+      ${_project_config_install_dir}
+  )
+endif ()

@@ -59,7 +59,6 @@
 #include <we/type/value.hpp>
 #include <we/type/value/show.hpp>
 
-#include <fhg/util/boost/optional.hpp>
 #include <fhg/util/cctype.hpp>
 #include <fhg/util/read_bool.hpp>
 #include <util-generic/join.hpp>
@@ -74,6 +73,22 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+
+namespace
+{
+  template<typename U>
+    ::boost::optional<U> fmap ( U (*f)(std::string const&)
+                              , ::boost::optional<std::string> const& m
+                              )
+  {
+    if (m)
+    {
+      return f (*m);
+    }
+
+    return {};
+  }
+}
 
 // ************************************************************************* //
 
@@ -105,7 +120,7 @@ namespace xml
         catch (rapidxml::parse_error const& e)
         {
           throw std::runtime_error
-            ( ( boost::format ("Parse error: %1%: %2%")
+            ( ( ::boost::format ("Parse error: %1%: %2%")
               % util::position_type
                 (inp.data(), e.where<char>(), state.file_in_progress())
               % e.what()
@@ -288,7 +303,7 @@ namespace xml
         , type::multi_module_type const& multi_mod
         )
       {
-        boost::optional<we::type::eureka_id_type> const& eureka_group
+        ::boost::optional<we::type::eureka_id_type> const& eureka_group
           (multi_mod.eureka_id());
 
         std::list<type::preference_type> modules;
@@ -571,8 +586,8 @@ namespace xml
                                         , std::string const&
                                         , std::string const&
                                         , we::type::property::type const&
-                                        , boost::optional<bool> const&
-                                        , boost::optional<bool> const&
+                                        , ::boost::optional<bool> const&
+                                        , ::boost::optional<bool> const&
                                         )> make_transfer
         )
       {
@@ -630,11 +645,11 @@ namespace xml
           , global
           , local
           , properties
-          , fhg::util::boost::fmap<std::string, bool>
+          , fmap<bool>
             ( fhg::util::read_bool
             , optional (node, "not-modified-in-module-call")
             )
-          , fhg::util::boost::fmap<std::string, bool>
+          , fmap<bool>
               ( fhg::util::read_bool
               , optional (node, "allow-empty-ranges")
               )
@@ -652,8 +667,8 @@ namespace xml
                , std::string const& global
                , std::string const& local
                , we::type::property::type const& properties
-               , boost::optional<bool> const& // ignored
-               , boost::optional<bool> const& allow_empty_ranges
+               , ::boost::optional<bool> const& // ignored
+               , ::boost::optional<bool> const& allow_empty_ranges
                )
           { return type::memory_get
               ( state_.position (node_)
@@ -677,8 +692,8 @@ namespace xml
                , std::string const& global
                , std::string const& local
                , we::type::property::type const& properties
-               , boost::optional<bool> const& not_modified_in_module_call
-               , boost::optional<bool> const& allow_empty_ranges
+               , ::boost::optional<bool> const& not_modified_in_module_call
+               , ::boost::optional<bool> const& allow_empty_ranges
                )
           { return type::memory_put ( state_.position (node_)
                                     , global
@@ -702,8 +717,8 @@ namespace xml
                , std::string const& global
                , std::string const& local
                , we::type::property::type const& properties
-               , boost::optional<bool> const& not_modified_in_module_call
-               , boost::optional<bool> const& allow_empty_ranges
+               , ::boost::optional<bool> const& not_modified_in_module_call
+               , ::boost::optional<bool> const& allow_empty_ranges
                )
           { return type::memory_getput ( state_.position (node_)
                                        , global
@@ -732,8 +747,8 @@ namespace xml
             )
           );
 
-        boost::optional<std::string> size;
-        boost::optional<std::string> alignment;
+        ::boost::optional<std::string> size;
+        ::boost::optional<std::string> alignment;
 
         we::type::property::type properties;
 
@@ -792,7 +807,7 @@ namespace xml
           , name
           , *size
           , alignment.get_value_or ("1UL")
-          , fhg::util::boost::fmap<std::string, bool>
+          , fmap<bool>
             (fhg::util::read_bool, optional (node, "read-only"))
           , properties
           );
@@ -860,8 +875,8 @@ namespace xml
       type::transition_type
         transition_type (const xml_node_type* node, state::type& state)
       {
-        boost::optional<type::function_type> function;
-        boost::optional<type::use_type> use;
+        ::boost::optional<type::function_type> function;
+        ::boost::optional<type::use_type> use;
         type::transition_type::connections_type connections;
         type::transition_type::responses_type responses;
         type::transition_type::eurekas_type eurekas;
@@ -906,29 +921,29 @@ namespace xml
             else if (child_name == "connect-in")
             {
               connections.push<error::duplicate_connect>
-                (connect_type (child, state, we::edge::PT));
+                (connect_type (child, state, we::edge::PT{}));
             }
             else if (child_name == "connect-out")
             {
               connections.push<error::duplicate_connect>
-                (connect_type (child, state, we::edge::TP));
+                (connect_type (child, state, we::edge::TP{}));
             }
             else if (child_name == "connect-inout")
             {
               connections.push<error::duplicate_connect>
-                (connect_type (child, state, we::edge::PT));
+                (connect_type (child, state, we::edge::PT{}));
               connections.push<error::duplicate_connect>
-                (connect_type (child, state, we::edge::TP));
+                (connect_type (child, state, we::edge::TP{}));
             }
             else if (child_name == "connect-out-many")
             {
               connections.push<error::duplicate_connect>
-                (connect_type (child, state, we::edge::TP_MANY));
+                (connect_type (child, state, we::edge::TP_MANY{}));
             }
             else if (child_name == "connect-read")
             {
               connections.push<error::duplicate_connect>
-                (connect_type (child, state, we::edge::PT_READ));
+                (connect_type (child, state, we::edge::PT_READ{}));
             }
             else if (child_name == "connect-response")
             {
@@ -1001,11 +1016,11 @@ namespace xml
           , structs                                                        \
           , conditions                                                     \
           , requirements                                                   \
-          , fhg::util::boost::fmap<std::string, we::priority_type>         \
-            ( boost::lexical_cast<we::priority_type>                       \
+          , fmap<we::priority_type>                                        \
+            ( ::boost::lexical_cast<we::priority_type>                       \
             , optional (node, "priority")                                  \
             )                                                              \
-          , fhg::util::boost::fmap<std::string, bool>                      \
+          , fmap<bool>                                                     \
             (fhg::util::read_bool, optional (node, "inline"))              \
           , properties                                                     \
           }
@@ -1091,7 +1106,7 @@ namespace xml
             {
               const std::string key
                 (required ("propery_dive", child, "key", state));
-              const boost::optional<std::string>
+              const ::boost::optional<std::string>
                 value (optional (child, "value"));
 
               const std::list<std::string> cdata (parse_cdata (child, state));
@@ -1292,9 +1307,9 @@ namespace xml
 
       type::tmpl_type tmpl_type (const xml_node_type* node, state::type& state)
       {
-        boost::optional<type::function_type> fun;
+        ::boost::optional<type::function_type> fun;
         type::tmpl_type::names_type template_parameter;
-        boost::optional<std::string> name (optional (node, "name"));
+        ::boost::optional<std::string> name (optional (node, "name"));
 
         for ( xml_node_type* child (node->first_node())
             ; child
@@ -1354,9 +1369,9 @@ namespace xml
       namespace
       {
         std::tuple< std::string
-                  , boost::optional<std::string>
+                  , ::boost::optional<std::string>
                   , std::list<std::string>
-                  , boost::optional<std::string>
+                  , ::boost::optional<std::string>
                   , std::list<std::string>
                   >
         parse_function_signature
@@ -1366,7 +1381,7 @@ namespace xml
           , std::string const& module_name
           , type::function_type::ports_type const& ports
           , fhg::pnet::util::unique<type::memory_buffer_type> const& memory_buffers
-          , boost::filesystem::path const& path
+          , ::boost::filesystem::path const& path
           )
         {
           auto&& is_known_port
@@ -1396,9 +1411,9 @@ namespace xml
           fhg::util::parse::position pos (input);
 
           std::string function (parse_name (pos));
-          boost::optional<std::string> port_return;
+          ::boost::optional<std::string> port_return;
           std::list<std::string> port_arg;
-          boost::optional<std::string> memory_buffer_return;
+          ::boost::optional<std::string> memory_buffer_return;
           std::list<std::string> memory_buffer_arg;
 
           if (!pos.end())
@@ -1525,7 +1540,7 @@ namespace xml
         , type::function_type::ports_type const& ports
         , fhg::pnet::util::unique<type::memory_buffer_type> const& memory_buffers
         , bool is_target_required
-        , boost::filesystem::path const& path
+        , ::boost::filesystem::path const& path
         )
       {
         const std::string name
@@ -1536,34 +1551,34 @@ namespace xml
           );
         const std::string signature
           (required ("module_type", node, "function", state));
-        const boost::optional<bool> pass_context
-          (fhg::util::boost::fmap<std::string, bool>
+        const ::boost::optional<bool> pass_context
+          (fmap<bool>
           (fhg::util::read_bool, optional (node, "pass_context")));
-        const boost::optional<bool> require_function_unloads_without_rest
-          ( fhg::util::boost::fmap<std::string, bool>
+        const ::boost::optional<bool> require_function_unloads_without_rest
+          ( fmap<bool>
               ( fhg::util::read_bool
               , optional (node, "require_function_unloads_without_rest")
               )
           );
-        const boost::optional<bool> require_module_unloads_without_rest
-          ( fhg::util::boost::fmap<std::string, bool>
+        const ::boost::optional<bool> require_module_unloads_without_rest
+          ( fmap<bool>
               ( fhg::util::read_bool
               , optional (node, "require_module_unloads_without_rest")
               )
           );
         const util::position_type pod_of_eureka_group_attribute
           (state.position (node));
-        boost::optional<we::type::eureka_id_type> eureka_id
+        ::boost::optional<we::type::eureka_id_type> eureka_id
           (optional (node, "eureka-group"));
         bool const got_eureka_attribute (!!eureka_id);
         const util::position_type pod (state.position (node));
-        const boost::optional<std::string> target
+        const ::boost::optional<std::string> target
           (optional (node, "target"));
         const std::tuple
           < std::string
-          , boost::optional<std::string>
+          , ::boost::optional<std::string>
           , std::list<std::string>
-          , boost::optional<std::string>
+          , ::boost::optional<std::string>
           , std::list<std::string>
           > sig (parse_function_signature ( signature
                                           , name
@@ -1575,14 +1590,14 @@ namespace xml
                                           )
                 );
         const std::string function (std::get<0> (sig));
-        const boost::optional<std::string> port_return (std::get<1> (sig));
+        const ::boost::optional<std::string> port_return (std::get<1> (sig));
         const std::list<std::string> port_arg (std::get<2> (sig));
-        const boost::optional<std::string> memory_buffer_return
+        const ::boost::optional<std::string> memory_buffer_return
           (std::get<3> (sig));
         const std::list<std::string> memory_buffer_arg (std::get<4> (sig));
 
-        boost::optional<std::string> code;
-        boost::optional<util::position_type> pod_of_code;
+        ::boost::optional<std::string> code;
+        ::boost::optional<util::position_type> pod_of_code;
         std::list<std::string> cincludes;
         std::list<std::string> ldflags;
         if (pass_context.get_value_or (false))
@@ -1733,7 +1748,7 @@ namespace xml
       type::place_type place_type ( const xml_node_type* node
                                   , state::type& state
                                   , type::function_type::ports_type const& ports
-                                  , boost::filesystem::path const& path
+                                  , ::boost::filesystem::path const& path
                                   )
       {
         const std::string name (required ("place_type", node, "name", state));
@@ -1748,9 +1763,9 @@ namespace xml
                           , state.file_in_progress()
                           )
           , required ("place_type", node, "type", state)
-          , fhg::util::boost::fmap<std::string, bool>
+          , fmap<bool>
               (fhg::util::read_bool, optional (node, "virtual"))
-          , fhg::util::boost::fmap<std::string, bool>
+          , fmap<bool>
               (fhg::util::read_bool, optional (node, "put_token"))
           );
 
@@ -1808,7 +1823,7 @@ namespace xml
       type::net_type net_type ( const xml_node_type* node
                               , state::type& state
                               , type::function_type::ports_type const& ports
-                              , boost::filesystem::path const& path
+                              , ::boost::filesystem::path const& path
                               )
       {
         type::net_type::functions_type functions;
@@ -1925,7 +1940,7 @@ namespace xml
                      )
       {
         type::multi_module_type modules;
-        boost::optional<type::preferences_type> preferences;
+        ::boost::optional<type::preferences_type> preferences;
 
         for ( xml_node_type* child (node->first_node())
             ; child
@@ -1987,9 +2002,9 @@ namespace xml
         type::conditions_type conditions;
         type::requirements_type requirements;
         type::preferences_type preferences;
-        boost::optional<type::expression_type> expression;
-        boost::optional<type::module_type> module;
-        boost::optional<type::net_type> net;
+        ::boost::optional<type::expression_type> expression;
+        ::boost::optional<type::module_type> module;
+        ::boost::optional<type::net_type> net;
         type::multi_module_type multi_module;
         we::type::property::type properties;
 
@@ -2256,7 +2271,7 @@ namespace xml
     }
 
     type::function_type just_parse
-      (state::type& state, boost::filesystem::path const& input)
+      (state::type& state, ::boost::filesystem::path const& input)
     {
       state.set_input (input);
 

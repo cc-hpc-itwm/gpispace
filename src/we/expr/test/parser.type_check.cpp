@@ -49,7 +49,7 @@ namespace expr
         template<typename E>
           Expression (E const& e)
             : _ast ( parse::parser::DisableConstantFolding{}
-                   , str (boost::format ("%1%") % e)
+                   , str (::boost::format ("%1%") % e)
                    )
         {}
 
@@ -132,8 +132,8 @@ namespace expr
         virtual std::ostream& operator() (std::ostream& os) const override
         {
           return os
-            << Expression ( boost::format (_format)
-                          % boost::io::group (std::boolalpha, _generator())
+            << Expression ( ::boost::format (_format)
+                          % ::boost::io::group (std::boolalpha, _generator())
                           ).expression()
             ;
         }
@@ -266,7 +266,7 @@ namespace expr
             }
           , fhg::util::testing::make_nested
             ( exception::type::error
-              ( boost::format ("In '%1%'")
+              ( ::boost::format ("In '%1%'")
               % expression.last() // assume the last node causes the error
               )
             , exception
@@ -307,7 +307,7 @@ namespace expr
       template<typename Operation, typename Value>
         auto unary (Operation operation, Value value)
       {
-        return boost::format ("%1% (%2%)")
+        return ::boost::format ("%1% (%2%)")
           % operation
           % value
           ;
@@ -317,7 +317,7 @@ namespace expr
       template<typename Operation, typename LHS, typename RHS>
         auto binary_infix (Operation operation, LHS lhs, RHS rhs)
       {
-        return boost::format ("%2% %1% %3%")
+        return ::boost::format ("%2% %1% %3%")
           % operation
           % lhs
           % rhs
@@ -326,7 +326,7 @@ namespace expr
       template<typename Operation, typename LHS, typename RHS>
         auto binary_prefix (Operation operation, LHS lhs, RHS rhs)
       {
-        return boost::format ("%1% (%2%, %3%)")
+        return ::boost::format ("%1% (%2%, %3%)")
           % operation
           % lhs
           % rhs
@@ -372,7 +372,7 @@ namespace expr
         require_inference_exception
           ( expression
           , exception::type::error
-            ( boost::format ("The left argument '%2%' of ' %1% ' has type '%3%' and the right argument '%4%' of ' %1% ' has type '%5%' but the types should be the same")
+            ( ::boost::format ("The left argument '%2%' of ' %1% ' has type '%3%' and the right argument '%4%' of ' %1% ' has type '%5%' but the types should be the same")
             % op
             % Expression (lhs.value())
             % lhs.type()
@@ -656,24 +656,24 @@ namespace expr
       void type_check_compare_ops
         (std::string lhs, std::string rhs)
       {
-        require_type_to (boost::format ("%1% < %2%") % lhs % rhs, Boolean{});
-        require_type_to (boost::format ("%1% <= %2%") % lhs % rhs, Boolean{});
-        require_type_to (boost::format ("%1% > %2%") % lhs % rhs, Boolean{});
-        require_type_to (boost::format ("%1% >= %2%") % lhs % rhs, Boolean{});
+        require_type_to (::boost::format ("%1% < %2%") % lhs % rhs, Boolean{});
+        require_type_to (::boost::format ("%1% <= %2%") % lhs % rhs, Boolean{});
+        require_type_to (::boost::format ("%1% > %2%") % lhs % rhs, Boolean{});
+        require_type_to (::boost::format ("%1% >= %2%") % lhs % rhs, Boolean{});
 
-        require_type_to (boost::format ("%1% :lt: %2%") % lhs % rhs, Boolean{});
-        require_type_to (boost::format ("%1% :le: %2%") % lhs % rhs, Boolean{});
-        require_type_to (boost::format ("%1% :gt: %2%") % lhs % rhs, Boolean{});
-        require_type_to (boost::format ("%1% :ge: %2%") % lhs % rhs, Boolean{});
+        require_type_to (::boost::format ("%1% :lt: %2%") % lhs % rhs, Boolean{});
+        require_type_to (::boost::format ("%1% :le: %2%") % lhs % rhs, Boolean{});
+        require_type_to (::boost::format ("%1% :gt: %2%") % lhs % rhs, Boolean{});
+        require_type_to (::boost::format ("%1% :ge: %2%") % lhs % rhs, Boolean{});
       }
 
       void type_check_equality_ops (std::string lhs, std::string rhs)
       {
-        require_type_to (boost::format ("%1% != %2%") % lhs % rhs, Boolean{});
-        require_type_to (boost::format ("%1% == %2%") % lhs % rhs, Boolean{});
+        require_type_to (::boost::format ("%1% != %2%") % lhs % rhs, Boolean{});
+        require_type_to (::boost::format ("%1% == %2%") % lhs % rhs, Boolean{});
 
-        require_type_to (boost::format ("%1% :ne: %2%") % lhs % rhs, Boolean{});
-        require_type_to (boost::format ("%1% :eq: %2%") % lhs % rhs, Boolean{});
+        require_type_to (::boost::format ("%1% :ne: %2%") % lhs % rhs, Boolean{});
+        require_type_to (::boost::format ("%1% :eq: %2%") % lhs % rhs, Boolean{});
       }
     }
 
@@ -1072,7 +1072,7 @@ namespace expr
 
       for (int i (0); i < 100; ++i)
       {
-        require_type_to (boost::format ("%1%f") % random_int(), Float{});
+        require_type_to (::boost::format ("%1%f") % random_int(), Float{});
       }
     }
 
@@ -1089,10 +1089,10 @@ namespace expr
       auto const bs ("{0 0 0 0 128}");
 
       require_type_to
-        (boost::format ("bitset_tohex (%1%)") % bs, String{});
+        (::boost::format ("bitset_tohex (%1%)") % bs, String{});
 
       require_type_to
-        (boost::format ("bitset_fromhex (bitset_tohex (%1%))") % bs, Bitset{});
+        (::boost::format ("bitset_fromhex (bitset_tohex (%1%))") % bs, Bitset{});
     }
 
     BOOST_AUTO_TEST_CASE (token_bitset_logical)
@@ -1100,11 +1100,11 @@ namespace expr
       auto const l ("{0 0 0 0 0 0 0 0 0 0 0 65536}");
       auto const r ("{2099204 738871880977536 594475511590158864}");
       require_type_to
-        (boost::format ("bitset_or (%1%, %2%)") % l % r, Bitset{});
+        (::boost::format ("bitset_or (%1%, %2%)") % l % r, Bitset{});
       require_type_to
-        (boost::format ("bitset_and (%1%, %2%)") % l % r, Bitset{});
+        (::boost::format ("bitset_and (%1%, %2%)") % l % r, Bitset{});
       require_type_to
-        (boost::format ("bitset_xor (%1%, %2%)") % l % r, Bitset{});
+        (::boost::format ("bitset_xor (%1%, %2%)") % l % r, Bitset{});
     }
 
     BOOST_AUTO_TEST_CASE (token_bitset_ins_del_is_elem)
@@ -1112,13 +1112,13 @@ namespace expr
       auto const bs ("{0 0 0 0 128}");
       auto const elem ("128UL");
       require_type_to
-        (boost::format ("bitset_insert (%1%, %2%)") % bs % elem, Bitset{});
+        (::boost::format ("bitset_insert (%1%, %2%)") % bs % elem, Bitset{});
 
       require_type_to
-        (boost::format ("bitset_is_element (%1%, %2%)") % bs % elem, Boolean{});
+        (::boost::format ("bitset_is_element (%1%, %2%)") % bs % elem, Boolean{});
 
       require_type_to
-        (boost::format ("bitset_delete (%1%, %2%)") % bs % elem, Bitset{});
+        (::boost::format ("bitset_delete (%1%, %2%)") % bs % elem, Bitset{});
     }
 
     BOOST_AUTO_TEST_CASE (empty_list_has_type_list_any)
@@ -1136,7 +1136,7 @@ namespace expr
       )
     {
       require_type_to
-        ( boost::format ("List (%1%)") % tv.value()
+        ( ::boost::format ("List (%1%)") % tv.value()
         , List (tv.type())
         );
     }
@@ -1149,7 +1149,7 @@ namespace expr
       )
     {
       require_type_to
-        ( boost::format ("List (%1%, %2%)") % tvA.value() % tvB.value()
+        ( ::boost::format ("List (%1%, %2%)") % tvA.value() % tvB.value()
         , List (collection ({tvA.type(), tvB.type()}))
         );
     }
@@ -1168,7 +1168,7 @@ namespace expr
       )
     {
       require_type_to
-        ( boost::format ("stack_empty (List (%1%))")
+        ( ::boost::format ("stack_empty (List (%1%))")
         % fhg::util::join
           ( std::vector<std::string>
               (fhg::util::testing::random<int>{} (100, 1), tv.value())
@@ -1192,7 +1192,7 @@ namespace expr
       )
     {
       require_type_to
-        ( boost::format ("stack_size (List (%1%))")
+        ( ::boost::format ("stack_size (List (%1%))")
         % fhg::util::join
           ( std::vector<std::string>
               (fhg::util::testing::random<int>{} (100, 1), tv.value())
@@ -1209,7 +1209,7 @@ namespace expr
       )
     {
       require_type_to
-        ( boost::format ("stack_pop (List (%1%, %1%))") % tv.value()
+        ( ::boost::format ("stack_pop (List (%1%, %1%))") % tv.value()
         , List (tv.type())
         );
     }
@@ -1221,7 +1221,7 @@ namespace expr
       )
     {
       require_type_to
-        ( boost::format ("stack_top (List(%1%, %1%))") % tv.value()
+        ( ::boost::format ("stack_top (List(%1%, %1%))") % tv.value()
         , tv.type()
         );
     }
@@ -1237,7 +1237,7 @@ namespace expr
       )
     {
       require_type_to
-        ( boost::format ("stack_join (List (%1%, %2%), List (%3%))")
+        ( ::boost::format ("stack_join (List (%1%, %2%), List (%3%))")
           % valA.value()
           % valB.value()
           % valC.value()
@@ -1290,7 +1290,7 @@ namespace expr
       )
     {
       require_type_to
-        ( boost::format ("Set {%1%}") % x.value()
+        ( ::boost::format ("Set {%1%}") % x.value()
         , Set (x.type())
         );
     }
@@ -1303,7 +1303,7 @@ namespace expr
       )
     {
       require_type_to
-        ( boost::format ("Set {%1%, %2%}") % x.value() % y.value()
+        ( ::boost::format ("Set {%1%, %2%}") % x.value() % y.value()
         , Set (collection ({x.type(), y.type()}))
         );
     }
@@ -1315,7 +1315,7 @@ namespace expr
       )
     {
       require_type_to
-        ( boost::format ("set_empty (Set {%1%})") % x.value()
+        ( ::boost::format ("set_empty (Set {%1%})") % x.value()
         , Boolean{}
         );
     }
@@ -1327,7 +1327,7 @@ namespace expr
       )
     {
       require_type_to
-        ( boost::format ("set_size (Set {%1%})") % x.value()
+        ( ::boost::format ("set_size (Set {%1%})") % x.value()
         , ULong{}
         );
     }
@@ -1339,7 +1339,7 @@ namespace expr
       )
     {
       require_type_to
-        ( boost::format ("set_is_subset (Set {%1%, %2%}, Set {%3%})")
+        ( ::boost::format ("set_is_subset (Set {%1%, %2%}, Set {%3%})")
           % x.value()
           % x.value()
           % x.value()
@@ -1354,7 +1354,7 @@ namespace expr
       )
     {
       require_type_to
-        ( boost::format ("set_pop (Set {%1%})") % x.value()
+        ( ::boost::format ("set_pop (Set {%1%})") % x.value()
         , Set (x.type())
         );
     }
@@ -1550,11 +1550,11 @@ namespace expr
       )
     {
       require_inference_exception
-        ( boost::format ("%1% (%2%)")
+        ( ::boost::format ("%1% (%2%)")
           % cast_func_type.cast_func()
           % value.value()
         , exception::type::error
-          ( boost::format
+          ( ::boost::format
             ("argument '%2%' of '%1%' has type '%3%' but is not of kind 'Number' == {'int', 'long', 'unsigned int', 'unsigned long', 'float', 'double'}")
           % cast_func_type.cast_func()
           % Expression (value.value())
@@ -1579,7 +1579,7 @@ namespace expr
       require_inference_exception
         ( binary_infix (op, lhs.value(), rhs.value())
         , exception::type::error
-          ( boost::format
+          ( ::boost::format
             ("left argument '%2%' of ' %1% ' has type '%3%' but is not of kind 'Number' == {'int', 'long', 'unsigned int', 'unsigned long', 'float', 'double'}")
           % op
           % Expression (lhs.value())
@@ -1600,7 +1600,7 @@ namespace expr
       require_inference_exception
         ( binary_infix (op, lhs.value(), rhs.value())
         , exception::type::error
-          ( boost::format
+          ( ::boost::format
             ("right argument '%2%' of ' %1% ' has type '%3%' but is not of kind 'Number' == {'int', 'long', 'unsigned int', 'unsigned long', 'float', 'double'}")
           % op
           % Expression (rhs.value())
@@ -1620,7 +1620,7 @@ namespace expr
       require_inference_exception
         ( binary_prefix (op, lhs.value(), rhs.value())
         , exception::type::error
-          ( boost::format
+          ( ::boost::format
             ("left argument '%2%' of '%1%' has type '%3%' but is not of kind 'Number' == {'int', 'long', 'unsigned int', 'unsigned long', 'float', 'double'}")
           % op
           % Expression (lhs.value())
@@ -1640,7 +1640,7 @@ namespace expr
       require_inference_exception
         ( binary_prefix (op, lhs.value(), rhs.value())
         , exception::type::error
-          ( boost::format ("right argument '%2%' of '%1%' has type '%3%' but is not of kind 'Number' == {'int', 'long', 'unsigned int', 'unsigned long', 'float', 'double'}")
+          ( ::boost::format ("right argument '%2%' of '%1%' has type '%3%' but is not of kind 'Number' == {'int', 'long', 'unsigned int', 'unsigned long', 'float', 'double'}")
           % op
           % Expression (rhs.value())
           % rhs.type()
@@ -1679,7 +1679,7 @@ namespace expr
       require_inference_exception
         ( binary_infix (op, lhs.value(), rhs.value())
         , exception::type::error
-          ( boost::format ("left argument '%2%' of ' %1% ' has type '%3%' but is not of kind 'Integer' == {'int', 'long', 'unsigned int', 'unsigned long'}")
+          ( ::boost::format ("left argument '%2%' of ' %1% ' has type '%3%' but is not of kind 'Integer' == {'int', 'long', 'unsigned int', 'unsigned long'}")
           % op
           % Expression (lhs.value())
           % lhs.type()
@@ -1698,7 +1698,7 @@ namespace expr
       require_inference_exception
         ( binary_infix (op, lhs.value(), rhs.value())
         , exception::type::error
-          ( boost::format
+          ( ::boost::format
             ("right argument '%2%' of ' %1% ' has type '%3%' but is not of kind 'Integer' == {'int', 'long', 'unsigned int', 'unsigned long'}")
           % op
           % Expression (rhs.value())
@@ -1728,7 +1728,7 @@ namespace expr
         require_inference_exception
           ( binary_infix (op, lhs.value(), rhs.value())
           , exception::type::error
-            ( boost::format
+            ( ::boost::format
               ("left argument '%2%' of ' %1% ' has type '%3%' but requires type 'bool'")
             % op
             % Expression (lhs.value())
@@ -1741,7 +1741,7 @@ namespace expr
         require_inference_exception
           ( binary_infix (op, lhs.value(), rhs.value())
           , exception::type::error
-            ( boost::format
+            ( ::boost::format
               ("right argument '%2%' of ' %1% ' has type '%3%' but requires type 'bool'")
             % op
             % Expression (rhs.value())
@@ -1788,7 +1788,7 @@ namespace expr
       )
     {
       require_type_to
-        ( boost::format ("Map [%1% -> %2%]") % lhs.value() % rhs.value()
+        ( ::boost::format ("Map [%1% -> %2%]") % lhs.value() % rhs.value()
         , Map (lhs.type(), rhs.type())
         );
     }
@@ -1818,11 +1818,11 @@ namespace expr
       )
     {
       require_type_to
-        ( boost::format ("${s.x} := %1%") % x.value()
+        ( ::boost::format ("${s.x} := %1%") % x.value()
         , x.type()
         );
       require_type_to
-        ( boost::format ("${s.x} := %1%; ${s}") % x.value()
+        ( ::boost::format ("${s.x} := %1%; ${s}") % x.value()
         , Struct ({{"x", x.type()}})
         );
     }
@@ -1834,15 +1834,15 @@ namespace expr
       )
     {
       require_inference_exception
-        ( boost::format ("${s} := Struct [a := 12, b := false]; ${s} := %1%")
+        ( ::boost::format ("${s} := Struct [a := 12, b := false]; ${s} := %1%")
         % x.value()
         , fhg::util::testing::make_nested
           ( exception::type::error
-            ( boost::format ("expr::type::Context::bind (${s}, '%1%')")
+            ( ::boost::format ("expr::type::Context::bind (${s}, '%1%')")
             % x.type()
             )
           , exception::type::error
-            ( boost::format ("At ${s}: Can not assign a value of type '%1%' to a value of type '%2%'")
+            ( ::boost::format ("At ${s}: Can not assign a value of type '%1%' to a value of type '%2%'")
             % x.type()
             % Struct ({{"a", Int{}}, {"b", Boolean{}}})
             )
@@ -1857,9 +1857,9 @@ namespace expr
       )
     {
       require_inference_exception
-        ( boost::format ("set_size (stack_push (List(), %1%))") % tv.value()
+        ( ::boost::format ("set_size (stack_push (List(), %1%))") % tv.value()
         , exception::type::error
-          ( boost::format ("argument 'stack_push(List (), %1%)' of 'set_size' has type 'List [%2%]' but requires type 'Set'")
+          ( ::boost::format ("argument 'stack_push(List (), %1%)' of 'set_size' has type 'List [%2%]' but requires type 'Set'")
           % Expression (tv.value())
           % tv.type()
           )

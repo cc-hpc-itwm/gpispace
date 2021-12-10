@@ -102,6 +102,9 @@ struct fixture_add_new_workers
     , unsigned int n
     )
   {
+    fhg::util::testing::random<std::string> const random_string;
+    fhg::util::testing::random<unsigned short> const random_ushort;
+
     while (n --> 0)
     {
       auto const worker (utils::random_peer_name());
@@ -111,11 +114,15 @@ struct fixture_add_new_workers
         cpbset.emplace (capability_name);
       }
 
+      auto const hostname {random_string()};
       _scheduler.add_worker ( worker
                             , cpbset
                             , random_ulong()
-                            , fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
+                            , hostname
+                            , fhg::com::p2p::address_t
+                                { fhg::com::host_t {hostname}
+                                , fhg::com::port_t {random_ushort()}
+                                }
                             );
     }
   }

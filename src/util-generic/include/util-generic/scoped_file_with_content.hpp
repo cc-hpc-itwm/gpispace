@@ -29,7 +29,7 @@ namespace fhg
     {
     public:
       template<typename T>
-      scoped_file_with_content ( boost::filesystem::path const& path
+      scoped_file_with_content ( ::boost::filesystem::path const& path
                                , T content
                                )
         : temporary_file (path)

@@ -117,7 +117,7 @@ namespace expr
               (void) assign_result (path, tdA.type, tdB.type);
             }
           , exception::type::error
-            ( boost::format
+            ( ::boost::format
                ("At %3%: Can not assign a value of type '%2%'"
                " to a value of type '%1%'"
                )
@@ -191,7 +191,7 @@ namespace expr
               (void) assign_result (path, lhs, rhs);
             }
           , exception::type::error
-            ( boost::format
+            ( ::boost::format
                ("At %3%: Can not assign a value of type '%2%'"
                " to a value of type '%1%'"
                )
@@ -224,7 +224,7 @@ namespace expr
             (void) assign_result (path, lhs, rhs);
           }
         , exception::type::error
-          ( boost::format
+          ( ::boost::format
               ("Can not assign a value of type '%2%' to a value of type '%1%' at %3%: Missing field '%4%', found '%5%' instead")
           % lhs
           % rhs
@@ -252,7 +252,7 @@ namespace expr
             (void) assign_result (path, lhs, rhs);
           }
         , exception::type::error
-          ( boost::format
+          ( ::boost::format
               ("Can not assign a value of type '%2%' to a value of type '%1%' at %3%: Missing field(s) {'%4%'}")
           % lhs
           % rhs
@@ -279,7 +279,7 @@ namespace expr
             (void) assign_result (path, lhs, rhs);
           }
         , exception::type::error
-          ( boost::format
+          ( ::boost::format
               ("Can not assign a value of type '%2%' to a value of type '%1%' at %3%: Additional field(s) {'%4%'}")
           % lhs
           % rhs

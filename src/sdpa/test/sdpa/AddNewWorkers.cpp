@@ -17,7 +17,7 @@
 #include <sdpa/test/sdpa/utils.hpp>
 #include <sdpa/types.hpp>
 
-#include <test/certificates_data.hpp>
+#include <testing/certificates_data.hpp>
 
 #include <we/type/Activity.hpp>
 #include <we/type/ModuleCall.hpp>
@@ -25,7 +25,6 @@
 #include <we/type/place.hpp>
 #include <we/type/Transition.hpp>
 
-#include <fhg/util/thread/event.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/optional.hpp>
 #include <util-generic/testing/random.hpp>
@@ -35,6 +34,7 @@
 #include <boost/test/data/test_case.hpp>
 #include <boost/test/unit_test.hpp>
 
+#include <future>
 #include <list>
 #include <memory>
 #include <string>
@@ -63,10 +63,10 @@ we::type::Activity net_with_n_children (unsigned int n)
           , true
           , true
           )
-      , boost::none
+      , ::boost::none
       , props
       , we::priority_type()
-      , boost::optional<we::type::eureka_id_type>{}
+      , ::boost::optional<we::type::eureka_id_type>{}
       , std::list<we::type::Preference>{}
       );
   }
@@ -93,7 +93,7 @@ we::type::Activity net_with_n_children (unsigned int n)
     place_ids_in.emplace_back
       (net.add_place (place::type ( port_name + std::to_string (k)
                                   , std::string ("string")
-                                  , boost::none
+                                  , ::boost::none
                                   )
                      )
       );
@@ -108,7 +108,7 @@ we::type::Activity net_with_n_children (unsigned int n)
   for (unsigned int k{0}; k < n; k++)
   {
     transition_ids.emplace_back (net.add_transition (transitions.at (k)));
-    net.add_connection ( we::edge::PT
+    net.add_connection ( we::edge::PT{}
                         , transition_ids.at (k)
                         , place_ids_in.at (k)
                         , port_ids_in.at (k)
@@ -119,10 +119,10 @@ we::type::Activity net_with_n_children (unsigned int n)
   return we::type::Activity
     ( we::type::Transition ( fhg::util::testing::random_string()
                              , net
-                             , boost::none
+                             , ::boost::none
                              , we::type::property::type()
                              , we::priority_type()
-                             , boost::optional<we::type::eureka_id_type>{}
+                             , ::boost::optional<we::type::eureka_id_type>{}
                              , std::list<we::type::Preference>{}
                              )
     );
@@ -139,8 +139,7 @@ BOOST_DATA_TEST_CASE (add_new_workers, certificates_data, certificates)
   const unsigned int n_initial_workers (25);
   const unsigned int n_new_workers (25);
 
-  std::vector<fhg::util::thread::event<std::string>>
-    submit_events (n_initial_workers);
+  std::vector<std::promise<std::string>> submit_events (n_initial_workers);
 
   std::vector<std::string> jobs;
 
@@ -149,10 +148,10 @@ BOOST_DATA_TEST_CASE (add_new_workers, certificates_data, certificates)
 
   for (unsigned int i{0}; i < n_initial_workers; i++)
   {
-    fhg::util::thread::event<std::string>& e (submit_events.at (i));
+    auto& e (submit_events.at (i));
     workers.emplace_back
       ( std::make_unique<utils::fake_drts_worker_waiting_for_finished_ack>
-        ( [&e] (std::string str) {e.notify (str);}
+        ( [&e] (std::string str) {e.set_value (str);}
         , agent
         , certificates
         )
@@ -165,21 +164,20 @@ BOOST_DATA_TEST_CASE (add_new_workers, certificates_data, certificates)
   // all the initial workers are waiting to receive a job
   for (unsigned int i{0}; i < n_initial_workers; i++)
   {
-    jobs.emplace_back (submit_events.at (i).wait());
+    jobs.emplace_back (submit_events.at (i).get_future().get());
   }
 
   // new workers are added and wait for being served a job
   std::vector<std::unique_ptr<utils::fake_drts_worker_waiting_for_finished_ack>>
     new_workers;
-  std::vector<fhg::util::thread::event<std::string>>
-    new_submit_events (n_new_workers);
+  std::vector<std::promise<std::string>> new_submit_events (n_new_workers);
 
   for (unsigned int i{0}; i < n_new_workers; i++)
   {
-    fhg::util::thread::event<std::string>& e (new_submit_events.at (i));
+    auto& e (new_submit_events.at (i));
     new_workers.emplace_back
       ( std::make_unique<utils::fake_drts_worker_waiting_for_finished_ack>
-        ( [&e] (std::string str) {e.notify (str);}
+        ( [&e] (std::string str) {e.set_value (str);}
         , agent
         , certificates
         )
@@ -190,7 +188,7 @@ BOOST_DATA_TEST_CASE (add_new_workers, certificates_data, certificates)
   std::vector<std::string> new_jobs;
   for (unsigned int i{0}; i < n_new_workers; i++)
   {
-    new_jobs.emplace_back (new_submit_events.at (i).wait());
+    new_jobs.emplace_back (new_submit_events.at (i).get_future().get());
   }
 
   // finish the jobs sent to the initial set of workers

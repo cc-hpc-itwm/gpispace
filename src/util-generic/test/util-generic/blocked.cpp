@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE (no_block_size_means_unblocked)
   fhg::util::blocked
     ( container.begin()
     , container.end()
-    , boost::none
+    , ::boost::none
     , [&] (iterator const& begin, iterator const& end)
       {
         called_for.emplace_back (begin, end);

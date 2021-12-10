@@ -42,9 +42,9 @@ namespace gspc
       (strategy, std::pair<std::string, std::vector<std::string>>)
     PIMPL_IMPLEMENTATION (hostnames, std::vector<std::string>)
     PIMPL_IMPLEMENTATION (hostname, std::string)
-    PIMPL_IMPLEMENTATION (port, boost::optional<unsigned short>)
+    PIMPL_IMPLEMENTATION (port, ::boost::optional<unsigned short>)
 
-    strategy::strategy (boost::program_options::variables_map const& vm)
+    strategy::strategy (::boost::program_options::variables_map const& vm)
       : _ ( new implementation
               (  std::make_pair ( require_rif_strategy (vm)
                                 , require_rif_strategy_parameters (vm)
@@ -53,7 +53,7 @@ namespace gspc
           )
     {}
 
-    hostnames::hostnames (boost::program_options::variables_map const& vm)
+    hostnames::hostnames (::boost::program_options::variables_map const& vm)
       : _ (new implementation (fhg::util::read_lines (require_nodefile (vm))))
     {}
     hostnames::hostnames (std::vector<std::string> const& hostnames_)
@@ -63,7 +63,7 @@ namespace gspc
       : _ (new implementation (host))
     {}
 
-    port::port (boost::program_options::variables_map const& vm)
+    port::port (::boost::program_options::variables_map const& vm)
       : _ (new implementation (get_rif_port (vm)))
     {}
   }
@@ -136,7 +136,7 @@ namespace gspc
             ( hostname
             , std::make_exception_ptr
               ( std::invalid_argument
-                  (( boost::format ("bootstrap: duplicate host %1%")
+                  (( ::boost::format ("bootstrap: duplicate host %1%")
                    % hostname
                    ).str()
                   )
@@ -166,7 +166,7 @@ namespace gspc
         if (!_entry_points.emplace (new_entry_point).second)
         {
           throw std::logic_error
-            (( boost::format ("STRANGE: duplicate key '%1%'!?")
+            (( ::boost::format ("STRANGE: duplicate key '%1%'!?")
              % new_entry_point.first
              ).str()
             );
@@ -211,7 +211,7 @@ namespace gspc
              , std::unordered_map<std::string, std::exception_ptr>
              >
       execute ( std::unordered_set<std::string> const& hostnames
-              , boost::filesystem::path const& command
+              , ::boost::filesystem::path const& command
               , std::vector<std::string> const& arguments
               , std::unordered_map<std::string, std::string> const& environment
               ) const
@@ -233,7 +233,7 @@ namespace gspc
           if (pos == _entry_points.end())
           {
             throw std::invalid_argument
-              (( boost::format ("execute: unknown host '%1%'")
+              (( ::boost::format ("execute: unknown host '%1%'")
                % hostname
                ).str()
               );
@@ -269,7 +269,7 @@ namespace gspc
 
     std::string _strategy;
     std::vector<std::string> _parameters;
-    boost::optional<unsigned short> _port;
+    ::boost::optional<unsigned short> _port;
     installation _installation;
 
     entry_point_by_host _entry_points;
@@ -289,7 +289,7 @@ namespace gspc
     template<typename Key, typename Value>
       std::vector<Key> keys (std::unordered_map<Key, Value> const& map)
     {
-      auto range (map | boost::adaptors::map_keys);
+      auto range (map | ::boost::adaptors::map_keys);
 
       return {std::begin (range), std::end (range)};
     }
@@ -297,7 +297,7 @@ namespace gspc
     template<typename Key, typename Value>
       std::vector<Value> values (std::unordered_map<Key, Value> const& map)
     {
-      auto range (map | boost::adaptors::map_values);
+      auto range (map | ::boost::adaptors::map_values);
 
       return {std::begin (range), std::end (range)};
     }
@@ -357,7 +357,7 @@ namespace gspc
            >
     rifds::execute
       ( std::unordered_set<std::string> const& hostnames
-      , boost::filesystem::path const& command
+      , ::boost::filesystem::path const& command
       , std::vector<std::string> const& arguments
       , std::unordered_map<std::string, std::string> const& environment
       ) const

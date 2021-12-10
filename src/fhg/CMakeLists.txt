@@ -62,9 +62,4 @@ gspc_add_library (NAME fhg-util
 
 add_subdirectory (util/test)
 
-install (FILES
-  util/dl.hpp
-  DESTINATION include/fhg/util
-)
-
 install (FILES "${CMAKE_BINARY_DIR}/version" DESTINATION .)

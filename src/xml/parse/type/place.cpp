@@ -32,11 +32,11 @@ namespace xml
       place_type::place_type ( util::position_type const& pod
                              , std::string const& name
                              , std::string const& type
-                             , boost::optional<bool> is_virtual
-                             , boost::optional<bool> put_token
+                             , ::boost::optional<bool> is_virtual
+                             , ::boost::optional<bool> put_token
                              , std::list<token_type> tokens_
                              , we::type::property::type properties
-                             , boost::optional<pnet::type::signature::signature_type> signature
+                             , ::boost::optional<pnet::type::signature::signature_type> signature
                              )
         : with_position_of_definition (pod)
         , _is_virtual (is_virtual)
@@ -117,7 +117,7 @@ namespace xml
                           );
       }
 
-      boost::optional<bool> const& place_type::get_is_virtual (void) const
+      ::boost::optional<bool> const& place_type::get_is_virtual (void) const
       {
         return _is_virtual;
       }

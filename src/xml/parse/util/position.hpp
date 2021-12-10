@@ -33,18 +33,18 @@ namespace xml
       public:
         position_type ( const char* begin
                       , const char* pos
-                      , boost::filesystem::path const&
+                      , ::boost::filesystem::path const&
                       , unsigned int const& line = 1
                       , unsigned int const& column = 0
                       );
         const unsigned int& line() const;
         const unsigned int& column() const;
-        boost::filesystem::path const& path() const;
+        ::boost::filesystem::path const& path() const;
 
       private:
         unsigned int _line;
         unsigned int _column;
-        boost::filesystem::path _path;
+        ::boost::filesystem::path _path;
       };
 
       std::ostream& operator<< (std::ostream&, position_type const&);

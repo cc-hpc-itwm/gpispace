@@ -20,7 +20,7 @@ fhg_add_test (NAME drts_add_worker
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
        --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
-       --rpc-lib "$<TARGET_FILE:RPC>"
+       --rpc-lib "$<TARGET_FILE:Util::RPC>"
        --ssl-cert "no"
   LIBRARIES gspc
             test-utilities
@@ -29,7 +29,6 @@ fhg_add_test (NAME drts_add_worker
             Boost::filesystem
   REQUIRES_INSTALLATION
   START_SCOPED_RIF
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
 fhg_add_test (NAME drts_add_worker_with_ssl_cert
@@ -38,7 +37,7 @@ fhg_add_test (NAME drts_add_worker_with_ssl_cert
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
        --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
-       --rpc-lib "$<TARGET_FILE:RPC>"
+       --rpc-lib "$<TARGET_FILE:Util::RPC>"
        --ssl-cert "yes"
   LIBRARIES gspc
             test-utilities
@@ -47,7 +46,6 @@ fhg_add_test (NAME drts_add_worker_with_ssl_cert
             Boost::filesystem
   REQUIRES_INSTALLATION
   START_SCOPED_RIF
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
 fhg_add_test (NAME drts_add_worker_with_descriptions
@@ -56,7 +54,7 @@ fhg_add_test (NAME drts_add_worker_with_descriptions
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
        --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
-       --rpc-lib "$<TARGET_FILE:RPC>"
+       --rpc-lib "$<TARGET_FILE:Util::RPC>"
        --ssl-cert "no"
   LIBRARIES gspc
             test-utilities
@@ -65,7 +63,6 @@ fhg_add_test (NAME drts_add_worker_with_descriptions
             Boost::filesystem
   REQUIRES_INSTALLATION
   START_SCOPED_RIF
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
 fhg_add_test (NAME drts_add_worker_with_ssl_cert_with_descriptions
@@ -74,7 +71,7 @@ fhg_add_test (NAME drts_add_worker_with_ssl_cert_with_descriptions
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
        --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
-       --rpc-lib "$<TARGET_FILE:RPC>"
+       --rpc-lib "$<TARGET_FILE:Util::RPC>"
        --ssl-cert "yes"
   LIBRARIES gspc
             test-utilities
@@ -83,5 +80,4 @@ fhg_add_test (NAME drts_add_worker_with_ssl_cert_with_descriptions
             Boost::filesystem
   REQUIRES_INSTALLATION
   START_SCOPED_RIF
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
 )

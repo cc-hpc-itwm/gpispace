@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <rpc/function_description.hpp>
+#include <util-rpc/function_description.hpp>
 
 #include <util-generic/serialization/boost/filesystem/path.hpp>
 #include <util-generic/serialization/exception.hpp>
@@ -59,7 +59,7 @@ namespace fhg
 
         FHG_RPC_FUNCTION_DESCRIPTION
           ( start_vmem
-          , pid_t ( boost::filesystem::path socket
+          , pid_t ( ::boost::filesystem::path socket
                   , unsigned short gaspi_port
                   , std::chrono::seconds proc_init_timeout
                   , std::vector<std::string> nodes
@@ -123,7 +123,7 @@ namespace boost
         , unsigned int file_version
         )
     {
-      boost::serialization::split_free (ar, t, file_version);
+      ::boost::serialization::split_free (ar, t, file_version);
     }
   }
 }

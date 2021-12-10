@@ -39,12 +39,12 @@ namespace iml
     //! \note Compatible with the input expected for the
     //! iml-teardown-rifd binary.
     IML_DLLEXPORT void write_to_file
-      (EntryPoints const& entry_points, boost::filesystem::path const& path);
+      (EntryPoints const& entry_points, ::boost::filesystem::path const& path);
 
     //! Read a collection of entry points from the file at \a path.
     //! \note Compatible with the output of the iml-bootstrap-rifd
     //! binary.
     IML_DLLEXPORT EntryPoints read_from_file
-      (boost::filesystem::path const& path);
+      (::boost::filesystem::path const& path);
   }
 }

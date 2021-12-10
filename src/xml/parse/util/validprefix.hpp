@@ -24,7 +24,7 @@ namespace xml
   {
     std::string validate_prefix ( std::string const& name
                                 , std::string const& type
-                                , boost::filesystem::path const& path
+                                , ::boost::filesystem::path const& path
                                 );
   }
 }

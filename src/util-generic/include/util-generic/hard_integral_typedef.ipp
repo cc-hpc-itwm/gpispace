@@ -33,7 +33,7 @@ namespace fhg
       using underlying_type = base_;                                    \
                                                                         \
     private:                                                            \
-      underlying_type value;                                            \
+      underlying_type value {0};                                        \
                                                                         \
     public:                                                             \
       explicit constexpr name_ (decltype (value) v) : value (v) {}      \
@@ -291,5 +291,13 @@ namespace std                                                   \
   {                                                                     \
     using fhg::util::hit_detail::value_of;                              \
     return is >> value_of (x);                                          \
+  }                                                                     \
+  using fhg::util::hit_detail::force_semicolon_in_function_declaration_macro_hack
+
+#define FHG_UTIL_HARD_INTEGRAL_TYPEDEF_OSTREAM_OPERATOR_IMPL(name_)     \
+  inline std::ostream& operator<< (std::ostream& os, name_ const& x)    \
+  {                                                                     \
+    using fhg::util::hit_detail::value_of;                              \
+    return os << value_of (x);                                          \
   }                                                                     \
   using fhg::util::hit_detail::force_semicolon_in_function_declaration_macro_hack

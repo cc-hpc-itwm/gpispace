@@ -45,7 +45,7 @@ namespace iml_client
     if (! (cond))                                                       \
     {                                                                   \
       throw std::logic_error                                            \
-        ( ( boost::format ("[tmmgr:%1%] assertion '%2%' failed.")       \
+        ( ( ::boost::format ("[tmmgr:%1%] assertion '%2%' failed.")       \
           % __LINE__                                                    \
           % BOOST_PP_STRINGIZE (cond)                                   \
           ).str()                                                       \

@@ -29,10 +29,10 @@ namespace we
 {
   namespace loader
   {
-    class loader : boost::noncopyable
+    class loader : ::boost::noncopyable
     {
     public:
-      loader (std::list<boost::filesystem::path> const&);
+      loader (std::list<::boost::filesystem::path> const&);
 
       Module const& operator[] (std::string const& m)
       {
@@ -46,7 +46,7 @@ namespace we
    private:
       std::mutex _table_mutex;
       std::unordered_map<std::string, std::unique_ptr<Module>> _module_table;
-      std::list<boost::filesystem::path> const _search_path;
+      std::list<::boost::filesystem::path> const _search_path;
     };
   }
 }

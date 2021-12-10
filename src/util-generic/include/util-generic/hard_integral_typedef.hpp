@@ -82,6 +82,12 @@ namespace fhg
     //! in a namespace qualifying for ADL of `T_`.
 #define FHG_UTIL_HARD_INTEGRAL_TYPEDEF_ISTREAM_OPERATOR(T_)    \
     FHG_UTIL_HARD_INTEGRAL_TYPEDEF_ISTREAM_OPERATOR_IMPL(T_)
+
+    //! provide output stream operator<< (std::ostream&, T&) using
+    //! `to_string`. Has to be used in a namespace qualifying for ADL
+    //! of `T_`.
+#define FHG_UTIL_HARD_INTEGRAL_TYPEDEF_OSTREAM_OPERATOR(T_)    \
+    FHG_UTIL_HARD_INTEGRAL_TYPEDEF_OSTREAM_OPERATOR_IMPL(T_)
   }
 }
 

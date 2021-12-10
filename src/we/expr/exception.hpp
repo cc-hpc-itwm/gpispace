@@ -73,7 +73,7 @@ namespace expr
       {
       public:
         type_error (std::string const&);
-        type_error (boost::format const&);
+        type_error (::boost::format const&);
       };
 
       class negative_exponent : public std::runtime_error
@@ -88,12 +88,16 @@ namespace expr
       public:
         square_root_for_negative_argument (T value)
           : std::runtime_error
-            (( boost::format ("square root for negative argument '%1%'") % value
+            (( ::boost::format ("square root for negative argument '%1%'") % value
              ).str()
             )
           , _value (value)
         {}
         virtual ~square_root_for_negative_argument() override = default;
+        square_root_for_negative_argument (square_root_for_negative_argument const&) = default;
+        square_root_for_negative_argument (square_root_for_negative_argument&&) = default;
+        square_root_for_negative_argument& operator= (square_root_for_negative_argument const&) = delete;
+        square_root_for_negative_argument& operator= (square_root_for_negative_argument&&) = delete;
 
       private:
         T _value;
@@ -105,13 +109,17 @@ namespace expr
       public:
         log_for_nonpositive_argument (T value)
           : std::runtime_error
-            (( boost::format ("logarithm for nonpositive argument '%1%'")
+            (( ::boost::format ("logarithm for nonpositive argument '%1%'")
              % value
              ).str()
             )
           , _value (value)
         {}
         virtual ~log_for_nonpositive_argument() override = default;
+        log_for_nonpositive_argument (log_for_nonpositive_argument const&) = default;
+        log_for_nonpositive_argument (log_for_nonpositive_argument&&) = default;
+        log_for_nonpositive_argument& operator= (log_for_nonpositive_argument const&) = delete;
+        log_for_nonpositive_argument& operator= (log_for_nonpositive_argument&&) = delete;
 
       private:
         T _value;
@@ -124,7 +132,7 @@ namespace expr
       {
       public:
         error (std::string const&);
-        error (boost::format const&);
+        error (::boost::format const&);
       };
     }
   }

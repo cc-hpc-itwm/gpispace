@@ -31,7 +31,7 @@ namespace gspc
     {
       struct Plugins
       {
-        ID create (boost::filesystem::path, Context const&, PutToken);
+        ID create (::boost::filesystem::path, Context const&, PutToken);
         void destroy (ID);
 
         void before_eval (ID, Context const&);

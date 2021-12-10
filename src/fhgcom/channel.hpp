@@ -26,8 +26,7 @@ namespace fhg
     class channel : private peer_t
     {
     public:
-      channel ( std::unique_ptr<boost::asio::io_service>
-              , host_t const& host
+      channel ( std::unique_ptr<::boost::asio::io_service>
               , port_t const& port
               , Certificates const& certificates
               , host_t const& other_end_host

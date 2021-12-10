@@ -19,7 +19,7 @@
 #include <logging/endpoint.hpp>
 #include <logging/message.hpp>
 
-#include <rpc/function_description.hpp>
+#include <util-rpc/function_description.hpp>
 
 #include <boost/serialization/vector.hpp>
 

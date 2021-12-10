@@ -18,7 +18,7 @@ fhg_add_test (NAME drts_should_handle_multiple_workflows_being_submitted_during_
   SOURCES drts_should_handle_multiple_workflows_being_submitted_during_lifetime.cpp
   USE_BOOST
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
-       --source-directory "${CMAKE_SOURCE_DIR}/share/selftest"
+       --source-directory "${PROJECT_SOURCE_DIR}/share/selftest"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
   LIBRARIES gspc
             test-utilities

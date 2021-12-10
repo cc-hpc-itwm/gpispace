@@ -25,17 +25,17 @@
 
 BOOST_AUTO_TEST_CASE (temporary_file)
 {
-  boost::filesystem::path const path ("temporary_file-temporary_file");
+  ::boost::filesystem::path const path ("temporary_file-temporary_file");
 
-  BOOST_REQUIRE (!boost::filesystem::exists (path));
+  BOOST_REQUIRE (!::boost::filesystem::exists (path));
 
   {
     fhg::util::temporary_file const _ (path);
 
     std::ofstream const __ (path.string().c_str());
 
-    BOOST_REQUIRE (boost::filesystem::exists (path));
+    BOOST_REQUIRE (::boost::filesystem::exists (path));
   }
 
-  BOOST_REQUIRE (!boost::filesystem::exists (path));
+  BOOST_REQUIRE (!::boost::filesystem::exists (path));
 }

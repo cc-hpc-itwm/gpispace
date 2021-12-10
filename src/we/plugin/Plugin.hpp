@@ -32,7 +32,7 @@ namespace gspc
     {
       struct Plugin
       {
-        Plugin (boost::filesystem::path, Context const&, PutToken);
+        Plugin (::boost::filesystem::path, Context const&, PutToken);
 
         void before_eval (Context const&);
         void after_eval (Context const&);

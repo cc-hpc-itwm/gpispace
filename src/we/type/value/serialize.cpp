@@ -30,7 +30,7 @@ namespace pnet
       std::string to_string (value_type const& value)
       {
         std::ostringstream oss;
-        boost::archive::text_oarchive oa (oss);
+        ::boost::archive::text_oarchive oa (oss);
         oa & value;
         return oss.str();
       }
@@ -38,7 +38,7 @@ namespace pnet
       value_type from_string (std::string const& input)
       {
         std::istringstream iss (input);
-        boost::archive::text_iarchive ia (iss);
+        ::boost::archive::text_iarchive ia (iss);
         value_type value;
         ia & value;
         return value;

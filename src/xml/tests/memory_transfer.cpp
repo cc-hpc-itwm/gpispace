@@ -38,8 +38,8 @@ namespace
                   , std::function<Transfer ( std::string const&
                                            , std::string const&
                                            )> make_transfer
-                  , boost::optional<bool> not_modified_in_module_call
-                  , boost::optional<bool> allow_empty_ranges
+                  , ::boost::optional<bool> not_modified_in_module_call
+                  , ::boost::optional<bool> allow_empty_ranges
                   )
   {
     std::list<std::string> expressions_global;
@@ -67,7 +67,7 @@ namespace
       );
 
     const std::string expected
-      ( ( boost::format (R"EOS(<memory-%1%%4%%5%>
+      ( ( ::boost::format (R"EOS(<memory-%1%%4%%5%>
   <global>%2%</global>
   <local>%3%</local>
 </memory-%1%>)EOS")
@@ -75,13 +75,13 @@ namespace
         % fhg::util::join (expressions_global, ';')
         % fhg::util::join (expressions_local, ';')
         % ( not_modified_in_module_call
-          ? ( boost::format (" not-modified-in-module-call=\"%1%\"")
+          ? ( ::boost::format (" not-modified-in-module-call=\"%1%\"")
             % (*not_modified_in_module_call ? "true" : "false")
             ).str()
           : ""
           )
         % ( allow_empty_ranges
-          ? ( boost::format (" allow-empty-ranges=\"%1%\"")
+          ? ( ::boost::format (" allow-empty-ranges=\"%1%\"")
             % (*allow_empty_ranges ? "true" : "false")
             ).str()
           : ""
@@ -93,7 +93,7 @@ namespace
   }
 
   std::vector<std::size_t> const counts ({0, 1, 2, 3});
-  std::vector<boost::optional<bool>> const tribool_values
+  std::vector<::boost::optional<bool>> const tribool_values
     ({{false, false}, {true, false}, {true, true}});
 }
 
@@ -123,7 +123,7 @@ BOOST_DATA_TEST_CASE
           , allow_empty_ranges
           );
       }
-    , boost::none
+    , ::boost::none
     , allow_empty_ranges
     );
 }

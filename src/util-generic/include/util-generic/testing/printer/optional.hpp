@@ -20,13 +20,13 @@
 
 #include <boost/optional.hpp>
 
-FHG_BOOST_TEST_LOG_VALUE_PRINTER (boost::none_t, os, )
+FHG_BOOST_TEST_LOG_VALUE_PRINTER (::boost::none_t, os, )
 {
   os << "Nothing";
 }
 
 FHG_BOOST_TEST_TEMPLATED_LOG_VALUE_PRINTER
-  (<typename T>, boost::optional<T>, os, opt)
+  (<typename T>, ::boost::optional<T>, os, opt)
 {
   if (opt)
   {
@@ -34,6 +34,6 @@ FHG_BOOST_TEST_TEMPLATED_LOG_VALUE_PRINTER
   }
   else
   {
-    os << FHG_BOOST_TEST_PRINT_LOG_VALUE_HELPER (boost::none);
+    os << FHG_BOOST_TEST_PRINT_LOG_VALUE_HELPER (::boost::none);
   }
 }

@@ -19,7 +19,7 @@
 #include <logging/message.hpp>
 #include <logging/test/message.hpp>
 
-#include <test/hopefully_free_port.hpp>
+#include <testing/hopefully_free_port.hpp>
 
 #include <util-generic/hostname.hpp>
 #include <util-generic/testing/printer/future.hpp>
@@ -54,8 +54,8 @@ namespace fhg
 
     BOOST_DATA_TEST_CASE
       ( legacy_bridge_forwards
-      , boost::unit_test::data::make (legacy_level_categories)
-      ^ boost::unit_test::data::make (legacy_emitter_emit_functions)
+      , ::boost::unit_test::data::make (legacy_level_categories)
+      ^ ::boost::unit_test::data::make (legacy_emitter_emit_functions)
       , expected_category
       , emit_function
       )

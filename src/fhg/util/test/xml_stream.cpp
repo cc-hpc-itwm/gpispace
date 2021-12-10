@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE (assemble_and_output)
 
   s.attr ("key", "val");
   s.attr ("maybe_key", "Just val");
-  s.attr ("maybe_key", boost::none);
+  s.attr ("maybe_key", ::boost::none);
 
   s.close ();
 

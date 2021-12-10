@@ -24,7 +24,7 @@ namespace we
 {
   namespace loader
   {
-    loader::loader (std::list<boost::filesystem::path> const& search_path)
+    loader::loader (std::list<::boost::filesystem::path> const& search_path)
       : _search_path (search_path)
     {}
 
@@ -43,11 +43,11 @@ namespace we
         return *mod->second;
       }
 
-      const boost::filesystem::path file_name ("lib" + module + ".so");
+      const ::boost::filesystem::path file_name ("lib" + module + ".so");
 
-      for (boost::filesystem::path const& p : _search_path)
+      for (::boost::filesystem::path const& p : _search_path)
       {
-        if (boost::filesystem::exists (p / file_name))
+        if (::boost::filesystem::exists (p / file_name))
         {
           return *_module_table
             .emplace ( module

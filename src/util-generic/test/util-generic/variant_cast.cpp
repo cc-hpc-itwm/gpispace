@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/random.hpp>
 #include <util-generic/testing/require_exception.hpp>
@@ -32,7 +31,7 @@ namespace fhg
 {
   namespace util
   {
-#define VARIANT(args_...) boost::variant<args_>
+#define VARIANT(args_...) ::boost::variant<args_>
 #define DO_CAST(from_, to_, elem_)              \
     variant_cast<VARIANT to_> (VARIANT from_ {elem_})
 
@@ -41,7 +40,7 @@ namespace fhg
     do                                                                         \
     {                                                                          \
       elem_ e;                                                                 \
-      using namespace boost::mpl;                                              \
+      using namespace ::boost::mpl;                                            \
       auto&& vv = DO_CAST (from_, to_, e);                                     \
       using variant_t = typename std::decay<decltype (vv)>::type;              \
       using it = typename find<variant_t::types, elem_>::type;                 \
@@ -50,7 +49,7 @@ namespace fhg
                           , "expected " << typeid (elem_).name()               \
                           << ", got " << vv.type().name()                      \
                           );                                                   \
-      BOOST_CHECK_EQUAL (boost::get<elem_> (vv), e);                           \
+      BOOST_CHECK_EQUAL (::boost::get<elem_> (vv), e);                         \
     }                                                                          \
     while (false)
 
@@ -152,14 +151,14 @@ namespace fhg
 
     BOOST_AUTO_TEST_CASE (variants_cast_casts_all_elements)
     {
-      std::vector<boost::variant<A, B>> from {A{}, B{}, B{}, A{}};
+      std::vector<::boost::variant<A, B>> from {A{}, B{}, B{}, A{}};
 
-      auto&& to (variants_cast<boost::variant<A, B, C>> (from));
+      auto&& to (variants_cast<::boost::variant<A, B, C>> (from));
 
-      BOOST_REQUIRE_EQUAL (boost::get<A> (from[0]), boost::get<A> (to[0]));
-      BOOST_REQUIRE_EQUAL (boost::get<B> (from[1]), boost::get<B> (to[1]));
-      BOOST_REQUIRE_EQUAL (boost::get<B> (from[2]), boost::get<B> (to[2]));
-      BOOST_REQUIRE_EQUAL (boost::get<A> (from[3]), boost::get<A> (to[3]));
+      BOOST_REQUIRE_EQUAL (::boost::get<A> (from[0]), ::boost::get<A> (to[0]));
+      BOOST_REQUIRE_EQUAL (::boost::get<B> (from[1]), ::boost::get<B> (to[1]));
+      BOOST_REQUIRE_EQUAL (::boost::get<B> (from[2]), ::boost::get<B> (to[2]));
+      BOOST_REQUIRE_EQUAL (::boost::get<A> (from[3]), ::boost::get<A> (to[3]));
     }
   }
 }

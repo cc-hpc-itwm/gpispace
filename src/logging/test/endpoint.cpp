@@ -62,20 +62,20 @@ namespace fhg
     }
 
     static
-    bool operator== ( boost::variant<tcp_endpoint, socket_endpoint> const& lhs
+    bool operator== ( ::boost::variant<tcp_endpoint, socket_endpoint> const& lhs
                     , socket_endpoint const& rhs
                     )
     {
       return lhs.type() == typeid (socket_endpoint)
-        && boost::get<socket_endpoint> (lhs) == rhs;
+        && ::boost::get<socket_endpoint> (lhs) == rhs;
     }
     static
-    bool operator== ( boost::variant<tcp_endpoint, socket_endpoint> const& lhs
+    bool operator== ( ::boost::variant<tcp_endpoint, socket_endpoint> const& lhs
                     , tcp_endpoint const& rhs
                     )
     {
       return lhs.type() == typeid (tcp_endpoint)
-        && boost::get<tcp_endpoint> (lhs) == rhs;
+        && ::boost::get<tcp_endpoint> (lhs) == rhs;
     }
 
     namespace

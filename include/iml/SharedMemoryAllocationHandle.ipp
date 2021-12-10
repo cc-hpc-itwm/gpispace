@@ -22,6 +22,6 @@ namespace iml
     void SharedMemoryAllocationHandle::serialize
       (BoostArchive& archive, unsigned int)
   {
-    archive & boost::serialization::base_object<AllocationHandle> (*this);
+    archive & ::boost::serialization::base_object<AllocationHandle> (*this);
   }
 }

@@ -29,7 +29,7 @@ namespace sdpa
     class JobFinishedEvent : public JobEvent
     {
     public:
-      typedef boost::shared_ptr<JobFinishedEvent> Ptr;
+      typedef ::boost::shared_ptr<JobFinishedEvent> Ptr;
 
       JobFinishedEvent ( sdpa::job_id_t const& a_job_id
                        , we::type::Activity job_result

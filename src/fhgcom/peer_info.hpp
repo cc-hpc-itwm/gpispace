@@ -16,36 +16,23 @@
 
 #pragma once
 
+#include <util-generic/hard_integral_typedef.hpp>
+
 #include <string>
 
 namespace fhg
 {
   namespace com
   {
-    struct hard_string
+    struct host_t
     {
-      explicit hard_string (std::string const& s)
-        : _s (s)
-      {}
-      operator std::string () const
-      {
-        return _s;
-      }
+      explicit host_t (std::string const&);
+      operator std::string () const;
+
     private:
-      std::string const _s;
+      std::string _hostname;
     };
 
-    struct host_t : hard_string
-    {
-      explicit host_t (std::string const& s)
-        : hard_string (s)
-      {}
-    };
-    struct port_t : hard_string
-    {
-      explicit port_t (std::string const& s)
-        : hard_string (s)
-      {}
-    };
+    FHG_UTIL_HARD_INTEGRAL_TYPEDEF (port_t, unsigned short);
   }
 }

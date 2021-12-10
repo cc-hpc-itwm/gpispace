@@ -31,7 +31,7 @@ namespace xml
   {
     type::function_type just_parse (state::type&, std::istream&);
     type::function_type just_parse
-      (state::type&, boost::filesystem::path const&);
+      (state::type&, ::boost::filesystem::path const&);
 
     void post_processing_passes (type::function_type&, state::type*);
 

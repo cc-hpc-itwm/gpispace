@@ -30,30 +30,39 @@
 
 #include <boost/bimap/bimap.hpp>
 #include <boost/bimap/unordered_multiset_of.hpp>
-#include <boost/serialization/nvp.hpp>
 #include <boost/serialization/unordered_map.hpp>
 #include <boost/serialization/unordered_set.hpp>
+#include <boost/variant.hpp>
 
+#include <cstdlib>
 #include <forward_list>
 #include <functional>
+#include <iosfwd>
 #include <random>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
-#include <cstdlib>
 
 namespace we
 {
   namespace edge
   {
+    struct PT{};
+    struct PT_READ{};
+    struct TP{};
+    struct TP_MANY{};
+
     //! \todo eliminate this, instead use subclasses of connection
-    enum type {PT,PT_READ,TP,TP_MANY};
+    using type = ::boost::variant<PT, PT_READ, TP, TP_MANY>;
 
-    bool is_PT (type const&);
+    bool is_incoming (type const&);
 
-    std::string enum_to_string (type const&);
+    std::ostream& operator<< (std::ostream&, PT const&);
+    std::ostream& operator<< (std::ostream&, PT_READ const&);
+    std::ostream& operator<< (std::ostream&, TP const&);
+    std::ostream& operator<< (std::ostream&, TP_MANY const&);
   }
 
   namespace type
@@ -64,9 +73,9 @@ namespace we
       using adj_tp_type
         = std::unordered_multimap<place_id_type, transition_id_type>;
       typedef boost::bimaps::bimap
-        < boost::bimaps::unordered_multiset_of<place_id_type>
-        , boost::bimaps::unordered_multiset_of<transition_id_type>
-        , boost::bimaps::set_of_relation<>
+        < ::boost::bimaps::unordered_multiset_of<place_id_type, std::hash<place_id_type>>
+        , ::boost::bimaps::unordered_multiset_of<transition_id_type, std::hash<transition_id_type>>
+        , ::boost::bimaps::set_of_relation<>
         > adj_pt_type;
       typedef std::unordered_map
         < transition_id_type
@@ -133,7 +142,7 @@ namespace we
 
       token_by_id_type const& get_token (place_id_type) const;
 
-      boost::optional<we::type::Activity>
+      ::boost::optional<we::type::Activity>
         fire_expressions_and_extract_activity_random
           ( std::mt19937&
           , we::workflow_response_callback const&
@@ -142,7 +151,7 @@ namespace we
           , gspc::we::plugin::PutToken
           );
 
-      boost::optional<we::type::Activity>
+      ::boost::optional<we::type::Activity>
         fire_expressions_and_extract_activity_random_TESTING_ONLY
           ( std::mt19937&
           , we::workflow_response_callback const&
@@ -230,27 +239,27 @@ namespace we
         (place_id_type, pnet::type::value::value_type const&);
       void do_update (to_be_updated_type const&);
 
-      friend class boost::serialization::access;
+      friend class ::boost::serialization::access;
       template<typename Archive>
       void serialize (Archive& ar, unsigned int)
       {
-        ar & BOOST_SERIALIZATION_NVP (_place_id);
-        ar & BOOST_SERIALIZATION_NVP (_pmap);
-        ar & BOOST_SERIALIZATION_NVP (_place_id_by_name);
-        ar & BOOST_SERIALIZATION_NVP (_transition_id);
-        ar & BOOST_SERIALIZATION_NVP (_tmap);
-        ar & BOOST_SERIALIZATION_NVP (_adj_pt_consume);
-        ar & BOOST_SERIALIZATION_NVP (_adj_pt_read);
-        ar & BOOST_SERIALIZATION_NVP (_adj_tp);
-        ar & BOOST_SERIALIZATION_NVP (_port_to_place);
-        ar & BOOST_SERIALIZATION_NVP (_port_many_to_place);
-        ar & BOOST_SERIALIZATION_NVP (_port_to_eureka);
-        ar & BOOST_SERIALIZATION_NVP (_port_to_response);
-        ar & BOOST_SERIALIZATION_NVP (_place_to_port);
-        ar & BOOST_SERIALIZATION_NVP (_token_id);
-        ar & BOOST_SERIALIZATION_NVP (_token_by_place_id);
-        ar & BOOST_SERIALIZATION_NVP (_enabled);
-        ar & BOOST_SERIALIZATION_NVP (_enabled_choice);
+        ar & _place_id;
+        ar & _pmap;
+        ar & _place_id_by_name;
+        ar & _transition_id;
+        ar & _tmap;
+        ar & _adj_pt_consume;
+        ar & _adj_pt_read;
+        ar & _adj_tp;
+        ar & _port_to_place;
+        ar & _port_many_to_place;
+        ar & _port_to_eureka;
+        ar & _port_to_response;
+        ar & _place_to_port;
+        ar & _token_id;
+        ar & _token_by_place_id;
+        ar & _enabled;
+        ar & _enabled_choice;
       }
     };
   }

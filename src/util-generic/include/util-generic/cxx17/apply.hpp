@@ -16,8 +16,6 @@
 
 #pragma once
 
-#include <util-generic/cxx14/integer_sequence.hpp>
-
 #include <cstddef>
 #include <tuple>
 #include <utility>
@@ -34,7 +32,7 @@ namespace fhg
       {
         template <typename Callable, typename Tuple, std::size_t... I>
           constexpr auto apply_impl
-            (Callable&& f, Tuple&& t, cxx14::index_sequence<I...>)
+            (Callable&& f, Tuple&& t, std::index_sequence<I...>)
           -> decltype (f (std::get<I> (std::forward<Tuple> (t))...))
         {
           return std::forward<Callable> (f)
@@ -53,7 +51,7 @@ namespace fhg
         -> decltype (detail::apply_impl
                        ( std::forward<Callable> (f)
                        , std::forward<Tuple> (t)
-                       , cxx14::make_index_sequence
+                       , std::make_index_sequence
                            <std::tuple_size<detail::decay_t<Tuple>>{}>{}
                        )
                     )
@@ -61,7 +59,7 @@ namespace fhg
         return detail::apply_impl
           ( std::forward<Callable> (f)
           , std::forward<Tuple> (t)
-          , cxx14::make_index_sequence
+          , std::make_index_sequence
               <std::tuple_size<detail::decay_t<Tuple>>{}>{}
           );
       }

@@ -1,0 +1,191 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2021 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun name="manual">
+  <struct name="T">
+    <field name="value" type="unsigned long"/>
+  </struct>
+  <in name="n" type="unsigned long" place="n"/>
+  <in name="host" type="string" place="host"/>
+  <in name="port" type="unsigned int" place="port"/>
+  <out name="P" type="T" place="P"/>
+  <net>
+    <place name="n" type="unsigned long"/>
+    <place name="host" type="string"/>
+    <place name="port" type="unsigned int"/>
+    <place name="P" type="T"/>
+
+    <transition name="initialize">
+      <defun>
+        <in name="n" type="unsigned long"/>
+        <out name="g" type="unsigned long"/>
+        <out name="k" type="unsigned long"/>
+        <expression>
+          ${g} := ${n};
+          ${k} := ${n};
+        </expression>
+      </defun>
+      <connect-in port="n" place="n"/>
+      <connect-out port="g" place="g"/>
+      <connect-out port="k" place="k"/>
+    </transition>
+
+    <place name="k" type="unsigned long"/>
+    <transition name="reduce">
+      <defun>
+        <in name="k" type="unsigned long" place="k"/>
+        <in name="host" type="string" place="host"/>
+        <in name="port" type="unsigned int" place="port"/>
+        <tunnel name="p" type="T" place="p"/>
+        <out name="P" type="T" place="P"/>
+        <net>
+          <place name="k" type="unsigned long"/>
+          <place name="host" type="string"/>
+          <place name="port" type="unsigned int"/>
+          <place name="p" type="T" virtual="true"/>
+          <place name="P" type="T"/>
+
+          <place name="lhs" type="T"/>
+          <place name="rhs" type="T"/>
+          <place name="l" type="unsigned long"><token><value>0ul</value></token></place>
+          <place name="r" type="unsigned long"/>
+
+          <transition name="lhs">
+            <defun>
+              <inout name="trigger" type="unsigned long"/>
+              <inout name="p" type="T"/>
+              <expression>
+                ${trigger} := ${trigger} + 1UL;
+              </expression>
+            </defun>
+            <connect-in port="trigger" place="l"/>
+            <connect-out port="trigger" place="r"/>
+            <connect-in port="p" place="p"/>
+            <connect-out port="p" place="lhs"/>
+          </transition>
+
+          <transition name="rhs">
+            <defun>
+              <inout name="trigger" type="unsigned long"/>
+              <inout name="p" type="T"/>
+              <expression/>
+            </defun>
+            <connect-in port="trigger" place="r"/>
+            <connect-out port="trigger" place="l"/>
+            <connect-in port="p" place="p"/>
+            <connect-out port="p" place="rhs"/>
+          </transition>
+
+          <transition name="operation">
+            <defun>
+              <in name="host" type="string"/>
+              <in name="port" type="unsigned int"/>
+              <in name="lhs" type="T"/>
+              <in name="rhs" type="T"/>
+              <out name="lr" type="T"/>
+              <module name="share_example_parallel_merge_manual_module_call"
+                      function="op (lhs, rhs, lr, host, port)"
+                      pass_context="true"
+                      >
+                <cinclude href="test/parallel_reduce/module_call/JobExecutor.hpp"/>
+                <cinclude href="test/parallel_reduce/module_call/Task.hpp"/>
+                <cinclude href="utility"/>
+                <code><![CDATA[
+::gspc::test::parallel_reduce::module_call::JobExecutor execution
+  {{host, port}, {lhs.value, rhs.value}, _pnetc_context->worker_name()};
+
+lr.value = lhs.value + rhs.value;
+
+std::move (execution).wait_for_release();
+                ]]>
+                </code>
+              </module>
+            </defun>
+            <connect-read port="host" place="host"/>
+            <connect-read port="port" place="port"/>
+            <connect-in port="lhs" place="lhs"/>
+            <connect-in port="rhs" place="rhs"/>
+            <connect-out port="lr" place="p"/>
+          </transition>
+
+          <transition name="done">
+            <defun>
+              <in name="k" type="unsigned long"/>
+              <in name="host" type="string"/>
+              <in name="port" type="unsigned int"/>
+              <inout name="p" type="T"/>
+              <inout name="count" type="unsigned long"/>
+              <expression>
+                ${count} := 0ul;
+              </expression>
+            </defun>
+            <condition>${k} :eq: ${count}</condition>
+            <connect-in port="p" place="lhs"/>
+            <connect-in port="host" place="host"/>
+            <connect-in port="port" place="port"/>
+            <connect-out port="p" place="P"/>
+            <connect-in port="k" place="k"/>
+            <connect-in port="count" place="r"/>
+            <connect-out port="count" place="l"/>
+          </transition>
+        </net>
+      </defun>
+      <connect-in port="k" place="k"/>
+      <connect-in port="host" place="host"/>
+      <connect-in port="port" place="port"/>
+      <connect-out port="P" place="P"/>
+      <place-map virtual="p" real="p"/>
+    </transition>
+
+    <place name="p" type="T"/>
+    <place name="g" type="unsigned long"/>
+    <transition name="generate">
+      <defun>
+        <in name="g" type="unsigned long" place="g"/>
+        <tunnel name="p" type="T" place="p"/>
+        <net>
+          <place name="g" type="unsigned long"/>
+          <place name="p" type="T" virtual="true"/>
+
+          <transition name="done">
+            <defun>
+              <in name="g" type="unsigned long"/>
+              <expression/>
+            </defun>
+            <condition>${g} :eq: 0ul</condition>
+            <connect-in port="g" place="g"/>
+          </transition>
+
+          <transition name="step">
+            <defun>
+              <inout name="g" type="unsigned long"/>
+              <out name="p" type="T"/>
+              <expression>
+                ${p.value} := ${g};
+                ${g} := ${g} - 1ul;
+              </expression>
+            </defun>
+            <condition>${g} :gt: 0ul</condition>
+            <connect-inout port="g" place="g"/>
+            <connect-out port="p" place="p"/>
+          </transition>
+        </net>
+      </defun>
+      <connect-in port="g" place="g"/>
+      <place-map virtual="p" real="p"/>
+    </transition>
+  </net>
+</defun>

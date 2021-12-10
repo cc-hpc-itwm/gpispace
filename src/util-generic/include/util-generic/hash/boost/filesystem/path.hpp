@@ -24,11 +24,11 @@
 namespace std
 {
   template<>
-    struct hash<boost::filesystem::path>
+    struct hash<::boost::filesystem::path>
   {
-    size_t operator() (boost::filesystem::path const& path) const
+    size_t operator() (::boost::filesystem::path const& path) const
     {
-      return boost::filesystem::hash_value (path);
+      return ::boost::filesystem::hash_value (path);
     }
   };
 }

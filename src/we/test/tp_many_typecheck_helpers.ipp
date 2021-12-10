@@ -144,7 +144,7 @@ namespace
   {
     type_name_to_generator result;
     type_wrapper const visitor {&result};
-    boost::mpl::for_each<value::value_type::types> (visitor);
+    ::boost::mpl::for_each<value::value_type::types> (visitor);
     return result;
   }
 
@@ -160,16 +160,16 @@ namespace
 
   net_with_empty_transition_with_tp_many::net_with_empty_transition_with_tp_many
       (std::string out_type_str)
-    : pid_in (net.add_place (place::type ("in", "list", boost::none)))
+    : pid_in (net.add_place (place::type ("in", "list", ::boost::none)))
     , pid_tp_many ( net.add_place ( place::type ( get_tp_many_place_name()
                                                 , name_to_signature (out_type_str)
-                                                , boost::none
+                                                , ::boost::none
                                                 )
                                   )
                   )
     , pid_out ( net.add_place ( place::type ( "out"
                                             , name_to_signature (out_type_str)
-                                            , boost::none
+                                            , ::boost::none
                                             )
                               )
               )
@@ -177,10 +177,10 @@ namespace
     we::type::Transition trans_io
       ( "put_many_list_typecheck"
       , we::type::Expression ("")
-      , boost::none
+      , ::boost::none
       , no_properties()
       , we::priority_type()
-      , boost::optional<we::type::eureka_id_type>{}
+      , ::boost::optional<we::type::eureka_id_type>{}
       , std::list<we::type::Preference>{}
       );
 
@@ -194,16 +194,16 @@ namespace
       );
 
     we::transition_id_type const tid (net.add_transition (trans_io));
-    net.add_connection (we::edge::PT, tid, pid_in, port_id_in, {});
-    net.add_connection (we::edge::TP_MANY, tid, pid_tp_many, port_id_out, {});
+    net.add_connection (we::edge::PT{}, tid, pid_in, port_id_in, {});
+    net.add_connection (we::edge::TP_MANY{}, tid, pid_tp_many, port_id_out, {});
 
     we::type::Transition trans_out
       ( "put_many_list_out"
       , we::type::Expression ("")
-      , boost::none
+      , ::boost::none
       , no_properties()
       , we::priority_type()
-      , boost::optional<we::type::eureka_id_type>{}
+      , ::boost::optional<we::type::eureka_id_type>{}
       , std::list<we::type::Preference>{}
       );
 
@@ -218,8 +218,8 @@ namespace
       );
 
     we::transition_id_type const tid_out (net.add_transition (trans_out));
-    net.add_connection (we::edge::PT, tid_out, pid_tp_many, pport_id_in, {});
-    net.add_connection (we::edge::TP, tid_out, pid_out, pport_id_out, {});
+    net.add_connection (we::edge::PT{}, tid_out, pid_tp_many, pport_id_in, {});
+    net.add_connection (we::edge::TP{}, tid_out, pid_out, pport_id_out, {});
   }
 
   std::list<value::value_type> net_with_empty_transition_with_tp_many

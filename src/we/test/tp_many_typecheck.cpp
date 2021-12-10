@@ -118,8 +118,8 @@ namespace pnet
 }
 
 BOOST_DATA_TEST_CASE ( tp_many_typecheck_mismatch_expection_for_all_types
-                     , boost::unit_test::data::make (value::type_names())
-                     * boost::unit_test::data::make (value::type_names())
+                     , ::boost::unit_test::data::make (value::type_names())
+                     * ::boost::unit_test::data::make (value::type_names())
                      , in_type_str
                      , out_type_str
                      )

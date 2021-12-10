@@ -242,8 +242,8 @@ struct fixture_scheduler_and_requirements_and_preferences
                    };
 
 
-    return (std::count_if ( boost::make_transform_iterator (assignment.begin(), value)
-                          , boost::make_transform_iterator (assignment.end(), value)
+    return (std::count_if ( ::boost::make_transform_iterator (assignment.begin(), value)
+                          , ::boost::make_transform_iterator (assignment.end(), value)
                           , [&worker_id] (std::set<sdpa::worker_id_t> const& v)
                             {
                               return v.count (worker_id);
@@ -280,7 +280,7 @@ struct fixture_scheduler_and_requirements_and_preferences
   void require_worker_and_implementation
     ( sdpa::job_id_t const& job
     , sdpa::worker_id_t const& worker
-    , boost::optional<std::string> const& impl
+    , ::boost::optional<std::string> const& impl
     )
   {
     auto const assignment (get_current_assignment());
@@ -482,11 +482,19 @@ namespace
                   , sdpa::capabilities_set_t capabilities = {}
                   )
   {
+    fhg::util::testing::random<std::string> const random_string;
+    fhg::util::testing::random<unsigned short> const random_ushort;
+
+    auto const hostname {random_string()};
+
     scheduler.add_worker ( worker_id
                          , capabilities
                          , fhg::util::testing::random<unsigned long>{}()
-                         , fhg::util::testing::random<std::string>{}()
-                         , fhg::util::testing::random<std::string>{}()
+                         , hostname
+                         , fhg::com::p2p::address_t
+                             { fhg::com::host_t {hostname}
+                             , fhg::com::port_t {random_ushort()}
+                             }
                          );
   }
 }
@@ -749,26 +757,34 @@ struct fixture_minimal_cost_assignment
         }
       )
   {
-    _scheduler.add_worker ("worker_01", {}, random_ulong(), "node1", fhg::util::testing::random_string());
-    _scheduler.add_worker ("worker_02", {}, random_ulong(), "node1", fhg::util::testing::random_string());
-    _scheduler.add_worker ("worker_03", {}, random_ulong(), "node1", fhg::util::testing::random_string());
-    _scheduler.add_worker ("worker_04", {}, random_ulong(), "node1", fhg::util::testing::random_string());
-    _scheduler.add_worker ("worker_05", {}, random_ulong(), "node2", fhg::util::testing::random_string());
-    _scheduler.add_worker ("worker_06", {}, random_ulong(), "node2", fhg::util::testing::random_string());
-    _scheduler.add_worker ("worker_07", {}, random_ulong(), "node2", fhg::util::testing::random_string());
-    _scheduler.add_worker ("worker_08", {}, random_ulong(), "node2", fhg::util::testing::random_string());
-    _scheduler.add_worker ("worker_09", {}, random_ulong(), "node3", fhg::util::testing::random_string());
-    _scheduler.add_worker ("worker_10", {}, random_ulong(), "node3", fhg::util::testing::random_string());
-    _scheduler.add_worker ("worker_11", {}, random_ulong(), "node3", fhg::util::testing::random_string());
-    _scheduler.add_worker ("worker_12", {}, random_ulong(), "node3", fhg::util::testing::random_string());
-    _scheduler.add_worker ("worker_13", {}, random_ulong(), "node4", fhg::util::testing::random_string());
-    _scheduler.add_worker ("worker_14", {}, random_ulong(), "node4", fhg::util::testing::random_string());
-    _scheduler.add_worker ("worker_15", {}, random_ulong(), "node4", fhg::util::testing::random_string());
-    _scheduler.add_worker ("worker_16", {}, random_ulong(), "node4", fhg::util::testing::random_string());
-    _scheduler.add_worker ("worker_17", {}, random_ulong(), "node5", fhg::util::testing::random_string());
-    _scheduler.add_worker ("worker_18", {}, random_ulong(), "node5", fhg::util::testing::random_string());
-    _scheduler.add_worker ("worker_19", {}, random_ulong(), "node5", fhg::util::testing::random_string());
-    _scheduler.add_worker ("worker_20", {}, random_ulong(), "node5", fhg::util::testing::random_string());
+    fhg::util::testing::random<unsigned short> const random_ushort;
+    auto const random_port
+      { [&]
+        {
+          return fhg::com::port_t {random_ushort()};
+        }
+      };
+
+    _scheduler.add_worker ("worker_01", {}, random_ulong(), "node1", fhg::com::p2p::address_t {fhg::com::host_t {"node1"}, random_port()});
+    _scheduler.add_worker ("worker_02", {}, random_ulong(), "node1", fhg::com::p2p::address_t {fhg::com::host_t {"node1"}, random_port()});
+    _scheduler.add_worker ("worker_03", {}, random_ulong(), "node1", fhg::com::p2p::address_t {fhg::com::host_t {"node1"}, random_port()});
+    _scheduler.add_worker ("worker_04", {}, random_ulong(), "node1", fhg::com::p2p::address_t {fhg::com::host_t {"node1"}, random_port()});
+    _scheduler.add_worker ("worker_05", {}, random_ulong(), "node2", fhg::com::p2p::address_t {fhg::com::host_t {"node2"}, random_port()});
+    _scheduler.add_worker ("worker_06", {}, random_ulong(), "node2", fhg::com::p2p::address_t {fhg::com::host_t {"node2"}, random_port()});
+    _scheduler.add_worker ("worker_07", {}, random_ulong(), "node2", fhg::com::p2p::address_t {fhg::com::host_t {"node2"}, random_port()});
+    _scheduler.add_worker ("worker_08", {}, random_ulong(), "node2", fhg::com::p2p::address_t {fhg::com::host_t {"node2"}, random_port()});
+    _scheduler.add_worker ("worker_09", {}, random_ulong(), "node3", fhg::com::p2p::address_t {fhg::com::host_t {"node3"}, random_port()});
+    _scheduler.add_worker ("worker_10", {}, random_ulong(), "node3", fhg::com::p2p::address_t {fhg::com::host_t {"node3"}, random_port()});
+    _scheduler.add_worker ("worker_11", {}, random_ulong(), "node3", fhg::com::p2p::address_t {fhg::com::host_t {"node3"}, random_port()});
+    _scheduler.add_worker ("worker_12", {}, random_ulong(), "node3", fhg::com::p2p::address_t {fhg::com::host_t {"node3"}, random_port()});
+    _scheduler.add_worker ("worker_13", {}, random_ulong(), "node4", fhg::com::p2p::address_t {fhg::com::host_t {"node4"}, random_port()});
+    _scheduler.add_worker ("worker_14", {}, random_ulong(), "node4", fhg::com::p2p::address_t {fhg::com::host_t {"node4"}, random_port()});
+    _scheduler.add_worker ("worker_15", {}, random_ulong(), "node4", fhg::com::p2p::address_t {fhg::com::host_t {"node4"}, random_port()});
+    _scheduler.add_worker ("worker_16", {}, random_ulong(), "node4", fhg::com::p2p::address_t {fhg::com::host_t {"node4"}, random_port()});
+    _scheduler.add_worker ("worker_17", {}, random_ulong(), "node5", fhg::com::p2p::address_t {fhg::com::host_t {"node5"}, random_port()});
+    _scheduler.add_worker ("worker_18", {}, random_ulong(), "node5", fhg::com::p2p::address_t {fhg::com::host_t {"node5"}, random_port()});
+    _scheduler.add_worker ("worker_19", {}, random_ulong(), "node5", fhg::com::p2p::address_t {fhg::com::host_t {"node5"}, random_port()});
+    _scheduler.add_worker ("worker_20", {}, random_ulong(), "node5", fhg::com::p2p::address_t {fhg::com::host_t {"node5"}, random_port()});
   }
 
   double max_value (std::map<std::string, double> const& map_cost)
@@ -877,9 +893,16 @@ BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_and_random_costs
                   }
                );
 
+  fhg::util::testing::random<unsigned short> const random_ushort;
+
   for (sdpa::worker_id_t const& worker_id : worker_ids)
   {
-    _scheduler.add_worker (worker_id, {}, random_ulong(), worker_id, fhg::util::testing::random_string());
+    _scheduler.add_worker (worker_id, {}, random_ulong(), worker_id
+                          , fhg::com::p2p::address_t
+                              { fhg::com::host_t {worker_id}
+                              , fhg::com::port_t {random_ushort()}
+                              }
+                          );
   }
 
   const sdpa::job_id_t job_id (fhg::util::testing::random_string());
@@ -961,9 +984,16 @@ BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_preassignment_and_load_balan
                  }
                );
 
+  fhg::util::testing::random<unsigned short> const random_ushort;
+
   for (decltype (worker_ids)::size_type i=0; i<n_workers;i++)
   {
-    _scheduler.add_worker (worker_ids[i], {}, random_ulong(), host_ids[i], fhg::util::testing::random_string());
+    _scheduler.add_worker (worker_ids[i], {}, random_ulong(), host_ids[i]
+                          , fhg::com::p2p::address_t
+                              { fhg::com::host_t {host_ids.at (i)}
+                              , fhg::com::port_t {random_ushort()}
+                              }
+                          );
   }
 
   fhg::util::testing::unique_random<sdpa::job_id_t> job_ids;
@@ -984,7 +1014,7 @@ BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_preassignment_and_load_balan
                             );
 
   for ( std::set<sdpa::worker_id_t> const& job_assigned_workers
-      : assignment | boost::adaptors::map_values
+      : assignment | ::boost::adaptors::map_values
       )
   {
     for (decltype (worker_ids)::size_type k=0; k<n_workers; ++k)
@@ -1009,11 +1039,19 @@ BOOST_FIXTURE_TEST_CASE
   unsigned long avail_mem (random_ulong());
   if (avail_mem > 0) avail_mem--;
 
+  fhg::util::testing::random<std::string> const random_string;
+  fhg::util::testing::random<unsigned short> const random_ushort;
+
+  auto const hostname {random_string()};
+
   _scheduler.add_worker ( "worker_0"
                         , {}
                         , avail_mem
-                        , fhg::util::testing::random_string()
-                        , fhg::util::testing::random_string()
+                        , hostname
+                        , fhg::com::p2p::address_t
+                            { fhg::com::host_t {hostname}
+                            , fhg::com::port_t {random_ushort()}
+                            }
                         );
 
   add_and_enqueue_job
@@ -1040,27 +1078,51 @@ BOOST_FIXTURE_TEST_CASE ( invariant_assignment_for_jobs_with_different_memory_re
   std::set<sdpa::worker_id_t> set_0 {"worker_0"};
   std::set<sdpa::worker_id_t> set_1 {"worker_1"};
 
+  fhg::util::testing::random<std::string> const random_string;
+  fhg::util::testing::random<unsigned short> const random_ushort;
+
+  {
+    auto const hostname {random_string()};
+
   _scheduler.add_worker ( "worker_0"
                         , {}
                         , size_0
-                        , fhg::util::testing::random_string()
-                        , fhg::util::testing::random_string()
+                        , hostname
+                        , fhg::com::p2p::address_t
+                            { fhg::com::host_t {hostname}
+                            , fhg::com::port_t {random_ushort()}
+                            }
                         );
+  }
+
+  {
+    auto const hostname {random_string()};
 
   _scheduler.add_worker ( "worker_1"
                         , {}
                         , size_1
-                        , fhg::util::testing::random_string()
-                        , fhg::util::testing::random_string()
+                        , hostname
+                        , fhg::com::p2p::address_t
+                            { fhg::com::host_t {hostname}
+                            , fhg::com::port_t {random_ushort()}
+                            }
                         );
+  }
 
+
+  {
+    auto const hostname {random_string()};
 
   _scheduler.add_worker ( "worker_2"
                         , {}
                         , size_0 + size_1
-                        , fhg::util::testing::random_string()
-                        , fhg::util::testing::random_string()
+                        , hostname
+                        , fhg::com::p2p::address_t
+                            { fhg::com::host_t {hostname}
+                            , fhg::com::port_t {random_ushort()}
+                            }
                         );
+  }
 
   auto const job_id_0
     ( add_and_enqueue_job
@@ -1191,18 +1253,26 @@ BOOST_FIXTURE_TEST_CASE ( assign_to_the_same_worker_if_the_total_cost_is_lower
 
   std::set<sdpa::worker_id_t> const expected_assignment {name_worker_1};
 
+  fhg::util::testing::random<unsigned short> const random_ushort;
+
   _scheduler.add_worker ( name_worker_0
                         , {}
                         , 199
                         , name_node_0
-                        , fhg::util::testing::random_string()
+                        , fhg::com::p2p::address_t
+                            { fhg::com::host_t {name_node_0}
+                            , fhg::com::port_t {random_ushort()}
+                            }
                         );
 
   _scheduler.add_worker ( name_worker_1
                         , {}
                         , 200
                         , name_node_1
-                        , fhg::util::testing::random_string()
+                        , fhg::com::p2p::address_t
+                            { fhg::com::host_t {name_node_1}
+                            , fhg::com::port_t {random_ushort()}
+                            }
                         );
 
   std::function<double (std::string const&)> const
@@ -1472,7 +1542,7 @@ struct fixture_add_new_workers
 
   void add_new_jobs
     ( std::vector<sdpa::job_id_t>& a
-    , boost::optional<std::string> reqname
+    , ::boost::optional<std::string> reqname
     , unsigned int n
     )
   {
@@ -1506,7 +1576,7 @@ struct fixture_add_new_workers
 
     std::set<sdpa::worker_id_t> assigned_workers;
     for ( std::set<sdpa::worker_id_t> const& s
-        : assignment | boost::adaptors::map_values
+        : assignment | ::boost::adaptors::map_values
         )
     {
       std::set_union ( assigned_workers.begin()
@@ -1630,11 +1700,11 @@ BOOST_FIXTURE_TEST_CASE
     (add_new_workers (capabilities, n));
 
   std::vector<sdpa::job_id_t> jobs;
-  add_new_jobs (jobs, boost::none, 2*n);
+  add_new_jobs (jobs, ::boost::none, 2*n);
 
   BOOST_REQUIRE_EQUAL (get_workers_with_assigned_jobs (jobs).size(), n);
 
-  add_new_jobs (jobs, boost::none, 2*k);
+  add_new_jobs (jobs, ::boost::none, 2*k);
 
   auto const old_assignment (get_current_assignment());
 
@@ -1767,7 +1837,7 @@ BOOST_FIXTURE_TEST_CASE
     (add_new_workers (capabilities, n_workers));
 
   std::vector<sdpa::job_id_t> jobs;
-  add_new_jobs (jobs, boost::none, n_jobs);
+  add_new_jobs (jobs, ::boost::none, n_jobs);
 
   BOOST_REQUIRE_EQUAL (get_workers_with_assigned_jobs (jobs).size(), n_workers);
 
@@ -2393,7 +2463,7 @@ BOOST_FIXTURE_TEST_CASE
 
   _scheduler.assign_jobs_to_workers();
 
-  require_worker_and_implementation (job_0, worker_1, boost::none);
+  require_worker_and_implementation (job_0, worker_1, ::boost::none);
 
   auto const job_1
     ( add_and_enqueue_job
@@ -2444,7 +2514,7 @@ BOOST_FIXTURE_TEST_CASE
 
     _scheduler.assign_jobs_to_workers();
 
-    require_worker_and_implementation (job_3, worker_1, boost::none);
+    require_worker_and_implementation (job_3, worker_1, ::boost::none);
 }
 
 BOOST_FIXTURE_TEST_CASE

@@ -14,9 +14,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-add_subdirectory (example)
-add_subdirectory (gspc)
-add_subdirectory (lib)
-add_subdirectory (man)
-add_subdirectory (selftest)
-add_subdirectory (xsd)
+add_subdirectory (licenses)
+
+install (
+  DIRECTORY
+    doc
+    man
+    selftest
+    xml
+  DESTINATION
+    ${GSPC_SHARE_INSTALL_DIR}
+  USE_SOURCE_PERMISSIONS
+)

@@ -46,7 +46,7 @@ namespace we
                        , Expression ("${in} :gt: 0UL")
                        , no_properties()
                        , priority_type()
-                       , boost::optional<we::type::eureka_id_type>{}
+                       , ::boost::optional<we::type::eureka_id_type>{}
                        , std::list<we::type::Preference>{}
                        );
       port_id_type const in
@@ -63,7 +63,7 @@ namespace we
                        , Expression ("${x} :le: 0UL")
                        , no_properties()
                        , priority_type()
-                       , boost::optional<we::type::eureka_id_type>{}
+                       , ::boost::optional<we::type::eureka_id_type>{}
                        , std::list<we::type::Preference>{}
                        );
       port_id_type const x
@@ -81,9 +81,9 @@ namespace we
             (place::type ("value", signature, false, no_properties()))
         );
 
-      net.add_connection (edge::PT, d, p, in, no_properties());
-      net.add_connection (edge::TP, d, p, out, no_properties());
-      net.add_connection (edge::PT, e, p, x, no_properties());
+      net.add_connection (we::edge::PT{}, d, p, in, no_properties());
+      net.add_connection (we::edge::TP{}, d, p, out, no_properties());
+      net.add_connection (we::edge::PT{}, e, p, x, no_properties());
 
       unsigned long number_of_tokens (0);
 
@@ -162,7 +162,7 @@ namespace we
                 )
             {
               return net.add_place
-                ({name, signature, boost::none, no_properties()});
+                ({name, signature, ::boost::none, no_properties()});
             }
           );
 
@@ -174,7 +174,7 @@ namespace we
                                 , Expression {"${x}"}
                                 , no_properties()
                                 , we::priority_type{}
-                                , boost::optional<we::type::eureka_id_type>{}
+                                , ::boost::optional<we::type::eureka_id_type>{}
                                 , std::list<we::type::Preference>{}
                                 );
 
@@ -193,8 +193,8 @@ namespace we
 
         auto const tid (net.add_transition (transition));
 
-        net.add_connection (edge::PT, tid, pid_x, port_x, no_properties());
-        net.add_connection (edge::PT, tid, pid_y, port_y, no_properties());
+        net.add_connection (we::edge::PT{}, tid, pid_x, port_x, no_properties());
+        net.add_connection (we::edge::PT{}, tid, pid_y, port_y, no_properties());
 
         // t is not enabled because there is no token on x, the
         // condition is not evaluated

@@ -20,7 +20,7 @@
 #include <iml/vmem/gaspi/pc/proto/message.hpp>
 #include <iml/vmem/gaspi/pc/segment/segment.hpp>
 
-#include <fhg/util/boost/program_options/validators/nonexisting_path_in_existing_directory.hpp>
+#include <util-generic/boost/program_options/validators/nonexisting_path_in_existing_directory.hpp>
 #include <util-generic/print_exception.hpp>
 #include <util-generic/syscall.hpp>
 
@@ -46,7 +46,7 @@ namespace
     fhg::util::syscall::close (fd);
   }
 
-  int open_socket (boost::filesystem::path const& path)
+  int open_socket (::boost::filesystem::path const& path)
   {
     int const sfd = fhg::util::syscall::socket (AF_UNIX, SOCK_STREAM, 0);
 
@@ -60,7 +60,7 @@ namespace
     {
       fhg::util::syscall::connect (sfd, reinterpret_cast<struct sockaddr*> (&addr), sizeof (struct sockaddr_un));
     }
-    catch (boost::system::system_error const&)
+    catch (::boost::system::system_error const&)
     {
       close_socket (sfd);
       throw;
@@ -74,7 +74,7 @@ namespace iml
 {
   using namespace gpi::pc;
 
-      Client::Client (boost::filesystem::path const& socket_path)
+      Client::Client (::boost::filesystem::path const& socket_path)
       try
         : _socket (open_socket (socket_path))
       {}
@@ -93,24 +93,24 @@ namespace iml
     namespace option
     {
       constexpr auto const name_socket ("iml-vmem-socket");
-      using type_socket = boost::filesystem::path;
+      using type_socket = ::boost::filesystem::path;
       using validator_socket = validators::nonexisting_path_in_existing_directory;
     }
   }
 
-  Client::Client (boost::program_options::variables_map const& vm)
+  Client::Client (::boost::program_options::variables_map const& vm)
     : Client ( detail::require<option::type_socket, option::validator_socket>
                  (vm, option::name_socket)
              )
   {}
 
-  boost::program_options::options_description Client::options()
+  ::boost::program_options::options_description Client::options()
   {
-    boost::program_options::options_description options ("Virtual memory");
+    ::boost::program_options::options_description options ("Virtual memory");
 
     options.add_options()
       ( option::name_socket
-      , boost::program_options::value<option::validator_socket>()
+      , ::boost::program_options::value<option::validator_socket>()
         ->required()
       , "socket file to communicate with the virtual memory manager"
       );
@@ -119,7 +119,7 @@ namespace iml
   }
 
   void Client::set_socket
-    (boost::program_options::variables_map& vm, option::type_socket value)
+    (::boost::program_options::variables_map& vm, option::type_socket value)
   {
     detail::set<option::type_socket, option::validator_socket>
       ( vm, option::name_socket, value
@@ -143,7 +143,7 @@ namespace iml
           {
             close_socket (_socket);
           }
-          catch (boost::system::system_error const&)
+          catch (::boost::system::system_error const&)
           {
             // ignore already closed/invalid socket
           }
@@ -167,7 +167,7 @@ namespace iml
 
         // serialize
           std::stringstream sstr;
-          boost::archive::binary_oarchive oa (sstr);
+          ::boost::archive::binary_oarchive oa (sstr);
           oa & rqst;
           std::string const data (sstr.str());
 
@@ -202,20 +202,20 @@ namespace iml
         // deserialize
         {
           std::stringstream sstr2 (std::string (buffer.begin(), buffer.end()));
-          boost::archive::text_iarchive ia (sstr2);
+          ::boost::archive::text_iarchive ia (sstr2);
           ia & rply;
         }
 
         try
         {
-          return boost::get<Reply> (boost::get<ReplyCategory> (rply));
+          return ::boost::get<Reply> (::boost::get<ReplyCategory> (rply));
         }
-        catch (boost::bad_get const&)
+        catch (::boost::bad_get const&)
         {
           throw std::runtime_error
             ( what
             + " failed: "
-            + boost::get<proto::error::error_t> (rply).detail
+            + ::boost::get<proto::error::error_t> (rply).detail
             );
         }
         catch (...)
@@ -376,7 +376,7 @@ namespace iml
         }
 
         throw std::runtime_error
-          ( ( boost::format("Requested pointer for unknown handle '%1%'")
+          ( ( ::boost::format("Requested pointer for unknown handle '%1%'")
             % handle
             ).str()
           );
@@ -439,7 +439,7 @@ namespace iml
         {
           seg->unlink();
         }
-        catch (boost::system::system_error const& se)
+        catch (::boost::system::system_error const& se)
         {
           if (se.code ().value () == ENOENT)
           {

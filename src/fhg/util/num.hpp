@@ -27,7 +27,7 @@ namespace fhg
     unsigned long read_ulong (parse::position&);
     unsigned int read_uint (parse::position&);
 
-    typedef boost::variant< int
+    typedef ::boost::variant< int
                           , long
                           , unsigned int
                           , unsigned long

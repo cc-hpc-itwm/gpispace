@@ -45,12 +45,12 @@ namespace sdpa
       std::string error_message;
     };
 
-    class Client : boost::noncopyable
+    class Client : ::boost::noncopyable
     {
     public:
       Client ( fhg::com::host_t const& top_level_agent_host
              , fhg::com::port_t const& top_level_agent_port
-             , std::unique_ptr<boost::asio::io_service> peer_io_service
+             , std::unique_ptr<::boost::asio::io_service> peer_io_service
              , fhg::com::Certificates const& certificates
              );
       ~Client();
@@ -75,10 +75,7 @@ namespace sdpa
       template<typename Expected, typename Sent>
         Expected send_and_wait_for_reply (Sent event);
 
-      void handle_recv ( boost::system::error_code const& ec
-                       , boost::optional<fhg::com::p2p::address_t>
-                       , fhg::com::message_t message
-                       );
+      void handle_recv (fhg::com::peer_t::Received);
 
       bool _stopping;
       fhg::com::channel m_peer;

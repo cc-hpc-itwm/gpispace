@@ -46,7 +46,7 @@ namespace gpi
     }
     namespace memory
     {
-      class area_t : boost::noncopyable
+      class area_t : ::boost::noncopyable
       {
       public:
         // WORK HERE:

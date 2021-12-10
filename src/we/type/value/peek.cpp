@@ -29,7 +29,7 @@ namespace pnet
       namespace
       {
         template<typename V, typename M, typename MIT>
-        class visitor_peek : public boost::static_visitor<boost::optional<V&>>
+        class visitor_peek : public ::boost::static_visitor<::boost::optional<V&>>
         {
         public:
           visitor_peek ( std::list<std::string>::const_iterator const& key
@@ -41,7 +41,7 @@ namespace pnet
             , _node (node)
           {}
 
-          boost::optional<V&> operator() (M& m) const
+          ::boost::optional<V&> operator() (M& m) const
           {
             if (_key == _end)
             {
@@ -54,7 +54,7 @@ namespace pnet
             {
               if (field->first == *_key)
               {
-                return boost::apply_visitor
+                return ::boost::apply_visitor
                   ( visitor_peek<V,M,MIT> ( std::next (_key)
                                           , _end
                                           , field->second
@@ -66,18 +66,18 @@ namespace pnet
               ++field;
             }
 
-            return boost::none;
+            return ::boost::none;
           }
 
           template<typename T>
-          boost::optional<V&> operator() (T&) const
+          ::boost::optional<V&> operator() (T&) const
           {
             if (_key == _end)
             {
               return _node;
             }
 
-            return boost::none;
+            return ::boost::none;
           }
 
         private:
@@ -87,13 +87,13 @@ namespace pnet
         };
       }
 
-      boost::optional<value_type const&>
+      ::boost::optional<value_type const&>
       peek ( std::list<std::string>::const_iterator const& key
            , std::list<std::string>::const_iterator const& end
            , value_type const& node
            )
       {
-        return boost::apply_visitor
+        return ::boost::apply_visitor
           ( visitor_peek< const value_type
                         , const structured_type
                         , structured_type::const_iterator
@@ -101,24 +101,24 @@ namespace pnet
           , node
           );
       }
-      boost::optional<value_type const&>
+      ::boost::optional<value_type const&>
       peek (std::list<std::string> const& path, value_type const& node)
       {
         return peek (path.begin(), path.end(), node);
       }
-      boost::optional<value_type const&>
+      ::boost::optional<value_type const&>
       peek (std::string const& path, value_type const& node)
       {
         return peek (path::split (path), node);
       }
 
-      boost::optional<value_type&>
+      ::boost::optional<value_type&>
       peek ( std::list<std::string>::const_iterator const& key
            , std::list<std::string>::const_iterator const& end
            , value_type& node
            )
       {
-        return boost::apply_visitor
+        return ::boost::apply_visitor
           ( visitor_peek< value_type
                         , structured_type
                         , structured_type::iterator
@@ -126,12 +126,12 @@ namespace pnet
           , node
           );
       }
-      boost::optional<value_type&>
+      ::boost::optional<value_type&>
       peek (std::list<std::string> const& path, value_type& node)
       {
         return peek (path.begin(), path.end(), node);
       }
-      boost::optional<value_type&>
+      ::boost::optional<value_type&>
       peek (std::string const& path, value_type& node)
       {
         return peek (path::split (path), node);

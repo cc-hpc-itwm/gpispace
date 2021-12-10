@@ -43,14 +43,14 @@ namespace gspc
         catch (...)
         {
           throw std::runtime_error
-            (str ( boost::format ("Exception in gspc_we_plugin_create: %1%")
+            (str ( ::boost::format ("Exception in gspc_we_plugin_create: %1%")
                  % fhg::util::current_exception_printer()
                  )
             );
         }
       }
 
-      Plugin::Plugin ( boost::filesystem::path path
+      Plugin::Plugin ( ::boost::filesystem::path path
                      , Context const& context
                      , PutToken put_token
                      )

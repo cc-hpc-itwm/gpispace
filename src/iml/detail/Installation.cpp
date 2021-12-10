@@ -26,7 +26,7 @@ namespace iml
     namespace
     {
       template<int N>
-        boost::filesystem::path nth_parent_path (boost::filesystem::path path)
+        ::boost::filesystem::path nth_parent_path (::boost::filesystem::path path)
       {
         for (int i (0); i < N; ++i)
         {
@@ -35,7 +35,7 @@ namespace iml
         return path;
       }
 
-      boost::filesystem::path installation_prefix()
+      ::boost::filesystem::path installation_prefix()
       {
         auto const override_path
           (fhg::util::getenv ("IML_TESTING_OVERRIDE_INSTALLATION_PREFIX"));

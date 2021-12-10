@@ -18,11 +18,11 @@
 #include <drts/drts.hpp>
 #include <drts/scoped_rifd.hpp>
 
-#include <test/make.hpp>
-#include <test/parse_command_line.hpp>
-#include <test/scoped_nodefile_from_environment.hpp>
-#include <test/shared_directory.hpp>
-#include <test/source_directory.hpp>
+#include <testing/make.hpp>
+#include <testing/parse_command_line.hpp>
+#include <testing/scoped_nodefile_from_environment.hpp>
+#include <testing/shared_directory.hpp>
+#include <testing/source_directory.hpp>
 
 #include <we/loader/exceptions.hpp>
 #include <we/type/value/boost/test/printer.hpp>
@@ -80,11 +80,11 @@
 //! - rifds + 1 worker "worker" per node
 //! - `client`
 #define COMMAND_LINE_PARSING_AND_SINGLE_WORKER_DRTS_SETUP                     \
-  boost::program_options::variables_map vm                                    \
+  ::boost::program_options::variables_map vm                                    \
     ( test::parse_command_line                                                \
-        ( boost::unit_test::framework::master_test_suite().argc               \
-        , boost::unit_test::framework::master_test_suite().argv               \
-        , boost::program_options::options_description()                       \
+        ( ::boost::unit_test::framework::master_test_suite().argc               \
+        , ::boost::unit_test::framework::master_test_suite().argv               \
+        , ::boost::program_options::options_description()                       \
         . add (test::options::source_directory())                             \
         . add (test::options::shared_directory())                             \
         . add (gspc::options::installation())                                 \
@@ -94,9 +94,9 @@
     );                                                                        \
                                                                               \
   fhg::util::temporary_path const shared_directory                            \
-    (test::shared_directory (vm) / boost::filesystem::unique_path());         \
+    (test::shared_directory (vm) / ::boost::filesystem::unique_path());         \
   fhg::util::temporary_path const lib_install_directory                       \
-    (shared_directory / boost::filesystem::unique_path());                    \
+    (shared_directory / ::boost::filesystem::unique_path());                    \
                                                                               \
   test::scoped_nodefile_from_environment const nodefile                       \
     (shared_directory, vm);                                                   \
@@ -125,7 +125,7 @@ BOOST_AUTO_TEST_CASE (module_that_doesnt_unload)
     , lib_install_directory
     );
   auto const library
-    ((boost::filesystem::path (lib_install_directory) / "libm.so").string());
+    ((::boost::filesystem::path (lib_install_directory) / "libm.so").string());
 
   auto const job_id (client.submit (make.pnet(), {}));
 
@@ -170,7 +170,7 @@ BOOST_AUTO_TEST_CASE (module_that_loads_library_that_doesnt_unload)
     , lib_install_directory
     );
 
-  boost::filesystem::path const to_load (LIBRARY_TO_LOAD);
+  ::boost::filesystem::path const to_load (LIBRARY_TO_LOAD);
 
   auto const job_id (client.submit (make.pnet(), {{"path", to_load.string()}}));
 
@@ -195,7 +195,7 @@ BOOST_AUTO_TEST_CASE (module_that_loads_library_that_doesnt_unload_allowed)
     , lib_install_directory
     );
 
-  boost::filesystem::path const to_load (LIBRARY_TO_LOAD);
+  ::boost::filesystem::path const to_load (LIBRARY_TO_LOAD);
 
   auto const result
     (client.put_and_run (make.pnet(), {{"path", to_load.string()}}));

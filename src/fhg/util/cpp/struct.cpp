@@ -29,7 +29,7 @@ namespace fhg
       {
         open::open (fhg::util::indenter& indent)
           : _indent (indent)
-          , _tag (boost::none)
+          , _tag (::boost::none)
         {}
         open::open ( fhg::util::indenter& indent
                    , std::string const& tag

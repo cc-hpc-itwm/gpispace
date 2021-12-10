@@ -35,7 +35,7 @@ namespace fhg
     {
       struct unable_to_write_to_file : std::runtime_error
       {
-        unable_to_write_to_file (boost::filesystem::path const&);
+        unable_to_write_to_file (::boost::filesystem::path const&);
       };
     }
 
@@ -43,9 +43,9 @@ namespace fhg
     {
     public:
       file_sink ( endpoint const&
-                , boost::filesystem::path const&
+                , ::boost::filesystem::path const&
                 , std::function<void (std::ostream&, message const&)>
-                , boost::optional<std::size_t> flush_interval
+                , ::boost::optional<std::size_t> flush_interval
                 );
 
     protected:
@@ -59,7 +59,7 @@ namespace fhg
       std::ofstream _stream;
       std::function<void (std::ostream&, message const&)> _formatter;
       std::size_t _emit_counter;
-      boost::optional<std::size_t> _flush_interval;
+      ::boost::optional<std::size_t> _flush_interval;
       void (file_sink::* _append) (message const&);
 
       stream_receiver _receiver;

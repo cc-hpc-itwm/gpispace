@@ -25,9 +25,9 @@ namespace fhg
   {
     BOOST_AUTO_TEST_CASE (throws_if_already_exists)
     {
-      auto const path (boost::filesystem::current_path());
+      auto const path (::boost::filesystem::current_path());
 
-      BOOST_REQUIRE (boost::filesystem::exists (path));
+      BOOST_REQUIRE (::boost::filesystem::exists (path));
 
       testing::require_exception
         ( [&] { temporary_path {path}; }
@@ -40,36 +40,36 @@ namespace fhg
       BOOST_REQUIRE_THROW
         ( temporary_path
             {"/we hopefully don't/run as root and this is/nonexistent"};
-        , boost::system::system_error
+        , ::boost::system::system_error
         );
     }
 
     BOOST_AUTO_TEST_CASE (actually_creates_and_deletes)
     {
-      auto const path (boost::filesystem::unique_path());
+      auto const path (::boost::filesystem::unique_path());
 
-      BOOST_REQUIRE (!boost::filesystem::exists (path));
+      BOOST_REQUIRE (!::boost::filesystem::exists (path));
 
       {
         temporary_path const temp {path};
 
-        BOOST_REQUIRE (boost::filesystem::is_directory (path));
+        BOOST_REQUIRE (::boost::filesystem::is_directory (path));
       }
 
-      BOOST_REQUIRE (!boost::filesystem::exists (path));
+      BOOST_REQUIRE (!::boost::filesystem::exists (path));
     }
 
     BOOST_AUTO_TEST_CASE (generates_filename_if_not_given_one)
     {
-      boost::filesystem::path path;
+      ::boost::filesystem::path path;
       {
         temporary_path const temp;
         path = temp;
 
-        BOOST_REQUIRE (boost::filesystem::is_directory (path));
+        BOOST_REQUIRE (::boost::filesystem::is_directory (path));
       }
 
-      BOOST_REQUIRE (!boost::filesystem::exists (path));
+      BOOST_REQUIRE (!::boost::filesystem::exists (path));
     }
   }
 }

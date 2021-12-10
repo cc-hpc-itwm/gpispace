@@ -33,7 +33,7 @@ namespace fhg
       {
         namespace
         {
-          void do_local (boost::format const& command)
+          void do_local (::boost::format const& command)
           {
             util::system_with_blocked_SIGCHLD (str (command));
           }
@@ -41,10 +41,10 @@ namespace fhg
 
         std::unordered_map<std::string, std::exception_ptr>
           bootstrap ( std::vector<std::string> const& all_hostnames
-                    , boost::optional<unsigned short> const& port
+                    , ::boost::optional<unsigned short> const& port
                     , std::string const& register_host
                     , unsigned short register_port
-                    , boost::filesystem::path const& binary
+                    , ::boost::filesystem::path const& binary
                     , std::vector<std::string> const& parameters
                     , std::ostream&
                     )
@@ -75,7 +75,7 @@ namespace fhg
 
           try
           {
-            do_local ( boost::format
+            do_local ( ::boost::format
                          ( "%1%"
                            "%2%"
                            " --register-host %3% --register-port %4%"
@@ -130,7 +130,7 @@ namespace fhg
 
           try
           {
-            do_local ( boost::format ("/bin/kill -TERM %1%")
+            do_local ( ::boost::format ("/bin/kill -TERM %1%")
                      % entry_point.second.pid
                      );
 

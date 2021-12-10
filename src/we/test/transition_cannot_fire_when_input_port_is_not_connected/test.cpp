@@ -20,11 +20,11 @@
 #include <drts/drts.hpp>
 #include <drts/scoped_rifd.hpp>
 
-#include <test/make.hpp>
-#include <test/parse_command_line.hpp>
-#include <test/scoped_nodefile_from_environment.hpp>
-#include <test/source_directory.hpp>
-#include <test/shared_directory.hpp>
+#include <testing/make.hpp>
+#include <testing/parse_command_line.hpp>
+#include <testing/scoped_nodefile_from_environment.hpp>
+#include <testing/source_directory.hpp>
+#include <testing/shared_directory.hpp>
 
 #include <we/type/value.hpp>
 #include <we/type/value/boost/test/printer.hpp>
@@ -39,7 +39,7 @@
 BOOST_AUTO_TEST_CASE
   (we_transition_cannot_fire_when_input_port_is_not_connected)
 {
-  boost::program_options::options_description options_description;
+  ::boost::program_options::options_description options_description;
 
   options_description.add (test::options::source_directory());
   options_description.add (test::options::shared_directory());
@@ -47,10 +47,10 @@ BOOST_AUTO_TEST_CASE
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
 
-  boost::program_options::variables_map vm
+  ::boost::program_options::variables_map vm
     ( test::parse_command_line
-        ( boost::unit_test::framework::master_test_suite().argc
-        , boost::unit_test::framework::master_test_suite().argv
+        ( ::boost::unit_test::framework::master_test_suite().argc
+        , ::boost::unit_test::framework::master_test_suite().argv
         , options_description
         )
     );

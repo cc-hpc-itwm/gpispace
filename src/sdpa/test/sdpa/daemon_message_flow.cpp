@@ -21,9 +21,8 @@
 #include <sdpa/test/sdpa/utils.hpp>
 #include <sdpa/types.hpp>
 
-#include <test/certificates_data.hpp>
+#include <testing/certificates_data.hpp>
 
-#include <fhg/util/thread/event.hpp>
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/optional.hpp>
@@ -36,6 +35,7 @@
 #include <boost/test/data/test_case.hpp>
 #include <boost/test/unit_test.hpp>
 
+#include <future>
 #include <string>
 #include <utility>
 
@@ -48,10 +48,10 @@ namespace
       , _network
         ( [this] (fhg::com::p2p::address_t const&, sdpa::events::SDPAEvent::Ptr e)
           {
-            _event_received.notify (e);
+            _event_received.set_value (e);
           }
-        , std::make_unique<boost::asio::io_service>()
-        , fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
+        , std::make_unique<::boost::asio::io_service>()
+        , fhg::com::host_t ("127.0.0.1"), fhg::com::port_t (0)
         , certificates
         )
     {}
@@ -68,14 +68,14 @@ namespace
       _network.perform<Event> (destination, std::forward<Args> (args)...);
     }
 
-    template<typename T> boost::shared_ptr<T> wait_for_event()
+    template<typename T> ::boost::shared_ptr<T> wait_for_event()
     {
-      sdpa::events::SDPAEvent::Ptr raw_event (_event_received.wait());
-      return boost::dynamic_pointer_cast<T> (raw_event);
+      auto raw_event (_event_received.get_future().get());
+      return ::boost::dynamic_pointer_cast<T> (raw_event);
     }
 
   private:
-    fhg::util::thread::event<sdpa::events::SDPAEvent::Ptr> _event_received;
+    std::promise<sdpa::events::SDPAEvent::Ptr> _event_received;
     sdpa::com::NetworkStrategy _network;
   };
 }
@@ -140,9 +140,8 @@ BOOST_DATA_TEST_CASE
   const sdpa::daemon::Agent agent
     ( agent_name
     , "localhost"
-    , std::make_unique<boost::asio::io_service>()
-    , boost::none
-    , true
+    , std::make_unique<::boost::asio::io_service>()
+    , ::boost::none
     , certificates
     );
 
@@ -154,10 +153,7 @@ BOOST_DATA_TEST_CASE
           ( fhg::util::connectable_to_address_string
               (agent.peer_local_endpoint().address())
           )
-      , fhg::com::port_t
-          ( std::to_string
-              (agent.peer_local_endpoint().port())
-          )
+      , fhg::com::port_t {agent.peer_local_endpoint().port()}
       )
     , fhg::util::testing::random_string()
     );
@@ -169,7 +165,7 @@ BOOST_DATA_TEST_CASE
   BOOST_REQUIRE_EQUAL (event->reason(), "Couldn't find the job!");
   BOOST_REQUIRE_EQUAL
     (event->error_code(), sdpa::events::ErrorEvent::SDPA_EUNKNOWN);
-  BOOST_REQUIRE_EQUAL (event->job_id(), boost::none);
+  BOOST_REQUIRE_EQUAL (event->job_id(), ::boost::none);
 }
 //! \todo Analyse control flow in all Agent event handlers
 

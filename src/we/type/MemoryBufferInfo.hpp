@@ -20,7 +20,6 @@
 #include <we/expr/type/Context.hpp>
 #include <we/type/Expression.hpp>
 
-#include <boost/serialization/nvp.hpp>
 #include <boost/serialization/string.hpp>
 
 #include <string>
@@ -48,13 +47,13 @@ namespace we
       Expression _size;
       Expression _alignment;
 
-      friend class boost::serialization::access;
+      friend class ::boost::serialization::access;
 
       template<typename Archive>
       void serialize (Archive & ar, unsigned int)
       {
-        ar & BOOST_SERIALIZATION_NVP (_size);
-        ar & BOOST_SERIALIZATION_NVP (_alignment);
+        ar & _size;
+        ar & _alignment;
       }
     };
   }

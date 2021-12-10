@@ -14,8 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <util-generic/cxx14/make_unique.hpp>
-
+#include <memory>
 #include <utility>
 
 namespace fhg
@@ -46,7 +45,7 @@ namespace fhg
       {
         end_section();
 
-        _section = fhg::util::cxx14::make_unique<scoped<Duration, Clock>>
+        _section = std::make_unique<scoped<Duration, Clock>>
           (std::move (description), _os);
       }
     }

@@ -26,11 +26,11 @@ namespace iml
 
   AllocationHandle::AllocationHandle (std::string const& serialized)
   {
-    *this = boost::lexical_cast<AllocationHandle> (serialized);
+    *this = ::boost::lexical_cast<AllocationHandle> (serialized);
   }
   std::string AllocationHandle::to_string() const
   {
-    return boost::lexical_cast<std::string> (*this);
+    return ::boost::lexical_cast<std::string> (*this);
   }
 
   bool operator== (AllocationHandle const& lhs, AllocationHandle const& rhs)

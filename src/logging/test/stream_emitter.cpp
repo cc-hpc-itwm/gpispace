@@ -17,13 +17,13 @@
 #include <logging/stream_emitter.hpp>
 #include <logging/test/message.hpp>
 
-#include <rpc/remote_function.hpp>
-#include <rpc/remote_socket_endpoint.hpp>
-#include <rpc/remote_tcp_endpoint.hpp>
-#include <rpc/service_dispatcher.hpp>
-#include <rpc/service_handler.hpp>
-#include <rpc/service_socket_provider.hpp>
-#include <rpc/service_tcp_provider.hpp>
+#include <util-rpc/remote_function.hpp>
+#include <util-rpc/remote_socket_endpoint.hpp>
+#include <util-rpc/remote_tcp_endpoint.hpp>
+#include <util-rpc/service_dispatcher.hpp>
+#include <util-rpc/service_handler.hpp>
+#include <util-rpc/service_socket_provider.hpp>
+#include <util-rpc/service_tcp_provider.hpp>
 
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/testing/printer/future.hpp>
@@ -86,7 +86,7 @@ namespace fhg
         return util::connectable_to_address_string (receiver.local_endpoint());
       }
 
-      using all_combinations = boost::mpl::list
+      using all_combinations = ::boost::mpl::list
         < combination_t<stream_protocol::tcp, stream_protocol::tcp>
         , combination_t<stream_protocol::tcp, stream_protocol::socket>
         , combination_t<stream_protocol::socket, stream_protocol::tcp>

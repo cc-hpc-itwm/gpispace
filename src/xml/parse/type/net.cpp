@@ -97,7 +97,7 @@ namespace xml
       //!    2.1 search for the template and do the specialization
       //! So this would be a lazy specialization.
       //! The shadowing could be done by going further up the tree
-      boost::optional<tmpl_type const&>
+      ::boost::optional<tmpl_type const&>
       net_type::get_template (std::string const& name) const
       {
         //! \todo IMPLEMENT THE LOOKUP FOR TEMPLATES IN parent FUNCTION
@@ -135,7 +135,7 @@ namespace xml
 
         for (specialize_type const& specialize : _specializes)
         {
-          boost::optional<tmpl_type const&> tmpl
+          ::boost::optional<tmpl_type const&> tmpl
             (get_template (specialize.use));
 
           if (not tmpl)
@@ -267,7 +267,7 @@ namespace xml
       {
         auto&& resolve
           ( [this, &known] (std::string name)
-          -> boost::optional<pnet::type::signature::signature_type>
+          -> ::boost::optional<pnet::type::signature::signature_type>
             {
               auto const known_it (known.find (name));
               if (known_it != known.end())
@@ -289,7 +289,7 @@ namespace xml
                   (local_it->signature());
               }
 
-              return boost::none;
+              return ::boost::none;
             }
           );
 
@@ -444,9 +444,9 @@ namespace xml
               (pid, util::generic_we_parse (token, "parse token").eval_all());
           }
 
-          if (  boost::empty (we_net.transition_to_place().equal_range (pid))
-             && boost::empty (we_net.place_to_transition_consume().left.equal_range (pid))
-             && boost::empty (we_net.place_to_transition_read().left.equal_range (pid))
+          if (  ::boost::empty (we_net.transition_to_place().equal_range (pid))
+             && ::boost::empty (we_net.place_to_transition_consume().left.equal_range (pid))
+             && ::boost::empty (we_net.place_to_transition_read().left.equal_range (pid))
              && (!place.is_virtual())
              )
           {

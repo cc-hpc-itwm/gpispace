@@ -46,7 +46,7 @@ namespace fhg
       int parse_fd (int argc, char** argv)
       {
         std::string const usage
-          (( boost::format ("Usage: %1% <pipefd> [args]...")
+          (( ::boost::format ("Usage: %1% <pipefd> [args]...")
            % fhg::util::executable_path()
            ).str()
           );
@@ -91,11 +91,11 @@ namespace fhg
     template<typename T>
       void started_process_promise::send (bool result, T const& data)
     {
-      boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
-        stream (_startup_pipe_fd, boost::iostreams::close_handle);
+      ::boost::iostreams::stream<::boost::iostreams::file_descriptor_sink>
+        stream (_startup_pipe_fd, ::boost::iostreams::close_handle);
 
       {
-        boost::archive::text_oarchive archive (stream);
+        ::boost::archive::text_oarchive archive (stream);
         archive & result;
         archive & data;
       }

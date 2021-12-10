@@ -27,9 +27,9 @@ namespace fhg
     {
       template<typename Fun>
         auto make_optional (bool cond, Fun&& fun)
-          -> boost::optional<decltype (fun())>
+          -> ::boost::optional<decltype (fun())>
       {
-        using T = boost::optional<decltype (fun())>;
+        using T = ::boost::optional<decltype (fun())>;
         return cond ? T (fun()) : T();
       }
     }

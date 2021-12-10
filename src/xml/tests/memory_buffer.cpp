@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE (name_is_stored)
       , name
       , fhg::util::testing::random_string()
       , fhg::util::testing::random_string()
-      , boost::none
+      , ::boost::none
       , we::type::property::type()
       ).name()
     );
@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE (size_is_stored)
       , fhg::util::testing::random_string()
       , size
       , fhg::util::testing::random_string()
-      , boost::none
+      , ::boost::none
       , we::type::property::type()
       ).size()
     );
@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE (alignment_is_stored)
       , fhg::util::testing::random_string()
       , fhg::util::testing::random_string()
       , alignment
-      , boost::none
+      , ::boost::none
       , we::type::property::type()
       ).alignment()
     );
@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE (alignment_is_stored)
 
 namespace
 {
-  std::vector<boost::optional<bool>> tribool_values()
+  std::vector<::boost::optional<bool>> tribool_values()
   {
     return {{false, false}, {true, true}, {true, false}};
   }
@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE (name_is_unique_key)
       , name
       , fhg::util::testing::random_string()
       , fhg::util::testing::random_string()
-      , boost::none
+      , ::boost::none
       , we::type::property::type()
       ).unique_key()
     );
@@ -149,14 +149,14 @@ BOOST_DATA_TEST_CASE (dump, tribool_values(), read_only)
   xml::parse::type::dump::dump (s, mb);
 
   const std::string expected
-    ( ( boost::format (R"EOS(<memory-buffer name="%1%"%3%>
+    ( ( ::boost::format (R"EOS(<memory-buffer name="%1%"%3%>
   <size>%2%</size>
   <alignment>%4%</alignment>
 </memory-buffer>)EOS")
       % name
       % size
-      % ( !boost::get_pointer (read_only) ? std::string()
-        : ( boost::format (R"EOS( read-only="%1%")EOS")
+      % ( !::boost::get_pointer (read_only) ? std::string()
+        : ( ::boost::format (R"EOS( read-only="%1%")EOS")
           % (*read_only ? "true" : "false")
           ).str()
         )
@@ -172,7 +172,7 @@ BOOST_DATA_TEST_CASE
   (read_only_is_generating_correctly, tribool_values(), read_only)
 {
   std::istringstream input_stream
-    ( str ( boost::format
+    ( str ( ::boost::format
               (R"EOS(
 <defun name="f">
   <memory-buffer name="b" %1%>
@@ -191,7 +191,7 @@ BOOST_DATA_TEST_CASE
     );
 
   auto const expected_generated_cpp
-    ( str ( boost::format
+    ( str ( ::boost::format
               (R"EOS(#include <pnetc/op/m/f.hpp>
 
 namespace pnetc
@@ -219,7 +219,7 @@ namespace pnetc
     );
 
   fhg::util::temporary_path const scoped_gen_output_path;
-  boost::filesystem::path const gen_output_path
+  ::boost::filesystem::path const gen_output_path
     (scoped_gen_output_path);
 
   xml::parse::state::type state;

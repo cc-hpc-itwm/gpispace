@@ -87,7 +87,7 @@ namespace iml
     if ((offset + size) > _size)
     {
       throw std::logic_error
-        ( (boost::format ("memory region [%1%, %2%) is outside of allocation")
+        ( (::boost::format ("memory region [%1%, %2%) is outside of allocation")
           % offset % (offset + size)
           ).str()
         );

@@ -71,5 +71,25 @@ namespace fhg
       scoped_signal_handler const _abrt;
       scoped_signal_handler const _fpe;
     };
+
+    //! Provides stop() and captures SIGTERM, SIGINT to stop execution.
+    struct Execution
+    {
+      Execution (signal_handler_manager&);
+
+      //! blocks until stop() is called or SIGTERM, SIGINT arrive
+      void wait();
+
+      //! triggers wait()
+      void stop();
+
+    private:
+      bool _terminated {false};
+      std::mutex _guard_terminated;
+      std::condition_variable _was_terminated;
+      void notify (int, siginfo_t*, void*);
+      scoped_signal_handler const _term;
+      scoped_signal_handler const _int;
+    };
   }
 }

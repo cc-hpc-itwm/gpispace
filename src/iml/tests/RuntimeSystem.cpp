@@ -44,15 +44,15 @@
 
 BOOST_AUTO_TEST_CASE (scoped_iml_rts_startup)
 {
-  boost::program_options::options_description options_description;
+  ::boost::program_options::options_description options_description;
 
   options_description.add (iml::Rifs::options());
   options_description.add (iml::RuntimeSystem::options());
 
-  boost::program_options::variables_map vm
+  ::boost::program_options::variables_map vm
     ( iml_test::parse_command_line
-        ( boost::unit_test::framework::master_test_suite().argc
-        , boost::unit_test::framework::master_test_suite().argv
+        ( ::boost::unit_test::framework::master_test_suite().argc
+        , ::boost::unit_test::framework::master_test_suite().argv
         , options_description
         )
     );
@@ -88,10 +88,10 @@ BOOST_AUTO_TEST_CASE (scoped_iml_rts_startup)
       );
 
     BOOST_REQUIRE_EQUAL (output.size(), expected_output.size());
-    for (auto output_and_regex : boost::combine (output, expected_output))
+    for (auto output_and_regex : ::boost::combine (output, expected_output))
     {
-      auto const& line (boost::get<0> (output_and_regex));
-      auto const& expected_line (boost::get<1> (output_and_regex));
+      auto const& line (::boost::get<0> (output_and_regex));
+      auto const& expected_line (::boost::get<1> (output_and_regex));
       BOOST_REQUIRE_MESSAGE
         ( std::regex_match (line, std::regex {expected_line})
         , "line = '" << line << "', expected_line = '" << expected_line << "'"

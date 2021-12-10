@@ -54,8 +54,8 @@ namespace gspc
                        , std::size_t num_per_node
                        , std::size_t max_nodes
                        , std::size_t shm_size
-                       , boost::optional<std::size_t> socket
-                       , boost::optional<unsigned short> base_port
+                       , ::boost::optional<std::size_t> socket
+                       , ::boost::optional<unsigned short> base_port
                        );
 
     //! Create a worker description from a string representation:

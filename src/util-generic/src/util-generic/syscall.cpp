@@ -48,8 +48,8 @@ namespace fhg
         {
           if (rc == R (-1))
           {
-            throw boost::system::system_error
-              (boost::system::error_code (errno, boost::system::system_category()));
+            throw ::boost::system::system_error
+              (::boost::system::error_code (errno, ::boost::system::system_category()));
           }
           return rc;
         }
@@ -60,8 +60,8 @@ namespace fhg
         {
           if (rc == R (-1))
           {
-            throw boost::system::system_error
-              (boost::system::error_code (errno, boost::system::system_category()));
+            throw ::boost::system::system_error
+              (::boost::system::error_code (errno, ::boost::system::system_category()));
           }
           return suppress_warning::sign_conversion<T> (rc, reason);
         }
@@ -71,8 +71,8 @@ namespace fhg
         {
           if (rc == nullptr)
           {
-            throw boost::system::system_error
-              (boost::system::error_code (errno, boost::system::system_category()));
+            throw ::boost::system::system_error
+              (::boost::system::error_code (errno, ::boost::system::system_category()));
           }
           return rc;
         }
@@ -82,8 +82,8 @@ namespace fhg
         {
           if (rc == -1)
           {
-            throw boost::system::system_error
-              (boost::system::error_code (errno, boost::system::system_category()));
+            throw ::boost::system::system_error
+              (::boost::system::error_code (errno, ::boost::system::system_category()));
           }
         }
 
@@ -91,8 +91,8 @@ namespace fhg
         {
           if (rc == map_failed())
           {
-            throw boost::system::system_error
-              (boost::system::error_code (errno, boost::system::system_category()));
+            throw ::boost::system::system_error
+              (::boost::system::error_code (errno, ::boost::system::system_category()));
           }
           return rc;
         }
@@ -101,8 +101,8 @@ namespace fhg
         {
           if (rc == sig_err())
           {
-            throw boost::system::system_error
-              (boost::system::error_code (errno, boost::system::system_category()));
+            throw ::boost::system::system_error
+              (::boost::system::error_code (errno, ::boost::system::system_category()));
           }
           return rc;
         }
@@ -112,8 +112,8 @@ namespace fhg
         {
           if (rc != R (0))
           {
-            throw boost::system::system_error
-              (boost::system::error_code (rc, boost::system::system_category()));
+            throw ::boost::system::system_error
+              (::boost::system::error_code (rc, ::boost::system::system_category()));
           }
         }
 
@@ -435,8 +435,8 @@ namespace fhg
         long const ret  (::sysconf (name));
         if (ret == -1 && errno == EINVAL)
         {
-          throw boost::system::system_error
-            (boost::system::error_code (EINVAL, boost::system::system_category()));
+          throw ::boost::system::system_error
+            (::boost::system::error_code (EINVAL, ::boost::system::system_category()));
         }
         return ret;
       }

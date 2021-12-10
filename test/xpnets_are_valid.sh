@@ -28,12 +28,12 @@ function find_xpnets()
   # - src/xml/tests/xpnets/diagnostics/error_duplicate_template.xpnet
 
   # not actually an xpnet
-  # - install/share/gspc/xml/xsd/schemas.xml (ci installs into source dir)
-  # - share/xsd/schemas.xml
+  # - install/share/GPISpace/xml/xsd/schemas.xml (ci installs into source dir)
+  # - share/xml/xsd/schemas.xml
 
   (cd "${repo_dir}" && find * -name '*.xpnet' -or -name '*.xml' -type f) \
-    | grep -v 'install/share/gspc/xml/xsd/schemas.xml$' \
-    | grep -v 'share/xsd/schemas.xml$' \
+    | grep -v 'install/share/GPISpace/xml/xsd/schemas.xml$' \
+    | grep -v 'share/xml/xsd/schemas.xml$' \
     | grep -v 'src/xml/tests/xpnets/diagnostics/error_duplicate_template.xpnet$'
 }
 
@@ -58,7 +58,7 @@ do
   echo "${path}" > "${output}"
 
   flock --exclusive "${process_pool_locks[${lock_id}]}" \
-        "${xmllint}" --noout --schema "${repo_dir}/share/xsd/pnet.xsd" \
+        "${xmllint}" --noout --schema "${repo_dir}/share/xml/xsd/pnet.xsd" \
         "${repo_dir}/${path}" \
         >>"${output}" 2>&1 \
         &

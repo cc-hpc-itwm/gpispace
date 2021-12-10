@@ -38,4 +38,6 @@ gspc_add_library (NAME fhg_util_qt
             Qt5::Core
             Qt5::Widgets
             Util::Qt
+  COMPILE_OPTIONS
+    PRIVATE -Wno-deprecated-declarations
 )

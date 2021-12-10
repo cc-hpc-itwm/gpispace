@@ -78,7 +78,7 @@ namespace gpi
         for (std::size_t i (0); i < number_of_queues; ++i)
         {
           _task_threads.emplace_back
-            ( std::make_unique<boost::strict_scoped_thread<>>
+            ( std::make_unique<::boost::strict_scoped_thread<>>
                 ( [this]
                   {
                     try
@@ -243,7 +243,7 @@ namespace gpi
         if (area_it == m_areas.end())
         {
           throw std::runtime_error ( "no such memory: "
-                                   + boost::lexical_cast<std::string>(mem_id)
+                                   + ::boost::lexical_cast<std::string>(mem_id)
                                    );
         }
         return area_it->second;
@@ -268,7 +268,7 @@ namespace gpi
         else
         {
           throw std::runtime_error ( "no such handle: "
-                                   + boost::lexical_cast<std::string>(hdl)
+                                   + ::boost::lexical_cast<std::string>(hdl)
                                    );
         }
       }
@@ -538,7 +538,7 @@ namespace gpi
           if (area_it == m_areas.end ())
           {
             throw std::runtime_error ( "no such memory: "
-                                     + boost::lexical_cast<std::string>(seg_id)
+                                     + ::boost::lexical_cast<std::string>(seg_id)
                                      );
           }
 

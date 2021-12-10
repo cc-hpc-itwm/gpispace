@@ -32,7 +32,7 @@ namespace xml
     //! \note parse_name (name) == name
     std::string validate_name ( std::string const& name
                               , std::string const& type
-                              , boost::filesystem::path const& path
+                              , ::boost::filesystem::path const& path
                               );
   }
 }

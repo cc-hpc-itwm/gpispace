@@ -49,7 +49,7 @@ namespace iml
     //! during bootstrapping and is independent of a specific segment
     //! or whether a gaspi segment is created.
     RuntimeSystem ( rif::EntryPoints const& entry_points
-                  , boost::filesystem::path socket
+                  , ::boost::filesystem::path socket
                   , unsigned short port
                   , std::chrono::seconds timeout
                   , gaspi::NetdevID netdev_id = {}
@@ -59,7 +59,7 @@ namespace iml
     //! Start IML servers on the given \a entry_points using the
     //! information given in \a vm, writing messages to \a output.
     RuntimeSystem ( rif::EntryPoints const& entry_points
-                  , boost::program_options::variables_map const& vm
+                  , ::boost::program_options::variables_map const& vm
                   , std::ostream& output = std::cout
                   );
 
@@ -68,20 +68,20 @@ namespace iml
     //! constructor.
     //! \see set_socket(), set_port(), set_startup_timeout(),
     //! set_netdev_id()
-    static boost::program_options::options_description options();
+    static ::boost::program_options::options_description options();
 
     //! Overwrite the socket to be used to connect to the server.
     static void set_socket
-      (boost::program_options::variables_map&, boost::filesystem::path);
+      (::boost::program_options::variables_map&, ::boost::filesystem::path);
     //! Overwrite the port used for communication between servers.
     static void set_port
-      (boost::program_options::variables_map&, unsigned short);
+      (::boost::program_options::variables_map&, unsigned short);
     //! Overwrite the timeout used when starting servers.
     static void set_startup_timeout
-      (boost::program_options::variables_map&, std::chrono::seconds);
+      (::boost::program_options::variables_map&, std::chrono::seconds);
     //! Overwrite the netdev ID to be passed to GPI.
     static void set_netdev_id
-      (boost::program_options::variables_map&, iml::gaspi::NetdevID);
+      (::boost::program_options::variables_map&, iml::gaspi::NetdevID);
 
     RuntimeSystem() = delete;
     RuntimeSystem (RuntimeSystem const&) = delete;

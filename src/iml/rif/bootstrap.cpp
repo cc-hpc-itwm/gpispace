@@ -28,7 +28,7 @@ namespace iml
       ( std::vector<std::string> const& hostnames
       , std::string const& strategy
       , std::vector<std::string> const& strategy_parameters
-      , boost::optional<unsigned short> const& port
+      , ::boost::optional<unsigned short> const& port
       , std::ostream& output
       )
     {

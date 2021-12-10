@@ -43,9 +43,9 @@ namespace fhg
         with_command()
         {
           BOOST_REQUIRE_EQUAL
-            (boost::unit_test::framework::master_test_suite().argc, 2);
+            (::boost::unit_test::framework::master_test_suite().argc, 2);
 
-          _ = boost::unit_test::framework::master_test_suite().argv[1];
+          _ = ::boost::unit_test::framework::master_test_suite().argv[1];
         }
 
         std::string const& command() { return _; }
@@ -58,14 +58,14 @@ namespace fhg
     BOOST_FIXTURE_TEST_CASE
       (system_executes_a_command, with_command)
     {
-      auto const path (boost::filesystem::unique_path());
+      auto const path (::boost::filesystem::unique_path());
       temporary_file const _temp (path);
 
       auto const content ( testing::random<std::string>{}
                              (testing::random<std::string>::identifier{})
                          );
 
-      system (boost::format ("%1% %2% %3%") % command() % path % content);
+      system (::boost::format ("%1% %2% %3%") % command() % path % content);
 
       BOOST_REQUIRE_EQUAL (read_file (path), content);
     }
@@ -75,7 +75,7 @@ namespace fhg
       std::runtime_error einval (std::string command)
       {
         return std::runtime_error
-          { ( boost::format ("Could not execute '%1%': %2%")
+          { ( ::boost::format ("Could not execute '%1%': %2%")
             % command
             % std::strerror (EINVAL)
             ).str()

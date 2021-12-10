@@ -21,8 +21,8 @@
 #include <iml/rif/strategy/meta.hpp>
 #include <iml/rif/teardown.hpp>
 
-#include <fhg/util/boost/program_options/validators/existing_path.hpp>
-#include <fhg/util/boost/program_options/validators/positive_integral.hpp>
+#include <util-generic/boost/program_options/validators/existing_path.hpp>
+#include <util-generic/boost/program_options/validators/positive_integral.hpp>
 #include <util-generic/join.hpp>
 #include <util-generic/read_lines.hpp>
 #include <util-generic/wait_and_collect_exceptions.hpp>
@@ -41,7 +41,7 @@ namespace iml
     template<typename Key, typename Value>
       std::vector<Value> values (std::unordered_map<Key, Value> const& map)
     {
-      auto range (map | boost::adaptors::map_values);
+      auto range (map | ::boost::adaptors::map_values);
 
       return {std::begin (range), std::end (range)};
     }
@@ -50,7 +50,7 @@ namespace iml
   Rifs::Rifs ( std::vector<std::string> const& hostnames
              , std::string const& strategy
              , std::vector<std::string> const& strategy_parameters
-             , boost::optional<unsigned short> const& port
+             , ::boost::optional<unsigned short> const& port
              , std::ostream& out
              )
     : _strategy (strategy)
@@ -89,7 +89,7 @@ namespace iml
       namespace validators = fhg::util::boost::program_options;
 
       constexpr auto const name_nodefile ("iml-rif-nodefile");
-      using type_nodefile = boost::filesystem::path;
+      using type_nodefile = ::boost::filesystem::path;
       using validator_nodefile = validators::existing_path;
       constexpr auto const name_port ("iml-rif-port");
       using type_port = unsigned short;
@@ -104,7 +104,7 @@ namespace iml
     }
   }
 
-  Rifs::Rifs ( boost::program_options::variables_map const& vm
+  Rifs::Rifs ( ::boost::program_options::variables_map const& vm
              , std::ostream& output
              )
     : Rifs ( fhg::util::read_lines
@@ -121,21 +121,21 @@ namespace iml
            )
   {}
 
-  boost::program_options::options_description Rifs::options()
+  ::boost::program_options::options_description Rifs::options()
   {
-    boost::program_options::options_description options
+    ::boost::program_options::options_description options
       ("Remote Interface Daemon (internally started)");
 
     options.add_options()
       ( option::name_nodefile
-      , boost::program_options::value<option::validator_nodefile>()
+      , ::boost::program_options::value<option::validator_nodefile>()
         ->required()
       , "nodefile for rifds to be started on"
       );
 
     options.add_options()
       ( option::name_strategy
-      , boost::program_options::value<option::validator_strategy>()
+      , ::boost::program_options::value<option::validator_strategy>()
         ->required()
       , ( "strategy used to bootstrap rifd (one of "
         + fhg::util::join
@@ -145,7 +145,7 @@ namespace iml
       );
     options.add_options()
       ( option::name_strategy_parameters
-      , boost::program_options::value<option::validator_strategy_parameters>()
+      , ::boost::program_options::value<option::validator_strategy_parameters>()
         ->default_value (option::type_strategy_parameters(), "")
         ->required()
       , "parameters passed to bootstrapping strategy"
@@ -153,7 +153,7 @@ namespace iml
 
     options.add_options()
       ( option::name_port
-      , boost::program_options::value<option::validator_port>()
+      , ::boost::program_options::value<option::validator_port>()
       , "port for rifd to listen on"
       );
 
@@ -161,7 +161,7 @@ namespace iml
   }
 
   void Rifs::set_nodefile
-    (boost::program_options::variables_map& vm, option::type_nodefile value)
+    (::boost::program_options::variables_map& vm, option::type_nodefile value)
   {
     detail::set<option::type_nodefile, option::validator_nodefile>
       ( vm, option::name_nodefile, value
@@ -173,7 +173,7 @@ namespace iml
   }
 
   void Rifs::set_port
-    (boost::program_options::variables_map& vm, option::type_port value)
+    (::boost::program_options::variables_map& vm, option::type_port value)
   {
     detail::set<option::type_port, option::validator_port>
       ( vm, option::name_port, value
@@ -185,7 +185,7 @@ namespace iml
   }
 
   void Rifs::set_strategy
-    (boost::program_options::variables_map& vm, option::type_strategy value)
+    (::boost::program_options::variables_map& vm, option::type_strategy value)
   {
     detail::set<option::type_strategy, option::validator_strategy>
       ( vm, option::name_strategy, value
@@ -197,7 +197,7 @@ namespace iml
   }
 
   void Rifs::set_strategy_parameters
-    ( boost::program_options::variables_map& vm
+    ( ::boost::program_options::variables_map& vm
     , option::type_strategy_parameters value
     )
   {

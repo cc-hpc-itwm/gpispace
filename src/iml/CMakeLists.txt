@@ -28,14 +28,13 @@ find_boost (1.61 REQUIRED COMPONENTS
   thread
 )
 
-# Util::Generic: "found" via ${CMAKE_SOURCE_DIR}/src/ and
-#   ${CMAKE_SOURCE_DIR}/fhg/util/boost/program_options
-# RPC: "found" via ${CMAKE_SOURCE_DIR}/src/
+# Util::Generic: "found" via ${PROJECT_SOURCE_DIR}/src/ and
+# RPC: "found" via ${PROJECT_SOURCE_DIR}/src/
 
-# BeeGFS: "found" via ${CMAKE_SOURCE_DIR}/external/
+# BeeGFS: "found" via ${PROJECT_SOURCE_DIR}/external/
 find_package (GASPI 1.3.1 REQUIRED)
 
-find_package (Libssh2 REQUIRED COMPONENTS _relocatable)
+find_package (Libssh2 REQUIRED)
 find_package (OpenSSL REQUIRED)
 
 
@@ -139,7 +138,7 @@ iml_add_library (NAME Shared
     PUBLIC Boost::base
     PRIVATE Boost::system
   INCLUDE_DIRECTORIES
-    PUBLIC "${CMAKE_SOURCE_DIR}/include"
+    PUBLIC "${PROJECT_SOURCE_DIR}/include"
   POSITION_INDEPENDENT
 )
 
@@ -180,7 +179,7 @@ iml_add_library (NAME Client
   LIBRARIES
     PRIVATE IMLPrivate::Installation
     PRIVATE IMLPrivate::Shared
-    PRIVATE RPC
+    PRIVATE Util::RPC
     PRIVATE Util::Generic
     PRIVATE Libssh2::libssh2
     PRIVATE OpenSSL::Crypto
@@ -190,7 +189,7 @@ iml_add_library (NAME Client
     PUBLIC Boost::serialization
     PRIVATE Boost::thread
   INCLUDE_DIRECTORIES
-    PUBLIC "${CMAKE_SOURCE_DIR}/include"
+    PUBLIC "${PROJECT_SOURCE_DIR}/include"
   INSTALL
     INSTALL_DESTINATION "lib"
     RPATH "libexec/iml"
@@ -214,7 +213,7 @@ iml_add_library (NAME Server
   LIBRARIES
     PUBLIC IML::Client
     PUBLIC IMLPrivate::Shared
-    PUBLIC RPC
+    PUBLIC Util::RPC
     PRIVATE Util::Generic
     PRIVATE BeeGFS::ClientDevel
     PRIVATE GASPI::static
@@ -280,7 +279,7 @@ iml_add_executable (NAME iml-rifd
           "rif/execute_and_get_startup_messages.cpp"
   LIBRARIES IML::Client
             IMLPrivate::Installation
-            RPC
+            Util::RPC
             Util::Generic
             Boost::filesystem
             Boost::iostreams
@@ -338,25 +337,25 @@ set (iml_files_in_installation
 )
 
 install (FILES
-  ${CMAKE_SOURCE_DIR}/include/iml/AllocationHandle.hpp
-  ${CMAKE_SOURCE_DIR}/include/iml/AllocationHandle.ipp
-  ${CMAKE_SOURCE_DIR}/include/iml/Client.hpp
-  ${CMAKE_SOURCE_DIR}/include/iml/MemcpyID.hpp
-  ${CMAKE_SOURCE_DIR}/include/iml/MemoryLocation.hpp
-  ${CMAKE_SOURCE_DIR}/include/iml/MemoryLocation.ipp
-  ${CMAKE_SOURCE_DIR}/include/iml/MemoryOffset.hpp
-  ${CMAKE_SOURCE_DIR}/include/iml/MemoryRegion.hpp
-  ${CMAKE_SOURCE_DIR}/include/iml/MemoryRegion.ipp
-  ${CMAKE_SOURCE_DIR}/include/iml/MemorySize.hpp
-  ${CMAKE_SOURCE_DIR}/include/iml/Rifs.hpp
-  ${CMAKE_SOURCE_DIR}/include/iml/RuntimeSystem.hpp
-  ${CMAKE_SOURCE_DIR}/include/iml/SegmentAndAllocation.hpp
-  ${CMAKE_SOURCE_DIR}/include/iml/SegmentDescription.hpp
-  ${CMAKE_SOURCE_DIR}/include/iml/SegmentHandle.hpp
-  ${CMAKE_SOURCE_DIR}/include/iml/SegmentHandle.ipp
-  ${CMAKE_SOURCE_DIR}/include/iml/SharedMemoryAllocation.hpp
-  ${CMAKE_SOURCE_DIR}/include/iml/SharedMemoryAllocationHandle.hpp
-  ${CMAKE_SOURCE_DIR}/include/iml/SharedMemoryAllocationHandle.ipp
+  ${PROJECT_SOURCE_DIR}/include/iml/AllocationHandle.hpp
+  ${PROJECT_SOURCE_DIR}/include/iml/AllocationHandle.ipp
+  ${PROJECT_SOURCE_DIR}/include/iml/Client.hpp
+  ${PROJECT_SOURCE_DIR}/include/iml/MemcpyID.hpp
+  ${PROJECT_SOURCE_DIR}/include/iml/MemoryLocation.hpp
+  ${PROJECT_SOURCE_DIR}/include/iml/MemoryLocation.ipp
+  ${PROJECT_SOURCE_DIR}/include/iml/MemoryOffset.hpp
+  ${PROJECT_SOURCE_DIR}/include/iml/MemoryRegion.hpp
+  ${PROJECT_SOURCE_DIR}/include/iml/MemoryRegion.ipp
+  ${PROJECT_SOURCE_DIR}/include/iml/MemorySize.hpp
+  ${PROJECT_SOURCE_DIR}/include/iml/Rifs.hpp
+  ${PROJECT_SOURCE_DIR}/include/iml/RuntimeSystem.hpp
+  ${PROJECT_SOURCE_DIR}/include/iml/SegmentAndAllocation.hpp
+  ${PROJECT_SOURCE_DIR}/include/iml/SegmentDescription.hpp
+  ${PROJECT_SOURCE_DIR}/include/iml/SegmentHandle.hpp
+  ${PROJECT_SOURCE_DIR}/include/iml/SegmentHandle.ipp
+  ${PROJECT_SOURCE_DIR}/include/iml/SharedMemoryAllocation.hpp
+  ${PROJECT_SOURCE_DIR}/include/iml/SharedMemoryAllocationHandle.hpp
+  ${PROJECT_SOURCE_DIR}/include/iml/SharedMemoryAllocationHandle.ipp
   DESTINATION include/iml/
 )
 
@@ -383,8 +382,8 @@ list (APPEND iml_devel_files_in_installation
 )
 
 install (FILES
-  ${CMAKE_SOURCE_DIR}/include/iml/beegfs/SegmentDescription.hpp
-  ${CMAKE_SOURCE_DIR}/include/iml/beegfs/SegmentDescription.ipp
+  ${PROJECT_SOURCE_DIR}/include/iml/beegfs/SegmentDescription.hpp
+  ${PROJECT_SOURCE_DIR}/include/iml/beegfs/SegmentDescription.ipp
   DESTINATION include/iml/beegfs/
 )
 
@@ -394,8 +393,8 @@ list (APPEND iml_devel_files_in_installation
 )
 
 install (FILES
-  ${CMAKE_SOURCE_DIR}/include/iml/detail/dllexport.hpp
-  ${CMAKE_SOURCE_DIR}/include/iml/detail/dllexport.ipp
+  ${PROJECT_SOURCE_DIR}/include/iml/detail/dllexport.hpp
+  ${PROJECT_SOURCE_DIR}/include/iml/detail/dllexport.ipp
   DESTINATION include/iml/detail/
 )
 
@@ -405,10 +404,10 @@ list (APPEND iml_devel_files_in_installation
 )
 
 install (FILES
-  ${CMAKE_SOURCE_DIR}/include/iml/gaspi/NetdevID.hpp
-  ${CMAKE_SOURCE_DIR}/include/iml/gaspi/NetdevID.ipp
-  ${CMAKE_SOURCE_DIR}/include/iml/gaspi/SegmentDescription.hpp
-  ${CMAKE_SOURCE_DIR}/include/iml/gaspi/SegmentDescription.ipp
+  ${PROJECT_SOURCE_DIR}/include/iml/gaspi/NetdevID.hpp
+  ${PROJECT_SOURCE_DIR}/include/iml/gaspi/NetdevID.ipp
+  ${PROJECT_SOURCE_DIR}/include/iml/gaspi/SegmentDescription.hpp
+  ${PROJECT_SOURCE_DIR}/include/iml/gaspi/SegmentDescription.ipp
   DESTINATION include/iml/gaspi/
 )
 
@@ -420,12 +419,12 @@ list (APPEND iml_devel_files_in_installation
 )
 
 install (FILES
-  ${CMAKE_SOURCE_DIR}/include/iml/rif/EntryPoint.hpp
-  ${CMAKE_SOURCE_DIR}/include/iml/rif/EntryPoint.ipp
-  ${CMAKE_SOURCE_DIR}/include/iml/rif/EntryPoints.hpp
-  ${CMAKE_SOURCE_DIR}/include/iml/rif/bootstrap.hpp
-  ${CMAKE_SOURCE_DIR}/include/iml/rif/strategies.hpp
-  ${CMAKE_SOURCE_DIR}/include/iml/rif/teardown.hpp
+  ${PROJECT_SOURCE_DIR}/include/iml/rif/EntryPoint.hpp
+  ${PROJECT_SOURCE_DIR}/include/iml/rif/EntryPoint.ipp
+  ${PROJECT_SOURCE_DIR}/include/iml/rif/EntryPoints.hpp
+  ${PROJECT_SOURCE_DIR}/include/iml/rif/bootstrap.hpp
+  ${PROJECT_SOURCE_DIR}/include/iml/rif/strategies.hpp
+  ${PROJECT_SOURCE_DIR}/include/iml/rif/teardown.hpp
   DESTINATION include/iml/rif/
 )
 
@@ -710,3 +709,5 @@ if (BUILD_TESTING)
              endif()"
   )
 endif()
+
+include (${PROJECT_SOURCE_DIR}/meta/iml-meta.cmake OPTIONAL)

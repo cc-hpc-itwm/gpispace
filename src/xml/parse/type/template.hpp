@@ -42,12 +42,12 @@ namespace xml
         typedef std::unordered_set<std::string> names_type;
 
         tmpl_type ( util::position_type const&
-                  , boost::optional<std::string> const& name
+                  , ::boost::optional<std::string> const& name
                   , names_type const& tmpl_parameter
                   , function_type const& function
                   );
 
-        boost::optional<std::string> const& name() const;
+        ::boost::optional<std::string> const& name() const;
         names_type const& tmpl_parameter () const;
 
         function_type const& function() const;
@@ -60,7 +60,7 @@ namespace xml
         unique_key_type const& unique_key() const;
 
       private:
-        boost::optional<std::string> const _name;
+        ::boost::optional<std::string> const _name;
         names_type _tmpl_parameter;
         function_type _function;
       };

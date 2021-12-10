@@ -34,7 +34,7 @@ namespace we
         {
           if (!buffer.alignment)
           {
-            return ( boost::format (R"EOS(
+            return ( ::boost::format (R"EOS(
                      <memory-buffer name="%1%" readonly="true">
                        <size>
                          %2%
@@ -46,7 +46,7 @@ namespace we
           }
           else
           {
-            return ( boost::format (R"EOS(
+            return ( ::boost::format (R"EOS(
                      <memory-buffer name="%1%" readonly="true">
                        <size>
                          %2%
@@ -64,8 +64,8 @@ namespace we
 
         std::string create_alignment_test (BufferInfo const& buffer)
         {
-          return ( boost::format (R"EOS(
-                   if (!boost::alignment::is_aligned (%1%, %2%))
+          return ( ::boost::format (R"EOS(
+                   if (!::boost::alignment::is_aligned (%1%, %2%))
                    {
                      throw std::runtime_error ("Buffer not %1%-bytes aligned!");
                    })EOS")
@@ -89,7 +89,7 @@ namespace we
           buffer_names.emplace_back (buffer.name);
         }
 
-        return ( boost::format (R"EOS(
+        return ( ::boost::format (R"EOS(
                  <defun name="arbitrary_buffer_sizes_and_alignments">
                    <in name="start" type="control" place="start"/>
                    <out name="done" type="control" place="done"/>

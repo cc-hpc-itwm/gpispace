@@ -22,8 +22,8 @@
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/exit_status.hpp>
 #include <util-generic/syscall.hpp>
-#include <fhg/util/boost/program_options/validators/positive_integral.hpp>
-#include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
+#include <util-generic/boost/program_options/validators/positive_integral.hpp>
+#include <util-generic/boost/program_options/validators/nonempty_string.hpp>
 #include <util-generic/hostname.hpp>
 #include <util-generic/join.hpp>
 #include <util-generic/nest_exceptions.hpp>
@@ -37,13 +37,13 @@
 #include <iml/rif/protocol.hpp>
 #include <iml/rif/strategy/meta.hpp>
 
-#include <rpc/future.hpp>
-#include <rpc/remote_function.hpp>
-#include <rpc/remote_socket_endpoint.hpp>
-#include <rpc/remote_tcp_endpoint.hpp>
-#include <rpc/service_dispatcher.hpp>
-#include <rpc/service_handler.hpp>
-#include <rpc/service_tcp_provider.hpp>
+#include <util-rpc/future.hpp>
+#include <util-rpc/remote_function.hpp>
+#include <util-rpc/remote_socket_endpoint.hpp>
+#include <util-rpc/remote_tcp_endpoint.hpp>
+#include <util-rpc/service_dispatcher.hpp>
+#include <util-rpc/service_handler.hpp>
+#include <util-rpc/service_tcp_provider.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -109,50 +109,50 @@ namespace
 int main (int argc, char** argv)
 try
 {
-  boost::program_options::options_description options_description;
+  ::boost::program_options::options_description options_description;
   options_description.add_options()
     ( option::port
-    , boost::program_options::value
+    , ::boost::program_options::value
         <fhg::util::boost::program_options::positive_integral<unsigned short>>()
     , "port to listen on"
     )
     ( option::register_host
-    , boost::program_options::value<std::string>()->required()
+    , ::boost::program_options::value<std::string>()->required()
     , "host register server is running on"
     )
     ( option::register_port
-    , boost::program_options::value
+    , ::boost::program_options::value
         <fhg::util::boost::program_options::positive_integral<unsigned short>>()
         ->required()
     , "port register server is listening on"
     )
     ( option::register_key
-    , boost::program_options::value
+    , ::boost::program_options::value
         <fhg::util::boost::program_options::nonempty_string>()
         ->required()
     , "key to register with"
     )
     ;
 
-  boost::program_options::variables_map vm;
-  boost::program_options::store
-    ( boost::program_options::command_line_parser (argc, argv)
+  ::boost::program_options::variables_map vm;
+  ::boost::program_options::store
+    ( ::boost::program_options::command_line_parser (argc, argv)
       .options (options_description)
       .run()
     , vm
     );
 
-  boost::program_options::notify (vm);
+  ::boost::program_options::notify (vm);
 
-  boost::optional<unsigned short> const port
+  ::boost::optional<unsigned short> const port
     ( vm.count (option::port)
-    ? boost::make_optional<unsigned short>
+    ? ::boost::make_optional<unsigned short>
       ( static_cast<unsigned short>
         ( vm.at (option::port)
         . as<fhg::util::boost::program_options::positive_integral<unsigned short>>()
         )
       )
-    : boost::none
+    : ::boost::none
     );
 
   if (port)
@@ -204,7 +204,7 @@ try
   fhg::rpc::service_handler<fhg::iml::rif::protocol::start_vmem>
     start_vmem_service
       ( service_dispatcher
-      , [&] ( boost::filesystem::path socket
+      , [&] ( ::boost::filesystem::path socket
             , unsigned short gaspi_port
             , std::chrono::seconds proc_init_timeout
             , std::vector<std::string> nodes
@@ -220,8 +220,8 @@ try
             };
 
           //! \todo allow to specify folder to put temporary file in
-          boost::filesystem::path const nodefile
-            ( boost::filesystem::unique_path
+          ::boost::filesystem::path const nodefile
+            ( ::boost::filesystem::unique_path
                 ("IML-VMEM-NODEFILE-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
             );
           fhg::util::temporary_file nodefile_temporary (nodefile);
@@ -231,7 +231,7 @@ try
             if (!nodefile_stream)
             {
               throw std::runtime_error
-                ( ( boost::format ("Could not create nodefile %1%: %2%")
+                ( ( ::boost::format ("Could not create nodefile %1%: %2%")
                   % nodefile
                   % strerror (errno)
                   )
@@ -247,7 +247,7 @@ try
             if (!nodefile_stream)
             {
               throw std::runtime_error
-                ( ( boost::format ("Could not write to nodefile %1%: %2%")
+                ( ( ::boost::format ("Could not write to nodefile %1%: %2%")
                   % nodefile
                   % strerror (errno)
                   )
@@ -294,7 +294,7 @@ try
     fhg::rpc::remote_tcp_endpoint endpoint
       (io_service_parent, register_host, register_port);
 
-    boost::asio::ip::tcp::endpoint const local_endpoint
+    ::boost::asio::ip::tcp::endpoint const local_endpoint
       (server.local_endpoint());
 
     fhg::rpc::sync_remote_function<fhg::iml::rif::strategy::bootstrap_callback>

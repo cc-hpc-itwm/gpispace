@@ -40,11 +40,11 @@ namespace expr
       using Key = std::list<std::string>;
       using KeyRoots = std::unordered_set<std::string>;
 
-      typedef boost::variant < pnet::type::value::value_type
+      typedef ::boost::variant < pnet::type::value::value_type
                              , Key
-                             , boost::recursive_wrapper<unary_t>
-                             , boost::recursive_wrapper<binary_t>
-                             , boost::recursive_wrapper<ternary_t>
+                             , ::boost::recursive_wrapper<unary_t>
+                             , ::boost::recursive_wrapper<binary_t>
+                             , ::boost::recursive_wrapper<ternary_t>
                              > type;
 
       std::ostream & operator << (std::ostream &, type const&);

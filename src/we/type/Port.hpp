@@ -47,7 +47,7 @@ namespace we
       }
     }
 
-    using PortDirection = boost::variant
+    using PortDirection = ::boost::variant
        < port::direction::In
        , port::direction::Out
        , port::direction::Tunnel
@@ -73,7 +73,7 @@ namespace we
 
       PortDirection direction() const;
       pnet::type::signature::signature_type const& signature() const;
-      boost::optional<we::place_id_type> const& associated_place() const;
+      ::boost::optional<we::place_id_type> const& associated_place() const;
       we::type::property::type const& property() const;
 
       bool is_input() const;
@@ -84,10 +84,10 @@ namespace we
       std::string _name;
       PortDirection _direction;
       pnet::type::signature::signature_type _signature;
-      boost::optional<we::place_id_type> _associated_place;
+      ::boost::optional<we::place_id_type> _associated_place;
       we::type::property::type _properties;
 
-      friend class boost::serialization::access;
+      friend class ::boost::serialization::access;
       template<typename Archive>
         void serialize (Archive&, unsigned int);
     };

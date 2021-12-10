@@ -30,7 +30,7 @@ namespace gspc
   {
     namespace plugin
     {
-      ID Plugins::create ( boost::filesystem::path path
+      ID Plugins::create ( ::boost::filesystem::path path
                          , Context const& context
                          , PutToken put_token
                          )
@@ -46,7 +46,7 @@ namespace gspc
       {
         std::throw_with_nested
           ( std::runtime_error
-            (str ( boost::format ("Plugins::create (%1%, %2%)")
+            (str ( ::boost::format ("Plugins::create (%1%, %2%)")
                  % path
                  % context
                  )
@@ -68,7 +68,7 @@ namespace gspc
       {
         std::throw_with_nested
           ( std::runtime_error
-            (str ( boost::format ("Plugins::before_eval (%1%, %2%)")
+            (str ( ::boost::format ("Plugins::before_eval (%1%, %2%)")
                  % to_string (pid)
                  % context
                  )
@@ -84,7 +84,7 @@ namespace gspc
       {
         std::throw_with_nested
           ( std::runtime_error
-            (str ( boost::format ("Plugins::after_eval (%1%, %2%)")
+            (str ( ::boost::format ("Plugins::after_eval (%1%, %2%)")
                  % to_string (pid)
                  % context
                  )

@@ -29,7 +29,7 @@ namespace pnet
     {
       namespace
       {
-        class visitor_show : public boost::static_visitor<std::ostream&>
+        class visitor_show : public ::boost::static_visitor<std::ostream&>
         {
         public:
           visitor_show (std::ostream& os)
@@ -127,21 +127,21 @@ namespace pnet
 
           std::ostream& print_value (std::ostream& os, value_type const& x) const
           {
-            boost::apply_visitor (*this, x);
+            ::boost::apply_visitor (*this, x);
             return os;
           }
           std::ostream& print_map_item (std::ostream& os, std::pair<value_type, value_type> const& x) const
           {
-            boost::apply_visitor (*this, x.first);
+            ::boost::apply_visitor (*this, x.first);
             os << " -> ";
-            boost::apply_visitor (*this, x.second);
+            ::boost::apply_visitor (*this, x.second);
             return os;
           }
           std::ostream& print_struct_item
           (std::ostream& os, std::pair<std::string, value_type> const& x) const
           {
             os << x.first << " := ";
-            boost::apply_visitor (*this, x.second);
+            ::boost::apply_visitor (*this, x.second);
             return os;
           }
         };
@@ -154,7 +154,7 @@ namespace pnet
       {
         const std::ios_base::fmtflags ff (os.flags());
         os << std::showpoint << std::boolalpha;
-        boost::apply_visitor (visitor_show (os), _value);
+        ::boost::apply_visitor (visitor_show (os), _value);
         os.flags (ff);
         return os;
       }

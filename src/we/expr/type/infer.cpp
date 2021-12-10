@@ -41,7 +41,7 @@ namespace expr
   {
     namespace
     {
-      struct plus : boost::static_visitor<Type>
+      struct plus : ::boost::static_visitor<Type>
       {
 #define LITERAL(T)                                      \
         Type operator() (T const& lhs, T const&) const  \
@@ -67,20 +67,20 @@ namespace expr
         Type operator() (List const& lhs, List const& rhs) const
         {
           return List
-            (boost::apply_visitor (*this, lhs._element, rhs._element));
+            (::boost::apply_visitor (*this, lhs._element, rhs._element));
         }
 
         Type operator() (Set const& lhs, Set const& rhs) const
         {
           return Set
-            (boost::apply_visitor (*this, lhs._element, rhs._element));
+            (::boost::apply_visitor (*this, lhs._element, rhs._element));
         }
 
         Type operator() (Map const& lhs, Map const& rhs) const
         {
           return Map
-            ( boost::apply_visitor (*this, lhs._key, rhs._key)
-            , boost::apply_visitor (*this, lhs._value, rhs._value)
+            ( ::boost::apply_visitor (*this, lhs._key, rhs._key)
+            , ::boost::apply_visitor (*this, lhs._value, rhs._value)
             );
         }
 
@@ -97,7 +97,7 @@ namespace expr
                                   ( sum.emplace
                                     ( std::end (sum)
                                     , l._name
-                                    , boost::apply_visitor
+                                    , ::boost::apply_visitor
                                         (*this, l._type, r._type)
                                     )->_type
                                   )
@@ -147,10 +147,10 @@ namespace expr
 
       Type operator+ (Type const& lhs, Type const& rhs)
       {
-        return boost::apply_visitor (plus{}, lhs, rhs);
+        return ::boost::apply_visitor (plus{}, lhs, rhs);
       }
 
-      class visitor_value_to_type : public boost::static_visitor<Type>
+      class visitor_value_to_type : public ::boost::static_visitor<Type>
       {
         template<typename Range>
           Type values_to_type (Range const& range) const
@@ -160,7 +160,7 @@ namespace expr
             , Any()
             , [this] (auto type, auto const& value)
               {
-                return type + boost::apply_visitor (*this, value);
+                return type + ::boost::apply_visitor (*this, value);
               }
             );
         }
@@ -197,8 +197,8 @@ namespace expr
 
         Type operator() (std::map<Value, Value> const& map) const
         {
-          return Map ( values_to_type (map | boost::adaptors::map_keys)
-                     , values_to_type (map | boost::adaptors::map_values)
+          return Map ( values_to_type (map | ::boost::adaptors::map_keys)
+                     , values_to_type (map | ::boost::adaptors::map_values)
                      );
         }
 
@@ -209,7 +209,7 @@ namespace expr
           for (auto const& field : s)
           {
             field_types.emplace_back
-              (field.first, boost::apply_visitor (*this, field.second));
+              (field.first, ::boost::apply_visitor (*this, field.second));
           }
 
           return Struct (field_types);
@@ -229,27 +229,27 @@ namespace expr
         auto const types
           ( fhg::util::visit<Types>
             ( type
-            , [] (Types const& types)
+            , [] (Types const& ts)
               {
-                return types;
+                return ts;
               }
-            , [] (auto const& type)
+            , [] (auto const& t)
               {
-                return Types {type};
+                return Types {t};
               }
             )
           );
 
         if (std::any_of ( std::begin (types._types), std::end (types._types)
-                        , [&] (auto const& type)
+                        , [&] (auto const& t)
                           {
-                            return !kind.types.count (type);
+                            return !kind.types.count (t);
                           }
                         )
            )
         {
           throw exception::type::error
-            ( boost::format ("%1% has type '%2%' but is not of kind '%3%' == %4%")
+            ( ::boost::format ("%1% has type '%2%' but is not of kind '%3%' == %4%")
             % description
             % type
             % kind.name
@@ -313,13 +313,13 @@ namespace expr
                                      };
 
       template<typename Description, typename Required>
-        boost::format not_the_same
+        ::boost::format not_the_same
           ( Description description
           , Required required
           , Type type
           )
       {
-        return boost::format ("%1% has type '%2%' but requires type '%3%'")
+        return ::boost::format ("%1% has type '%2%' but requires type '%3%'")
           % description
           % type
           % required
@@ -435,7 +435,7 @@ namespace expr
       using Element = Identity;
       using Value = Second;
 
-      class visitor_infer : public boost::static_visitor<Type>
+      class visitor_infer : public ::boost::static_visitor<Type>
       {
       private:
         Context& _context;
@@ -447,7 +447,7 @@ namespace expr
 
         Type operator() (pnet::type::value::value_type const& value) const
         {
-          return boost::apply_visitor (visitor_value_to_type{}, value);
+          return ::boost::apply_visitor (visitor_value_to_type{}, value);
         }
 
         Type operator() (Path::Particles const& path) const
@@ -458,14 +458,14 @@ namespace expr
           }
 
           throw std::runtime_error
-            (str (boost::format ("Could not infer type of %1%") % Path {path}));
+            (str (::boost::format ("Could not infer type of %1%") % Path {path}));
         }
 
         Type operator() (parse::node::unary_t const& u) const
         {
           auto const description
-            (boost::format ("argument '%1%' of '%2%'") % u.child % u.token);
-          auto const child (boost::apply_visitor (*this, u.child));
+            (::boost::format ("argument '%1%' of '%2%'") % u.child % u.token);
+          auto const child (::boost::apply_visitor (*this, u.child));
 
           auto const function
             ( [&] (auto arg, auto ret) -> Type
@@ -550,7 +550,7 @@ namespace expr
           }
 
           throw std::logic_error
-            (str ( boost::format ("Unknown unary token '%1%' in '%2%'")
+            (str ( ::boost::format ("Unknown unary token '%1%' in '%2%'")
                  % u.token
                  % u
                  )
@@ -559,19 +559,19 @@ namespace expr
 
         Type operator() (parse::node::binary_t const& b) const
         {
-          auto const rhs (boost::apply_visitor (*this, b.r));
+          auto const rhs (::boost::apply_visitor (*this, b.r));
 
           if (is_define (b.token))
           {
-            return _context.bind (boost::get<Path::Particles> (b.l), rhs);
+            return _context.bind (::boost::get<Path::Particles> (b.l), rhs);
           }
 
           auto const description_lhs
-            (boost::format ("left argument '%1%' of '%2%'") % b.l % b.token);
+            (::boost::format ("left argument '%1%' of '%2%'") % b.l % b.token);
           auto const description_rhs
-            (boost::format ("right argument '%1%' of '%2%'") % b.r % b.token);
+            (::boost::format ("right argument '%1%' of '%2%'") % b.r % b.token);
 
-          auto const lhs (boost::apply_visitor (*this, b.l));
+          auto const lhs (::boost::apply_visitor (*this, b.l));
 
           auto const function
             ( [&] (auto argl, auto argr, auto ret) -> Type
@@ -629,7 +629,7 @@ namespace expr
                 if (l != Any() && r != Any() && l != r)
                 {
                   throw exception::type::error
-                    ( boost::format ("The %1% has type '%2%' and the %3% has type '%4%' but the types should be the same")
+                    ( ::boost::format ("The %1% has type '%2%' and the %3% has type '%4%' but the types should be the same")
                     % description_lhs
                     % l
                     % description_rhs
@@ -728,7 +728,7 @@ namespace expr
           }
 
           throw std::logic_error
-            (str ( boost::format ("Unknown binary token '%1%' in '%2%'")
+            (str ( ::boost::format ("Unknown binary token '%1%' in '%2%'")
                  % b.token
                  % b
                  )
@@ -738,13 +738,13 @@ namespace expr
         Type operator() (parse::node::ternary_t const& t) const
         {
           auto const description_0
-            ( boost::format ("first argument '%1%' of '%2%'")
+            ( ::boost::format ("first argument '%1%' of '%2%'")
             % t.child0
             % t.token
             );
-          auto const child0 (boost::apply_visitor (*this, t.child0));
-          auto const child1 (boost::apply_visitor (*this, t.child1));
-          auto const child2 (boost::apply_visitor (*this, t.child2));
+          auto const child0 (::boost::apply_visitor (*this, t.child0));
+          auto const child1 (::boost::apply_visitor (*this, t.child1));
+          auto const child2 (::boost::apply_visitor (*this, t.child2));
 
           switch (t.token)
           {
@@ -757,7 +757,7 @@ namespace expr
           }
 
           throw std::logic_error
-            (str ( boost::format ("Unknown ternary token '%1%' in '%2%'")
+            (str ( ::boost::format ("Unknown ternary token '%1%' in '%2%'")
                  % t.token
                  % t
                  )
@@ -769,12 +769,12 @@ namespace expr
     Type infer (Context& context, parse::node::type const& node)
     try
     {
-      return boost::apply_visitor (visitor_infer (context), node);
+      return ::boost::apply_visitor (visitor_infer (context), node);
     }
     catch (...)
     {
       std::throw_with_nested
-        (exception::type::error (boost::format ("In '%1%'") % node));
+        (exception::type::error (::boost::format ("In '%1%'") % node));
     }
   }
 }

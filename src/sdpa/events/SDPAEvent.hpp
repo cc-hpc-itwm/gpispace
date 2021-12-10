@@ -30,9 +30,13 @@ namespace sdpa
     class SDPAEvent
     {
     public:
-      typedef boost::shared_ptr<SDPAEvent> Ptr;
+      typedef ::boost::shared_ptr<SDPAEvent> Ptr;
 
       virtual ~SDPAEvent() = default;
+      SDPAEvent (SDPAEvent const&) = delete;
+      SDPAEvent (SDPAEvent&&) = default;
+      SDPAEvent& operator= (SDPAEvent const&) = delete;
+      SDPAEvent& operator= (SDPAEvent&&) = delete;
 
       virtual void handleBy
         (fhg::com::p2p::address_t const& source, EventHandler*) = 0;
@@ -41,7 +45,7 @@ namespace sdpa
       SDPAEvent() = default;
 
     private:
-      friend class boost::serialization::access;
+      friend class ::boost::serialization::access;
       template <class Archive>
       void serialize (Archive &, unsigned int)
       {

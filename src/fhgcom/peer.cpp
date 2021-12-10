@@ -18,21 +18,24 @@
 
 #include <fhg/assert.hpp>
 #include <util-generic/hostname.hpp>
+#include <util-generic/latch.hpp>
 
 #include <boost/asio/connect.hpp>
 // should only need ssl/context.hpp, but that's missing an include
 #include <boost/asio/ssl.hpp>
 #include <boost/filesystem/operations.hpp>
+#include <boost/format.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/system/system_error.hpp>
 
+#include <future>
 #include <stdexcept>
 #include <utility>
 
 namespace
 {
   //Note: this mutex is needed to ensure non-concurrent
-  //initialization of the boost::ssl:context in peers
+  //initialization of the ::boost::ssl:context in peers
   std::mutex ssl_context_threadunsafety_guard;
 }
 
@@ -54,14 +57,12 @@ namespace fhg
     }                                                                   \
     while (false)
 
-    peer_t::peer_t ( std::unique_ptr<boost::asio::io_service> io_service
+    peer_t::peer_t ( std::unique_ptr<::boost::asio::io_service> io_service
                    , host_t const& host
                    , port_t const& port
                    , Certificates const& certificates
                    )
       : stopping_ (false)
-      , host_(host)
-      , port_(port)
       , io_service_ (std::move (io_service))
       , strand_ (*io_service_)
       , io_service_work_(*io_service_)
@@ -78,51 +79,52 @@ namespace fhg
         {
           std::lock_guard<std::mutex> lock_context
             (ssl_context_threadunsafety_guard);
-          ctx_ = std::make_unique<boost::asio::ssl::context>
-                   (*io_service_, boost::asio::ssl::context::sslv23);
+          ctx_ = std::make_unique<::boost::asio::ssl::context>
+                   (*io_service_, ::boost::asio::ssl::context::sslv23);
 
-          ctx_->set_options ( boost::asio::ssl::context::default_workarounds
-                            | boost::asio::ssl::context::no_sslv2
-                            | boost::asio::ssl::context::no_sslv3
-                            | boost::asio::ssl::context::single_dh_use
+          ctx_->set_options ( ::boost::asio::ssl::context::default_workarounds
+                            | ::boost::asio::ssl::context::no_sslv2
+                            | ::boost::asio::ssl::context::no_sslv3
+                            | ::boost::asio::ssl::context::single_dh_use
                             );
 
           ctx_->use_certificate_chain_file
-            (boost::filesystem::canonical (certificates.get()/"server.crt").string());
+            (::boost::filesystem::canonical (certificates.get()/"server.crt").string());
 
           ctx_->use_private_key_file
-            (boost::filesystem::canonical ( certificates.get()/"server.key").string()
-                                          , boost::asio::ssl::context::pem
+            (::boost::filesystem::canonical ( certificates.get()/"server.key").string()
+                                          , ::boost::asio::ssl::context::pem
                                           );
           ctx_->use_tmp_dh_file
-            (boost::filesystem::canonical (certificates.get()/"dh2048.pem").string());
+            (::boost::filesystem::canonical (certificates.get()/"dh2048.pem").string());
 
           ctx_->set_verify_mode
-            ( boost::asio::ssl::context::verify_fail_if_no_peer_cert
-            | boost::asio::ssl::context::verify_peer
+            ( ::boost::asio::ssl::context::verify_fail_if_no_peer_cert
+            | ::boost::asio::ssl::context::verify_peer
             );
 
           ctx_->load_verify_file
-            (boost::filesystem::canonical (certificates.get()/"server.crt").string());
+            (::boost::filesystem::canonical (certificates.get()/"server.crt").string());
         }
 
-        boost::asio::ip::tcp::resolver resolver(*io_service_);
-        boost::asio::ip::tcp::resolver::query query (host_, port_);
-        boost::asio::ip::tcp::endpoint endpoint = *resolver.resolve (query);
+        ::boost::asio::ip::tcp::resolver resolver(*io_service_);
+        ::boost::asio::ip::tcp::resolver::query query
+            (host, to_string (port));
+        ::boost::asio::ip::tcp::endpoint endpoint = *resolver.resolve (query);
 
-        if (host_ == "*")
+        if (static_cast<std::string> (host) == "*")
         {
-            endpoint.address (boost::asio::ip::address_v4::any());
+            endpoint.address (::boost::asio::ip::address_v4::any());
         }
 
         acceptor_.open (endpoint.protocol());
-        acceptor_.set_option (boost::asio::ip::tcp::acceptor::reuse_address (true));
-        acceptor_.set_option (boost::asio::ip::tcp::no_delay (true));
+        acceptor_.set_option (::boost::asio::ip::tcp::acceptor::reuse_address (true));
+        acceptor_.set_option (::boost::asio::ip::tcp::no_delay (true));
         acceptor_.bind (endpoint);
         acceptor_.listen();
 
         my_addr_ = p2p::address_t
-          (fhg::util::hostname() + ":" + std::to_string (local_endpoint().port()));
+          (host_t {fhg::util::hostname()}, port_t {local_endpoint().port()});
 
         strand_.post ([this] { accept_new(); });
       }
@@ -137,7 +139,7 @@ namespace fhg
     {
       stopping_ = true;
 
-      auto cancels_done (std::make_shared<util::thread::event<void>>());
+      auto cancels_done (std::make_shared<util::latch> (1));
 
       strand_.dispatch
         ( [this, cancels_done]
@@ -146,7 +148,7 @@ namespace fhg
 
             acceptor_.close ();
 
-            using namespace boost::system;
+            using namespace ::boost::system;
             auto const error_code
               (errc::make_error_code (errc::operation_canceled));
 
@@ -166,7 +168,7 @@ namespace fhg
               handle_error (*backlog_.begin(), error_code);
             }
 
-            cancels_done->notify();
+            cancels_done->count_down();
           }
         );
 
@@ -177,15 +179,19 @@ namespace fhg
 
     p2p::address_t peer_t::connect_to (host_t const& host, port_t const& port)
     {
-      std::string const fake_name (std::string (host) + ":" + std::string (port));
-      p2p::address_t const addr (fake_name);
+      p2p::address_t const addr (host, port);
 
       {
         std::unique_lock<std::recursive_mutex> const _ (mutex_);
 
         if (connections_.find (addr) != connections_.end())
         {
-          throw std::logic_error ("already connected to " + fake_name);
+          throw std::logic_error
+            (str ( boost::format ("already connected to %1%:%2%")
+                 % static_cast<std::string> (host)
+                 % to_string (port)
+                 )
+            );
         }
       }
 
@@ -199,7 +205,7 @@ namespace fhg
       }
 
       auto connect_done
-        (std::make_shared<util::thread::event<std::exception_ptr>>());
+        (std::make_shared<std::promise<std::exception_ptr>>());
 
       connections_.emplace (addr, connection_data_t());
 
@@ -212,7 +218,7 @@ namespace fhg
 
               connection_data_t& cd (connections_.at (addr));
 
-              cd.connection = boost::make_shared<connection_t>
+              cd.connection = ::boost::make_shared<connection_t>
                 ( *io_service_
                 , ctx_.get()
                 , strand_
@@ -224,10 +230,10 @@ namespace fhg
               cd.connection->local_address (my_addr_.get());
               cd.connection->remote_address (addr);
 
-              boost::asio::connect
+              ::boost::asio::connect
                 ( cd.connection->socket()
-                , boost::asio::ip::tcp::resolver (*io_service_)
-                    .resolve ({host, port})
+                , ::boost::asio::ip::tcp::resolver (*io_service_)
+                    .resolve ({host, to_string (port)})
                 );
 
               cd.connection->request_handshake (std::move (connect_done));
@@ -235,12 +241,13 @@ namespace fhg
             }
             catch (...)
             {
-              connect_done->notify (std::current_exception());
+              connect_done->set_value (std::current_exception());
             }
           }
         );
 
-      auto const exception_during_connect (connect_done->wait());
+      auto const exception_during_connect
+        (connect_done->get_future().get());
       if (exception_during_connect)
       {
         std::rethrow_exception (exception_during_connect);
@@ -251,8 +258,8 @@ namespace fhg
 
     void peer_t::request_handshake_response
       ( p2p::address_t addr
-      , std::shared_ptr<util::thread::event<std::exception_ptr>> connect_done
-      , boost::system::error_code const& ec
+      , std::shared_ptr<std::promise<std::exception_ptr>> connect_done
+      , ::boost::system::error_code const& ec
       )
     {
       REQUIRE_ON_STRAND();
@@ -268,11 +275,11 @@ namespace fhg
 
         connection_established (lock, connections_.at (addr));
 
-        connect_done->notify (nullptr);
+        connect_done->set_value (nullptr);
       }
       catch (...)
       {
-        connect_done->notify (std::current_exception());
+        connect_done->set_value (std::current_exception());
       }
     }
 
@@ -280,17 +287,17 @@ namespace fhg
                       , std::string const& data
                       )
     {
-      typedef fhg::util::thread::event<boost::system::error_code> async_op_t;
+      using async_op_t = std::promise<::boost::system::error_code>;
       async_op_t send_finished;
       async_send
         ( addr, data
-        , std::bind (&async_op_t::notify, &send_finished, std::placeholders::_1)
+        , [&] (auto ec) { send_finished.set_value (ec); }
         );
 
-      const boost::system::error_code ec (send_finished.wait());
+      const ::boost::system::error_code ec (send_finished.get_future().get());
       if (ec)
       {
-        throw boost::system::system_error (ec);
+        throw ::boost::system::system_error (ec);
       }
     }
 
@@ -305,7 +312,7 @@ namespace fhg
 
       if (stopping_)
       {
-        using namespace boost::system;
+        using namespace ::boost::system;
         completion_handler (errc::make_error_code (errc::network_down));
         return;
       }
@@ -313,12 +320,7 @@ namespace fhg
       // TODO: io_service_->post (...);
 
       connection_data_t & cd = connections_.at (addr);
-      to_send_t to_send;
-      to_send.message.header.src = my_addr_.get();
-      to_send.message.header.dst = addr;
-      to_send.message.assign (data);
-      to_send.handler = completion_handler;
-      cd.o_queue.push_back (std::move (to_send));
+      cd.o_queue.push_back ({{data, my_addr_.get(), addr}, completion_handler});
 
       if (cd.o_queue.size () == 1)
       {
@@ -326,13 +328,42 @@ namespace fhg
       }
     }
 
-    void peer_t::async_recv
-      ( std::function<void ( boost::system::error_code
-                           , boost::optional<fhg::com::p2p::address_t>
-                           , fhg::com::message_t message
-                           )
-                     > completion_handler
-      )
+    peer_t::Received::Received (::boost::system::error_code ec)
+      : _ec (std::move (ec))
+    {}
+    peer_t::Received::Received
+       ( ::boost::system::error_code ec
+       , p2p::address_t source
+       , message_t message
+       )
+         : _ec (std::move (ec))
+         , _source (std::move (source))
+         , _message (std::move (message))
+    {}
+    ::boost::system::error_code peer_t::Received::ec() const
+    {
+      return _ec;
+    }
+    p2p::address_t const& peer_t::Received::source() const
+    {
+      if (!_source)
+      {
+        throw std::logic_error ("peer_t::Received::source");
+      }
+
+      return *_source;
+    }
+    message_t const& peer_t::Received::message() const
+    {
+      if (!_message)
+      {
+        throw std::logic_error ("peer_t::Received::message");
+      }
+
+      return *_message;
+    }
+
+    void peer_t::async_recv (std::function<void (Received)> completion_handler)
     {
       fhg_assert (completion_handler);
 
@@ -340,10 +371,8 @@ namespace fhg
 
       if (stopping_)
       {
-        using namespace boost::system;
-        fhg::com::message_t empty_message;
-        completion_handler
-          (errc::make_error_code (errc::network_down), boost::none, empty_message);
+        using namespace ::boost::system;
+        completion_handler (errc::make_error_code (errc::network_down));
       }
       else if (m_pending.empty())
       {
@@ -361,32 +390,33 @@ namespace fhg
         // handler directly?
         lock.unlock();
 
-        using namespace boost::system;
+        using namespace ::boost::system;
         completion_handler
-          (errc::make_error_code (errc::success), m.header.src, std::move (m));
+          ( { errc::make_error_code (errc::success)
+            , m.header.src
+            , std::move (m)
+            }
+          );
       }
     }
 
     void peer_t::connection_established
       (lock_type const& lock, connection_data_t& cd)
     {
-      cd.connection->set_option (boost::asio::socket_base::keep_alive (true));
-      cd.connection->set_option (boost::asio::ip::tcp::no_delay (true));
+      cd.connection->set_option (::boost::asio::socket_base::keep_alive (true));
+      cd.connection->set_option (::boost::asio::ip::tcp::no_delay (true));
 
       // send hello message
-      to_send_t to_send;
-      to_send.handler = [](boost::system::error_code const&) {};
-      to_send.message.header.src = my_addr_.get();
-      to_send.message.header.dst = cd.connection->remote_address();
-      to_send.message.header.type_of_msg = p2p::HELLO_PACKET;
-      to_send.message.resize (0);
-
       cd.connection->start ();
-      cd.o_queue.push_front (std::move (to_send));
+      cd.o_queue.push_front
+        ( { {message_t::Hello{}, my_addr_.get(), cd.connection->remote_address()}
+          , [](::boost::system::error_code const&) {}
+          }
+        );
       start_sender (lock, cd);
     }
 
-    void peer_t::handle_send (p2p::address_t a, boost::system::error_code const& ec)
+    void peer_t::handle_send (p2p::address_t a, ::boost::system::error_code const& ec)
     {
       lock_type lock (mutex_);
 
@@ -394,7 +424,7 @@ namespace fhg
       {
         if (ec)
         {
-          throw boost::system::system_error (ec);
+          throw ::boost::system::system_error (ec);
         }
         return;
       }
@@ -415,7 +445,7 @@ namespace fhg
 
       if (ec)
       {
-        throw boost::system::system_error (ec);
+        throw ::boost::system::system_error (ec);
       }
 
       if (! ec)
@@ -466,7 +496,7 @@ namespace fhg
         );
     }
 
-    void peer_t::handle_accept (boost::system::error_code const& ec)
+    void peer_t::handle_accept (::boost::system::error_code const& ec)
     {
       if (! ec && !stopping_)
       {
@@ -478,7 +508,7 @@ namespace fhg
     }
 
     void peer_t::acknowledge_handshake_response
-      (connection_t::ptr_t connection, boost::system::error_code const& ec)
+      (connection_t::ptr_t connection, ::boost::system::error_code const& ec)
     {
       REQUIRE_ON_STRAND();
 
@@ -538,7 +568,7 @@ namespace fhg
 
       if (backlog_.find (c) == backlog_.end())
       {
-        handle_error (c, boost::system::errc::make_error_code (boost::system::errc::connection_reset));
+        handle_error (c, ::boost::system::errc::make_error_code (::boost::system::errc::connection_reset));
       }
       else
       {
@@ -576,19 +606,20 @@ namespace fhg
           auto const to_recv (std::move (m_to_recv.front()));
           m_to_recv.pop_front();
 
-          using namespace boost::system;
+          using namespace ::boost::system;
 
           lock.unlock ();
-          to_recv ( errc::make_error_code (errc::success)
-                  , connection->remote_address()
-                  , std::move (*m)
+          to_recv ( { errc::make_error_code (errc::success)
+                    , connection->remote_address()
+                    , std::move (*m)
+                    }
                   );
           lock.lock ();
         }
       }
     }
 
-    void peer_t::handle_error (connection_t::ptr_t c, boost::system::error_code const& ec)
+    void peer_t::handle_error (connection_t::ptr_t c, ::boost::system::error_code const& ec)
     {
       REQUIRE_ON_STRAND();
 
@@ -625,7 +656,7 @@ namespace fhg
           );
 
         // the handler might async recv again...
-        std::list<to_recv_t> tmp;
+        std::list<std::function<void (Received)>> tmp;
         std::swap (tmp, m_to_recv);
 
         while (! tmp.empty())
@@ -633,12 +664,10 @@ namespace fhg
           auto const to_recv (std::move (tmp.front()));
           tmp.pop_front();
 
-          message_t m;
-          m.header.src = c->remote_address();
-          m.header.dst = c->local_address();
+          message_t m {c->remote_address(), c->local_address()};
 
           lock.unlock ();
-          to_recv (ec, c->remote_address(), std::move (m));
+          to_recv ({ec, c->remote_address(), std::move (m)});
           lock.lock ();
         }
 

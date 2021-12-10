@@ -23,7 +23,7 @@ namespace xml
   namespace parse
   {
     std::string validate_field_name ( std::string const&
-                                    , boost::filesystem::path const&
+                                    , ::boost::filesystem::path const&
                                     );
   }
 }

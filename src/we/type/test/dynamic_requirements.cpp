@@ -39,10 +39,10 @@ BOOST_AUTO_TEST_CASE (transition_has_no_dynamic_requirements)
   we::type::Transition transition
     ( fhg::util::testing::random_string()
     , we::type::Expression()
-    , boost::none
+    , ::boost::none
     , we::type::property::type()
     , we::priority_type()
-    , boost::optional<we::type::eureka_id_type>{}
+    , ::boost::optional<we::type::eureka_id_type>{}
     , std::list<we::type::Preference>{}
     );
 
@@ -78,10 +78,10 @@ BOOST_AUTO_TEST_CASE (transition_has_dynamic_requirements)
   we::type::Transition transition
     ( fhg::util::testing::random_string()
     , we::type::Expression()
-    , boost::none
+    , ::boost::none
     , properties
     , we::priority_type()
-    , boost::optional<we::type::eureka_id_type>{}
+    , ::boost::optional<we::type::eureka_id_type>{}
     , std::list<we::type::Preference>{}
     );
 

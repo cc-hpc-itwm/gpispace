@@ -26,7 +26,7 @@ namespace pnet
       structured (std::string const&, type::value::structured_type const&);
 
     class visitor_structured
-      : public boost::static_visitor<type::signature::field_type>
+      : public ::boost::static_visitor<type::signature::field_type>
     {
     public:
       visitor_structured (std::string const& name)
@@ -58,7 +58,7 @@ namespace pnet
 
       for (type::value::structured_type::value_type const& f : v)
       {
-        s.emplace_back (boost::apply_visitor ( visitor_structured (f.first)
+        s.emplace_back (::boost::apply_visitor ( visitor_structured (f.first)
                                              , f.second
                                              )
                        );
@@ -68,7 +68,7 @@ namespace pnet
     }
 
     class visitor_signature
-      : public boost::static_visitor<type::signature::signature_type>
+      : public ::boost::static_visitor<type::signature::signature_type>
     {
     public:
       type::signature::signature_type
@@ -88,6 +88,6 @@ namespace pnet
   type::signature::signature_type
     signature_of (type::value::value_type const& value)
   {
-    return boost::apply_visitor (visitor_signature(), value);
+    return ::boost::apply_visitor (visitor_signature(), value);
   }
 }

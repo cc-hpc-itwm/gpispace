@@ -55,9 +55,9 @@ namespace fhg
         {
           util::syscall::close (fd);
         }
-        catch (boost::system::system_error const& err)
+        catch (::boost::system::system_error const& err)
         {
-          if (err.code() == boost::system::errc::bad_file_descriptor)
+          if (err.code() == ::boost::system::errc::bad_file_descriptor)
           {
             // ignore: fd wasn't open
             return;
@@ -87,7 +87,7 @@ namespace fhg
 
       std::vector<char*> prepare_argv
         ( std::vector<char>& argv_buffer
-        , boost::filesystem::path const& command
+        , ::boost::filesystem::path const& command
         , int pipe_fd
         , std::vector<std::string> const& arguments
         )
@@ -171,7 +171,7 @@ namespace fhg
     }
 
     StartupResult execute_and_get_startup_messages
-      ( boost::filesystem::path command
+      ( ::boost::filesystem::path command
       , std::vector<std::string> arguments
       , std::unordered_map<std::string, std::string> environment
       )
@@ -185,8 +185,8 @@ namespace fhg
       {
         util::syscall::close (pipe_fds[1]);
 
-        boost::iostreams::stream<boost::iostreams::file_descriptor_source>
-          pipe_read (pipe_fds[0], boost::iostreams::close_handle);
+        ::boost::iostreams::stream<::boost::iostreams::file_descriptor_source>
+          pipe_read (pipe_fds[0], ::boost::iostreams::close_handle);
 
         pipe_read >> std::noskipws;
 
@@ -260,7 +260,7 @@ namespace fhg
         }
 
         std::istringstream stream (message_data);
-        boost::archive::text_iarchive archive (stream);
+        ::boost::archive::text_iarchive archive (stream);
         bool result;
         archive & result;
 
@@ -308,16 +308,16 @@ namespace fhg
         {
           util::syscall::execve (command.string().c_str(), argv.data(), envp.data());
         }
-        catch (boost::system::system_error const& err)
+        catch (::boost::system::system_error const& err)
         {
           _exit
-            ( err.code() == boost::system::errc::argument_list_too_long ? 241
-            : err.code() == boost::system::errc::filename_too_long ? 242
-            : err.code() == boost::system::errc::invalid_argument ? 243
-            : err.code() == boost::system::errc::no_such_file_or_directory ? 244
-            : err.code() == boost::system::errc::not_a_directory ? 245
-            : err.code() == boost::system::errc::permission_denied ? 246
-            : err.code() == boost::system::errc::too_many_symbolic_link_levels ? 247
+            ( err.code() == ::boost::system::errc::argument_list_too_long ? 241
+            : err.code() == ::boost::system::errc::filename_too_long ? 242
+            : err.code() == ::boost::system::errc::invalid_argument ? 243
+            : err.code() == ::boost::system::errc::no_such_file_or_directory ? 244
+            : err.code() == ::boost::system::errc::not_a_directory ? 245
+            : err.code() == ::boost::system::errc::permission_denied ? 246
+            : err.code() == ::boost::system::errc::too_many_symbolic_link_levels ? 247
             : 240
             );
         }

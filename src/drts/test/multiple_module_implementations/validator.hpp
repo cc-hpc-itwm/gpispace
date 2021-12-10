@@ -34,7 +34,7 @@ namespace
     if (workers.size() != 1)
     {
       throw std::runtime_error
-        ( ( boost::format ("Unexpected number of workers: %1%!")
+        ( ( ::boost::format ("Unexpected number of workers: %1%!")
           % workers.size()
           ).str()
         );
@@ -44,7 +44,7 @@ namespace
     if (worker.find (expected_implementation) == std::string::npos)
     {
       throw std::runtime_error
-        ( ( boost::format ("Worker %1%: missing capability %2%!")
+        ( ( ::boost::format ("Worker %1%: missing capability %2%!")
           % worker
           % expected_implementation
           ).str()

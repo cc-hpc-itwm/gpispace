@@ -25,7 +25,6 @@
 #include <sdpa/events/JobFailedEvent.hpp>
 #include <sdpa/events/JobFinishedAckEvent.hpp>
 #include <sdpa/events/JobFinishedEvent.hpp>
-#include <sdpa/events/JobStatusReplyEvent.hpp>
 #include <sdpa/events/Serialization.hpp>
 #include <sdpa/events/SubmitJobAckEvent.hpp>
 #include <sdpa/events/SubmitJobEvent.hpp>
@@ -50,11 +49,11 @@ namespace sdpa
       template <class Archive>
         void initialize_archive (Archive& ar)
       {
-        boost::serialization::void_cast_register<JobEvent, SDPAEvent>();
-        boost::serialization::void_cast_register<MgmtEvent, SDPAEvent>();
+        ::boost::serialization::void_cast_register<JobEvent, SDPAEvent>();
+        ::boost::serialization::void_cast_register<MgmtEvent, SDPAEvent>();
 
 #define REGISTER(TYPE, BASE)                                            \
-        boost::serialization::void_cast_register<TYPE, BASE>();         \
+        ::boost::serialization::void_cast_register<TYPE, BASE>();         \
         ar.template register_type<TYPE>()
 
         REGISTER (CancelJobAckEvent, JobEvent);
@@ -66,7 +65,6 @@ namespace sdpa
         REGISTER (JobFailedEvent, JobEvent);
         REGISTER (JobFinishedAckEvent, JobEvent);
         REGISTER (JobFinishedEvent, JobEvent);
-        REGISTER (JobStatusReplyEvent, JobEvent);
         REGISTER (SubmitJobAckEvent, JobEvent);
         REGISTER (SubmitJobEvent, SDPAEvent);
         REGISTER (SubscribeAckEvent, MgmtEvent);
@@ -86,7 +84,7 @@ namespace sdpa
     std::string Codec::encode (sdpa::events::SDPAEvent const* e) const
     {
       std::ostringstream sstr;
-      boost::archive::text_oarchive ar (sstr);
+      ::boost::archive::text_oarchive ar (sstr);
       initialize_archive (ar);
       ar << e;
       return sstr.str();
@@ -95,7 +93,7 @@ namespace sdpa
     sdpa::events::SDPAEvent* Codec::decode (std::string const& s) const
     {
       std::istringstream sstr (s);
-      boost::archive::text_iarchive ar (sstr);
+      ::boost::archive::text_iarchive ar (sstr);
       initialize_archive (ar);
       SDPAEvent* e (nullptr);
       ar >> e;

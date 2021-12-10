@@ -221,20 +221,20 @@ namespace sdpa
       }
     }
 
-    boost::optional<WorkerManager::worker_connections_t::right_iterator>
+    ::boost::optional<WorkerManager::worker_connections_t::right_iterator>
       WorkerManager::worker_by_address (fhg::com::p2p::address_t const& address)
     {
       WorkerManager::worker_connections_t::right_iterator it
         (worker_connections_.right.find (address));
-      return boost::make_optional (it != worker_connections_.right.end(), it);
+      return ::boost::make_optional (it != worker_connections_.right.end(), it);
     }
 
-    boost::optional<WorkerManager::worker_connections_t::left_iterator>
+    ::boost::optional<WorkerManager::worker_connections_t::left_iterator>
       WorkerManager::address_by_worker (std::string const& worker)
     {
       WorkerManager::worker_connections_t::left_iterator it
         (worker_connections_.left.find (worker));
-      return boost::make_optional (it != worker_connections_.left.end(), it);
+      return ::boost::make_optional (it != worker_connections_.left.end(), it);
     }
 
     WorkerManager::WorkerEquivalenceClass::WorkerEquivalenceClass()

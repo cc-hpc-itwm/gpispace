@@ -38,7 +38,7 @@ namespace fhg
       }
 
       BOOST_AUTO_TEST_CASE
-        (false_condition_fails, *boost::unit_test::expected_failures (8))
+        (false_condition_fails, *::boost::unit_test::expected_failures (8))
       {
         FHG_UTIL_TESTING_COMPILETIME_CHECK (!true);
         FHG_UTIL_TESTING_COMPILETIME_CHECK (false);

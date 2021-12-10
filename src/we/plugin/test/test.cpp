@@ -37,7 +37,7 @@ namespace gspc
     {
       namespace
       {
-        namespace tf = boost::unit_test::framework;
+        namespace tf = ::boost::unit_test::framework;
 
         struct FPlugins
         {
@@ -142,7 +142,7 @@ namespace gspc
             }
           , fhg::util::testing::make_nested
             ( std::runtime_error
-              (str ( boost::format ("Plugins::before_eval (%1%, %2%)")
+              (str ( ::boost::format ("Plugins::before_eval (%1%, %2%)")
                    % to_string (pid)
                    % context
                    )
@@ -157,7 +157,7 @@ namespace gspc
             }
           , fhg::util::testing::make_nested
             ( std::runtime_error
-              (str ( boost::format ("Plugins::after_eval (%1%, %2%)")
+              (str ( ::boost::format ("Plugins::after_eval (%1%, %2%)")
                    % to_string (pid)
                    % context
                    )
@@ -307,7 +307,7 @@ namespace gspc
             }
           , fhg::util::testing::make_nested
             ( std::runtime_error
-              (str ( boost::format ("Plugins::before_eval (%1%, %2%)")
+              (str ( ::boost::format ("Plugins::before_eval (%1%, %2%)")
                    % to_string (pid)
                    % context
                    )
@@ -322,7 +322,7 @@ namespace gspc
             }
           , fhg::util::testing::make_nested
             ( std::runtime_error
-              (str ( boost::format ("Plugins::after_eval (%1%, %2%)")
+              (str ( ::boost::format ("Plugins::after_eval (%1%, %2%)")
                    % to_string (pid)
                    % context
                    )
@@ -341,8 +341,8 @@ namespace gspc
             }
           , fhg::util::testing::make_nested
             ( std::runtime_error
-              (str ( boost::format ("Plugins::create (%1%, %2%)")
-                   % boost::filesystem::path {D}
+              (str ( ::boost::format ("Plugins::create (%1%, %2%)")
+                   % ::boost::filesystem::path {D}
                    % context
                    )
               )

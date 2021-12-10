@@ -19,8 +19,8 @@
 #include <rif/entry_point.hpp>
 #include <rif/protocol.hpp>
 
-#include <rpc/remote_tcp_endpoint.hpp>
-#include <rpc/remote_function.hpp>
+#include <util-rpc/remote_tcp_endpoint.hpp>
+#include <util-rpc/remote_function.hpp>
 
 namespace fhg
 {
@@ -29,7 +29,7 @@ namespace fhg
     class client
     {
     public:
-      client ( boost::asio::io_service& io_service
+      client ( ::boost::asio::io_service& io_service
              , fhg::rif::entry_point const& entry_point
              )
         : _endpoint (io_service, entry_point.hostname, entry_point.port)

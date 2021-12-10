@@ -41,7 +41,7 @@ namespace fhg
 
     template<typename Fun, typename It>
       void blocked ( It begin, It end
-                   , boost::optional<std::size_t> const& block_size
+                   , ::boost::optional<std::size_t> const& block_size
                    , Fun&& fun
                    )
     {
@@ -75,7 +75,7 @@ namespace fhg
                >
         blocked_async_with_results
           ( Container const& container
-          , boost::optional<std::size_t> const& block_size
+          , ::boost::optional<std::size_t> const& block_size
           , std::function<Key (typename Container::const_iterator::value_type const&)>
               const& key
           , Fun&& fun
@@ -134,7 +134,7 @@ namespace fhg
                >
         blocked_async
           ( Container const& container
-          , boost::optional<std::size_t> const& block_size
+          , ::boost::optional<std::size_t> const& block_size
           , std::function<Key (typename Container::const_iterator::value_type const&)>
               const& key
           , Fun&& fun

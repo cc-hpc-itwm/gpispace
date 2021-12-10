@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <boost/serialization/nvp.hpp>
-
 namespace we
 {
   namespace type
@@ -23,13 +21,13 @@ namespace we
     template<typename Archive>
       void ModuleCall::serialize (Archive& ar, unsigned int)
     {
-      ar & BOOST_SERIALIZATION_NVP (module_);
-      ar & BOOST_SERIALIZATION_NVP (function_);
-      ar & BOOST_SERIALIZATION_NVP (_memory_buffers);
-      ar & BOOST_SERIALIZATION_NVP (_memory_gets);
-      ar & BOOST_SERIALIZATION_NVP (_memory_puts);
-      ar & BOOST_SERIALIZATION_NVP (_require_function_unloads_without_rest);
-      ar & BOOST_SERIALIZATION_NVP (_require_module_unloads_without_rest);
+      ar & module_;
+      ar & function_;
+      ar & _memory_buffers;
+      ar & _memory_gets;
+      ar & _memory_puts;
+      ar & _require_function_unloads_without_rest;
+      ar & _require_module_unloads_without_rest;
     }
   }
 }

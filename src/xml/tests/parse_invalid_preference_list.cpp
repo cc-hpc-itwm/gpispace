@@ -48,7 +48,7 @@ namespace
 
   std::string create_non_preference_transition_data_type
     ( transition_type const type
-    , boost::optional<std::string> const name = boost::none
+    , ::boost::optional<std::string> const name = ::boost::none
     )
   {
     switch (type)
@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE (parse_preference_list_with_duplicates)
   std::string const name (fhg::util::testing::random_identifier());
 
   std::string const input
-    ( ( boost::format (R"EOS(
+    ( ( ::boost::format (R"EOS(
         <defun>
           <modules>
             <preferences>
@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE (parse_preference_list_with_duplicates)
           std::istringstream input_stream (input);
           xml::parse::just_parse (state, input_stream);
         }
-      , boost::format ( "ERROR: duplicate target type '%1%' at %2%"
+      , ::boost::format ( "ERROR: duplicate target type '%1%' at %2%"
                         ", already in the preferences"
                       )
         % name
@@ -130,7 +130,7 @@ BOOST_AUTO_TEST_CASE (parse_preference_list_with_duplicates)
 BOOST_AUTO_TEST_CASE (parse_empty_preference_list)
 {
   std::string const input
-    ( ( boost::format (R"EOS(
+    ( ( ::boost::format (R"EOS(
         <defun>
           <modules>
             <preferences>
@@ -149,7 +149,7 @@ BOOST_AUTO_TEST_CASE (parse_empty_preference_list)
           std::istringstream input_stream (input);
           xml::parse::just_parse (state, input_stream);
         }
-        , boost::format ( "ERROR: preferences enabled, but no targets"
+        , ::boost::format ( "ERROR: preferences enabled, but no targets"
                         " specified at %1%"
                       )
           % "[<stdin>:4:13]"
@@ -161,7 +161,7 @@ BOOST_AUTO_TEST_CASE (parse_preference_list_with_invalid_identifier)
   std::string const name (random_identifier_with_invalid_prefix());
 
   std::string const input
-    ( ( boost::format (R"EOS(
+    ( ( ::boost::format (R"EOS(
         <defun>
           <modules>
             <preferences>
@@ -182,7 +182,7 @@ BOOST_AUTO_TEST_CASE (parse_preference_list_with_invalid_identifier)
           std::istringstream input_stream (input);
           xml::parse::just_parse (state, input_stream);
         }
-      , boost::format ( "ERROR: %2% %1% is invalid"
+      , ::boost::format ( "ERROR: %2% %1% is invalid"
                         " (not of the form: [a-zA-Z_][a-zA-Z_0-9]^*)"
                         " in %3%"
                       )
@@ -203,7 +203,7 @@ BOOST_DATA_TEST_CASE ( parse_preference_list_without_modules
   auto const second_target_name (target_names());
 
   std::string const input
-    ( ( boost::format (R"EOS(
+    ( ( ::boost::format (R"EOS(
         <defun>
           <modules>
             <preferences>
@@ -228,7 +228,7 @@ BOOST_DATA_TEST_CASE ( parse_preference_list_without_modules
           std::istringstream input_stream (input);
           xml::parse::just_parse (state, input_stream);
         }
-      , boost::format ( "ERROR: preferences enabled, but"
+      , ::boost::format ( "ERROR: preferences enabled, but"
                         " no modules with target defined"
                         " in %1%"
                       )
@@ -263,7 +263,7 @@ BOOST_AUTO_TEST_CASE (parse_multi_modules_with_a_module_without_target)
             (pnet_mixed_modules.pnet_xml);
           xml::parse::just_parse (state, input_stream);
         }
-      , boost::format ( "ERROR: module '%1%' missing target"
+      , ::boost::format ( "ERROR: module '%1%' missing target"
                         " for multi-module transition at %2%"
                       )
                       % mod_name_with_no_target
@@ -297,7 +297,7 @@ BOOST_AUTO_TEST_CASE (parse_multi_modules_with_duplicate_module_targets)
             (pnet_dup_modules.pnet_xml);
           xml::parse::just_parse (state, input_stream);
         }
-      , boost::format ( "ERROR: duplicate module '%1%' for target '%2%'"
+      , ::boost::format ( "ERROR: duplicate module '%1%' for target '%2%'"
                         " at %3%"
                       )
                       % (mod_name + "_" + target_name_first)
@@ -329,7 +329,7 @@ BOOST_AUTO_TEST_CASE (parse_multi_modules_without_preferences)
             (pnet_no_pref.pnet_xml);
           xml::parse::just_parse (state, input_stream);
         }
-      , boost::format ("ERROR: modules without preferences at %1%")
+      , ::boost::format ("ERROR: modules without preferences at %1%")
           % "[<stdin>:3:11]"
       );
 }
@@ -440,7 +440,7 @@ BOOST_AUTO_TEST_CASE (parse_multi_modules_with_non_empty_mismatching_preferences
             (multi_mod.pnet_xml);
           xml::parse::just_parse (state, input_stream);
         }
-      , boost::format ( "ERROR: mismatching targets for"
+      , ::boost::format ( "ERROR: mismatching targets for"
                         " multi-module transition in %3%, %1%%2%"
                       )
                       % ( targets.no_modules.empty()

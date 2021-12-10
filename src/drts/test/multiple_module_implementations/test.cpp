@@ -20,11 +20,11 @@
 #include <drts/drts.hpp>
 #include <drts/scoped_rifd.hpp>
 
-#include <test/make.hpp>
-#include <test/parse_command_line.hpp>
-#include <test/scoped_nodefile_from_environment.hpp>
-#include <test/source_directory.hpp>
-#include <test/shared_directory.hpp>
+#include <testing/make.hpp>
+#include <testing/parse_command_line.hpp>
+#include <testing/scoped_nodefile_from_environment.hpp>
+#include <testing/source_directory.hpp>
+#include <testing/shared_directory.hpp>
 
 #include <util-generic/read_lines.hpp>
 #include <util-generic/temporary_file.hpp>
@@ -42,7 +42,7 @@
 
 BOOST_AUTO_TEST_CASE (multiple_module_implementations)
 {
-  boost::program_options::options_description options_description;
+  ::boost::program_options::options_description options_description;
 
   options_description.add (test::options::source_directory());
   options_description.add (test::options::shared_directory());
@@ -51,10 +51,10 @@ BOOST_AUTO_TEST_CASE (multiple_module_implementations)
   options_description.add (gspc::options::logging());
   options_description.add (gspc::options::scoped_rifd());
 
-  boost::program_options::variables_map vm
+  ::boost::program_options::variables_map vm
     ( test::parse_command_line
-        ( boost::unit_test::framework::master_test_suite().argc
-        , boost::unit_test::framework::master_test_suite().argv
+        ( ::boost::unit_test::framework::master_test_suite().argc
+        , ::boost::unit_test::framework::master_test_suite().argv
         , options_description
         )
     );
@@ -68,8 +68,8 @@ BOOST_AUTO_TEST_CASE (multiple_module_implementations)
     (shared_directory, vm);
 
   fhg::util::temporary_path const _installation_dir
-    (shared_directory / boost::filesystem::unique_path());
-  boost::filesystem::path const installation_dir (_installation_dir);
+    (shared_directory / ::boost::filesystem::unique_path());
+  ::boost::filesystem::path const installation_dir (_installation_dir);
 
   gspc::set_application_search_path (vm, installation_dir);
 
@@ -129,13 +129,13 @@ BOOST_AUTO_TEST_CASE (multiple_module_implementations)
 
   for (auto it (implementations.first); it != implementations.second; it++)
   {
-    BOOST_REQUIRE (preferences.count (boost::get<std::string>(it->second)));
+    BOOST_REQUIRE (preferences.count (::boost::get<std::string>(it->second)));
   }
 }
 
 BOOST_AUTO_TEST_CASE (single_module_with_target)
 {
-  boost::program_options::options_description options_description;
+  ::boost::program_options::options_description options_description;
 
   options_description.add (test::options::source_directory());
   options_description.add (test::options::shared_directory());
@@ -144,10 +144,10 @@ BOOST_AUTO_TEST_CASE (single_module_with_target)
   options_description.add (gspc::options::logging());
   options_description.add (gspc::options::scoped_rifd());
 
-  boost::program_options::variables_map vm
+  ::boost::program_options::variables_map vm
     ( test::parse_command_line
-        ( boost::unit_test::framework::master_test_suite().argc
-        , boost::unit_test::framework::master_test_suite().argv
+        ( ::boost::unit_test::framework::master_test_suite().argc
+        , ::boost::unit_test::framework::master_test_suite().argv
         , options_description
         )
     );
@@ -161,8 +161,8 @@ BOOST_AUTO_TEST_CASE (single_module_with_target)
     (shared_directory, vm);
 
   fhg::util::temporary_path const _installation_dir
-    (shared_directory / boost::filesystem::unique_path());
-  boost::filesystem::path const installation_dir (_installation_dir);
+    (shared_directory / ::boost::filesystem::unique_path());
+  ::boost::filesystem::path const installation_dir (_installation_dir);
 
   gspc::set_application_search_path (vm, installation_dir);
 
@@ -222,7 +222,6 @@ BOOST_AUTO_TEST_CASE (single_module_with_target)
 
   for (auto it (implementations.first); it != implementations.second; it++)
   {
-    BOOST_REQUIRE (preferences.count (boost::get<std::string>(it->second)));
+    BOOST_REQUIRE (preferences.count (::boost::get<std::string>(it->second)));
   }
 }
-

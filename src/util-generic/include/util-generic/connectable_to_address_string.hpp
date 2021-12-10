@@ -31,7 +31,7 @@ namespace fhg
     //! to be called on that host, i.e. should always be called in the
     //! same process creating the address.
     std::string connectable_to_address_string
-      (boost::asio::ip::address const& address);
+      (::boost::asio::ip::address const& address);
 
     //! Convert a Boost.Asio IP \a endpoint into a hostname string and
     //! port pair that can be used to connect from remote machines.

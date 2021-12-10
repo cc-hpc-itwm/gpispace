@@ -57,7 +57,7 @@ namespace xml
         return _modules;
       }
 
-      boost::optional<we::type::eureka_id_type> const&
+      ::boost::optional<we::type::eureka_id_type> const&
         multi_module_type::eureka_id() const
       {
         return _modules.begin()->second.eureka_id();

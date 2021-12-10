@@ -35,7 +35,7 @@ namespace
     ( std::list<std::string> const& preference_targets
     , std::list<std::string> const& module_targets
     , std::string const& module_name
-    , boost::optional<std::string> const& add_trans_content
+    , ::boost::optional<std::string> const& add_trans_content
     );
 
   struct pnet_with_multi_modules
@@ -47,8 +47,8 @@ namespace
       ( std::list<std::string> const& pref_targets
       , std::list<std::string> const& mod_targets
       , std::string const& mod_name
-      , boost::optional<std::string> const add_to_pnet
-        = boost::none
+      , ::boost::optional<std::string> const add_to_pnet
+        = ::boost::none
       );
 
     pnet_with_multi_modules

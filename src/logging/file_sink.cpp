@@ -27,7 +27,7 @@ namespace fhg
     namespace error
     {
       unable_to_write_to_file::unable_to_write_to_file
-          (boost::filesystem::path const& path)
+          (::boost::filesystem::path const& path)
         : std::runtime_error
             ("unable to open '" + path.string() + "' for writing")
       {}
@@ -35,9 +35,9 @@ namespace fhg
 
     file_sink::file_sink
         ( endpoint const& emitter
-        , boost::filesystem::path const& target
+        , ::boost::filesystem::path const& target
         , std::function<void (std::ostream&, message const&)> formatter
-        , boost::optional<std::size_t> flush_interval
+        , ::boost::optional<std::size_t> flush_interval
         )
       : _stream()
       , _formatter (std::move (formatter))

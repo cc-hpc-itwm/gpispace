@@ -17,9 +17,8 @@
 #include <sdpa/test/sdpa/utils.hpp>
 #include <sdpa/types.hpp>
 
-#include <test/certificates_data.hpp>
+#include <testing/certificates_data.hpp>
 
-#include <fhg/util/thread/event.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/optional.hpp>
 
@@ -27,6 +26,7 @@
 #include <boost/test/data/test_case.hpp>
 #include <boost/test/unit_test.hpp>
 
+#include <future>
 #include <string>
 
 BOOST_DATA_TEST_CASE
@@ -43,29 +43,29 @@ BOOST_DATA_TEST_CASE
     (client.submit_job (utils::net_with_one_child_requiring_workers (2)));
 
   {
-    fhg::util::thread::event<std::string> submitted_0;
+    std::promise<std::string> submitted_0;
     utils::fake_drts_worker_waiting_for_finished_ack worker_0
-      ([&] (std::string s) { submitted_0.notify (s); }, agent, certificates);
+      ([&] (std::string s) { submitted_0.set_value (s); }, agent, certificates);
 
-    fhg::util::thread::event<std::string> submitted_1;
+    std::promise<std::string> submitted_1;
     utils::fake_drts_worker_notifying_module_call_submission worker_1
-      ([&] (std::string s) { submitted_1.notify (s); }, agent, certificates);
+      ([&] (std::string s) { submitted_1.set_value (s); }, agent, certificates);
 
-    worker_0.finish_and_wait_for_ack (submitted_0.wait());
-    submitted_1.wait();
+    worker_0.finish_and_wait_for_ack (submitted_0.get_future().get());
+    submitted_1.get_future().get();
   }
 
   {
-    fhg::util::thread::event<std::string> submitted_0;
+    std::promise<std::string> submitted_0;
     utils::fake_drts_worker_waiting_for_finished_ack worker_0
-         ([&] (std::string s) { submitted_0.notify (s); }, agent, certificates);
+         ([&] (std::string s) { submitted_0.set_value (s); }, agent, certificates);
 
-    fhg::util::thread::event<std::string> submitted_1;
+    std::promise<std::string> submitted_1;
     utils::fake_drts_worker_waiting_for_finished_ack worker_1
-      ([&] (std::string s) { submitted_1.notify (s); }, agent, certificates);
+      ([&] (std::string s) { submitted_1.set_value (s); }, agent, certificates);
 
-    worker_0.finish_and_wait_for_ack (submitted_0.wait());
-    worker_1.finish_and_wait_for_ack (submitted_1.wait());
+    worker_0.finish_and_wait_for_ack (submitted_0.get_future().get());
+    worker_1.finish_and_wait_for_ack (submitted_1.get_future().get());
   }
 
   BOOST_REQUIRE_EQUAL ( client.wait_for_terminal_state_and_cleanup (job_id)

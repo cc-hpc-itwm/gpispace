@@ -79,7 +79,7 @@ namespace gspc
     if (data.size() > _size_of_slot)
     {
       throw std::invalid_argument
-        ( ( boost::format ("data size > slot size (%1% > %2%")
+        ( ( ::boost::format ("data size > slot size (%1% > %2%")
           % data.size()
           % _size_of_slot
           ).str()

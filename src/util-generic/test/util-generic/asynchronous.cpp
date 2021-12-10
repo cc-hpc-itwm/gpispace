@@ -92,7 +92,7 @@ BOOST_AUTO_TEST_CASE (ranges)
   std::atomic<int> sum (0);
 
   fhg::util::asynchronous
-    ( list | boost::adaptors::uniqued
+    ( list | ::boost::adaptors::uniqued
     , [&sum] (int const& x) { sum += x; }
     );
 

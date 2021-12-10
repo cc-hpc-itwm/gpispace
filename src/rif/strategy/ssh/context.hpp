@@ -32,7 +32,7 @@ namespace libssh2
     // global state. By re-using the Boost.Asio implementation detail,
     // this is avoided. (also see issue #912)
     // This is **not** public API, it is a detail of
-    // `boost::asio::ssl::context`, which has the same member.
-    boost::asio::ssl::detail::openssl_init<> init_;
+    // `::boost::asio::ssl::context`, which has the same member.
+    ::boost::asio::ssl::detail::openssl_init<> init_;
   };
 }

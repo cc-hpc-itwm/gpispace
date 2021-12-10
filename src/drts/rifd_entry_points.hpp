@@ -28,11 +28,11 @@ namespace gspc
   class GSPC_DLLEXPORT rifd_entry_points
   {
   public:
-    rifd_entry_points (boost::filesystem::path const&);
+    rifd_entry_points (::boost::filesystem::path const&);
 
     rifd_entry_points (rifd_entry_points const&);
 
-    void write_to_file (boost::filesystem::path const&);
+    void write_to_file (::boost::filesystem::path const&);
 
   private:
     friend class rifds;

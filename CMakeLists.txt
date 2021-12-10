@@ -15,7 +15,8 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 cmake_minimum_required (VERSION 3.15 FATAL_ERROR)
-project (gspc VERSION 21.09 LANGUAGES CXX)
+include (${CMAKE_CURRENT_SOURCE_DIR}/project-info.cmake)
+project (gspc VERSION ${GSPC_VERSION} LANGUAGES CXX)
 
 # CMake automatically trims leading zeros in versions. Since GPI-Space
 # versions are dates, revert that.
@@ -44,22 +45,27 @@ endif()
 
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
-list (APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
+list (APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/modules")
 list (APPEND CMAKE_MODULE_PATH "$ENV{CMAKE_MODULE_PATH}")
-
-set (BUILD_TESTING OFF CACHE BOOL "")
 
 option (GSPC_WITH_MONITOR_APP "Enable the 'gspc-monitor' execution and logging \
 monitor application (also known as 'gantt')" ON)
 
 include (GNUInstallDirs)
 
-set (GSPC_CONFIG_INSTALL_DIR "${CMAKE_INSTALL_DATAROOTDIR}/GPISpace/cmake")
+set (GSPC_SHARE_INSTALL_DIR "${CMAKE_INSTALL_DATAROOTDIR}/GPISpace")
+set (GSPC_CONFIG_INSTALL_DIR "${GSPC_SHARE_INSTALL_DIR}/cmake")
 
 # TODO: temporary fix, should be removed once everything is standalone
 set (UTIL_CMAKE_INSTALL ON)
 set (UTIL_GENERIC_INSTALL ON)
+set (UTIL_RPC_INSTALL ON)
 set (UTIL_GENERIC_BUILD_TESTING OFF CACHE BOOL "Build util-generic tests")
+set (UTIL_RPC_BUILD_TESTING OFF CACHE BOOL "Build util-rpc tests")
+if (GSPC_WITH_MONITOR_APP)
+  set (UTIL_QT_INSTALL ON)
+  set (UTIL_QT_BUILD_TESTING OFF CACHE BOOL "Build util-qt tests")
+endif()
 
 add_subdirectory (cmake)
 
@@ -67,11 +73,7 @@ include (util-cmake/add_macros)
 include (util-cmake/beautify_find_boost)
 include (util-cmake/require_compiler_version)
 
-set (PROJECT_CONTACT "gpispace-support@itwm.fraunhofer.de" CACHE STRING "Contact information")
-
-# BEGIN RELEASE v21.09
-install (FILES "${CMAKE_SOURCE_DIR}/git.submodules" DESTINATION .)
-# END RELEASE
+include (${PROJECT_SOURCE_DIR}/meta/submodules.cmake OPTIONAL)
 
 include (CTest)
 
@@ -123,7 +125,7 @@ endif()
 
 add_definitions ("-DFHG_ASSERT_MODE=${FHG_ASSERT_MODE}")
 
-set (PNETC_LIB_DIR "share/gspc/xml/lib")
+set (PNETC_LIB_DIR "${GSPC_SHARE_INSTALL_DIR}/xml/lib")
 
 add_definitions ("-DBOOST_NO_CXX11_SCOPED_ENUMS") # required if linking against boost not built with c++11
 
@@ -178,11 +180,11 @@ include (gspc_add_library)
 add_library (GPISpace-header-only INTERFACE)
 add_library (GPISpace::header-only ALIAS GPISpace-header-only)
 target_include_directories (GPISpace-header-only
-  INTERFACE "${CMAKE_SOURCE_DIR}/include"
+  INTERFACE "${PROJECT_SOURCE_DIR}/include"
 )
 
-include_directories ("${CMAKE_SOURCE_DIR}/share")
-include_directories ("${CMAKE_SOURCE_DIR}/src")
+include_directories ("${PROJECT_SOURCE_DIR}/share")
+include_directories ("${PROJECT_SOURCE_DIR}/src")
 
 if (CMAKE_USE_PTHREADS_INIT)
   link_libraries (${CMAKE_THREAD_LIBS_INIT} rt)
@@ -208,11 +210,14 @@ check_cxx_source_runs ([[
 bundle_boost (DESTINATION "external/boost")
 list (APPEND INSTALL_RPATH_DIRS "lib")
 
+include (${PROJECT_SOURCE_DIR}/meta/meta.cmake OPTIONAL)
+
 add_subdirectory (external)
-add_subdirectory (doc)
 add_subdirectory (share)
 add_subdirectory (src)
 add_subdirectory (test)
+add_subdirectory (testing)
+add_subdirectory (system_test)
 
 add_test (NAME installed_headers_are_selfcontained
   COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/test/installed_headers_are_selfcontained.sh"
@@ -238,8 +243,11 @@ if (_xmllint_exe)
   )
 endif()
 
-install (FILES "${CMAKE_CURRENT_SOURCE_DIR}/README.md"
-  DESTINATION "share/gspc/"
+install (
+  FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/README.md"
+  DESTINATION
+    "${GSPC_SHARE_INSTALL_DIR}"
 )
 
 set (GSPC_HOME ".")

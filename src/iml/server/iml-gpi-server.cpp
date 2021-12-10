@@ -20,10 +20,10 @@
  *
  */
 
-#include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
-#include <fhg/util/boost/program_options/validators/nonexisting_path.hpp>
-#include <fhg/util/boost/program_options/validators/nonexisting_path_in_existing_directory.hpp>
-#include <fhg/util/boost/program_options/validators/positive_integral.hpp>
+#include <util-generic/boost/program_options/validators/nonempty_string.hpp>
+#include <util-generic/boost/program_options/validators/nonexisting_path.hpp>
+#include <util-generic/boost/program_options/validators/nonexisting_path_in_existing_directory.hpp>
+#include <util-generic/boost/program_options/validators/positive_integral.hpp>
 #include <util-generic/getenv.hpp>
 #include <util-generic/print_exception.hpp>
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
@@ -86,43 +86,43 @@ int main (int argc, char** argv)
   try
   {
 
-    boost::program_options::options_description options_description;
+    ::boost::program_options::options_description options_description;
     options_description.add_options()
       ( option::gpi_timeout
-      , boost::program_options::value
+      , ::boost::program_options::value
           <fhg::util::boost::program_options::positive_integral<std::size_t>>()
           ->required()
       , "seconds to wait for gaspi_proc_init"
       )
       ( option::port
-      , boost::program_options::value
+      , ::boost::program_options::value
           <fhg::util::boost::program_options::positive_integral<unsigned short>>()
           ->required()
       , "port used for gaspi"
       )
       ( option::socket
-      , boost::program_options::value
+      , ::boost::program_options::value
           <fhg::util::boost::program_options::nonexisting_path_in_existing_directory>()
           ->required()
       , "path to open communication socket"
       )
       ( option::netdev
-      , boost::program_options::value<iml::gaspi::NetdevID>()->required()
+      , ::boost::program_options::value<iml::gaspi::NetdevID>()->required()
       , "the network device to use"
       )
       ;
 
-    boost::program_options::variables_map vm;
-    boost::program_options::store
-      ( boost::program_options::command_line_parser (argc, argv)
+    ::boost::program_options::variables_map vm;
+    ::boost::program_options::store
+      ( ::boost::program_options::command_line_parser (argc, argv)
         .options (options_description)
         .run()
       , vm
       );
 
-    boost::program_options::notify (vm);
+    ::boost::program_options::notify (vm);
 
-    boost::filesystem::path const socket_path
+    ::boost::filesystem::path const socket_path
       ( vm.at (option::socket)
         .as<fhg::util::boost::program_options::nonexisting_path_in_existing_directory>()
       );

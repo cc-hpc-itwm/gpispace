@@ -32,8 +32,8 @@ namespace we
     {
       auto const flags (RTLD_NOW | RTLD_GLOBAL);
 
-      boost::filesystem::path
-        ensure_unloads_without_rest_and_load (boost::filesystem::path path)
+      ::boost::filesystem::path
+        ensure_unloads_without_rest_and_load (::boost::filesystem::path path)
       {
         auto const before (fhg::util::currently_loaded_libraries());
         fhg::util::scoped_dlhandle (path, flags);
@@ -49,7 +49,7 @@ namespace we
     }
 
     Module::Module ( RequireModuleUnloadsWithoutRest
-                   , boost::filesystem::path const& path
+                   , ::boost::filesystem::path const& path
                    )
     try
       : Module (ensure_unloads_without_rest_and_load (path))
@@ -59,7 +59,7 @@ namespace we
       throw module_load_failed
         (path, fhg::util::current_exception_printer().string());
     }
-    Module::Module (boost::filesystem::path const& path)
+    Module::Module (::boost::filesystem::path const& path)
     try
       : path_ (path)
       , _dlhandle (path, flags)

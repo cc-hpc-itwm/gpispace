@@ -25,6 +25,6 @@ namespace drts
   namespace test
   {
     std::string net_description
-      (std::string const&, boost::optional<bool> allow_empty_ranges, bool);
+      (std::string const&, ::boost::optional<bool> allow_empty_ranges, bool);
   }
 }

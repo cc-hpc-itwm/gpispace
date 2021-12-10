@@ -74,10 +74,6 @@ util_generic_unit_test (chrono_unit_for_period)
 
 util_generic_unit_test (connectable_to_address_string)
 
-util_generic_unit_test (cxx14/integer_sequence)
-
-util_generic_unit_test (cxx14/make_unique)
-
 util_generic_unit_test (cxx17/apply)
 
 util_generic_unit_test (cxx17/holds_alternative)
@@ -179,7 +175,11 @@ util_generic_unit_test (procfs
   ARGS --some args --to actually --test something, yeah
 )
 
-util_generic_unit_test (program_options/separated_argument_list_parser
+util_generic_unit_test (boost/program_options/generic
+  LIBRARIES Boost::program_options
+)
+
+util_generic_unit_test (boost/program_options/separated_argument_list_parser
   LIBRARIES Boost::program_options
 )
 

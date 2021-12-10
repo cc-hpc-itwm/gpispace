@@ -41,7 +41,7 @@ namespace fhg
     //! \todo Actually part of fhg::rpc.
     struct GSPC_DLLEXPORT socket_endpoint
     {
-      using Socket = boost::asio::local::stream_protocol::endpoint;
+      using Socket = ::boost::asio::local::stream_protocol::endpoint;
       std::string host;
       Socket socket;
 
@@ -66,7 +66,7 @@ namespace fhg
     };
 
     GSPC_DLLEXPORT void validate
-      (boost::any&, std::vector<std::string> const&, socket_endpoint*, int);
+      (::boost::any&, std::vector<std::string> const&, socket_endpoint*, int);
   }
 }
 

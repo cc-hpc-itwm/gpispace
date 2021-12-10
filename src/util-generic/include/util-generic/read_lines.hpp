@@ -25,6 +25,6 @@ namespace fhg
 {
   namespace util
   {
-    std::vector<std::string> read_lines (boost::filesystem::path const&);
+    std::vector<std::string> read_lines (::boost::filesystem::path const&);
   }
 }

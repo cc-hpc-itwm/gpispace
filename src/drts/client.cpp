@@ -43,7 +43,7 @@ namespace gspc
     ::we::type::Activity _activity;
   };
 
-  workflow::workflow (boost::filesystem::path workflow_)
+  workflow::workflow (::boost::filesystem::path workflow_)
     : _ (new implementation (::we::type::Activity (workflow_)))
   {}
   PIMPL_DTOR (workflow)
@@ -72,8 +72,8 @@ namespace gspc
       , Certificates const& certificates
       )
       : _client ( fhg::com::host_t (top_level_agent_endpoint.host)
-                , fhg::com::port_t (std::to_string (top_level_agent_endpoint.port))
-                , std::make_unique<boost::asio::io_service>()
+                , fhg::com::port_t (top_level_agent_endpoint.port)
+                , std::make_unique<::boost::asio::io_service>()
                 , certificates
                 )
     {}
@@ -128,7 +128,7 @@ namespace gspc
       {
         //! \todo decorate the exception with the most progressed activity
         throw std::runtime_error
-          (( boost::format ("Job %1%: failed: error-message := %2%")
+          (( ::boost::format ("Job %1%: failed: error-message := %2%")
            % job_id
            % job_info.error_message
            ).str()

@@ -18,11 +18,11 @@
 #include <iml/rif/strategies.hpp>
 #include <iml/rif/teardown.hpp>
 
-#include <fhg/util/boost/program_options/validators/existing_path.hpp>
+#include <util-generic/boost/program_options/validators/existing_path.hpp>
 
 #include <util-generic/join.hpp>
 #include <util-generic/print_exception.hpp>
-#include <util-generic/program_options/separated_argument_list_parser.hpp>
+#include <util-generic/boost/program_options/separated_argument_list_parser.hpp>
 #include <util-generic/read_lines.hpp>
 
 #include <boost/format.hpp>
@@ -51,31 +51,31 @@ try
 {
   auto const strategies (iml::rif::available_strategies());
 
-  boost::program_options::options_description options_description;
+  ::boost::program_options::options_description options_description;
   options_description.add_options()
     ("help", "this message")
     ( option::entry_points_file
-    , boost::program_options::value
+    , ::boost::program_options::value
         <fhg::util::boost::program_options::existing_path>()->required()
     , "entry_points file"
     )
     ( option::strategy
-    , boost::program_options::value<std::string>()->required()
+    , ::boost::program_options::value<std::string>()->required()
     , ("strategy: one of " + fhg::util::join (strategies, ", ").string()).c_str()
     )
     ( option::strategy_parameters
-    , boost::program_options::value<option::strategy_parameters_type>()
+    , ::boost::program_options::value<option::strategy_parameters_type>()
       ->default_value (option::strategy_parameters_type(), "")->required()
     , option::strategy_parameters_description
     )
     ;
 
-  boost::program_options::variables_map vm;
-  boost::program_options::store
-    ( boost::program_options::command_line_parser (argc, argv)
+  ::boost::program_options::variables_map vm;
+  ::boost::program_options::store
+    ( ::boost::program_options::command_line_parser (argc, argv)
       .options (options_description)
     . extra_style_parser
-        ( fhg::util::program_options::separated_argument_list_parser
+        ( fhg::util::boost::program_options::separated_argument_list_parser
             ("RIF", "FIR", option::strategy_parameters)
         )
       .run()
@@ -88,14 +88,14 @@ try
     return 0;
   }
 
-  boost::program_options::notify (vm);
+  ::boost::program_options::notify (vm);
 
   std::string const strategy (vm.at (option::strategy).as<std::string>());
 
   if (std::find (strategies.begin(), strategies.end(), strategy) == strategies.end())
   {
     throw std::invalid_argument
-      (( boost::format ("invalid argument '%1%' for --%2%: one of %3%")
+      (( ::boost::format ("invalid argument '%1%' for --%2%: one of %3%")
        % strategy
        % option::strategy
        % fhg::util::join (strategies, ", ")

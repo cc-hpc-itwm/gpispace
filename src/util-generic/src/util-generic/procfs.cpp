@@ -31,7 +31,7 @@ namespace fhg
     {
       namespace
       {
-        boost::filesystem::path proc()
+        ::boost::filesystem::path proc()
         {
           return "/proc";
         }
@@ -51,12 +51,12 @@ namespace fhg
       {
         std::list<procfs::entry> es;
 
-        for ( boost::filesystem::directory_iterator de (proc())
-            ; de != boost::filesystem::directory_iterator()
+        for ( ::boost::filesystem::directory_iterator de (proc())
+            ; de != ::boost::filesystem::directory_iterator()
             ; ++de
             )
         {
-          if (de->status().type() == boost::filesystem::directory_file)
+          if (de->status().type() == ::boost::filesystem::directory_file)
           {
             std::string const name (de->path().filename().string());
 

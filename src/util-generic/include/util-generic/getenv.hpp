@@ -25,7 +25,7 @@ namespace fhg
 {
   namespace util
   {
-    inline boost::optional<const char*> getenv (const char* env_var)
+    inline ::boost::optional<const char*> getenv (const char* env_var)
     {
       const char *val (std::getenv (env_var));
 
@@ -34,7 +34,7 @@ namespace fhg
         return val;
       }
 
-      return boost::none;
+      return ::boost::none;
     }
   }
 }

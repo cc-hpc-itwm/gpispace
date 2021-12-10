@@ -43,7 +43,7 @@ namespace sdpa
                         >;
 
       NetworkStrategy ( EventHandler event_handler
-                      , std::unique_ptr<boost::asio::io_service> peer_io_service
+                      , std::unique_ptr<::boost::asio::io_service> peer_io_service
                       , fhg::com::host_t const& host
                       , fhg::com::port_t const& port
                       , fhg::com::Certificates const& certificates
@@ -53,7 +53,7 @@ namespace sdpa
       template<typename Event, typename... Args>
         void perform (fhg::com::p2p::address_t const& address, Args&&... args);
 
-      boost::asio::ip::tcp::endpoint local_endpoint() const;
+      ::boost::asio::ip::tcp::endpoint local_endpoint() const;
 
       //! \todo remove TESTING_ONLY method
       fhg::com::p2p::address_t connect_to_TESTING_ONLY
@@ -61,10 +61,7 @@ namespace sdpa
 
     private:
       sdpa::events::Codec _codec;
-      void handle_recv ( boost::system::error_code const& ec
-                       , boost::optional<fhg::com::p2p::address_t> source_name
-                       , fhg::com::message_t message
-                       );
+      void handle_recv (fhg::com::peer_t::Received);
 
       void perform ( fhg::com::p2p::address_t const& address
                    , std::string const& serialized_event

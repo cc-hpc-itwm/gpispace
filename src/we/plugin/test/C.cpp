@@ -30,7 +30,7 @@ namespace gspc
         C (Context const& context, PutToken put_token)
         {
           put_token
-            ( boost::get<std::string> (context.value ({"B"}))
+            ( ::boost::get<std::string> (context.value ({"B"}))
             , context.value ({"A"})
             );
         }

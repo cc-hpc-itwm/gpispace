@@ -27,7 +27,7 @@ namespace boost
   {
     template<typename Archive>
       void load ( Archive& ar
-                , boost::asio::ip::tcp::endpoint& ep
+                , ::boost::asio::ip::tcp::endpoint& ep
                 , const unsigned int
                 )
     {
@@ -35,12 +35,12 @@ namespace boost
       unsigned short port;
       ar & address;
       ar & port;
-      ep = boost::asio::ip::tcp::endpoint
-        (boost::asio::ip::address::from_string (address), port);
+      ep = ::boost::asio::ip::tcp::endpoint
+        (::boost::asio::ip::address::from_string (address), port);
     }
     template<typename Archive>
       void save ( Archive& ar
-                , boost::asio::ip::tcp::endpoint const& ep
+                , ::boost::asio::ip::tcp::endpoint const& ep
                 , const unsigned int
                 )
     {
@@ -52,4 +52,4 @@ namespace boost
   }
 }
 
-BOOST_SERIALIZATION_SPLIT_FREE (boost::asio::ip::tcp::endpoint)
+BOOST_SERIALIZATION_SPLIT_FREE (::boost::asio::ip::tcp::endpoint)

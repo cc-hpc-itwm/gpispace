@@ -44,11 +44,11 @@ namespace fhg
     {
       template<typename From, typename... To>
         struct variant_cast_visitor
-          : boost::static_visitor<boost::variant<To...>>
+          : ::boost::static_visitor<::boost::variant<To...>>
       {
         variant_cast_visitor () = default;
 
-        using target = boost::variant<To...>;
+        using target = ::boost::variant<To...>;
         template<typename T>
           using contained
             = mp::exactly_one_is<typename std::decay<T>::type, To...>;
@@ -62,19 +62,19 @@ namespace fhg
         template<typename T>
           target operator() (T&&, iff<!contained<T>{}> = nullptr) const
         {
-          throw bad_variant_cast::make<From, boost::variant<To...>, T>();
+          throw bad_variant_cast::make<From, ::boost::variant<To...>, T>();
         }
       };
 
       template<typename To>
         struct variant_cast_impl;
       template<typename... To>
-        struct variant_cast_impl<boost::variant<To...>>
+        struct variant_cast_impl<::boost::variant<To...>>
       {
         template<typename From>
-          boost::variant<To...> operator() (From&& from) const
+          ::boost::variant<To...> operator() (From&& from) const
         {
-          return visit<boost::variant<To...>>
+          return visit<::boost::variant<To...>>
             (std::forward<From> (from), variant_cast_visitor<From, To...>{});
         }
       };

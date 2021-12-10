@@ -63,9 +63,9 @@ namespace we
               // reply to cancel (parent) -> top level
             , std::function<void (id_type)> rts_canceled
               // result of put_token (parent) -> top level
-            , std::function<void (std::string put_token_id, boost::optional<std::exception_ptr>)> rts_token_put
+            , std::function<void (std::string put_token_id, ::boost::optional<std::exception_ptr>)> rts_token_put
               //result of workflow_response (parent) -> top level
-            , std::function<void (std::string workflow_response_id, boost::variant<std::exception_ptr, pnet::type::value::value_type>)> rts_workflow_response
+            , std::function<void (std::string workflow_response_id, ::boost::variant<std::exception_ptr, pnet::type::value::value_type>)> rts_workflow_response
             , std::function<id_type()> rts_id_generator
             , std::mt19937& random_extraction_engine
             );
@@ -106,8 +106,8 @@ namespace we
       std::function<void (id_type, type::Activity)> _rts_finished;
       std::function<void (id_type, std::string)> _rts_failed;
       std::function<void (id_type)> _rts_canceled;
-      std::function<void (std::string, boost::optional<std::exception_ptr>)> _rts_token_put;
-      std::function<void (std::string workflow_response_id, boost::variant<std::exception_ptr, pnet::type::value::value_type>)> _rts_workflow_response;
+      std::function<void (std::string, ::boost::optional<std::exception_ptr>)> _rts_token_put;
+      std::function<void (std::string workflow_response_id, ::boost::variant<std::exception_ptr, pnet::type::value::value_type>)> _rts_workflow_response;
       std::function<id_type()> _rts_id_generator;
 
       void rts_finished_and_forget (id_type, type::Activity);
@@ -116,12 +116,12 @@ namespace we
 
       void workflow_response ( id_type
                              , std::string const& response_id
-                             , boost::variant<std::exception_ptr, pnet::type::value::value_type> const&
+                             , ::boost::variant<std::exception_ptr, pnet::type::value::value_type> const&
                              );
       void cancel_outstanding_responses (id_type, std::string const& reason);
 
       void eureka_response ( id_type
-                           , boost::optional<id_type>
+                           , ::boost::optional<id_type>
                            , type::eureka_ids_type const& ids
                            );
 
@@ -177,7 +177,7 @@ namespace we
           RemovalFunction& operator= (RemovalFunction const&) = delete;
           RemovalFunction& operator= (RemovalFunction&&) = delete;
 
-          boost::variant
+          ::boost::variant
             < std::function<void (activity_data_type&)>
             , ToFinish
             > _function;
@@ -249,27 +249,27 @@ namespace we
         void started
           ( id_type parent
           , id_type child
-          , boost::optional<type::eureka_id_type> const& eureka_id
+          , ::boost::optional<type::eureka_id_type> const& eureka_id
           );
         bool terminated (id_type parent, id_type child);
 
-        boost::optional<id_type> parent (id_type child);
+        ::boost::optional<id_type> parent (id_type child);
         bool contains (id_type parent) const;
 
         void apply (id_type parent, std::function<void (id_type)>) const;
 
         void apply_and_remove_eureka ( type::eureka_id_type const&
                                      , id_type const&
-                                     , boost::optional<id_type> const&
+                                     , ::boost::optional<id_type> const&
                                      , std::function<void (id_type)> cancel
                                      );
 
       private:
         mutable std::mutex _relation_mutex;
-        typedef boost::bimaps::bimap
-          < boost::bimaps::unordered_multiset_of<id_type>
-          , boost::bimaps::unordered_set_of<id_type>
-          , boost::bimaps::set_of_relation<>
+        typedef ::boost::bimaps::bimap
+          < ::boost::bimaps::unordered_multiset_of<id_type>
+          , ::boost::bimaps::unordered_set_of<id_type>
+          , ::boost::bimaps::set_of_relation<>
           > relation_type;
         relation_type _relation;
 
@@ -278,17 +278,17 @@ namespace we
                      , id_type
                      >;
         using eureka_in_progress_type =
-        boost::bimaps::bimap
-          < boost::bimaps::unordered_multiset_of<eureka_parent_id_type>
-          , boost::bimaps::unordered_set_of<id_type>
-          , boost::bimaps::set_of_relation<>
+        ::boost::bimaps::bimap
+          < ::boost::bimaps::unordered_multiset_of<eureka_parent_id_type>
+          , ::boost::bimaps::unordered_set_of<id_type>
+          , ::boost::bimaps::set_of_relation<>
           >;
         eureka_in_progress_type _eureka_in_progress;
       } _running_jobs;
 
       std::unordered_set<id_type> _ignore_canceled_by_eureka;
 
-      boost::strict_scoped_thread<> _extract_from_nets_thread;
+      ::boost::strict_scoped_thread<> _extract_from_nets_thread;
       fhg::util::finally_t<std::function<void()>> _stop_extracting;
     };
 }

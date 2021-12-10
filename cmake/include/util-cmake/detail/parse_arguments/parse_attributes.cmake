@@ -1,0 +1,32 @@
+# This file is part of GPI-Space.
+# Copyright (C) 2021 Fraunhofer ITWM
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+if (ARGN)
+  list (GET ARGN 0 _next)
+  string (TOLOWER "${_next}" _next)
+endif()
+
+while (_next IN_LIST ${_internal}_attributes)
+  list (POP_FRONT ARGN)
+  include (${_attributes_dir}/${_next}.cmake)
+
+  if (NOT ARGN)
+    break()
+  endif()
+
+  list (GET ARGN 0 _next)
+  string (TOLOWER "${_next}" _next)
+endwhile()

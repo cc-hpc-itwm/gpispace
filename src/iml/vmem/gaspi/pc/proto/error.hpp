@@ -18,9 +18,6 @@
 
 #include <string>
 
-// serialization
-#include <boost/serialization/nvp.hpp>
-
 namespace gpi
 {
   namespace pc
@@ -52,12 +49,12 @@ namespace gpi
             , detail (det)
           {}
         private:
-          friend class boost::serialization::access;
+          friend class ::boost::serialization::access;
           template<typename Archive>
           void serialize (Archive & ar, unsigned int /*version*/)
           {
-            ar & BOOST_SERIALIZATION_NVP( code );
-            ar & BOOST_SERIALIZATION_NVP( detail );
+            ar & code;
+            ar & detail;
           }
         };
 

@@ -28,7 +28,7 @@ namespace xml
     {
       tmpl_type::tmpl_type
         ( util::position_type const& pod
-        , boost::optional<std::string> const& name
+        , ::boost::optional<std::string> const& name
         , names_type const& tmpl_parameter
         , function_type const& function
         )
@@ -38,7 +38,7 @@ namespace xml
           , _function (function)
       {}
 
-      boost::optional<std::string> const& tmpl_type::name() const
+      ::boost::optional<std::string> const& tmpl_type::name() const
       {
         return _name;
       }

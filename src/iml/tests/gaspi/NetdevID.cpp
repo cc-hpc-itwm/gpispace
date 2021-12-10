@@ -82,7 +82,7 @@ namespace iml
     {
       fhg::util::testing::require_exception
         ( [] { NetdevID {"2"}; }
-        , boost::program_options::invalid_option_value
+        , ::boost::program_options::invalid_option_value
             ("Expected 'auto' or '0' or '1', got '2'")
         );
     }
@@ -90,7 +90,7 @@ namespace iml
     {
       fhg::util::testing::require_exception
         ( [] { NetdevID {""}; }
-        , boost::program_options::invalid_option_value
+        , ::boost::program_options::invalid_option_value
             ("Expected 'auto' or '0' or '1', got ''")
         );
     }
@@ -99,7 +99,7 @@ namespace iml
       auto const noise (invalid_string_representation());
       fhg::util::testing::require_exception
         ( [&] { NetdevID {noise}; }
-        , boost::program_options::invalid_option_value
+        , ::boost::program_options::invalid_option_value
             ("Expected 'auto' or '0' or '1', got '" + noise + "'")
         );
     }
@@ -123,10 +123,10 @@ namespace iml
                          , input
                          )
     {
-      boost::any result;
+      ::boost::any result;
       validate (result, {input}, static_cast<NetdevID*> (nullptr), int{});
       BOOST_REQUIRE_EQUAL
-        (boost::any_cast<NetdevID> (result), NetdevID {input});
+        (::boost::any_cast<NetdevID> (result), NetdevID {input});
     }
 
     BOOST_AUTO_TEST_CASE (validate_calls_ctor_and_fills_anyref_invalid)
@@ -135,11 +135,11 @@ namespace iml
       fhg::util::testing::require_exception
         ( [&]
           {
-            boost::any result;
+            ::boost::any result;
             validate
               (result, {noise}, static_cast<NetdevID*> (nullptr), int{});
           }
-        , boost::program_options::invalid_option_value
+        , ::boost::program_options::invalid_option_value
             ("Expected 'auto' or '0' or '1', got '" + noise + "'")
         );
     }

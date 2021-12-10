@@ -63,7 +63,7 @@ namespace xml
 
       namespace
       {
-        boost::optional<pnet::type::signature::signature_type> get_assignment
+        ::boost::optional<pnet::type::signature::signature_type> get_assignment
           ( std::unordered_map<std::string, structure_type> const& m
           , std::string const& key
           )
@@ -76,11 +76,11 @@ namespace xml
             return pnet::type::signature::signature_type (pos->second.signature());
           }
 
-          return boost::none;
+          return ::boost::none;
         }
 
         class get_struct
-          : public boost::static_visitor<pnet::type::signature::structured_type>
+          : public ::boost::static_visitor<pnet::type::signature::structured_type>
         {
         public:
           pnet::type::signature::structured_type operator()
@@ -104,7 +104,7 @@ namespace xml
             (_sig, std::bind (get_assignment, m, std::placeholders::_1))
           );
 
-        _sig = boost::apply_visitor (get_struct(), sign);
+        _sig = ::boost::apply_visitor (get_struct(), sign);
       }
 
       namespace dump
@@ -156,7 +156,7 @@ namespace xml
         set_type joined (above);
 
         for ( xml::parse::type::structure_type const& strct
-            : below | boost::adaptors::map_values
+            : below | ::boost::adaptors::map_values
             )
         {
           set_type::const_iterator const old (joined.find (strct.name()));

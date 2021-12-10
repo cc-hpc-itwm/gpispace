@@ -34,7 +34,7 @@ BOOST_FIXTURE_TEST_CASE
 {
   auto const worker_per_node (random.between (1, 100));
 
-  auto const topology (str ( boost::format ("%1%:%2%")
+  auto const topology (str ( ::boost::format ("%1%:%2%")
                            % (random.bit() ? "A" : "B")
                            % worker_per_node
                            )

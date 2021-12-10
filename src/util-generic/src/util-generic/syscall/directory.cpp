@@ -24,7 +24,7 @@ namespace fhg
   {
     namespace syscall
     {
-      directory::directory (boost::filesystem::path const& path)
+      directory::directory (::boost::filesystem::path const& path)
         : _ (syscall::opendir (path.string().c_str()))
       {}
       directory::~directory()

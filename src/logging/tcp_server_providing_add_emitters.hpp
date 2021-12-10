@@ -19,9 +19,9 @@
 #include <logging/protocol.hpp>
 #include <logging/stream_receiver.hpp>
 
-#include <rpc/service_dispatcher.hpp>
-#include <rpc/service_handler.hpp>
-#include <rpc/service_tcp_provider.hpp>
+#include <util-rpc/service_dispatcher.hpp>
+#include <util-rpc/service_handler.hpp>
+#include <util-rpc/service_tcp_provider.hpp>
 
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 

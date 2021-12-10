@@ -34,13 +34,7 @@
 #include <stdexcept>
 #include <unordered_map>
 
-void boost::test_tools::tt_detail::print_log_value<fhg::com::p2p::address_t>
-  ::operator() (std::ostream& os, fhg::com::p2p::address_t const& address) const
-{
-  os << fhg::com::p2p::to_string_TESTING_ONLY (address);
-}
-
-void boost::test_tools::tt_detail::print_log_value<sdpa::Capability>
+void ::boost::test_tools::tt_detail::print_log_value<sdpa::Capability>
   ::operator() (std::ostream& os, sdpa::Capability const& capability) const
 {
   os << "capability {name = " << capability.name() << "}";
@@ -74,10 +68,10 @@ namespace utils
           , true
           , true
           )
-      , boost::none
+      , ::boost::none
       , we::type::property::type()
       , we::priority_type()
-      , boost::optional<we::type::eureka_id_type>{}
+      , ::boost::optional<we::type::eureka_id_type>{}
       , std::list<we::type::Preference>{}
       );
     auto const port_name (fhg::util::testing::random_string());
@@ -105,7 +99,7 @@ namespace utils
   {
     we::type::property::type props;
     props.set ( {"fhg", "drts", "schedule", "num_worker"}
-              , boost::lexical_cast<std::string> (count) + "UL"
+              , ::boost::lexical_cast<std::string> (count) + "UL"
               );
     we::type::Transition transition
       ( fhg::util::testing::random_string()
@@ -118,10 +112,10 @@ namespace utils
           , true
           , true
           )
-      , boost::none
+      , ::boost::none
       , props
       , we::priority_type()
-      , boost::optional<we::type::eureka_id_type>{}
+      , ::boost::optional<we::type::eureka_id_type>{}
       , std::list<we::type::Preference>{}
       );
     auto const port_name (fhg::util::testing::random_string());
@@ -138,7 +132,7 @@ namespace utils
 
     auto const place_id_in
       ( net.add_place
-          (place::type (port_name, std::string ("string"), boost::none))
+          (place::type (port_name, std::string ("string"), ::boost::none))
       );
 
     net.put_value
@@ -146,7 +140,7 @@ namespace utils
 
     auto const transition_id (net.add_transition (transition));
 
-    net.add_connection ( we::edge::PT
+    net.add_connection ( we::edge::PT{}
                        , transition_id
                        , place_id_in
                        , port_id_in
@@ -156,10 +150,10 @@ namespace utils
     return we::type::Activity
       ( we::type::Transition ( fhg::util::testing::random_string()
                                , net
-                               , boost::none
+                               , ::boost::none
                                , we::type::property::type()
                                , we::priority_type()
-                               , boost::optional<we::type::eureka_id_type>{}
+                               , ::boost::optional<we::type::eureka_id_type>{}
                                , std::list<we::type::Preference>{}
                                )
       );
@@ -184,10 +178,10 @@ namespace utils
           , true
           , true
           )
-      , boost::none
+      , ::boost::none
       , props
       , we::priority_type()
-      , boost::optional<we::type::eureka_id_type>{}
+      , ::boost::optional<we::type::eureka_id_type>{}
       , std::list<we::type::Preference>{}
       );
     we::type::Transition transition_1
@@ -201,10 +195,10 @@ namespace utils
           , true
           , true
           )
-      , boost::none
+      , ::boost::none
       , props
       , we::priority_type()
-      , boost::optional<we::type::eureka_id_type>{}
+      , ::boost::optional<we::type::eureka_id_type>{}
       , std::list<we::type::Preference>{}
       );
     auto const port_name (fhg::util::testing::random_string());
@@ -229,11 +223,11 @@ namespace utils
 
     auto const place_id_in_0
       ( net.add_place
-          (place::type (port_name + "1", std::string ("string"), boost::none))
+          (place::type (port_name + "1", std::string ("string"), ::boost::none))
       );
     auto const place_id_in_1
       ( net.add_place
-          (place::type (port_name + "2", std::string ("string"), boost::none))
+          (place::type (port_name + "2", std::string ("string"), ::boost::none))
       );
 
     net.put_value
@@ -244,13 +238,13 @@ namespace utils
     auto const transition_id_0 (net.add_transition (transition_0));
     auto const transition_id_1 (net.add_transition (transition_1));
 
-    net.add_connection ( we::edge::PT
+    net.add_connection ( we::edge::PT{}
                        , transition_id_0
                        , place_id_in_0
                        , port_id_in_0
                        , we::type::property::type()
                        );
-    net.add_connection ( we::edge::PT
+    net.add_connection ( we::edge::PT{}
                        , transition_id_1
                        , place_id_in_1
                        , port_id_in_1
@@ -260,10 +254,10 @@ namespace utils
     return we::type::Activity
       ( we::type::Transition ( fhg::util::testing::random_string()
                                , net
-                               , boost::none
+                               , ::boost::none
                                , we::type::property::type()
                                , we::priority_type()
-                               , boost::optional<we::type::eureka_id_type>{}
+                               , ::boost::optional<we::type::eureka_id_type>{}
                                , std::list<we::type::Preference>{}
                                )
       );
@@ -281,9 +275,8 @@ namespace utils
 
   agent::agent (fhg::com::Certificates const& certificates)
     :  _ ( random_peer_name(), "127.0.0.1"
-         , std::make_unique<boost::asio::io_service>()
-         , boost::none
-         , true
+         , std::make_unique<::boost::asio::io_service>()
+         , ::boost::none
          , certificates
          )
   {}
@@ -300,7 +293,7 @@ namespace utils
   }
   fhg::com::port_t agent::port() const
   {
-    return fhg::com::port_t (std::to_string (_.peer_local_endpoint().port()));
+    return fhg::com::port_t {_.peer_local_endpoint().port()};
   }
 
   basic_drts_component_no_logic::basic_drts_component_no_logic
@@ -318,8 +311,8 @@ namespace utils
                  {
                    _event_queue.put (source, std::move (e));
                  }
-               , std::make_unique<boost::asio::io_service>()
-               , fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
+               , std::make_unique<::boost::asio::io_service>()
+               , fhg::com::host_t ("127.0.0.1"), fhg::com::port_t (0)
                , certificates
                )
   {}
@@ -336,7 +329,7 @@ namespace utils
   }
   fhg::com::port_t basic_drts_component_no_logic::port() const
   {
-    return fhg::com::port_t (std::to_string (_network.local_endpoint().port()));
+    return fhg::com::port_t {_network.local_endpoint().port()};
   }
 
   void basic_drts_component_no_logic::event_thread_fun()
@@ -363,7 +356,7 @@ namespace utils
   basic_drts_component::basic_drts_component
       (fhg::com::Certificates const& certificates)
     : basic_drts_component_no_logic (certificates)
-    , _parent (boost::none)
+    , _parent (::boost::none)
   {}
 
   basic_drts_component::basic_drts_component
@@ -414,7 +407,7 @@ namespace utils
       , fhg::com::Certificates const& certificates
       )
     : basic_drts_component_no_logic (name, certificates)
-    , _parent (boost::none)
+    , _parent (::boost::none)
   {
     _parent = _network.connect_to_TESTING_ONLY (parent.host(), parent.port());
 
@@ -453,7 +446,7 @@ namespace utils
     else
     {
       _network.perform<sdpa::events::worker_registration_response>
-        (source, boost::none);
+        (source, ::boost::none);
     }
   }
 
@@ -765,7 +758,7 @@ namespace utils
                  )
     : _ ( parent_agent.host()
         , parent_agent.port()
-        , std::make_unique<boost::asio::io_service>()
+        , std::make_unique<::boost::asio::io_service>()
         , certificates
         )
   {}

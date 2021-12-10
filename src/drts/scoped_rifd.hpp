@@ -47,7 +47,7 @@ namespace gspc
                     , rif_port = 1 << 2
                     };
 
-    GSPC_DLLEXPORT boost::program_options::options_description scoped_rifd
+    GSPC_DLLEXPORT ::boost::program_options::options_description scoped_rifd
       (int = rifd::nodefile | rifd::rif_strategy | rifd::rif_port);
   }
 
@@ -55,7 +55,7 @@ namespace gspc
   {
     struct GSPC_DLLEXPORT strategy
     {
-      strategy (boost::program_options::variables_map const&);
+      strategy (::boost::program_options::variables_map const&);
 
     private:
       friend class ::gspc::rifds;
@@ -65,7 +65,7 @@ namespace gspc
 
     struct GSPC_DLLEXPORT hostnames
     {
-      hostnames (boost::program_options::variables_map const&);
+      hostnames (::boost::program_options::variables_map const&);
       hostnames (std::vector<std::string> const&);
 
     private:
@@ -84,7 +84,7 @@ namespace gspc
     };
     struct GSPC_DLLEXPORT port
     {
-      port (boost::program_options::variables_map const&);
+      port (::boost::program_options::variables_map const&);
 
     private:
       friend class ::gspc::rifds;
@@ -93,7 +93,7 @@ namespace gspc
     };
   }
 
-  class GSPC_DLLEXPORT rifds : boost::noncopyable
+  class GSPC_DLLEXPORT rifds : ::boost::noncopyable
   {
   public:
     rifds ( rifd::strategy const&
@@ -139,7 +139,7 @@ namespace gspc
              , std::unordered_map<std::string, std::exception_ptr>
              >
       execute ( std::unordered_set<std::string> const& hostnames
-              , boost::filesystem::path const& command
+              , ::boost::filesystem::path const& command
               , std::vector<std::string> const& arguments
                   = {}
               , std::unordered_map<std::string, std::string> const& environment

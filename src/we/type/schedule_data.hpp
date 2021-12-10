@@ -26,12 +26,12 @@ namespace we
     {
     public:
       schedule_data() = default;
-      schedule_data (boost::optional<unsigned long> const& num_worker);
+      schedule_data (::boost::optional<unsigned long> const& num_worker);
 
-      const boost::optional<unsigned long>& num_worker() const;
+      const ::boost::optional<unsigned long>& num_worker() const;
 
     private:
-      const boost::optional<unsigned long> _num_worker;
+      const ::boost::optional<unsigned long> _num_worker;
     };
   }
 }

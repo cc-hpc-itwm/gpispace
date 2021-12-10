@@ -23,7 +23,7 @@ namespace fhg
     namespace cxx17
     {
       template<typename T, typename... Ts>
-        bool holds_alternative (boost::variant<Ts...> const& variant) noexcept
+        bool holds_alternative (::boost::variant<Ts...> const& variant) noexcept
       {
         return visit<bool>
           ( variant

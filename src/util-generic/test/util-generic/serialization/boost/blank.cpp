@@ -24,10 +24,10 @@
 BOOST_AUTO_TEST_CASE (is_trivial)
 {
   FHG_UTIL_TESTING_COMPILETIME_REQUIRE_EQUAL
-    (fhg::util::serialization::is_trivially_serializable<boost::blank>{}, true);
+    (fhg::util::serialization::is_trivially_serializable<::boost::blank>{}, true);
 }
 
 BOOST_AUTO_TEST_CASE (empty)
 {
-  FHG_UTIL_TESTING_REQUIRE_SERIALIZED_TO_ID ({}, boost::blank);
+  FHG_UTIL_TESTING_REQUIRE_SERIALIZED_TO_ID ({}, ::boost::blank);
 }

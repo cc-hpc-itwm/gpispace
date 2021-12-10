@@ -258,7 +258,7 @@ BOOST_AUTO_TEST_CASE (join_ranges)
 
   BOOST_REQUIRE_EQUAL
     ( fhg::util::join
-       ( list | boost::adaptors::transformed ([] (int i) { return 2 * i; })
+       ( list | ::boost::adaptors::transformed ([] (int i) { return 2 * i; })
        , " "
        ).string()
     , "0 2 4"

@@ -45,7 +45,7 @@ namespace
       )
   {
     return str
-      ( boost::format
+      ( ::boost::format
           ("Expression '%1%' has incompatible type '%2%'."
           " Expected type '%3%'."
           )
@@ -68,7 +68,7 @@ BOOST_DATA_TEST_CASE
     , we::type::Expression {td.expression}
     , we::type::property::type{}
     , we::priority_type{}
-    , boost::none // eureka_id
+    , ::boost::none // eureka_id
     , std::list<we::type::Preference>{}
     );
 
@@ -79,7 +79,7 @@ BOOST_DATA_TEST_CASE
       }
     , fhg::util::testing::make_nested
       ( std::runtime_error
-        ( str ( boost::format ("In the <condition> expression '%1%'")
+        ( str ( ::boost::format ("In the <condition> expression '%1%'")
               % td.expression
               )
         )
@@ -97,10 +97,10 @@ BOOST_DATA_TEST_CASE
   we::type::Transition transition
     ( fhg::util::testing::random_identifier()
     , we::type::Expression{}
-    , boost::none // condition
+    , ::boost::none // condition
     , we::type::property::type{}
     , we::priority_type{}
-    , boost::none // eureka_id
+    , ::boost::none // eureka_id
     , std::list<we::type::Preference>{}
     );
   auto const port_name (fhg::util::testing::random_identifier());
@@ -136,14 +136,14 @@ BOOST_DATA_TEST_CASE
   {
     auto const port_name (fhg::util::testing::random_identifier());
     we::type::Expression const expression
-      (str (boost::format ("${%1%_out} := ${%1%_in}") % port_name));
+      (str (::boost::format ("${%1%_out} := ${%1%_in}") % port_name));
     we::type::Transition transition
       ( fhg::util::testing::random_identifier()
       , expression
-      , boost::none // condition
+      , ::boost::none // condition
       , we::type::property::type{}
       , we::priority_type{}
-      , boost::none // eureka_id
+      , ::boost::none // eureka_id
       , std::list<we::type::Preference>{}
       );
     transition.add_port
@@ -170,12 +170,12 @@ BOOST_DATA_TEST_CASE
         }
       , fhg::util::testing::make_nested
         ( pnet::exception::type_error
-            (str ( boost::format ("In expression '%1%'")
+            (str ( ::boost::format ("In expression '%1%'")
                  % expression
                  )
             )
         , std::runtime_error
-            (str ( boost::format ("Output port '%1%' expects type '%2%'")
+            (str ( ::boost::format ("Output port '%1%' expects type '%2%'")
                  % (port_name + "_out")
                  % tdOut.type
                  )
@@ -192,10 +192,10 @@ BOOST_AUTO_TEST_CASE (plugin_create_throws_when_plugin_path_is_not_set)
   we::type::Transition transition
     ( fhg::util::testing::random_identifier()
     , we::type::Expression{}
-    , boost::none // condition
+    , ::boost::none // condition
     , properties
     , we::priority_type{}
-    , boost::none // eureka_id
+    , ::boost::none // eureka_id
     , std::list<we::type::Preference>{}
     );
 
@@ -219,10 +219,10 @@ BOOST_DATA_TEST_CASE
   we::type::Transition transition
     ( fhg::util::testing::random_identifier()
     , we::type::Expression{}
-    , boost::none // condition
+    , ::boost::none // condition
     , properties
     , we::priority_type{}
-    , boost::none // eureka_id
+    , ::boost::none // eureka_id
     , std::list<we::type::Preference>{}
     );
   transition.add_port
@@ -240,7 +240,7 @@ BOOST_DATA_TEST_CASE
         transition.assert_correct_expression_types();
       }
     , pnet::exception::type_error
-      (str ( boost::format
+      (str ( ::boost::format
                ("'plugin_path' has type '%1%' but expected is type '%2%'")
            % td.type
            % expr::type::String{}
@@ -256,10 +256,10 @@ BOOST_AUTO_TEST_CASE (plugin_destroy_throws_when_plugin_id_is_not_set)
   we::type::Transition transition
     ( fhg::util::testing::random_identifier()
     , we::type::Expression{}
-    , boost::none // condition
+    , ::boost::none // condition
     , properties
     , we::priority_type{}
-    , boost::none // eureka_id
+    , ::boost::none // eureka_id
     , std::list<we::type::Preference>{}
     );
 
@@ -283,10 +283,10 @@ BOOST_DATA_TEST_CASE
   we::type::Transition transition
     ( fhg::util::testing::random_identifier()
     , we::type::Expression{}
-    , boost::none // condition
+    , ::boost::none // condition
     , properties
     , we::priority_type{}
-    , boost::none // eureka_id
+    , ::boost::none // eureka_id
     , std::list<we::type::Preference>{}
     );
   transition.add_port
@@ -304,7 +304,7 @@ BOOST_DATA_TEST_CASE
         transition.assert_correct_expression_types();
       }
     , pnet::exception::type_error
-      (str ( boost::format
+      (str ( ::boost::format
                ("'plugin_id' has type '%1%' but expected is type '%2%'")
            % td.type
            % expr::type::ULong{}
@@ -324,10 +324,10 @@ BOOST_DATA_TEST_CASE
   we::type::Transition transition
     ( fhg::util::testing::random_identifier()
     , we::type::Expression{}
-    , boost::none // condition
+    , ::boost::none // condition
     , properties
     , we::priority_type{}
-    , boost::none // eureka_id
+    , ::boost::none // eureka_id
     , std::list<we::type::Preference>{}
     );
 
@@ -356,10 +356,10 @@ BOOST_DATA_TEST_CASE
   we::type::Transition transition
     ( fhg::util::testing::random_identifier()
     , we::type::Expression{}
-    , boost::none // condition
+    , ::boost::none // condition
     , properties
     , we::priority_type{}
-    , boost::none // eureka_id
+    , ::boost::none // eureka_id
     , std::list<we::type::Preference>{}
     );
 
@@ -386,7 +386,7 @@ BOOST_DATA_TEST_CASE
   we::type::Transition transition
     ( fhg::util::testing::random_identifier()
     , we::type::ModuleCall{}
-    , boost::none // condition
+    , ::boost::none // condition
     , we::type::property::type{}
     , we::priority_type{}
     , td.expression
@@ -400,7 +400,7 @@ BOOST_DATA_TEST_CASE
       }
     , fhg::util::testing::make_nested
       ( std::runtime_error
-         (str ( boost::format ("In the <eureka-group> expression '%1%'")
+         (str ( ::boost::format ("In the <eureka-group> expression '%1%'")
               % td.expression
               )
         )
@@ -420,10 +420,10 @@ BOOST_DATA_TEST_CASE
   we::type::Transition transition
     ( fhg::util::testing::random_identifier()
     , we::type::Expression{}
-    , boost::none // condition
+    , ::boost::none // condition
     , properties
     , we::priority_type{}
-    , boost::none // eureka_id
+    , ::boost::none // eureka_id
     , std::list<we::type::Preference>{}
     );
 
@@ -451,10 +451,10 @@ BOOST_DATA_TEST_CASE
   we::type::Transition transition
     ( fhg::util::testing::random_identifier()
     , we::type::Expression{}
-    , boost::none // condition
+    , ::boost::none // condition
     , properties
     , we::priority_type{}
-    , boost::none // eureka_id
+    , ::boost::none // eureka_id
     , std::list<we::type::Preference>{}
     );
 

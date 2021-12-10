@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+#include <sdpa/daemon/Implementation.hpp>
 #include <sdpa/daemon/scheduler/Reservation.hpp>
 
 #include <boost/format.hpp>
@@ -42,7 +43,7 @@ namespace sdpa
       void Reservation::replace_worker
         ( worker_id_t const& current_worker
         , worker_id_t const& new_worker
-        , boost::optional<std::string> const& implementation
+        , Implementation const& implementation
         , std::function<bool (std::string const&)> const&
             supports_implementation
         )
@@ -58,7 +59,7 @@ namespace sdpa
           if (!implementation)
           {
             throw std::logic_error
-              ("The implementation cannot be boost::none "
+              ("The implementation cannot be ::boost::none "
                "if the set of preferences is not empty!"
               );
           }
@@ -79,7 +80,7 @@ namespace sdpa
         if (implementation && !supports_implementation (*implementation))
         {
           throw std::runtime_error
-            ( ( boost::format
+            ( ( ::boost::format
                   ( "Cannot replace worker %1% with worker %2%: "
                     "%3% does not support the implementation %4%."
                   )
@@ -123,7 +124,7 @@ namespace sdpa
         {
           throw std::logic_error ("store_result: second result");
         }
-        if (auto* state = boost::get<JobFSM_::s_finished> (&result))
+        if (auto* state = ::boost::get<JobFSM_::s_finished> (&result))
         {
           _results.last_success = std::move (*state);
         }
@@ -134,10 +135,10 @@ namespace sdpa
         _results.individual_results.emplace (worker, JobFSM_::s_canceled());
       }
 
-      boost::optional<job_result_type>
+      ::boost::optional<job_result_type>
         Reservation::get_aggregated_results_if_all_terminated() const
       {
-        return boost::make_optional
+        return ::boost::make_optional
           (_results.individual_results.size() == _workers.size(), _results);
       }
 
@@ -166,7 +167,7 @@ namespace sdpa
           , _results.individual_results.end()
           , [] (std::pair<sdpa::worker_id_t, terminal_state> const& result)
             {
-              return boost::get<JobFSM_::s_canceled> (&result.second);
+              return ::boost::get<JobFSM_::s_canceled> (&result.second);
             }
           );
       }

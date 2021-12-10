@@ -165,7 +165,7 @@ namespace fhg
           non_trivial_user_defined_struct x (0);
           trivial_user_defined_struct y (0);
 
-          boost::archive::binary_oarchive oa (ss);
+          ::boost::archive::binary_oarchive oa (ss);
           oa & x;
           oa & y;
 
@@ -177,7 +177,7 @@ namespace fhg
           non_trivial_user_defined_struct x (-1);
           trivial_user_defined_struct y (-1);
 
-          boost::archive::binary_iarchive ia (ss);
+          ::boost::archive::binary_iarchive ia (ss);
           ia & x;
           ia & y;
 

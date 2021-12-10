@@ -14,14 +14,15 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+#include <sdpa/test/sdpa/UNSAFE_thread_event.hpp>
 #include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/CancelJobAckEvent.hpp>
 #include <sdpa/test/sdpa/utils.hpp>
 #include <sdpa/types.hpp>
 
-#include <test/certificates_data.hpp>
+#include <testing/certificates_data.hpp>
 
-#include <fhg/util/thread/event.hpp>
+#include <util-generic/latch.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/optional.hpp>
 
@@ -30,6 +31,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <functional>
+#include <future>
 #include <string>
 
 BOOST_DATA_TEST_CASE
@@ -46,20 +48,20 @@ BOOST_DATA_TEST_CASE
 
   sdpa::worker_id_t worker_id;
 
-  fhg::util::thread::event<std::string> job_submitted_0;
-  fhg::util::thread::event<std::string> cancel_requested_0;
+  fhg::util::thread::UNSAFE_event<std::string> job_submitted_0;
+  std::promise<std::string> cancel_requested_0;
   utils::fake_drts_worker_notifying_cancel worker_0
     ( [&] (std::string j) { job_submitted_0.notify (j); }
-    , [&cancel_requested_0] (std::string j) { cancel_requested_0.notify (j); }
+    , [&cancel_requested_0] (std::string j) { cancel_requested_0.set_value (j); }
     , agent
     , certificates
     );
 
   {
-    fhg::util::thread::event<> job_submitted_1;
+    fhg::util::latch job_submitted_1 (1);
 
     const utils::fake_drts_worker_waiting_for_finished_ack worker_1
-      ( [&job_submitted_1] (std::string) { job_submitted_1.notify(); }
+      ( [&job_submitted_1] (std::string) { job_submitted_1.count_down(); }
       , agent
       , certificates
       );
@@ -70,9 +72,9 @@ BOOST_DATA_TEST_CASE
     job_submitted_1.wait();
   }
 
-  worker_0.canceled (cancel_requested_0.wait());
+  worker_0.canceled (cancel_requested_0.get_future().get());
 
-  fhg::util::thread::event<std::string> job_submitted_to_restarted_worker;
+  fhg::util::thread::UNSAFE_event<std::string> job_submitted_to_restarted_worker;
   utils::fake_drts_worker_waiting_for_finished_ack restarted_worker
     ( utils::reused_component_name (worker_id)
     , [&job_submitted_to_restarted_worker] (std::string s)
@@ -103,15 +105,15 @@ BOOST_DATA_TEST_CASE
 
   sdpa::worker_id_t worker_id;
 
-  fhg::util::thread::event<std::string> job_submitted_0;
+  fhg::util::thread::UNSAFE_event<std::string> job_submitted_0;
   utils::fake_drts_worker_waiting_for_finished_ack worker_0
     ([&job_submitted_0] (std::string j) { job_submitted_0.notify (j); }, agent, certificates);
 
   {
-    fhg::util::thread::event<> job_submitted_1;
+    fhg::util::latch job_submitted_1 (1);
 
     const utils::fake_drts_worker_waiting_for_finished_ack worker_1
-      ( [&job_submitted_1] (std::string) { job_submitted_1.notify(); }
+      ( [&job_submitted_1] (std::string) { job_submitted_1.count_down(); }
       , agent
       , certificates
       );
@@ -123,7 +125,7 @@ BOOST_DATA_TEST_CASE
     job_submitted_1.wait();
   }
 
-  fhg::util::thread::event<std::string> job_submitted_to_restarted_worker;
+  fhg::util::thread::UNSAFE_event<std::string> job_submitted_to_restarted_worker;
   utils::fake_drts_worker_waiting_for_finished_ack restarted_worker
     ( utils::reused_component_name (worker_id)
     , [&job_submitted_to_restarted_worker] (std::string s)

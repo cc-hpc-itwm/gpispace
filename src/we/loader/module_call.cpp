@@ -157,7 +157,7 @@ namespace we
   namespace
   {
     // https://github.com/boostorg/align/issues/13 prevents from using
-    // boost::align::alignment
+    // ::boost::align::alignment
     void* _align ( std::size_t alignment
                  , std::size_t size
                  , void*& ptr
@@ -217,7 +217,7 @@ namespace we
         if (!virtual_memory_api)
         {
           throw std::logic_error
-            ( ( boost::format
+            ( ( ::boost::format
                   ( "module call '%1%::%2%' with %3% memory transfers "
                     "scheduled to worker '%4%' that is unable to manage "
                     "memory: no handler for the virtual memory was provided."
@@ -233,7 +233,7 @@ namespace we
         if (!shared_memory)
         {
           throw std::logic_error
-            ( ( boost::format
+            ( ( ::boost::format
                   ( "module call '%1%::%2%' with %3% memory transfers "
                     "scheduled to worker '%4%' that is unable to manage "
                     "memory: no local shared memory was allocated."
@@ -252,7 +252,7 @@ namespace we
         if (total_size_required > shared_memory_size)
         {
           throw std::runtime_error
-            ( ( boost::format
+            ( ( ::boost::format
                   ("not enough local memory allocated: %1% bytes required, "
                    "only %2% bytes allocated"
                   )
@@ -275,7 +275,7 @@ namespace we
           if (!align (alignment, size, buffer_ptr, space))
           {
             throw std::runtime_error
-              ( ( boost::format
+              ( ( ::boost::format
                     ("Not enough local memory: %1% > %2%. "
                      "Please take into account also the buffer alignments "
                      "when allocating local shared memory!"

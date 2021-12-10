@@ -51,7 +51,7 @@ namespace expr
         Path& _path;
       };
 
-      struct visitor_result_type : boost::static_visitor<Type>
+      struct visitor_result_type : ::boost::static_visitor<Type>
       {
         visitor_result_type (Path& path)
           : _path (path)
@@ -64,7 +64,7 @@ namespace expr
         {
           ScopedPathExtension const scoped_path_extension (_path, key);
 
-          return boost::apply_visitor (*this, lhs, rhs);
+          return ::boost::apply_visitor (*this, lhs, rhs);
         }
 
 #define LITERAL(T)                                        \
@@ -128,7 +128,7 @@ namespace expr
             if (l->_name != r->_name)
             {
               throw exception::type::error
-                ( boost::format
+                ( ::boost::format
                     ("Can not assign a value of type '%2%' to a value of type '%1%' at %3%: Missing field '%4%', found '%5%' instead")
                 % lhs
                 % rhs
@@ -147,7 +147,7 @@ namespace expr
           if (l != std::end (lhs._fields))
           {
             throw exception::type::error
-              ( boost::format
+              ( ::boost::format
                   ("Can not assign a value of type '%2%' to a value of type '%1%' at %3%: Missing field(s) {'%4%'}")
               % lhs
               % rhs
@@ -166,7 +166,7 @@ namespace expr
           if (r != std::end (rhs._fields))
           {
             throw exception::type::error
-              ( boost::format
+              ( ::boost::format
                   ("Can not assign a value of type '%2%' to a value of type '%1%' at %3%: Additional field(s) {'%4%'}")
               % lhs
               % rhs
@@ -192,7 +192,7 @@ namespace expr
           (void) rhs;
 
           // std::clog
-          //   << ( boost::format
+          //   << ( ::boost::format
           //          ("At %1%: Type '%2%' overwritten with type '%3%'")
           //      % _path
           //      % lhs
@@ -207,7 +207,7 @@ namespace expr
           (void) rhs;
 
           // std::clog
-          //   << ( boost::format ("At %1%: Multi-type '%2%'")
+          //   << ( ::boost::format ("At %1%: Multi-type '%2%'")
           //      % _path
           //      % rhs
           //      )
@@ -253,7 +253,7 @@ namespace expr
           Type operator() (LHS const& lhs, RHS const& rhs) const
         {
           throw exception::type::error
-            ( boost::format
+            ( ::boost::format
                ("At %3%: Can not assign a value of type '%2%'"
                " to a value of type '%1%'"
                )
@@ -267,7 +267,7 @@ namespace expr
 
     Type assign_result (Path path, Type const& lhs, Type const& rhs)
     {
-      return boost::apply_visitor (visitor_result_type {path}, lhs, rhs);
+      return ::boost::apply_visitor (visitor_result_type {path}, lhs, rhs);
     }
   }
 }

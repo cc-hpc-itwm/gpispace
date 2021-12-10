@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <boost/serialization/nvp.hpp>
 #include <boost/serialization/string.hpp>
 
 namespace we
@@ -24,7 +23,7 @@ namespace we
     template<typename Archive>
       void Requirement::serialize (Archive& ar, unsigned int)
     {
-      ar & BOOST_SERIALIZATION_NVP (_value);
+      ar & _value;
     }
   }
 }

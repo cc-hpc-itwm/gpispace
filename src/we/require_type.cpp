@@ -29,7 +29,7 @@ namespace pnet
 {
   namespace
   {
-    class visitor_name : public boost::static_visitor<std::string const&>
+    class visitor_name : public ::boost::static_visitor<std::string const&>
     {
     public:
       std::string const& operator()
@@ -46,11 +46,11 @@ namespace pnet
 
     std::string const& name (type::signature::field_type const& s)
     {
-      return boost::apply_visitor (visitor_name(), s);
+      return ::boost::apply_visitor (visitor_name(), s);
     }
 
     class visitor_signature
-      : public boost::static_visitor<type::signature::signature_type>
+      : public ::boost::static_visitor<type::signature::signature_type>
     {
     public:
       type::signature::signature_type operator()
@@ -68,7 +68,7 @@ namespace pnet
     type::signature::signature_type signature
       (type::signature::field_type const& s)
     {
-      return boost::apply_visitor (visitor_signature(), s);
+      return ::boost::apply_visitor (visitor_signature(), s);
     }
 
     using type::value::path::append;
@@ -78,7 +78,7 @@ namespace pnet
                       , type::signature::signature_type const&
                       );
 
-    class require_structured : public boost::static_visitor<>
+    class require_structured : public ::boost::static_visitor<>
     {
     public:
       require_structured ( std::list<std::string>& path
@@ -132,7 +132,7 @@ namespace pnet
       type::value::structured_type const& _value;
     };
 
-    class visitor_require_type : public boost::static_visitor<>
+    class visitor_require_type : public ::boost::static_visitor<>
     {
     public:
       visitor_require_type (std::list<std::string>& path)
@@ -179,7 +179,7 @@ namespace pnet
                       , type::signature::signature_type const& signature
                       )
    {
-      boost::apply_visitor (visitor_require_type (path), value, signature);
+      ::boost::apply_visitor (visitor_require_type (path), value, signature);
     }
   }
 

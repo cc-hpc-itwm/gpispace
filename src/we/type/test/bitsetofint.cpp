@@ -184,7 +184,7 @@ BOOST_AUTO_TEST_CASE (string_conversion)
     std::string::const_iterator pos (inp.begin());
     std::string::const_iterator const& end (inp.end());
 
-    boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
+    ::boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
 
     BOOST_REQUIRE (!bs);
     BOOST_REQUIRE_EQUAL (std::string (pos, end), inp);
@@ -195,7 +195,7 @@ BOOST_AUTO_TEST_CASE (string_conversion)
     std::string::const_iterator pos (inp.begin());
     std::string::const_iterator const& end (inp.end());
 
-    boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
+    ::boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
 
     BOOST_REQUIRE (!bs);
     BOOST_REQUIRE_EQUAL (std::string (pos, end), inp);
@@ -206,7 +206,7 @@ BOOST_AUTO_TEST_CASE (string_conversion)
     std::string::const_iterator pos (inp.begin());
     std::string::const_iterator const& end (inp.end());
 
-    boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
+    ::boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
 
     BOOST_REQUIRE (bs);
     BOOST_REQUIRE_EQUAL (*bs, bitsetofint::type());
@@ -218,7 +218,7 @@ BOOST_AUTO_TEST_CASE (string_conversion)
     std::string::const_iterator pos (inp.begin());
     std::string::const_iterator const& end (inp.end());
 
-    boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
+    ::boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
 
     BOOST_REQUIRE (bs);
     BOOST_REQUIRE_EQUAL (*bs, bitsetofint::type());
@@ -230,7 +230,7 @@ BOOST_AUTO_TEST_CASE (string_conversion)
     std::string::const_iterator pos (inp.begin());
     std::string::const_iterator const& end (inp.end());
 
-    boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
+    ::boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
 
     BOOST_REQUIRE (bs);
     BOOST_REQUIRE_EQUAL (*bs, bitsetofint::type());
@@ -242,7 +242,7 @@ BOOST_AUTO_TEST_CASE (string_conversion)
     std::string::const_iterator pos (inp.begin());
     std::string::const_iterator const& end (inp.end());
 
-    boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
+    ::boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
 
     BOOST_REQUIRE (bs);
     BOOST_REQUIRE_EQUAL (*bs, bitsetofint::type());
@@ -254,7 +254,7 @@ BOOST_AUTO_TEST_CASE (string_conversion)
     std::string::const_iterator pos (inp.begin());
     std::string::const_iterator const& end (inp.end());
 
-    boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
+    ::boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
 
     BOOST_REQUIRE (bs);
     BOOST_REQUIRE_EQUAL (*bs, bitsetofint::type());
@@ -266,7 +266,7 @@ BOOST_AUTO_TEST_CASE (string_conversion)
     std::string::const_iterator pos (inp.begin());
     std::string::const_iterator const& end (inp.end());
 
-    boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
+    ::boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
 
     BOOST_REQUIRE (bs);
     BOOST_REQUIRE_EQUAL (*bs, bitsetofint::type());
@@ -278,7 +278,7 @@ BOOST_AUTO_TEST_CASE (string_conversion)
     std::string::const_iterator pos (inp.begin());
     std::string::const_iterator const& end (inp.end());
 
-    boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
+    ::boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
 
     BOOST_REQUIRE (bs);
     BOOST_REQUIRE_EQUAL (*bs, bitsetofint::type().ins (0).ins (1).ins (2).ins (3).ins (4).ins (64));
@@ -290,7 +290,7 @@ BOOST_AUTO_TEST_CASE (string_conversion)
     std::string::const_iterator pos (inp.begin());
     std::string::const_iterator const& end (inp.end());
 
-    boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
+    ::boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
 
     BOOST_REQUIRE (bs);
     BOOST_REQUIRE_EQUAL (*bs, bitsetofint::type().ins (0).ins (1).ins (2).ins (3).ins (4).ins (64));
@@ -302,7 +302,7 @@ BOOST_AUTO_TEST_CASE (string_conversion)
     std::string::const_iterator pos (inp.begin());
     std::string::const_iterator const& end (inp.end());
 
-    boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
+    ::boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
 
     BOOST_REQUIRE (bs);
     BOOST_REQUIRE_EQUAL (*bs, bitsetofint::type().ins (0).ins (1).ins (2).ins (3).ins (4).ins (64));
@@ -314,7 +314,7 @@ BOOST_AUTO_TEST_CASE (string_conversion)
     std::string::const_iterator pos (inp.begin());
     std::string::const_iterator const& end (inp.end());
 
-    boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
+    ::boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
 
     BOOST_REQUIRE (bs);
     BOOST_REQUIRE_EQUAL (*bs, bitsetofint::type().ins (0).ins (1).ins (2).ins (3).ins (4).ins (64));
@@ -326,7 +326,7 @@ BOOST_AUTO_TEST_CASE (string_conversion)
     std::string::const_iterator pos (inp.begin());
     std::string::const_iterator const& end (inp.end());
 
-    boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
+    ::boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
 
     BOOST_REQUIRE (bs);
     BOOST_REQUIRE_EQUAL (*bs, bitsetofint::type().ins (0));

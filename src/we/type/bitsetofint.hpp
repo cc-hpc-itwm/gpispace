@@ -79,7 +79,7 @@ namespace bitsetofint
 
   GSPC_DLLEXPORT std::string to_hex (type const&);
   GSPC_DLLEXPORT type from_hex (std::string const&);
-  GSPC_DLLEXPORT boost::optional<type> from_hex
+  GSPC_DLLEXPORT ::boost::optional<type> from_hex
     ( std::string::const_iterator& pos
     , std::string::const_iterator const& end
     );

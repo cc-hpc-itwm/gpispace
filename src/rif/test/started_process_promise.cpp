@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE (missing_special_argument_throws)
         fhg::rif::started_process_promise promise (argc, argv);
       }
     , std::invalid_argument
-        (( boost::format ("Usage: %1% <pipefd> [args]...")
+        (( ::boost::format ("Usage: %1% <pipefd> [args]...")
          % fhg::util::executable_path()
          ).str()
         )
@@ -236,7 +236,7 @@ BOOST_DATA_TEST_CASE
     std::vector<char> const data (read_from_fd (pipefd[0]));
     std::string str (data.begin(), data.end());
     std::istringstream sstr (str);
-    boost::archive::text_iarchive archive (sstr);
+    ::boost::archive::text_iarchive archive (sstr);
 
     bool result;
     archive & result;
@@ -250,7 +250,7 @@ BOOST_DATA_TEST_CASE
   }
 }
 
-using exception_types = boost::mpl::list<std::runtime_error, std::range_error>;
+using exception_types = ::boost::mpl::list<std::runtime_error, std::range_error>;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE
   (exceptions_are_serialized_using_util_generic, Exception, exception_types)
@@ -273,7 +273,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE
     std::vector<char> const data (read_from_fd (pipefd[0]));
     std::string str (data.begin(), data.end());
     std::istringstream sstr (str);
-    boost::archive::text_iarchive archive (sstr);
+    ::boost::archive::text_iarchive archive (sstr);
 
     bool result;
     archive & result;

@@ -16,9 +16,9 @@
 
 #include <logging/stream_receiver.hpp>
 
-#include <rpc/remote_function.hpp>
-#include <rpc/remote_tcp_endpoint.hpp>
-#include <rpc/remote_socket_endpoint.hpp>
+#include <util-rpc/remote_function.hpp>
+#include <util-rpc/remote_tcp_endpoint.hpp>
+#include <util-rpc/remote_socket_endpoint.hpp>
 
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/functor_visitor.hpp>
@@ -72,7 +72,7 @@ namespace fhg
       template<typename... MaybeYield>
         void add_emitters_impl ( std::vector<endpoint> emitters
                                , endpoint const& local_endpoint
-                               , boost::asio::io_service& io_service
+                               , ::boost::asio::io_service& io_service
                                , MaybeYield... yield
                                )
       {
@@ -108,7 +108,7 @@ namespace fhg
     }
 
     void stream_receiver::add_emitters
-      (boost::asio::yield_context yield, std::vector<endpoint> emitters)
+      (::boost::asio::yield_context yield, std::vector<endpoint> emitters)
     {
       return add_emitters_impl
         (std::move (emitters), _local_endpoint, _io_service, yield);

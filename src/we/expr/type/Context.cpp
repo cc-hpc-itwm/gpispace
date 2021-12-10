@@ -37,17 +37,17 @@ namespace expr
     namespace
     {
       template<typename S, typename T>
-        boost::optional<std::reference_wrapper<S>> as_struct (T& node) noexcept
+        ::boost::optional<std::reference_wrapper<S>> as_struct (T& node) noexcept
       {
         using Ref = std::reference_wrapper<S>;
 
-        return fhg::util::visit<boost::optional<Ref>>
+        return fhg::util::visit<::boost::optional<Ref>>
           ( node
-          , [] (S& s) -> boost::optional<Ref>
+          , [] (S& s) -> ::boost::optional<Ref>
             {
               return Ref {s};
             }
-          , [&] (auto&&) -> boost::optional<Ref>
+          , [&] (auto&&) -> ::boost::optional<Ref>
             {
               return {};
             }
@@ -55,7 +55,7 @@ namespace expr
       }
 
       template<typename T, typename Fields>
-        boost::optional<std::reference_wrapper<T>> find
+        ::boost::optional<std::reference_wrapper<T>> find
           ( Path::const_iterator key
           , Fields& fields
           ) noexcept
@@ -124,7 +124,7 @@ namespace expr
           }
 
           throw exception::type::error
-            ( boost::format ("Not a struct at %1%: '%2%'")
+            ( ::boost::format ("Not a struct at %1%: '%2%'")
             % Path (std::begin (_path), key)
             % node
             );
@@ -146,7 +146,7 @@ namespace expr
           : _path (path)
         {}
 
-        boost::optional<Type> _at
+        ::boost::optional<Type> _at
           ( Path::const_iterator key
           , Type const& node
           ) noexcept
@@ -174,7 +174,7 @@ namespace expr
           return {};
         }
 
-        boost::optional<Type> operator() (Type const& node) noexcept
+        ::boost::optional<Type> operator() (Type const& node) noexcept
         {
           return _at (std::begin (_path), node);
         }
@@ -193,14 +193,14 @@ namespace expr
     {
       std::throw_with_nested
         ( exception::type::error
-          ( boost::format ("expr::type::Context::bind (%1%, '%2%')")
+          ( ::boost::format ("expr::type::Context::bind (%1%, '%2%')")
           % path
           % type
           )
         );
     }
 
-    boost::optional<Type> Context::at (Path const& path) const noexcept
+    ::boost::optional<Type> Context::at (Path const& path) const noexcept
     {
       return At {path} (_root);
     }

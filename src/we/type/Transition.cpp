@@ -25,7 +25,6 @@
 #include <we/type/value/peek.hpp>
 #include <we/type/value/show.hpp>
 
-#include <fhg/util/boost/variant.hpp>
 #include <util-generic/functor_visitor.hpp>
 #include <util-generic/join.hpp>
 #include <util-generic/nest_exceptions.hpp>
@@ -44,7 +43,7 @@ namespace we
   {
     namespace
     {
-      struct visitor_signature_to_type : boost::static_visitor<::expr::Type>
+      struct visitor_signature_to_type : ::boost::static_visitor<::expr::Type>
       {
         ::expr::Type operator()
           (std::string const& name) const
@@ -97,18 +96,18 @@ namespace we
             {
               fhg::util::visit<void>
                 ( field
-                , [&] (std::pair<std::string, std::string> const& field)
+                , [&] (std::pair<std::string, std::string> const& f)
                   {
                     field_types.emplace_back
-                      ( field.first
-                      , this->operator() (field.second)
+                      ( f.first
+                      , this->operator() (f.second)
                       );
                   }
-                , [&] (::pnet::type::signature::structured_type const& field)
+                , [&] (::pnet::type::signature::structured_type const& f)
                   {
                     field_types.emplace_back
-                      ( field.first
-                      , this->operator() (field)
+                      ( f.first
+                      , this->operator() (f)
                       );
                   }
                 );
@@ -121,14 +120,14 @@ namespace we
       ::expr::Type signature_to_type
         (::pnet::type::signature::signature_type const& signature)
       {
-        return boost::apply_visitor (visitor_signature_to_type{}, signature);
+        return ::boost::apply_visitor (visitor_signature_to_type{}, signature);
       }
     }
 
     Transition::Transition()
       : name_ ("<<transition unknown>>")
       , data_ (Expression())
-      , condition_ (boost::none)
+      , condition_ (::boost::none)
       , _ports_input()
       , _ports_output()
       , _ports_tunnel()
@@ -137,28 +136,42 @@ namespace we
       , _requirements()
       , _preferences()
       , _priority()
-      , eureka_id_ (boost::none)
+      , eureka_id_ (::boost::none)
     {}
 
-    boost::optional<Expression const&> Transition::expression() const
+    namespace
     {
-      return fhg::util::boost::get_or_none<Expression> (data());
-    }
-    boost::optional<we::type::net_type const&> Transition::net() const
-    {
-      return fhg::util::boost::get_or_none<we::type::net_type> (data());
-    }
-    boost::optional<ModuleCall const&> Transition::module_call() const
-    {
-      return fhg::util::boost::get_or_none<ModuleCall> (data());
+      template<typename T, typename Variant>
+        ::boost::optional<T const&> get_or_none (Variant const& variant)
+      {
+        using Ret = ::boost::optional<T const&>;
+        return fhg::util::visit<Ret>
+          ( variant
+          , [] (T const& x) -> Ret { return x; }
+          , [] (auto const&) -> Ret { return {}; }
+          );
+      }
     }
 
-    boost::optional<Expression> const& Transition::condition() const
+    ::boost::optional<Expression const&> Transition::expression() const
+    {
+      return get_or_none<Expression> (data_);
+    }
+    ::boost::optional<we::type::net_type const&> Transition::net() const
+    {
+      return get_or_none<we::type::net_type> (data_);
+    }
+    ::boost::optional<ModuleCall const&> Transition::module_call() const
+    {
+      return get_or_none<ModuleCall> (data_);
+    }
+
+    ::boost::optional<Expression> const& Transition::condition() const
     {
       return condition_;
     }
 
-    boost::optional<eureka_id_type> const& Transition::eureka_id() const
+    ::boost::optional<eureka_id_type> const& Transition::eureka_id() const
     {
       return eureka_id_;
     }
@@ -174,7 +187,7 @@ namespace we
     }
     we::type::net_type& Transition::mutable_net()
     {
-      return boost::get<we::type::net_type> (data_);
+      return ::boost::get<we::type::net_type> (data_);
     }
 
     std::list<we::type::Requirement> const& Transition::requirements() const
@@ -202,7 +215,7 @@ namespace we
             if (net() && !port.associated_place())
             {
               throw std::runtime_error
-                ( ( boost::format ("Error when adding output port '%1%' to net '%2%':"
+                ( ( ::boost::format ("Error when adding output port '%1%' to net '%2%':"
                                   " Not associated with any place"
                                   ) % port.name() % name()
                   ).str()
@@ -278,7 +291,7 @@ namespace we
       auto const bind
         ( [] (auto& context, auto const& ports)
           {
-            for (auto const& port : ports | boost::adaptors::map_values)
+            for (auto const& port : ports | ::boost::adaptors::map_values)
             {
               context.bind (port.name(), signature_to_type (port.signature()));
             }
@@ -311,7 +324,7 @@ namespace we
         ( [] ( Expression const& expression
              , expr::Type const& expected
              , expr::type::Context context
-             , boost::format message
+             , ::boost::format message
              )
           {
             fhg::util::nest_exceptions<std::runtime_error>
@@ -330,14 +343,14 @@ namespace we
           ( *condition_
           , expr::type::Boolean{}
           , inference_context_before_eval()
-          , boost::format ("In the <condition> expression '%1%'")
+          , ::boost::format ("In the <condition> expression '%1%'")
           % condition_->expression()
           );
 
         //! \note this is the reason for the method being non-const
         if (condition_->ast().is_const_true())
         {
-          condition_ = boost::none;
+          condition_ = ::boost::none;
         }
       }
 
@@ -347,7 +360,7 @@ namespace we
           ( *eureka_id_
           , expr::type::String()
           , inference_context_before_eval()
-          , boost::format ("In the <eureka-group> expression '%1%'")
+          , ::boost::format ("In the <eureka-group> expression '%1%'")
           % *eureka_id_
           );
       }
@@ -360,10 +373,10 @@ namespace we
           {
             if (auto property = prop_.get (path))
             {
-              if (!boost::get<std::string> (&*property))
+              if (!::boost::get<std::string> (&*property))
               {
                 throw std::runtime_error
-                  (str ( boost::format
+                  (str ( ::boost::format
                            ("In the property at '%1%': '%2%' is not a string."
                            " The property at '%1%' must contain a string to be interpreted as an expression."
                            " Did you mean '\"%2%\"'?"
@@ -375,10 +388,10 @@ namespace we
               }
 
               require_expression_has_type
-                ( boost::get<std::string> (*property)
+                ( ::boost::get<std::string> (*property)
                 , expected
                 , context
-                , boost::format ("In the property at '%1%'")
+                , ::boost::format ("In the property at '%1%'")
                 % fhg::util::join (path, ".")
                 );
             }
@@ -402,7 +415,7 @@ namespace we
       auto const assert_outputs_have_correct_type
         ( [&] (auto const& context)
           {
-            for (auto const& port : _ports_output | boost::adaptors::map_values)
+            for (auto const& port : _ports_output | ::boost::adaptors::map_values)
             {
               auto const mtype (context.at (port.name()));
               auto const port_type (signature_to_type (port.signature()));
@@ -420,7 +433,7 @@ namespace we
                        )
                     {
                       // std::clog
-                      //   << ( boost::format
+                      //   << ( ::boost::format
                       //        ("On output port '%1%':"
                       //        " The declared type '%2%' is different from the"
                       //        " infered type '%3%'"
@@ -434,7 +447,7 @@ namespace we
                       (void) port_type;
                     }
                   }
-                , str ( boost::format ("Output port '%1%' expects type '%2%'")
+                , str ( ::boost::format ("Output port '%1%' expects type '%2%'")
                       % port.name()
                       % port_type
                       )
@@ -457,7 +470,7 @@ namespace we
             if (*type != expected)
             {
               throw pnet::exception::type_error
-                (str ( boost::format
+                (str ( ::boost::format
                          ("'%1%' has type '%2%' but expected is type '%3%'")
                      % key
                      % *type
@@ -489,7 +502,7 @@ namespace we
                       , inference_context_after_eval()
                       );
                   }
-                , str ( boost::format ("In the <preference> of module '%1%'")
+                , str ( ::boost::format ("In the <preference> of module '%1%'")
                       % m.first
                       )
                 );
@@ -516,7 +529,7 @@ namespace we
 
                   assert_outputs_have_correct_type (context);
                 }
-              , str (boost::format ("In expression '%1%'") % e)
+              , str (::boost::format ("In expression '%1%'") % e)
               );
 
             //! \note exploits internal knowledge of `we::net_type`

@@ -35,7 +35,7 @@ namespace libssh2
     session ( context&
             , int socket_fd
             , std::string const& username
-            , std::pair<boost::filesystem::path, boost::filesystem::path>
+            , std::pair<::boost::filesystem::path, ::boost::filesystem::path>
                 const& public_and_private_key
             );
 

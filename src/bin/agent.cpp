@@ -30,15 +30,12 @@
 #include <sdpa/daemon/Agent.hpp>
 #include <we/layer.hpp>
 #include <boost/filesystem/path.hpp>
-#include <fhg/util/boost/program_options/validators/existing_path.hpp>
-#include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
+#include <util-generic/boost/program_options/validators/existing_path.hpp>
+#include <util-generic/boost/program_options/validators/nonempty_string.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
-#include <fhg/util/thread/event.hpp>
 
-#include <functional>
-
-namespace bfs = boost::filesystem;
-namespace po = boost::program_options;
+namespace bfs = ::boost::filesystem;
+namespace po = ::boost::program_options;
 
 namespace
 {
@@ -59,7 +56,7 @@ int main (int argc, char **argv)
 
     std::string agentName;
     std::string agentUrl;
-    boost::optional<bfs::path> vmem_socket;
+    ::boost::optional<bfs::path> vmem_socket;
     fhg::com::Certificates ssl_certificates;
 
     po::options_description desc("Allowed options");
@@ -94,24 +91,16 @@ int main (int argc, char **argv)
     sdpa::daemon::Agent agent
       ( agentName
       , agentUrl
-      , std::make_unique<boost::asio::io_service>()
+      , std::make_unique<::boost::asio::io_service>()
       , vmem_socket
-      , true
       , ssl_certificates
       );
-
-    fhg::util::thread::event<> stop_requested;
-    const std::function<void()> request_stop
-      (std::bind (&fhg::util::thread::event<>::notify, &stop_requested));
 
     fhg::util::signal_handler_manager signal_handlers;
     fhg::util::scoped_log_backtrace_and_exit_for_critical_errors const
       crit_error_handler (signal_handlers, agent.log_emitter());
 
-    fhg::util::scoped_signal_handler const SIGTERM_handler
-      (signal_handlers, SIGTERM, std::bind (request_stop));
-    fhg::util::scoped_signal_handler const SIGINT_handler
-      (signal_handlers, SIGINT, std::bind (request_stop));
+    fhg::util::Execution execution (signal_handlers);
 
     promise.set_result ( fhg::util::connectable_to_address_string
                            (agent.peer_local_endpoint().address())
@@ -120,7 +109,7 @@ int main (int argc, char **argv)
                        , agent.logger_registration_endpoint().to_string()
                        );
 
-    stop_requested.wait();
+    execution.wait();
 
     return EXIT_SUCCESS;
   }

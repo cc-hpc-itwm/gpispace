@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#! `add_macros.cmake` to wrap (unit) tests with code to execute before
+#! `add_unit_test.cmake` to wrap (unit) tests with code to execute before
 #! and after running the test itself.
 
 if (pre_test_hook)
@@ -31,7 +31,7 @@ endif()
 
 if (NOT ${result} EQUAL 0)
   # Do not change without adjusting FAIL_REGULAR_EXPRESSION in
-  # add_macros.cmake's add_unit_test().
+  # add_unit_test.cmake's add_unit_test().
   # \note The alternative to a regex would be using a FATAL_ERROR, but
   # that's including a backtrace and loads of whitespace which
   # distracts from the actual test failure. There is no way to trigger

@@ -344,19 +344,19 @@ namespace fhg
 
       namespace
       {
-        boost::optional<int> selected_row (QAbstractItemView* view)
+        ::boost::optional<int> selected_row (QAbstractItemView* view)
         {
           const QModelIndexList indices
             (view->selectionModel()->selectedIndexes());
           return indices.isEmpty()
-            ? boost::optional<int> (boost::none) : indices.first().row();
+            ? ::boost::optional<int> (::boost::none) : indices.first().row();
         }
       }
 
       void dual_list_selector::enable_actions()
       {
-        const boost::optional<int> left_row (selected_row (_available_view));
-        const boost::optional<int> right_row (selected_row (_selected_view));
+        const ::boost::optional<int> left_row (selected_row (_available_view));
+        const ::boost::optional<int> right_row (selected_row (_selected_view));
 
         _select->setEnabled (!!left_row);
         _deselect->setEnabled (!!right_row);

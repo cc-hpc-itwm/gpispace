@@ -38,9 +38,9 @@ namespace iml
       , fhg::util::testing::make_nested
           ( std::runtime_error
               {"Failed to open IML communication socket '" + path + "'"}
-          , boost::system::system_error
-              { boost::system::errc::make_error_code
-                  (boost::system::errc::no_such_file_or_directory)
+          , ::boost::system::system_error
+              { ::boost::system::errc::make_error_code
+                  (::boost::system::errc::no_such_file_or_directory)
               }
           )
       );

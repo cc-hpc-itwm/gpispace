@@ -25,7 +25,7 @@ namespace fhg
   {
     demultiplexer::demultiplexer
         (rif::started_process_promise& promise, int, char**)
-      : receiver ( [&] (boost::asio::yield_context yield, message const& m)
+      : receiver ( [&] (::boost::asio::yield_context yield, message const& m)
                    {
                      return emitter.emit_message (m, std::move (yield));
                    }

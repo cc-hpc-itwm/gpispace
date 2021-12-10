@@ -77,7 +77,7 @@ namespace iml
   private:
     Client& _client;
     MemorySize const _size;
-    boost::optional<SegmentHandle> _segment;
-    boost::optional<AllocationHandle> _allocation;
+    ::boost::optional<SegmentHandle> _segment;
+    ::boost::optional<AllocationHandle> _allocation;
   };
 }

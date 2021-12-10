@@ -22,16 +22,16 @@
 #include <drts/drts.hpp>
 #include <drts/scoped_rifd.hpp>
 
-#include <rpc/service_dispatcher.hpp>
-#include <rpc/service_handler.hpp>
-#include <rpc/service_tcp_provider.hpp>
+#include <util-rpc/service_dispatcher.hpp>
+#include <util-rpc/service_handler.hpp>
+#include <util-rpc/service_tcp_provider.hpp>
 
-#include <test/certificates_data.hpp>
-#include <test/make.hpp>
-#include <test/parse_command_line.hpp>
-#include <test/scoped_nodefile_from_environment.hpp>
-#include <test/source_directory.hpp>
-#include <test/shared_directory.hpp>
+#include <testing/certificates_data.hpp>
+#include <testing/make.hpp>
+#include <testing/parse_command_line.hpp>
+#include <testing/scoped_nodefile_from_environment.hpp>
+#include <testing/source_directory.hpp>
+#include <testing/shared_directory.hpp>
 
 #include <we/type/value.hpp>
 #include <we/type/value/boost/test/printer.hpp>
@@ -53,7 +53,7 @@
 
 BOOST_AUTO_TEST_CASE (wait_for_token_put)
 {
-  boost::program_options::options_description options_description;
+  ::boost::program_options::options_description options_description;
 
   options_description.add (test::options::source_directory());
   options_description.add (test::options::shared_directory());
@@ -62,19 +62,19 @@ BOOST_AUTO_TEST_CASE (wait_for_token_put)
   options_description.add (gspc::options::scoped_rifd());
   options_description.add_options()
     ( "rpc-lib"
-    , boost::program_options::value<boost::filesystem::path>()->required()
+    , ::boost::program_options::value<::boost::filesystem::path>()->required()
     , "lib for workflow to link to"
     );
   options_description.add_options()
     ( "ssl-cert"
-    , boost::program_options::value<std::string>()->required()
+    , ::boost::program_options::value<std::string>()->required()
     , "enable or disable SSL certificate"
     );
 
-  boost::program_options::variables_map vm
+  ::boost::program_options::variables_map vm
     ( test::parse_command_line
-        ( boost::unit_test::framework::master_test_suite().argc
-        , boost::unit_test::framework::master_test_suite().argv
+        ( ::boost::unit_test::framework::master_test_suite().argc
+        , ::boost::unit_test::framework::master_test_suite().argv
         , options_description
         )
     );
@@ -93,8 +93,8 @@ BOOST_AUTO_TEST_CASE (wait_for_token_put)
     (shared_directory, vm);
 
   fhg::util::temporary_path const _installation_dir
-    (shared_directory / boost::filesystem::unique_path());
-  boost::filesystem::path const installation_dir (_installation_dir);
+    (shared_directory / ::boost::filesystem::unique_path());
+  ::boost::filesystem::path const installation_dir (_installation_dir);
 
   gspc::set_application_search_path (vm, installation_dir);
 
@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE (wait_for_token_put)
     . add<test::option::gen::include>
         (test::source_directory (vm).parent_path().parent_path().parent_path())
     . add<test::option::gen::link>
-        (vm.at ("rpc-lib").as<boost::filesystem::path>())
+        (vm.at ("rpc-lib").as<::boost::filesystem::path>())
     . add<test::option::gen::ld_flag> ("-lboost_coroutine")
     . add<test::option::gen::ld_flag> ("-lboost_context")
     );

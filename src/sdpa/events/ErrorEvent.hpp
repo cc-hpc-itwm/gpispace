@@ -27,7 +27,7 @@ namespace sdpa
     class ErrorEvent : public MgmtEvent
     {
     public:
-      typedef boost::shared_ptr<ErrorEvent> Ptr;
+      typedef ::boost::shared_ptr<ErrorEvent> Ptr;
 
       enum error_code_t
         {
@@ -39,7 +39,7 @@ namespace sdpa
         ( error_code_t const& a_error_code
         , std::string const& a_reason
         //! \todo This should not be in _every_ ErrorEvent!
-        , boost::optional<sdpa::job_id_t> const& jobId = boost::none
+        , ::boost::optional<sdpa::job_id_t> const& jobId = ::boost::none
         )
           : MgmtEvent()
           , error_code_ (a_error_code)
@@ -55,7 +55,7 @@ namespace sdpa
       {
         return error_code_;
       }
-      boost::optional<sdpa::job_id_t> const& job_id() const
+      ::boost::optional<sdpa::job_id_t> const& job_id() const
       {
         return job_id_;
       }
@@ -69,7 +69,7 @@ namespace sdpa
     private:
       error_code_t error_code_;
       std::string reason_;
-      boost::optional<sdpa::job_id_t> job_id_;
+      ::boost::optional<sdpa::job_id_t> job_id_;
     };
 
     SAVE_CONSTRUCT_DATA_DEF (ErrorEvent, e)
@@ -85,7 +85,7 @@ namespace sdpa
       LOAD_MGMTEVENT_CONSTRUCT_DATA();
       LOAD_FROM_ARCHIVE (ErrorEvent::error_code_t, error_code);
       LOAD_FROM_ARCHIVE (std::string, reason);
-      LOAD_FROM_ARCHIVE (boost::optional<sdpa::job_id_t>, job_id);
+      LOAD_FROM_ARCHIVE (::boost::optional<sdpa::job_id_t>, job_id);
 
       ::new (e) ErrorEvent (error_code, reason, job_id);
     }

@@ -32,13 +32,13 @@ namespace fhg
         {
           struct requirements_not_met : std::runtime_error
           {
-            requirements_not_met (boost::filesystem::path const& path)
+            requirements_not_met (::boost::filesystem::path const& path)
               : std::runtime_error
                   ("BeeGFS segment requirements not met for " + path.string())
             {}
           };
 
-          void check_requirements (boost::filesystem::path const&);
+          void check_requirements (::boost::filesystem::path const&);
         }
       }
     }

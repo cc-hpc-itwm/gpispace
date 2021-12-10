@@ -49,7 +49,7 @@ namespace fhg
             void serialize_by_member<T>::append
               (Archive& ar, T& x, detail::base_class_t<Type>, Rest... rest)
         {
-          ar & boost::serialization::base_object<Type> (x);
+          ar & ::boost::serialization::base_object<Type> (x);
           append (ar, x, rest...);
         }
 

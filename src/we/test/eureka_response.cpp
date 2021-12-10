@@ -71,7 +71,7 @@ namespace
         , we::type::Expression (eureka_condition)
         , {}
         , we::priority_type()
-      , boost::optional<we::type::eureka_id_type>{}
+      , ::boost::optional<we::type::eureka_id_type>{}
       , std::list<we::type::Preference>{}
       );
     we::port_id_type const port_id_eureka_gid
@@ -113,13 +113,13 @@ namespace
     we::type::property::type empty;
     we::transition_id_type const tid (net.add_transition (trans_eureka));
 
-    net.add_connection ( we::edge::PT_READ
+    net.add_connection ( we::edge::PT_READ{}
                        , tid
                        , pid_eureka_gid
                        , port_id_eureka_gid
                        , empty
                        );
-    net.add_connection (we::edge::PT, tid, pid_in, port_id_in, empty);
+    net.add_connection (we::edge::PT{}, tid, pid_in, port_id_in, empty);
     net.add_eureka (tid, port_id_out);
 
     net.put_value (pid_eureka_gid, eureka_id_);
@@ -163,7 +163,7 @@ BOOST_AUTO_TEST_CASE (check_transition_generates_no_eureka_responses)
     );
   eureka_net.put_tokens (tokens);
 
-  boost::optional<we::type::eureka_id_type> eureka_received;
+  ::boost::optional<we::type::eureka_id_type> eureka_received;
   std::mt19937 random_engine
     (fhg::util::testing::detail::GLOBAL_random_engine()());
 
@@ -185,7 +185,7 @@ BOOST_AUTO_TEST_CASE (check_transition_generates_no_eureka_responses)
     );
 
   BOOST_REQUIRE_EQUAL ( eureka_received
-                      , boost::none
+                      , ::boost::none
                       );
 }
 
@@ -214,7 +214,7 @@ BOOST_AUTO_TEST_CASE (check_transition_generates_eureka_id_on_eureka_response)
     );
   eureka_net.put_tokens (tokens);
 
-  boost::optional<we::type::eureka_id_type> eureka_received;
+  ::boost::optional<we::type::eureka_id_type> eureka_received;
   std::mt19937 random_engine
     (fhg::util::testing::detail::GLOBAL_random_engine()());
 
@@ -236,7 +236,7 @@ BOOST_AUTO_TEST_CASE (check_transition_generates_eureka_id_on_eureka_response)
     );
 
   BOOST_REQUIRE_EQUAL ( eureka_received
-                      , boost::optional<we::type::eureka_id_type> (eureka_id)
+                      , ::boost::optional<we::type::eureka_id_type> (eureka_id)
                       );
 }
 

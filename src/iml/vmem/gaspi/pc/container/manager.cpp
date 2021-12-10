@@ -91,7 +91,7 @@ namespace gpi
         {
           fhg::util::syscall::stat (path.c_str(), &st);
         }
-        catch (boost::system::system_error const&)
+        catch (::boost::system::system_error const&)
         {
           return;
         }
@@ -120,7 +120,7 @@ namespace gpi
                                              , &peer_addr_size
                                              );
           }
-          catch (boost::system::system_error const&)
+          catch (::boost::system::system_error const&)
           {
             if (m_stopping)
             {
@@ -148,7 +148,7 @@ namespace gpi
 
       namespace
       {
-        struct handle_message_t : public boost::static_visitor<gpi::pc::proto::message_t>
+        struct handle_message_t : public ::boost::static_visitor<gpi::pc::proto::message_t>
         {
           handle_message_t ( gpi::pc::type::process_id_t const& proc_id
                            , memory::manager_t& memory_manager
@@ -295,13 +295,13 @@ namespace gpi
           gpi::pc::proto::message_t
           operator () (gpi::pc::proto::segment::message_t const& m) const
           {
-            return boost::apply_visitor (*this, m);
+            return ::boost::apply_visitor (*this, m);
           }
 
           gpi::pc::proto::message_t
           operator () (gpi::pc::proto::memory::message_t const& m) const
           {
-            return boost::apply_visitor (*this, m);
+            return ::boost::apply_visitor (*this, m);
           }
 
           /*** Catch all other messages ***/
@@ -329,7 +329,7 @@ namespace gpi
         {
           try
           {
-            return boost::apply_visitor
+            return ::boost::apply_visitor
               (handle_message_t (id, memory_manager, topology), request);
           }
           catch (...)
@@ -359,7 +359,7 @@ namespace gpi
                 //! communication_threads
 
                 throw std::runtime_error
-                  (str ( boost::format
+                  (str ( ::boost::format
                            ("io_exact: unable to %1% %2% bytes, %3% %4%")
                        % what
                        % size
@@ -418,7 +418,7 @@ namespace gpi
                       {
                         std::stringstream sstr
                           (std::string (buffer.data(), buffer.size()));
-                        boost::archive::binary_iarchive ia (sstr);
+                        ::boost::archive::binary_iarchive ia (sstr);
                         ia & request;
                       }
                     , "could not decode message"
@@ -440,7 +440,7 @@ namespace gpi
                     ( [&]
                       {
                         std::stringstream sstr;
-                        boost::archive::text_oarchive oa (sstr);
+                        ::boost::archive::text_oarchive oa (sstr);
                         oa & reply;
                         data = sstr.str();
                       }
@@ -465,9 +465,9 @@ namespace gpi
         {
           fhg::util::syscall::shutdown (socket, SHUT_RDWR);
         }
-        catch (boost::system::system_error const& se)
+        catch (::boost::system::system_error const& se)
         {
-          if (se.code() != boost::system::errc::not_connected)
+          if (se.code() != ::boost::system::errc::not_connected)
           {
             //! \note ignored: already disconnected = fine, we terminate
             throw;
@@ -566,7 +566,7 @@ namespace gpi
             }
           }
           bool _committed;
-          boost::filesystem::path _path;
+          ::boost::filesystem::path _path;
         } delete_socket_file_on_error = {false, m_path};
 
         fhg::util::syscall::chmod (m_path.c_str(), 0700);

@@ -39,18 +39,18 @@ namespace xml
         ( util::position_type const& pod
         , std::string const& name
         , std::string const& function
-        , boost::optional<std::string> const& target
-        , boost::optional<std::string> const& port_return
+        , ::boost::optional<std::string> const& target
+        , ::boost::optional<std::string> const& port_return
         , std::list<std::string> const& port_arg
-        , boost::optional<std::string> memory_buffer_return
+        , ::boost::optional<std::string> memory_buffer_return
         , std::list<std::string> memory_buffer_arg
-        , boost::optional<std::string> const& code
-        , boost::optional<util::position_type> const& pod_of_code
+        , ::boost::optional<std::string> const& code
+        , ::boost::optional<util::position_type> const& pod_of_code
         , std::list<std::string> const& cincludes
         , std::list<std::string> const& ldflags
         , std::list<std::string> const& cxxflags
-        , boost::optional<bool> const& pass_context
-        , boost::optional<we::type::eureka_id_type> const& eureka_id
+        , ::boost::optional<bool> const& pass_context
+        , ::boost::optional<we::type::eureka_id_type> const& eureka_id
         , bool require_function_unloads_without_rest
         , bool require_module_unloads_without_rest
         )
@@ -92,7 +92,7 @@ namespace xml
       {
         return _function;
       }
-      boost::optional<std::string> const& module_type::port_return() const
+      ::boost::optional<std::string> const& module_type::port_return() const
       {
         return _port_return;
       }
@@ -100,7 +100,7 @@ namespace xml
       {
         return _port_arg;
       }
-      boost::optional<std::string> const&
+      ::boost::optional<std::string> const&
         module_type::memory_buffer_return() const
       {
         return _memory_buffer_return;
@@ -109,11 +109,11 @@ namespace xml
       {
         return _memory_buffer_arg;
       }
-      boost::optional<std::string> const& module_type::code() const
+      ::boost::optional<std::string> const& module_type::code() const
       {
         return _code;
       }
-      const boost::optional<util::position_type>
+      const ::boost::optional<util::position_type>
         module_type::position_of_definition_of_code() const
       {
         return _position_of_definition_of_code;
@@ -134,11 +134,11 @@ namespace xml
       {
         return _pass_context ? *_pass_context : false;
       }
-      boost::optional<std::string> const& module_type::target() const
+      ::boost::optional<std::string> const& module_type::target() const
       {
         return _target;
       }
-      boost::optional<we::type::eureka_id_type> const& module_type::eureka_id() const
+      ::boost::optional<we::type::eureka_id_type> const& module_type::eureka_id() const
       {
         return _eureka_id;
       }

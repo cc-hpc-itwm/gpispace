@@ -21,9 +21,9 @@
 
 namespace iml_test
 {
-  boost::program_options::variables_map parse_command_line
+  ::boost::program_options::variables_map parse_command_line
     ( int argc
     , char** argv
-    , boost::program_options::options_description const& options
+    , ::boost::program_options::options_description const& options
     );
 }

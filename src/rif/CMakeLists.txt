@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-find_package (Libssh2 REQUIRED COMPONENTS _relocatable)
+find_package (Libssh2 REQUIRED)
 
 gspc_add_library (NAME rif-entry_point
   TYPE STATIC
@@ -27,7 +27,7 @@ gspc_add_executable (NAME gspc-rifd
   RUNTIME
   SOURCES "gspc-rifd.cpp"
           "execute_and_get_startup_messages.cpp"
-  LIBRARIES RPC
+  LIBRARIES Util::RPC
             fhg-util
             gspc::logging
             Util::Generic
@@ -76,7 +76,7 @@ gspc_add_library (NAME rif-strategies
           "strategy/ssh/detail.cpp"
           "strategy/ssh/session.cpp"
   LIBRARIES
-    PRIVATE RPC
+    PRIVATE Util::RPC
     PRIVATE Util::Generic
     PRIVATE Libssh2::libssh2
     PRIVATE OpenSSL::Crypto

@@ -28,8 +28,8 @@
 
 namespace iml_test
 {
-  boost::filesystem::path set_nodefile_from_environment
-    (boost::program_options::variables_map& vm)
+  ::boost::filesystem::path set_nodefile_from_environment
+    (::boost::program_options::variables_map& vm)
   {
     auto iml_nodefile_for_tests (fhg::util::getenv ("IML_NODEFILE_FOR_TESTS"));
 
@@ -48,10 +48,10 @@ namespace iml_test
         ("Environment variable IML_NODEFILE_FOR_TESTS is not set");
     }
 
-    if (!boost::filesystem::exists (*iml_nodefile_for_tests))
+    if (!::boost::filesystem::exists (*iml_nodefile_for_tests))
     {
       throw std::invalid_argument
-        ( ( boost::format
+        ( ( ::boost::format
               ( "Environment variable IML_NODEFILE_FOR_TESTS=\"%1%\" "
                 "points to non-existent path."
               )

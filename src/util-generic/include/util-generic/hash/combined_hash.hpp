@@ -39,7 +39,7 @@ namespace fhg
       {
         static void apply (size_t& seed, Head const& head)
         {
-          boost::hash_combine (seed, std::hash<Head>() (head));
+          ::boost::hash_combine (seed, std::hash<Head>() (head));
         }
       };
     }

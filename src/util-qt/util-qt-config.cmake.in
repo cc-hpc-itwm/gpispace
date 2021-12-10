@@ -1,0 +1,93 @@
+###############################################################################
+# CMake minimum required version verification
+###############################################################################
+
+if (CMAKE_MINIMUM_REQUIRED_VERSION VERSION_LESS @CMAKE_MINIMUM_REQUIRED_VERSION@)
+  set (${CMAKE_FIND_PACKAGE_NAME}_FOUND false)
+  set (${CMAKE_FIND_PACKAGE_NAME}_NOT_FOUND_MESSAGE
+    "The minimum required CMake version of the including project is too low! \
+    Projects using ${CMAKE_FIND_PACKAGE_NAME} are required to set CMake version \
+    @CMAKE_MINIMUM_REQUIRED_VERSION@ or above as their minimum required version! \
+    A line of code such as \
+    \
+      cmake_minimum_required(VERSION @CMAKE_MINIMUM_REQUIRED_VERSION@)'\
+    \
+    is required to be added at the top of the including project's root CMakeLists.txt."
+  )
+  return ()
+endif ()
+
+###############################################################################
+# Inclusion guard
+###############################################################################
+
+# TODO: Is this still required? Also present in util-generic-config.cmake
+if (${CMAKE_FIND_PACKAGE_NAME}_FOUND)
+  return ()
+endif ()
+
+@PACKAGE_INIT@
+
+###############################################################################
+# Includes
+###############################################################################
+
+include (CMakeFindDependencyMacro)
+include (GNUInstallDirs)
+
+###############################################################################
+# Library paths
+###############################################################################
+
+set_and_check (UTIL_QT_HOME "@PACKAGE__origin@")
+get_filename_component (UTIL_QT_HOME "${UTIL_QT_HOME}" REALPATH)
+
+###############################################################################
+# Dependencies
+###############################################################################
+
+find_dependency (util-cmake)
+find_dependency (util-generic)
+find_dependency (Boost 1.61
+  COMPONENTS
+    serialization
+)
+find_dependency (Qt5
+  COMPONENTS
+    Core
+    Gui
+    Widgets
+)
+
+###############################################################################
+# Targets
+###############################################################################
+
+add_library (Util::Qt-Headers INTERFACE IMPORTED)
+target_include_directories (Util::Qt-Headers
+  INTERFACE "${UTIL_QT_HOME}/${CMAKE_INSTALL_INCLUDEDIR}"
+)
+target_link_libraries (Util::Qt-Headers
+  INTERFACE
+    Boost::serialization
+    Util::Generic
+    Qt5::Core
+    Qt5::Gui
+    Qt5::Widgets
+)
+target_compile_features (Util::Qt-Headers
+  INTERFACE "@_project_cxx_std@"
+)
+
+add_library (Util::Qt STATIC IMPORTED)
+set_target_properties (Util::Qt
+  PROPERTIES
+    IMPORTED_LOCATION "${UTIL_QT_HOME}/lib/libUtil-Qt.a"
+)
+target_link_libraries (Util::Qt
+  INTERFACE
+    Util::Qt-Headers
+)
+target_compile_features (Util::Qt
+  INTERFACE "@_project_cxx_std@"
+)

@@ -34,7 +34,7 @@ namespace expr
   {
     namespace
     {
-      class visitor_eval : public boost::static_visitor<pnet::type::value::value_type>
+      class visitor_eval : public ::boost::static_visitor<pnet::type::value::value_type>
       {
       private:
         context& c;
@@ -54,7 +54,7 @@ namespace expr
 
         pnet::type::value::value_type operator () (expr::parse::node::unary_t const& u) const
         {
-          pnet::type::value::value_type c0 (boost::apply_visitor (*this, u.child));
+          pnet::type::value::value_type c0 (::boost::apply_visitor (*this, u.child));
 
           return pnet::type::value::unary (u.token, c0);
         }
@@ -63,10 +63,10 @@ namespace expr
         {
           if (is_define (b.token))
             {
-              pnet::type::value::value_type c1 (boost::apply_visitor (*this, b.r));
+              pnet::type::value::value_type c1 (::boost::apply_visitor (*this, b.r));
 
               c.bind_and_discard_ref
-                ( boost::get<std::list<std::string>>(b.l)
+                ( ::boost::get<std::list<std::string>>(b.l)
                 , c1
                 );
 
@@ -74,11 +74,11 @@ namespace expr
             }
           else if (is_or_boolean (b.token))
             {
-              pnet::type::value::value_type c0 (boost::apply_visitor (*this, b.l));
+              pnet::type::value::value_type c0 (::boost::apply_visitor (*this, b.l));
 
-              if (!boost::get<bool> (c0))
+              if (!::boost::get<bool> (c0))
                 {
-                  pnet::type::value::value_type c1 (boost::apply_visitor (*this, b.r));
+                  pnet::type::value::value_type c1 (::boost::apply_visitor (*this, b.r));
 
                   return pnet::type::value::binary (b.token, c0, c1);
                 }
@@ -89,11 +89,11 @@ namespace expr
             }
           else if (is_and_boolean (b.token))
             {
-              pnet::type::value::value_type c0 (boost::apply_visitor (*this, b.l));
+              pnet::type::value::value_type c0 (::boost::apply_visitor (*this, b.l));
 
-              if (boost::get<bool> (c0))
+              if (::boost::get<bool> (c0))
                 {
-                  pnet::type::value::value_type c1 (boost::apply_visitor (*this, b.r));
+                  pnet::type::value::value_type c1 (::boost::apply_visitor (*this, b.r));
 
                   return pnet::type::value::binary (b.token, c0, c1);
                 }
@@ -108,15 +108,15 @@ namespace expr
                  == associativity::left
                  )
                 {
-                  pnet::type::value::value_type c0 (boost::apply_visitor (*this, b.l));
-                  pnet::type::value::value_type c1 (boost::apply_visitor (*this, b.r));
+                  pnet::type::value::value_type c0 (::boost::apply_visitor (*this, b.l));
+                  pnet::type::value::value_type c1 (::boost::apply_visitor (*this, b.r));
 
                   return pnet::type::value::binary (b.token, c0, c1);
                 }
               else
                 {
-                  pnet::type::value::value_type c1 (boost::apply_visitor (*this, b.r));
-                  pnet::type::value::value_type c0 (boost::apply_visitor (*this, b.l));
+                  pnet::type::value::value_type c1 (::boost::apply_visitor (*this, b.r));
+                  pnet::type::value::value_type c0 (::boost::apply_visitor (*this, b.l));
 
                   return pnet::type::value::binary (b.token, c0, c1);
                 }
@@ -130,16 +130,16 @@ namespace expr
             {
             case expr::token::_map_assign:
               {
-                pnet::type::value::value_type c0 (boost::apply_visitor (*this, t.child0));
-                pnet::type::value::value_type c1 (boost::apply_visitor (*this, t.child1));
-                pnet::type::value::value_type c2 (boost::apply_visitor (*this, t.child2));
+                pnet::type::value::value_type c0 (::boost::apply_visitor (*this, t.child0));
+                pnet::type::value::value_type c1 (::boost::apply_visitor (*this, t.child1));
+                pnet::type::value::value_type c2 (::boost::apply_visitor (*this, t.child2));
 
                 try
                   {
                     typedef std::map< pnet::type::value::value_type
                                     , pnet::type::value::value_type
                                     > map_type;
-                    map_type& m (boost::get<map_type> (c0));
+                    map_type& m (::boost::get<map_type> (c0));
 
                     m[c1] = c2;
 
@@ -148,7 +148,7 @@ namespace expr
                 catch (...)
                   {
                     throw expr::exception::eval::type_error
-                      (( boost::format ("map_assign (%1%, %2%, %3%)")
+                      (( ::boost::format ("map_assign (%1%, %2%, %3%)")
                        % pnet::type::value::show (c0)
                        % pnet::type::value::show (c1)
                        % pnet::type::value::show (c2)
@@ -157,7 +157,7 @@ namespace expr
                   }
               }
             default: throw std::runtime_error
-                (( boost::format ("eval-ternary (%1%)")
+                (( ::boost::format ("eval-ternary (%1%)")
                  % expr::token::show (t.token)
                  ).str()
                 );
@@ -168,7 +168,7 @@ namespace expr
 
     pnet::type::value::value_type eval (context& c, expr::parse::node::type const& nd)
     {
-      return boost::apply_visitor (visitor_eval (c), nd);
+      return ::boost::apply_visitor (visitor_eval (c), nd);
     }
   }
 }

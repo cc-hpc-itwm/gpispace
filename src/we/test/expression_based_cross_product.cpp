@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE (create_and_execute_cross_product)
   we::type::net_type net;
 
   we::place_id_type const pid_vid
-    (net.add_place (place::type ("vid", std::string ("unsigned long"), boost::none)));
+    (net.add_place (place::type ("vid", std::string ("unsigned long"), ::boost::none)));
 
   pnet::type::signature::structure_type sig_store_fields;
 
@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE (create_and_execute_cross_product)
     (std::make_pair (std::string ("store"), sig_store_fields));
 
   we::place_id_type const pid_store
-    (net.add_place (place::type ("store", sig_store, boost::none)));
+    (net.add_place (place::type ("store", sig_store, ::boost::none)));
 
   we::type::Transition trans_inner
     ( "trans_inner"
@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_CASE (create_and_execute_cross_product)
     , we::type::Expression ("!bitset_is_element (${store.seen}, ${vid})")
     , we::type::property::type()
     , we::priority_type()
-    , boost::optional<we::type::eureka_id_type>{}
+    , ::boost::optional<we::type::eureka_id_type>{}
     , std::list<we::type::Preference>{}
     );
 
@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE (create_and_execute_cross_product)
     (std::make_pair (std::string ("pair"), sig_pair_fields));
 
   we::place_id_type const pid_pair
-    (net.add_place (place::type("pair", sig_pair, boost::none)));
+    (net.add_place (place::type("pair", sig_pair, ::boost::none)));
 
   we::port_id_type const port_id_vid
     ( trans_inner.add_port
@@ -93,10 +93,10 @@ BOOST_AUTO_TEST_CASE (create_and_execute_cross_product)
   {
     we::type::property::type empty;
 
-    net.add_connection (we::edge::PT, tid, pid_store, port_id_store_in, empty);
-    net.add_connection (we::edge::TP, tid, pid_store, port_id_store_out, empty);
-    net.add_connection (we::edge::PT_READ, tid, pid_vid, port_id_vid, empty);
-    net.add_connection (we::edge::TP, tid, pid_pair, port_id_pair, empty);
+    net.add_connection (we::edge::PT{}, tid, pid_store, port_id_store_in, empty);
+    net.add_connection (we::edge::TP{}, tid, pid_store, port_id_store_out, empty);
+    net.add_connection (we::edge::PT_READ{}, tid, pid_vid, port_id_vid, empty);
+    net.add_connection (we::edge::TP{}, tid, pid_pair, port_id_pair, empty);
   }
 
   net.put_value (pid_vid, 0UL);
@@ -122,10 +122,10 @@ BOOST_AUTO_TEST_CASE (create_and_execute_cross_product)
 
   we::type::Transition tnet ( "tnet"
                               , net
-                              , boost::none
+                              , ::boost::none
                               , we::type::property::type()
                               , we::priority_type()
-                              , boost::optional<we::type::eureka_id_type>{}
+                              , ::boost::optional<we::type::eureka_id_type>{}
                               , std::list<we::type::Preference>{}
                               );
   tnet.add_port
@@ -162,13 +162,13 @@ BOOST_AUTO_TEST_CASE (create_and_execute_cross_product)
     > values_by_port_id;
 
   for ( auto const& token
-      : net.get_token (pid_store) | boost::adaptors::map_values
+      : net.get_token (pid_store) | ::boost::adaptors::map_values
       )
   {
     values_by_port_id[port_id_store_out_net].push_back (token);
   }
   for ( auto const& token
-      : net.get_token (pid_pair) | boost::adaptors::map_values
+      : net.get_token (pid_pair) | ::boost::adaptors::map_values
       )
   {
     values_by_port_id[port_id_pair_net].push_back (token);

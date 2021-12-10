@@ -20,7 +20,7 @@ namespace xml
 {
   namespace parse
   {
-    boost::optional<std::string> optional ( const xml_node_type* node
+    ::boost::optional<std::string> optional ( const xml_node_type* node
                                           , const Ch* attr
                                           )
     {
@@ -30,7 +30,7 @@ namespace xml
                            , node->first_attribute (attr)->value_size()
                            );
       }
-      return boost::none;
+      return ::boost::none;
     }
   }
 }

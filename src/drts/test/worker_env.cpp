@@ -21,11 +21,11 @@
 #include <we/type/value/boost/test/printer.hpp>
 #include <we/type/value/wrap.hpp>
 
-#include <test/make.hpp>
-#include <test/parse_command_line.hpp>
-#include <test/scoped_nodefile_from_environment.hpp>
-#include <test/shared_directory.hpp>
-#include <test/source_directory.hpp>
+#include <testing/make.hpp>
+#include <testing/parse_command_line.hpp>
+#include <testing/scoped_nodefile_from_environment.hpp>
+#include <testing/shared_directory.hpp>
+#include <testing/source_directory.hpp>
 
 #include <util-generic/finally.hpp>
 #include <util-generic/syscall.hpp>
@@ -57,9 +57,9 @@ namespace
     (std::vector<std::string> extra_args)
   {
     std::vector<std::string> args
-      ( boost::unit_test::framework::master_test_suite().argv
-      , boost::unit_test::framework::master_test_suite().argv
-      + boost::unit_test::framework::master_test_suite().argc
+      ( ::boost::unit_test::framework::master_test_suite().argv
+      , ::boost::unit_test::framework::master_test_suite().argv
+      + ::boost::unit_test::framework::master_test_suite().argc
       );
     for (auto&& arg : std::move (extra_args))
     {
@@ -73,13 +73,13 @@ namespace
   {
     compile_pnet()
     {
-      boost::program_options::variables_map vm;
-      boost::program_options::store
-        ( boost::program_options::command_line_parser
-            ( boost::unit_test::framework::master_test_suite().argc
-            , boost::unit_test::framework::master_test_suite().argv
+      ::boost::program_options::variables_map vm;
+      ::boost::program_options::store
+        ( ::boost::program_options::command_line_parser
+            ( ::boost::unit_test::framework::master_test_suite().argc
+            , ::boost::unit_test::framework::master_test_suite().argv
             )
-        . options ( boost::program_options::options_description()
+        . options ( ::boost::program_options::options_description()
                   . add (test::options::source_directory())
                   . add (test::options::shared_directory())
                   . add (gspc::options::installation())
@@ -91,7 +91,7 @@ namespace
       vm.notify();
 
       app_search_path
-        = test::shared_directory (vm) / boost::filesystem::unique_path();
+        = test::shared_directory (vm) / ::boost::filesystem::unique_path();
 
       _make.emplace ( vm
                     , "report_environment"
@@ -101,14 +101,14 @@ namespace
       pnet = _make->pnet();
     }
 
-    static boost::filesystem::path app_search_path;
-    static boost::filesystem::path pnet;
+    static ::boost::filesystem::path app_search_path;
+    static ::boost::filesystem::path pnet;
 
-    boost::optional<test::make_net_lib_install> _make;
+    ::boost::optional<test::make_net_lib_install> _make;
   };
 
-  boost::filesystem::path compile_pnet::app_search_path = {};
-  boost::filesystem::path compile_pnet::pnet = {};
+  ::boost::filesystem::path compile_pnet::app_search_path = {};
+  ::boost::filesystem::path compile_pnet::pnet = {};
 
   using random_string = fhg::util::testing::random<std::string>;
 
@@ -155,10 +155,10 @@ BOOST_GLOBAL_FIXTURE (compile_pnet);
 //! - `client`
 //! - use the global pnet compilation to set search path.
 #define COMMAND_LINE_PARSING_AND_SINGLE_WORKER_DRTS_SETUP(extra_args_)        \
-  boost::program_options::variables_map vm                                    \
+  ::boost::program_options::variables_map vm                                    \
     ( test::parse_command_line                                                \
         ( merge_with_cmdline_args (extra_args_)                               \
-        , boost::program_options::options_description()                       \
+        , ::boost::program_options::options_description()                       \
         . add (test::options::source_directory())                             \
         . add (test::options::shared_directory())                             \
         . add (gspc::options::installation())                                 \
@@ -270,11 +270,11 @@ BOOST_AUTO_TEST_CASE (copy_file_one_file)
 {
   fhg::util::temporary_path const envfiles;
   fhg::util::temporary_file const envfile
-    (envfiles / boost::filesystem::unique_path());
+    (envfiles / ::boost::filesystem::unique_path());
 
   std::vector<std::string> args;
   args.emplace_back ("--worker-env-copy-file");
-  args.emplace_back (boost::filesystem::path (envfile).string());
+  args.emplace_back (::boost::filesystem::path (envfile).string());
 
   // Count chosen by dice roll.
   std::vector<random_env_kvpair> kvs (17);
@@ -283,7 +283,7 @@ BOOST_AUTO_TEST_CASE (copy_file_one_file)
   for (auto const& kv : kvs)
   {
     expected_env.emplace (kv.definition);
-    std::ofstream (boost::filesystem::path (envfile).string(), std::ios::app)
+    std::ofstream (::boost::filesystem::path (envfile).string(), std::ios::app)
       << kv.definition << "\n";
   }
 
@@ -294,12 +294,12 @@ BOOST_AUTO_TEST_CASE (copy_file_three_files)
 {
   fhg::util::temporary_path const envfiles;
   fhg::util::temporary_file const envfile_0
-    (envfiles / boost::filesystem::unique_path());
+    (envfiles / ::boost::filesystem::unique_path());
   fhg::util::temporary_file const envfile_1
-    (envfiles / boost::filesystem::unique_path());
+    (envfiles / ::boost::filesystem::unique_path());
   fhg::util::temporary_file const envfile_2
-    (envfiles / boost::filesystem::unique_path());
-  std::array<boost::filesystem::path, 3> const envfile_paths
+    (envfiles / ::boost::filesystem::unique_path());
+  std::array<::boost::filesystem::path, 3> const envfile_paths
     {envfile_0, envfile_1, envfile_2};
 
   std::vector<std::string> args;

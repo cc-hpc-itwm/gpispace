@@ -20,6 +20,8 @@
 
 #include <fhg/util/xml.hpp>
 
+#include <boost/format.hpp>
+
 namespace xml
 {
   namespace parse
@@ -71,14 +73,14 @@ namespace xml
       connect_type::unique_key_type connect_type::unique_key() const
       {
         return std::make_tuple
-          (_place, _port, we::edge::is_PT (_direction));
+          (_place, _port, we::edge::is_incoming (_direction));
       }
 
       namespace dump
       {
         void dump (::fhg::util::xml::xmlstream& s, connect_type const& c)
         {
-          s.open ("connect-" + we::edge::enum_to_string (c.direction()));
+          s.open (str (::boost::format ("connect-%1%") % c.direction()));
           s.attr ("port", c.port());
           s.attr ("place", c.place());
 

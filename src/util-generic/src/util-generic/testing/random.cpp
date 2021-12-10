@@ -90,12 +90,12 @@ namespace fhg
 
           // Context resets per test unit, so check if in a new unit
           // to avoid duplicate addition of context.
-          static auto last_unit (boost::unit_test::INV_TEST_UNIT_ID);
+          static auto last_unit (::boost::unit_test::INV_TEST_UNIT_ID);
           auto const curr_unit
-            (boost::unit_test::framework::current_test_case_id());
+            (::boost::unit_test::framework::current_test_case_id());
           if (last_unit != curr_unit)
           {
-            boost::unit_test::framework::add_context
+            ::boost::unit_test::framework::add_context
               ( BOOST_TEST_LAZY_MSG
                   ( "random generator was seeded with: "
                   << join (seed_state().seed_data, ",")

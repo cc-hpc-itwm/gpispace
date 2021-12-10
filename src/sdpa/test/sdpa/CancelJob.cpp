@@ -19,9 +19,9 @@
 #include <sdpa/test/sdpa/utils.hpp>
 #include <sdpa/types.hpp>
 
-#include <test/certificates_data.hpp>
+#include <testing/certificates_data.hpp>
 
-#include <fhg/util/thread/event.hpp>
+#include <util-generic/latch.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/optional.hpp>
 
@@ -31,6 +31,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <future>
 #include <map>
 #include <stdexcept>
 #include <string>
@@ -126,11 +127,11 @@ BOOST_DATA_TEST_CASE (cancel_with_agent, certificates_data, certificates)
 {
   const utils::agent agent (certificates);
 
-  fhg::util::thread::event<> job_submitted;
-  fhg::util::thread::event<std::string> cancel_requested;
+  fhg::util::latch job_submitted (1);
+  std::promise<std::string> cancel_requested;
   fake_drts_worker_notifying_submission_and_cancel worker
-    ( [&job_submitted] (std::string) { job_submitted.notify(); }
-    , [&cancel_requested] (std::string j) { cancel_requested.notify (j); }
+    ( [&job_submitted] (std::string) { job_submitted.count_down(); }
+    , [&cancel_requested] (std::string j) { cancel_requested.set_value (j); }
     , agent
     , certificates
     );
@@ -143,7 +144,7 @@ BOOST_DATA_TEST_CASE (cancel_with_agent, certificates_data, certificates)
 
   client.cancel_job (job_id);
 
-  worker.canceled (cancel_requested.wait());
+  worker.canceled (cancel_requested.get_future().get());
 
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job_id), sdpa::status::CANCELED);
@@ -175,11 +176,11 @@ BOOST_DATA_TEST_CASE (call_cancel_twice_agent, certificates_data, certificates)
 {
   const utils::agent agent (certificates);
 
-  fhg::util::thread::event<> job_submitted;
-  fhg::util::thread::event<std::string> cancel_requested;
+  fhg::util::latch job_submitted (1);
+  std::promise<std::string> cancel_requested;
   fake_drts_worker_notifying_submission_and_cancel worker
-    ( [&job_submitted] (std::string) { job_submitted.notify(); }
-    , [&cancel_requested] (std::string j) { cancel_requested.notify (j); }
+    ( [&job_submitted] (std::string) { job_submitted.count_down(); }
+    , [&cancel_requested] (std::string j) { cancel_requested.set_value (j); }
     , agent
     , certificates
     );
@@ -192,7 +193,7 @@ BOOST_DATA_TEST_CASE (call_cancel_twice_agent, certificates_data, certificates)
 
   client.cancel_job (job_id);
 
-  worker.canceled (cancel_requested.wait());
+  worker.canceled (cancel_requested.get_future().get());
 
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job_id), sdpa::status::CANCELED);
@@ -206,9 +207,9 @@ BOOST_DATA_TEST_CASE (cancel_pending_jobs, certificates_data, certificates)
 {
   const utils::agent agent (certificates);
 
-  fhg::util::thread::event<> job_submitted;
+  fhg::util::latch job_submitted (1);
   utils::fake_drts_worker_notifying_module_call_submission worker
-    ( [&job_submitted] (std::string) { job_submitted.notify(); }
+    ( [&job_submitted] (std::string) { job_submitted.count_down(); }
     , agent
     , certificates
     );
@@ -231,20 +232,20 @@ BOOST_DATA_TEST_CASE
 {
   const utils::agent agent (certificates);
 
-  fhg::util::thread::event<> job_submitted_0;
-  fhg::util::thread::event<std::string> cancel_requested_0;
+  fhg::util::latch job_submitted_0 (1);
+  std::promise<std::string> cancel_requested_0;
   fake_drts_worker_notifying_submission_and_cancel worker_0
-    ( [&job_submitted_0] (std::string) { job_submitted_0.notify(); }
-    , [&cancel_requested_0] (std::string j) { cancel_requested_0.notify (j); }
+    ( [&job_submitted_0] (std::string) { job_submitted_0.count_down(); }
+    , [&cancel_requested_0] (std::string j) { cancel_requested_0.set_value (j); }
     , agent
     , certificates
     );
 
-  fhg::util::thread::event<> job_submitted_1;
-  fhg::util::thread::event<std::string> cancel_requested_1;
+  fhg::util::latch job_submitted_1 (1);
+  std::promise<std::string> cancel_requested_1;
   fake_drts_worker_notifying_submission_and_cancel worker_1
-     ( [&job_submitted_1] (std::string) { job_submitted_1.notify(); }
-     , [&cancel_requested_1] (std::string j) { cancel_requested_1.notify (j); }
+     ( [&job_submitted_1] (std::string) { job_submitted_1.count_down(); }
+     , [&cancel_requested_1] (std::string j) { cancel_requested_1.set_value (j); }
      , agent
      , certificates
      );
@@ -258,8 +259,8 @@ BOOST_DATA_TEST_CASE
 
   client.cancel_job (job_id);
 
-  worker_0.canceled (cancel_requested_0.wait());
-  worker_1.canceled (cancel_requested_1.wait());
+  worker_0.canceled (cancel_requested_0.get_future().get());
+  worker_1.canceled (cancel_requested_1.get_future().get());
 
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job_id), sdpa::status::CANCELED);

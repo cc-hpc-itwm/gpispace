@@ -55,7 +55,7 @@ namespace sdpa
       NotificationEvent (std::string encoded)
       {
         std::istringstream stream (encoded);
-        boost::archive::text_iarchive archive (stream);
+        ::boost::archive::text_iarchive archive (stream);
         archive & _components;
         archive & _activity_id;
         archive & _activity_name;
@@ -64,7 +64,7 @@ namespace sdpa
       std::string encoded() const
       {
         std::ostringstream stream;
-        boost::archive::text_oarchive archive (stream);
+        ::boost::archive::text_oarchive archive (stream);
         archive & _components;
         archive & _activity_id;
         archive & _activity_name;

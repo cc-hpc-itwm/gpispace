@@ -48,7 +48,7 @@ namespace xml
         using eurekas_type = fhg::pnet::util::unique<eureka_type>;
         using place_maps_type = fhg::pnet::util::unique<place_map_type>;
 
-        typedef boost::variant <function_type, use_type>
+        typedef ::boost::variant <function_type, use_type>
           function_or_use_type;
 
         transition_type ( util::position_type const&
@@ -61,8 +61,8 @@ namespace xml
                         , structs_type const& structs
                         , conditions_type const&
                         , requirements_type const& requirements
-                        , boost::optional<we::priority_type> const& priority
-                        , boost::optional<bool> const& finline
+                        , ::boost::optional<we::priority_type> const& priority
+                        , ::boost::optional<bool> const& finline
                         , we::type::property::type const& properties
                         );
         transition_type add_prefix (std::string const&) const;
@@ -142,8 +142,8 @@ namespace xml
       public:
         requirements_type requirements;
 
-        boost::optional<we::priority_type> priority;
-        boost::optional<bool> finline;
+        ::boost::optional<we::priority_type> priority;
+        ::boost::optional<bool> finline;
 
       private:
         we::type::property::type _properties;

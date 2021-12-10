@@ -23,8 +23,6 @@
 #include <fhgcom/message.hpp>
 #include <fhgcom/peer_info.hpp>
 
-#include <fhg/util/thread/event.hpp>
-
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/strand.hpp>
@@ -36,6 +34,7 @@
 #include <deque>
 #include <exception>
 #include <functional>
+#include <future>
 #include <list>
 #include <memory>
 #include <mutex>
@@ -63,12 +62,12 @@ namespace fhg
     /*!
       This class abstracts from an endpoint
      */
-    class peer_t : private boost::noncopyable
+    class peer_t : private ::boost::noncopyable
     {
     public:
-      typedef std::function <void (boost::system::error_code const&)> handler_t;
+      typedef std::function <void (::boost::system::error_code const&)> handler_t;
 
-      peer_t ( std::unique_ptr<boost::asio::io_service>
+      peer_t ( std::unique_ptr<::boost::asio::io_service>
              , host_t const& host
              , port_t const& port
              , Certificates const& certificates
@@ -77,7 +76,7 @@ namespace fhg
       virtual ~peer_t ();
 
       p2p::address_t const& address () const { return my_addr_.get(); }
-      boost::asio::ip::tcp::endpoint local_endpoint() const
+      ::boost::asio::ip::tcp::endpoint local_endpoint() const
       {
         return acceptor_.local_endpoint();
       }
@@ -92,29 +91,36 @@ namespace fhg
                 , std::string const& data
                 );
 
-      void async_recv
-        ( std::function<void ( boost::system::error_code
-                             , boost::optional<fhg::com::p2p::address_t> source
-                             , message_t
-                             )
-                       >
-        );
+      struct Received
+      {
+        Received (::boost::system::error_code);
+        Received ( ::boost::system::error_code
+                 , p2p::address_t
+                 , message_t
+                 );
+
+        ::boost::system::error_code ec() const;
+        p2p::address_t const& source() const;
+        message_t const& message() const;
+
+      private:
+        ::boost::system::error_code _ec;
+        ::boost::optional<p2p::address_t> _source;
+        ::boost::optional<message_t> _message;
+      };
+
+      void async_recv (std::function<void (Received)>);
 
       std::exception_ptr TESTING_ONLY_handshake_exception() const;
 
     protected:
       void handle_hello_message (connection_t::ptr_t, std::unique_ptr<message_t> m);
       void handle_user_data   (connection_t::ptr_t, std::unique_ptr<message_t> m);
-      void handle_error       (connection_t::ptr_t, boost::system::error_code const& error);
+      void handle_error       (connection_t::ptr_t, ::boost::system::error_code const& error);
 
     private:
       struct to_send_t
       {
-        to_send_t ()
-          : message ()
-          , handler()
-        {}
-
         // \note Only valid until an async request was started,
         // i.e. before passing to connection::async_send().
         // Afterwards, only handler remains valid.
@@ -123,13 +129,6 @@ namespace fhg
         message_t  message;
         handler_t  handler;
       };
-
-      using to_recv_t
-        = std::function<void ( boost::system::error_code
-                             , boost::optional<p2p::address_t>
-                             , message_t
-                             )
-                       >;
 
       struct connection_data_t
       {
@@ -146,34 +145,32 @@ namespace fhg
       typedef std::unique_lock<mutex_type> lock_type;
 
       void accept_new ();
-      void handle_accept (boost::system::error_code const&);
+      void handle_accept (::boost::system::error_code const&);
       void connection_established (lock_type const&, connection_data_t&);
-      void handle_send (p2p::address_t, boost::system::error_code const&);
+      void handle_send (p2p::address_t, ::boost::system::error_code const&);
       void start_sender (lock_type const&, connection_data_t&);
 
       friend class connection_t;
 
       void request_handshake_response
         ( p2p::address_t addr
-        , std::shared_ptr<util::thread::event<std::exception_ptr>> connect_done
-        , boost::system::error_code const& ec
+        , std::shared_ptr<std::promise<std::exception_ptr>> connect_done
+        , ::boost::system::error_code const& ec
         );
       void acknowledge_handshake_response
-        (connection_t::ptr_t connection, boost::system::error_code const& ec);
+        (connection_t::ptr_t connection, ::boost::system::error_code const& ec);
 
       mutex_type mutex_;
 
       bool stopping_;
-      std::string host_;
-      std::string port_;
-      boost::optional<p2p::address_t> my_addr_;
+      ::boost::optional<p2p::address_t> my_addr_;
 
-      std::unique_ptr<boost::asio::ssl::context> ctx_;
+      std::unique_ptr<::boost::asio::ssl::context> ctx_;
 
-      std::unique_ptr<boost::asio::io_service> io_service_;
-      boost::asio::io_service::strand strand_;
-      boost::asio::io_service::work io_service_work_;
-      boost::asio::ip::tcp::acceptor acceptor_;
+      std::unique_ptr<::boost::asio::io_service> io_service_;
+      ::boost::asio::io_service::strand strand_;
+      ::boost::asio::io_service::work io_service_work_;
+      ::boost::asio::ip::tcp::acceptor acceptor_;
 
       std::unordered_map<p2p::address_t, connection_data_t> connections_;
 
@@ -181,11 +178,11 @@ namespace fhg
 
       connection_t::ptr_t listen_;
 
-      std::list<to_recv_t> m_to_recv;
+      std::list<std::function<void (Received)>> m_to_recv;
       std::list<message_t> m_pending;
 
       std::exception_ptr TESTING_ONLY_handshake_exception_;
-      boost::strict_scoped_thread<> _io_thread;
+      ::boost::strict_scoped_thread<> _io_thread;
     };
   }
 }

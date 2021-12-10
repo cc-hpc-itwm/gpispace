@@ -22,7 +22,7 @@ namespace iml
 {
   namespace beegfs
   {
-    SegmentDescription::SegmentDescription (boost::filesystem::path path_)
+    SegmentDescription::SegmentDescription (::boost::filesystem::path path_)
       : path (std::move (path_))
     {}
   }

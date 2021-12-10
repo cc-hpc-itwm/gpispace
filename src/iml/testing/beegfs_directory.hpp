@@ -23,9 +23,9 @@ namespace iml_test
 {
   namespace options
   {
-    boost::program_options::options_description beegfs_directory();
+    ::boost::program_options::options_description beegfs_directory();
   }
 
-  boost::filesystem::path beegfs_directory
-    (boost::program_options::variables_map const&);
+  ::boost::filesystem::path beegfs_directory
+    (::boost::program_options::variables_map const&);
 }

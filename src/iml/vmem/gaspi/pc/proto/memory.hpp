@@ -30,8 +30,6 @@
 #include <iml/SegmentHandle.hpp>
 #include <iml/vmem/gaspi/pc/type/handle_descriptor.hpp>
 
-// serialization
-#include <boost/serialization/nvp.hpp>
 #include <boost/serialization/list.hpp>
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/string.hpp>
@@ -52,12 +50,12 @@ namespace gpi
           iml::MemorySize size;
 
         private:
-          friend class boost::serialization::access;
+          friend class ::boost::serialization::access;
           template<typename Archive>
           void serialize (Archive & ar, unsigned int /*version*/)
           {
-            ar & BOOST_SERIALIZATION_NVP( segment );
-            ar & BOOST_SERIALIZATION_NVP( size );
+            ar & segment;
+            ar & size;
           }
         };
 
@@ -66,11 +64,11 @@ namespace gpi
           iml::AllocationHandle handle;
 
         private:
-          friend class boost::serialization::access;
+          friend class ::boost::serialization::access;
           template<typename Archive>
           void serialize (Archive & ar, unsigned int /*version*/)
           {
-            ar & BOOST_SERIALIZATION_NVP( handle );
+            ar & handle;
           }
         };
 
@@ -79,11 +77,11 @@ namespace gpi
           iml::AllocationHandle handle;
 
         private:
-          friend class boost::serialization::access;
+          friend class ::boost::serialization::access;
           template<typename Archive>
           void serialize (Archive & ar, unsigned int /*version*/)
           {
-            ar & BOOST_SERIALIZATION_NVP( handle );
+            ar & handle;
           }
         };
 
@@ -94,13 +92,13 @@ namespace gpi
           iml::MemorySize size;
 
         private:
-          friend class boost::serialization::access;
+          friend class ::boost::serialization::access;
           template<typename Archive>
           void serialize (Archive & ar, unsigned int /*version*/)
           {
-            ar & BOOST_SERIALIZATION_NVP( dst );
-            ar & BOOST_SERIALIZATION_NVP( src );
-            ar & BOOST_SERIALIZATION_NVP( size );
+            ar & dst;
+            ar & src;
+            ar & size;
           }
         };
 
@@ -109,11 +107,11 @@ namespace gpi
           gpi::pc::type::memcpy_id_t memcpy_id;
 
         private:
-          friend class boost::serialization::access;
+          friend class ::boost::serialization::access;
           template<typename Archive>
           void serialize (Archive & ar, unsigned int /*version*/)
           {
-            ar & BOOST_SERIALIZATION_NVP( memcpy_id );
+            ar & memcpy_id;
           }
         };
 
@@ -122,11 +120,11 @@ namespace gpi
           gpi::pc::type::memcpy_id_t memcpy_id;
 
         private:
-          friend class boost::serialization::access;
+          friend class ::boost::serialization::access;
           template<typename Archive>
           void serialize (Archive & ar, unsigned int /*version*/)
           {
-            ar & BOOST_SERIALIZATION_NVP( memcpy_id );
+            ar & memcpy_id;
           }
         };
 
@@ -147,11 +145,11 @@ namespace gpi
         private:
           std::exception_ptr _exception;
 
-          friend class boost::serialization::access;
+          friend class ::boost::serialization::access;
           template<class Archive>
             void serialize (Archive & ar, unsigned int const version)
           {
-            boost::serialization::split_member (ar, *this, version);
+            ::boost::serialization::split_member (ar, *this, version);
           }
 
           template<typename Archive>
@@ -184,11 +182,11 @@ namespace gpi
         {
           iml::AllocationHandle handle;
         private:
-          friend class boost::serialization::access;
+          friend class ::boost::serialization::access;
           template<typename Archive>
           void serialize (Archive & ar, unsigned int /*version*/)
           {
-            ar & BOOST_SERIALIZATION_NVP( handle );
+            ar & handle;
           }
         };
 
@@ -196,11 +194,11 @@ namespace gpi
         {
           gpi::pc::type::handle::descriptor_t descriptor;
         private:
-          friend class boost::serialization::access;
+          friend class ::boost::serialization::access;
           template<typename Archive>
           void serialize (Archive & ar, unsigned int /*version*/)
           {
-            ar & BOOST_SERIALIZATION_NVP( descriptor );
+            ar & descriptor;
           }
         };
 
@@ -213,11 +211,11 @@ namespace gpi
 
           std::list<iml::MemoryRegion> transfers;
         private:
-          friend class boost::serialization::access;
+          friend class ::boost::serialization::access;
           template<typename Archive>
           void serialize (Archive & ar, unsigned int /*version*/)
           {
-            ar & BOOST_SERIALIZATION_NVP (transfers);
+            ar & transfers;
           }
         };
 
@@ -230,15 +228,15 @@ namespace gpi
 
           std::unordered_map<std::string, double> costs;
         private:
-          friend class boost::serialization::access;
+          friend class ::boost::serialization::access;
           template<typename Archive>
           void serialize (Archive & ar, unsigned int /*version*/)
           {
-            ar & BOOST_SERIALIZATION_NVP (costs);
+            ar & costs;
           }
         };
 
-        typedef boost::variant<
+        typedef ::boost::variant<
           memory::alloc_t
           , memory::alloc_reply_t
           , memory::free_t

@@ -156,3 +156,9 @@ fhg_add_test (NAME sdpa_network_basics
             sdpa
             test-utilities
 )
+
+fhg_add_test (NAME sdpa_test_UNSAFE_thread_event
+  SOURCES test_UNSAFE_thread_event.cpp
+  USE_BOOST
+  LIBRARIES Boost::thread Boost::system fhg-util
+)

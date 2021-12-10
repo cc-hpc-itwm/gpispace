@@ -23,12 +23,12 @@
 #include <drts/scoped_rifd.hpp>
 #include <drts/virtual_memory.hpp>
 
-#include <test/make.hpp>
-#include <test/parse_command_line.hpp>
-#include <test/scoped_nodefile_from_environment.hpp>
-#include <test/shared_directory.hpp>
-#include <test/source_directory.hpp>
-#include <test/virtual_memory_socket_name_for_localhost.hpp>
+#include <testing/make.hpp>
+#include <testing/parse_command_line.hpp>
+#include <testing/scoped_nodefile_from_environment.hpp>
+#include <testing/shared_directory.hpp>
+#include <testing/source_directory.hpp>
+#include <testing/virtual_memory_socket_name_for_localhost.hpp>
 
 #include <we/type/value/boost/test/printer.hpp>
 
@@ -84,7 +84,7 @@
                                                            , ALLOW_EMPTY_RANGES  \
                                                            , WITH_ALIGNMENT      \
                                                            )                     \
-  boost::program_options::options_description options_description;       \
+  ::boost::program_options::options_description options_description;       \
                                                                          \
   options_description.add (test::options::shared_directory());           \
   options_description.add (test::options::source_directory());           \
@@ -93,16 +93,16 @@
   options_description.add (gspc::options::scoped_rifd());                \
   options_description.add (gspc::options::virtual_memory());             \
                                                                          \
-  boost::program_options::variables_map vm                               \
+  ::boost::program_options::variables_map vm                               \
     ( test::parse_command_line                                           \
-        ( boost::unit_test::framework::master_test_suite().argc          \
-        , boost::unit_test::framework::master_test_suite().argv          \
+        ( ::boost::unit_test::framework::master_test_suite().argc          \
+        , ::boost::unit_test::framework::master_test_suite().argv          \
         , options_description                                            \
         )                                                                \
     );                                                                   \
                                                                          \
   auto const test_case_dir                                               \
-    (str ( boost::format ("%1%-%2%-%3%-%4%")                             \
+    (str ( ::boost::format ("%1%-%2%-%3%-%4%")                             \
          % std::string (#TESTCASE)                                       \
          % BUFFSIZE                                                      \
          % OFFSET                                                        \
@@ -117,8 +117,8 @@
     (shared_directory, vm);                                              \
                                                                          \
   fhg::util::temporary_path const _installation_dir                      \
-    (shared_directory / boost::filesystem::unique_path());               \
-  boost::filesystem::path const installation_dir (_installation_dir);    \
+    (shared_directory / ::boost::filesystem::unique_path());               \
+  ::boost::filesystem::path const installation_dir (_installation_dir);    \
                                                                          \
   gspc::set_application_search_path (vm, installation_dir);              \
   test::set_virtual_memory_socket_name_for_localhost (vm);               \
@@ -128,18 +128,18 @@
   gspc::installation const installation (vm);                            \
                                                                          \
   fhg::util::temporary_path const _workflow_dir                          \
-    (shared_directory / boost::filesystem::unique_path());               \
-  boost::filesystem::path const workflow_dir (_workflow_dir);            \
+    (shared_directory / ::boost::filesystem::unique_path());               \
+  ::boost::filesystem::path const workflow_dir (_workflow_dir);            \
                                                                          \
-  boost::filesystem::ofstream                                            \
+  ::boost::filesystem::ofstream                                            \
     (workflow_dir / (std::string (#TESTCASE) + ".xpnet"))                \
       << drts::test::net_description                                     \
            ( fhg::util::testing::random<bool>{}() ? "get" : "put"        \
            , ( ALLOW_EMPTY_RANGES                                        \
-             ? boost::make_optional (true)                               \
+             ? ::boost::make_optional (true)                               \
              : ( fhg::util::testing::random<bool>{}()                    \
-               ? boost::make_optional (false)                            \
-               : boost::none                                             \
+               ? ::boost::make_optional (false)                            \
+               : ::boost::none                                             \
                )                                                         \
              )                                                           \
            , WITH_ALIGNMENT                                              \
@@ -220,7 +220,7 @@ namespace
 
 BOOST_DATA_TEST_CASE
   ( empty_ranges_are_allowed_if_the_flag_is_set_on_true
-  , boost::unit_test::data::make (std::vector<Sample> (empty_range_samples))
+  , ::boost::unit_test::data::make (std::vector<Sample> (empty_range_samples))
   , sample
   )
 {
@@ -250,7 +250,7 @@ BOOST_DATA_TEST_CASE
 
 BOOST_DATA_TEST_CASE
   ( empty_ranges_are_not_allowed_if_the_flag_is_not_set_or_set_on_false
-  , boost::unit_test::data::make (std::vector<Sample> (empty_range_samples))
+  , ::boost::unit_test::data::make (std::vector<Sample> (empty_range_samples))
   , sample
   )
 {
@@ -288,7 +288,7 @@ BOOST_DATA_TEST_CASE
 
 BOOST_DATA_TEST_CASE
   ( using_ranges_that_exceed_the_buffer_limits_is_not_allowed
-  , boost::unit_test::data::make (std::vector<Sample> (failing_samples))
+  , ::boost::unit_test::data::make (std::vector<Sample> (failing_samples))
   , sample
   )
 {

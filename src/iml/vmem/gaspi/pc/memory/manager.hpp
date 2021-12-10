@@ -51,7 +51,7 @@ namespace gpi
     {
       class shm_area_t;
 
-      class manager_t : boost::noncopyable
+      class manager_t : ::boost::noncopyable
       {
       public:
         using area_ptr = area_ptr_t;
@@ -160,7 +160,7 @@ namespace gpi
         fhg::util::interruptible_threadsafe_queue<std::packaged_task<void()>>
           _tasks;
         std::map<std::size_t, std::future<void>> _task_by_id;
-        std::vector<std::unique_ptr<boost::strict_scoped_thread<>>>
+        std::vector<std::unique_ptr<::boost::strict_scoped_thread<>>>
           _task_threads;
         decltype (_tasks)::interrupt_on_scope_exit _interrupt_task_queue;
 

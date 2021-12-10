@@ -18,8 +18,6 @@
 
 #include <fhgcom/address.hpp>
 
-#include <stdexcept>
-
 namespace sdpa
 {
   namespace events
@@ -33,8 +31,6 @@ namespace sdpa
     class JobFailedEvent;
     class JobFinishedAckEvent;
     class JobFinishedEvent;
-    class JobStatusReplyEvent;
-    class QueryJobStatusEvent;
     class SubmitJobAckEvent;
     class SubmitJobEvent;
     class worker_registration_response;
@@ -43,7 +39,6 @@ namespace sdpa
     class SubscribeAckEvent;
     class put_token;
     class put_token_response;
-    class BacklogNoLongerFullEvent;
     class workflow_response;
     class workflow_response_response;
 
@@ -52,48 +47,30 @@ namespace sdpa
     public:
       virtual ~EventHandler() = default;
 
-      virtual void handleCancelJobAckEvent (fhg::com::p2p::address_t const&, const CancelJobAckEvent*)
-      { throw std::runtime_error ("UNHANDLED EVENT: CancelJobAck"); }
-      virtual void handleCancelJobEvent (fhg::com::p2p::address_t const&, const CancelJobEvent*)
-      { throw std::runtime_error ("UNHANDLED EVENT: CancelJob"); }
-      virtual void handleDeleteJobEvent (fhg::com::p2p::address_t const&, const DeleteJobEvent*)
-      { throw std::runtime_error ("UNHANDLED EVENT: DeleteJob"); }
-      virtual void handleErrorEvent (fhg::com::p2p::address_t const&, const ErrorEvent*)
-      { throw std::runtime_error ("UNHANDLED EVENT: ErrorEvent"); }
-      virtual void handleJobFailedAckEvent (fhg::com::p2p::address_t const&, const JobFailedAckEvent*)
-      { throw std::runtime_error ("UNHANDLED EVENT: JobFailedAck"); }
-      virtual void handleJobFailedEvent (fhg::com::p2p::address_t const&, const JobFailedEvent*)
-      { throw std::runtime_error ("UNHANDLED EVENT: JobFailed"); }
-      virtual void handleJobFinishedAckEvent (fhg::com::p2p::address_t const&, const JobFinishedAckEvent*)
-      { throw std::runtime_error ("UNHANDLED EVENT: JobFinishedAck"); }
-      virtual void handleJobFinishedEvent (fhg::com::p2p::address_t const&, const JobFinishedEvent*)
-      { throw std::runtime_error ("UNHANDLED EVENT: JobFinished"); }
-      virtual void handleJobStatusReplyEvent (fhg::com::p2p::address_t const&, const JobStatusReplyEvent*)
-      { throw std::runtime_error ("UNHANDLED EVENT: JobStatusReply"); }
-      virtual void handleQueryJobStatusEvent (fhg::com::p2p::address_t const&, const QueryJobStatusEvent*)
-      { throw std::runtime_error ("UNHANDLED EVENT: QueryJobStatus"); }
-      virtual void handleSubmitJobAckEvent (fhg::com::p2p::address_t const&, const SubmitJobAckEvent*)
-      { throw std::runtime_error ("UNHANDLED EVENT: SubmitJobAck"); }
-      virtual void handleSubmitJobEvent (fhg::com::p2p::address_t const&, const SubmitJobEvent*)
-      { throw std::runtime_error ("UNHANDLED EVENT: SubmitJob"); }
-      virtual void handle_worker_registration_response (fhg::com::p2p::address_t const&, const worker_registration_response*)
-      { throw std::runtime_error ("UNHANDLED EVENT: WorkerRegistrationAck"); }
-      virtual void handleWorkerRegistrationEvent (fhg::com::p2p::address_t const&, const WorkerRegistrationEvent*)
-      { throw std::runtime_error ("UNHANDLED EVENT: WorkerRegistration"); }
-      virtual void handleSubscribeEvent (fhg::com::p2p::address_t const&, const SubscribeEvent*)
-      { throw std::runtime_error ("UNHANDLED EVENT: Subscribe"); }
-      virtual void handleSubscribeAckEvent (fhg::com::p2p::address_t const&, const SubscribeAckEvent*)
-      { throw std::runtime_error ("UNHANDLED EVENT: SubscribeAck"); }
-      virtual void handle_put_token (fhg::com::p2p::address_t const&, const put_token*)
-      { throw std::runtime_error ("UNHANDLED EVENT: put_token"); }
-      virtual void handle_put_token_response (fhg::com::p2p::address_t const&, const put_token_response*)
-      { throw std::runtime_error ("UNHANDLED EVENT: put_token_response"); }
-      virtual void handleBacklogNoLongerFullEvent (fhg::com::p2p::address_t const&, const BacklogNoLongerFullEvent*)
-         { throw std::runtime_error ("UNHANDLED EVENT: BacklogNoLongerFullEvent"); }
-      virtual void handle_workflow_response (fhg::com::p2p::address_t const&, const workflow_response*)
-      { throw std::runtime_error ("UNHANDLED EVENT: workflow_response"); }
-      virtual void handle_workflow_response_response (fhg::com::p2p::address_t const&, const workflow_response_response*)
-      { throw std::runtime_error ("UNHANDLED EVENT: workflow_response_response"); }
+#define HANDLER(Event, Sep)                             \
+      virtual void handle ## Sep ## Event               \
+        (fhg::com::p2p::address_t const&, const Event*)
+
+      HANDLER (CancelJobAckEvent,);
+      HANDLER (CancelJobEvent,);
+      HANDLER (DeleteJobEvent,);
+      HANDLER (ErrorEvent,);
+      HANDLER (JobFailedAckEvent,);
+      HANDLER (JobFailedEvent,);
+      HANDLER (JobFinishedAckEvent,);
+      HANDLER (JobFinishedEvent,);
+      HANDLER (SubmitJobAckEvent,);
+      HANDLER (SubmitJobEvent,);
+      HANDLER (worker_registration_response,_);
+      HANDLER (WorkerRegistrationEvent,);
+      HANDLER (SubscribeEvent,);
+      HANDLER (SubscribeAckEvent,);
+      HANDLER (put_token,_);
+      HANDLER (put_token_response,_);
+      HANDLER (workflow_response,_);
+      HANDLER (workflow_response_response,_);
+
+#undef HANDLER
     };
   }
 }

@@ -60,9 +60,9 @@ BOOST_AUTO_TEST_CASE (cant_handle_custom_error_categories)
   std::error_code const ec (0, custom_error_category);
 
   std::stringstream ss;
-  boost::archive::binary_oarchive oa {ss};
+  ::boost::archive::binary_oarchive oa {ss};
   oa << ec;
-  boost::archive::binary_iarchive ia {ss};
+  ::boost::archive::binary_iarchive ia {ss};
   std::error_code deserialized;
 
   fhg::util::testing::require_exception

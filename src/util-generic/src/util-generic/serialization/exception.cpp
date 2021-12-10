@@ -76,13 +76,13 @@ namespace fhg
             [[noreturn]] void throw_with_nested() const;
             std::exception_ptr to_exception_ptr() const;
 
-            static boost::optional<builtin_exception_data>
+            static ::boost::optional<builtin_exception_data>
               from_exception_ptr (std::exception_ptr);
 
           private:
             using system_error_data_type =
               std::tuple<bool, std::string, std::error_code>;
-            using data_type = boost::variant< boost::blank
+            using data_type = ::boost::variant< ::boost::blank
                                             , std::string
                                             , system_error_data_type
                                             , std::error_code
@@ -96,7 +96,7 @@ namespace fhg
             std_exception_types _type;
             data_type _data;
 
-            friend class boost::serialization::access;
+            friend class ::boost::serialization::access;
             template<class Archive>
               void serialize (Archive& ar, const unsigned int)
             {
@@ -115,17 +115,17 @@ namespace fhg
             std::exception_ptr to_exception_ptr
               (serialization_functions const&) const;
 
-            static boost::optional<user_defined_exception_data>
+            static ::boost::optional<user_defined_exception_data>
               from_exception_ptr ( std::exception_ptr
                                  , serialization_functions const&
-                                 , boost::optional<builtin_exception_data>
+                                 , ::boost::optional<builtin_exception_data>
                                  );
 
           private:
             user_defined_exception_data
                 ( std::string function
                 , std::string blob
-                , boost::optional<builtin_exception_data> fallback
+                , ::boost::optional<builtin_exception_data> fallback
                 )
               : _function (std::move (function))
               , _blob (std::move (blob))
@@ -134,9 +134,9 @@ namespace fhg
 
             std::string _function;
             std::string _blob;
-            boost::optional<builtin_exception_data> _fallback;
+            ::boost::optional<builtin_exception_data> _fallback;
 
-            friend class boost::serialization::access;
+            friend class ::boost::serialization::access;
             template<class Archive>
               void serialize (Archive& ar, const unsigned int)
             {
@@ -148,9 +148,9 @@ namespace fhg
 
           struct nested_exception_data;
 
-          using exception_data = boost::variant
+          using exception_data = ::boost::variant
             < builtin_exception_data
-            , boost::recursive_wrapper<nested_exception_data>
+            , ::boost::recursive_wrapper<nested_exception_data>
             , user_defined_exception_data
             >;
 
@@ -170,7 +170,7 @@ namespace fhg
             nested_exception_data() = default;
 
           private:
-            friend class boost::serialization::access;
+            friend class ::boost::serialization::access;
             template<class Archive>
               void serialize (Archive& ar, const unsigned int)
             {
@@ -194,7 +194,7 @@ namespace fhg
             case std_exception_types::enum_value:                           \
               {                                                             \
                 std::throw_with_nested                                      \
-                  (std::type (boost::get<std::string> (_data)));            \
+                  (std::type (::boost::get<std::string> (_data)));            \
               }
 
 #define WITH_WHAT(type) WITH_WHAT2 (type, type)
@@ -203,7 +203,7 @@ namespace fhg
             case std_exception_types::enum_value:                           \
               {                                                             \
                 system_error_data_type const& data                          \
-                  (boost::get<system_error_data_type> (_data));             \
+                  (::boost::get<system_error_data_type> (_data));             \
                 if (std::get<0> (data))                                     \
                 {                                                           \
                   std::throw_with_nested                                    \
@@ -231,7 +231,7 @@ namespace fhg
               {
                 std::throw_with_nested
                   ( fhg::util::cxx17::make_future_error
-                      (boost::get<std::error_code> (_data))
+                      (::boost::get<std::error_code> (_data))
                   );
               }
 
@@ -277,7 +277,7 @@ namespace fhg
             case std_exception_types::enum_value:                           \
               {                                                             \
                 return std::make_exception_ptr                              \
-                  (std::type (boost::get<std::string> (_data)));            \
+                  (std::type (::boost::get<std::string> (_data)));            \
               }
 
 #define WITH_WHAT(type) WITH_WHAT2 (type, type)
@@ -286,7 +286,7 @@ namespace fhg
             case std_exception_types::enum_value:                           \
               {                                                             \
                 system_error_data_type const& data                          \
-                  (boost::get<system_error_data_type> (_data));             \
+                  (::boost::get<system_error_data_type> (_data));             \
                 if (std::get<0> (data))                                     \
                 {                                                           \
                   return std::make_exception_ptr                            \
@@ -315,7 +315,7 @@ namespace fhg
               {
                 return std::make_exception_ptr
                   ( fhg::util::cxx17::make_future_error
-                      (boost::get<std::error_code> (_data))
+                      (::boost::get<std::error_code> (_data))
                   );
               }
 
@@ -346,7 +346,7 @@ namespace fhg
             FHG_UTIL_UNREACHABLE ("no further builtin exception types");
           }
 
-          boost::optional<builtin_exception_data>
+          ::boost::optional<builtin_exception_data>
             builtin_exception_data::from_exception_ptr (std::exception_ptr ex_ptr)
           {
             try
@@ -435,7 +435,7 @@ namespace fhg
             catch (...)
             {}
 
-            return boost::none;
+            return ::boost::none;
           }
 
           [[noreturn]] void user_defined_exception_data::throw_with_nested
@@ -479,16 +479,16 @@ namespace fhg
             }
           }
 
-          boost::optional<user_defined_exception_data>
+          ::boost::optional<user_defined_exception_data>
             user_defined_exception_data::from_exception_ptr
               ( std::exception_ptr exception
               , serialization_functions const& funs
-              , boost::optional<builtin_exception_data> fallback
+              , ::boost::optional<builtin_exception_data> fallback
               )
           {
             for (serialization_functions::value_type const& fun : funs)
             {
-              boost::optional<std::string> exception_data_v
+              ::boost::optional<std::string> exception_data_v
                 (fun.second.from_ptr (exception));
 
               if (exception_data_v)
@@ -498,7 +498,7 @@ namespace fhg
               }
             }
 
-            return boost::none;
+            return ::boost::none;
           }
 
           exception_data serialize_exception_not_checking_for_nested
@@ -509,10 +509,10 @@ namespace fhg
             //! \note Always get builtin version as fallback if
             //! equivalent deserialization function is not registered.
 
-            boost::optional<builtin_exception_data> serialized_builtin
+            ::boost::optional<builtin_exception_data> serialized_builtin
               (builtin_exception_data::from_exception_ptr (exception));
 
-            boost::optional<user_defined_exception_data> serialized_user_defined
+            ::boost::optional<user_defined_exception_data> serialized_user_defined
               ( user_defined_exception_data::from_exception_ptr
                 (exception, from_exception_ptr_functions, serialized_builtin)
               );
@@ -564,7 +564,7 @@ namespace fhg
             , serialization_functions const& functions
             )
           {
-            struct data_visitor : public boost::static_visitor<std::exception_ptr>
+            struct data_visitor : public ::boost::static_visitor<std::exception_ptr>
             {
               std::exception_ptr operator() (builtin_exception_data builtin) const
               {
@@ -581,7 +581,7 @@ namespace fhg
                   }
                   catch (...)
                   {
-                    struct nested_visitor : public boost::static_visitor<void>
+                    struct nested_visitor : public ::boost::static_visitor<void>
                     {
                       [[noreturn]]
                         void operator() (builtin_exception_data builtin) const
@@ -608,7 +608,7 @@ namespace fhg
                       {}
                     } const visitor {_functions};
 
-                    boost::apply_visitor (visitor, nested._this);
+                    ::boost::apply_visitor (visitor, nested._this);
 
                     FHG_UTIL_UNREACHABLE ("all cases of the visitor throw or abort");
                   }
@@ -629,7 +629,7 @@ namespace fhg
               {}
             } const visitor {functions};
 
-            return boost::apply_visitor (visitor, data);
+            return ::boost::apply_visitor (visitor, data);
           }
         }
 
@@ -639,12 +639,12 @@ namespace fhg
           )
         {
           std::ostringstream os;
-          boost::archive::binary_oarchive oa (os);
+          ::boost::archive::binary_oarchive oa (os);
           serialize (oa, exception, functions);
           return os.str();
         }
         void serialize
-          ( boost::archive::binary_oarchive& archive
+          ( ::boost::archive::binary_oarchive& archive
           , std::exception_ptr exception
           , serialization_functions const& functions
           )
@@ -660,11 +660,11 @@ namespace fhg
           )
         {
           std::istringstream is (blob);
-          boost::archive::binary_iarchive ia (is);
+          ::boost::archive::binary_iarchive ia (is);
           return deserialize (ia, functions);
         }
         std::exception_ptr deserialize
-          ( boost::archive::binary_iarchive& archive
+          ( ::boost::archive::binary_iarchive& archive
           , serialization_functions const& functions
           )
         {

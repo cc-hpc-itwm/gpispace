@@ -25,8 +25,8 @@ namespace fhg
     namespace
     {
       void prefix ( std::ostream& os
-                  , boost::optional<std::string> static_separator
-                  , boost::optional<std::size_t> indentation
+                  , ::boost::optional<std::string> static_separator
+                  , ::boost::optional<std::size_t> indentation
                   , bool is_first
                   )
       {
@@ -36,8 +36,8 @@ namespace fhg
         }
         os << std::string (indentation.get_value_or (0), ' ');
       }
-      boost::optional<std::size_t> maybe_inc
-        (boost::optional<std::size_t> x)
+      ::boost::optional<std::size_t> maybe_inc
+        (::boost::optional<std::size_t> x)
       {
         if (x)
         {
@@ -47,8 +47,8 @@ namespace fhg
       }
 
       void print_unknown ( std::ostream& os
-                         , boost::optional<std::string> static_separator
-                         , boost::optional<std::size_t> indentation
+                         , ::boost::optional<std::string> static_separator
+                         , ::boost::optional<std::size_t> indentation
                          , bool is_first
                          )
       {
@@ -58,8 +58,8 @@ namespace fhg
 
       void print_exception ( std::ostream& os
                            , std::exception const& e
-                           , boost::optional<std::string> static_separator
-                           , boost::optional<std::size_t> indentation
+                           , ::boost::optional<std::string> static_separator
+                           , ::boost::optional<std::size_t> indentation
                            , bool is_first
                            )
       {
@@ -84,8 +84,8 @@ namespace fhg
 
       void print_exception ( std::ostream& os
                            , std::exception_ptr const& e
-                           , boost::optional<std::string> static_separator
-                           , boost::optional<std::size_t> indentation
+                           , ::boost::optional<std::string> static_separator
+                           , ::boost::optional<std::size_t> indentation
                            , bool is_first
                            )
       {
@@ -108,18 +108,18 @@ namespace fhg
     exception_printer::exception_printer ( std::exception_ptr exception
                                          , std::size_t indentation_base
                                          )
-      : exception_printer (exception, indentation_base, boost::none)
+      : exception_printer (exception, indentation_base, ::boost::none)
     {}
 
     exception_printer::exception_printer ( std::exception_ptr exception
                                          , std::string separator
                                          )
-      : exception_printer (exception, boost::none, std::move (separator))
+      : exception_printer (exception, ::boost::none, std::move (separator))
     {}
 
     exception_printer::exception_printer ( std::exception_ptr exception
-                                         , boost::optional<std::size_t> indent
-                                         , boost::optional<std::string> separator
+                                         , ::boost::optional<std::size_t> indent
+                                         , ::boost::optional<std::string> separator
                                          )
       : _exception (exception)
       , _separate_with_line_break_and_indent_base (std::move (indent))

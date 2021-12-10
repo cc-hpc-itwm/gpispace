@@ -26,15 +26,15 @@ namespace iml
     // \todo Use the "generic" infrastructure?
 
     template<typename Type, typename As>
-      boost::optional<Type> get
-        (boost::program_options::variables_map const& vm, char const* name);
+      ::boost::optional<Type> get
+        (::boost::program_options::variables_map const& vm, char const* name);
 
     template<typename Type, typename As>
       Type require
-        (boost::program_options::variables_map const& vm, char const* name);
+        (::boost::program_options::variables_map const& vm, char const* name);
 
     template<typename Type, typename As, typename ToString>
-      void set ( boost::program_options::variables_map& vm
+      void set ( ::boost::program_options::variables_map& vm
                , char const* name
                , As value
                , ToString&& to_string

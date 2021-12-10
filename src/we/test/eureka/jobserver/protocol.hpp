@@ -19,7 +19,7 @@
 #include <we/test/eureka/jobserver/EurekaGroup.hpp>
 #include <we/test/eureka/jobserver/Task.hpp>
 
-#include <rpc/function_description.hpp>
+#include <util-rpc/function_description.hpp>
 
 namespace gspc
 {

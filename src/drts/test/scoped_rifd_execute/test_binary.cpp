@@ -16,7 +16,7 @@
 
 #include <rif/started_process_promise.hpp>
 
-#include <fhg/util/boost/program_options/generic.hpp>
+#include <util-generic/boost/program_options/generic.hpp>
 
 #include <util-generic/hostname.hpp>
 
@@ -36,7 +36,7 @@ int main (int ac, char **av)
 
   try
   {
-    boost::program_options::variables_map const vm
+    ::boost::program_options::variables_map const vm
       ( fhg::util::boost::program_options::options ("test_binary")
       . require (option::option)
       . store_and_notify (ac, av)

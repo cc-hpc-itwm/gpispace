@@ -42,7 +42,7 @@ namespace xml
                            , std::string const& name
                            , std::string const& size
                            , std::string const& alignment
-                           , boost::optional<bool> const& read_only
+                           , ::boost::optional<bool> const& read_only
                            , we::type::property::type const& properties
                            );
         memory_buffer_type (memory_buffer_type const&) = default;
@@ -54,7 +54,7 @@ namespace xml
         std::string const& name() const;
         std::string const& size() const;
         std::string const& alignment() const;
-        boost::optional<bool> const& read_only() const;
+        ::boost::optional<bool> const& read_only() const;
 
         we::type::property::type const& properties() const;
 
@@ -64,7 +64,7 @@ namespace xml
         std::string const _name;
         std::string _size;
         std::string _alignment;
-        boost::optional<bool> _read_only;
+        ::boost::optional<bool> _read_only;
         we::type::property::type _properties;
       };
 

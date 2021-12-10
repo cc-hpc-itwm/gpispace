@@ -22,15 +22,15 @@
 
 BOOST_AUTO_TEST_CASE (installation_from_command_line)
 {
-  boost::program_options::options_description options_description;
+  ::boost::program_options::options_description options_description;
 
   options_description.add (gspc::options::installation());
 
-  boost::program_options::variables_map vm;
-  boost::program_options::store
-    ( boost::program_options::command_line_parser
-      ( boost::unit_test::framework::master_test_suite().argc
-      , boost::unit_test::framework::master_test_suite().argv
+  ::boost::program_options::variables_map vm;
+  ::boost::program_options::store
+    ( ::boost::program_options::command_line_parser
+      ( ::boost::unit_test::framework::master_test_suite().argc
+      , ::boost::unit_test::framework::master_test_suite().argv
       ).options (options_description).run()
     , vm
     );

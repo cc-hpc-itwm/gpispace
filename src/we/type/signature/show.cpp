@@ -60,7 +60,7 @@ namespace pnet
           std::ostream& _os;
         };
 
-        class show_sig : public boost::static_visitor<std::ostream&>
+        class show_sig : public ::boost::static_visitor<std::ostream&>
         {
         public:
           show_sig (std::ostream& os)
@@ -85,7 +85,7 @@ namespace pnet
       {}
       std::ostream& show::operator() (std::ostream& os) const
       {
-        return boost::apply_visitor (show_sig (os), _signature);
+        return ::boost::apply_visitor (show_sig (os), _signature);
       }
     }
   }

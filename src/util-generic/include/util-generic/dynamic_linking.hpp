@@ -34,7 +34,7 @@ namespace fhg
     public:
       //! Open the shared object at \a path, with \a flags passed to
       //! \c dlopen().
-      scoped_dlhandle ( boost::filesystem::path const& path
+      scoped_dlhandle ( ::boost::filesystem::path const& path
                       , int flags = RTLD_NOW | RTLD_DEEPBIND
                       );
       ~scoped_dlhandle();
@@ -60,7 +60,7 @@ namespace fhg
     //! required to have a name at all, so may contain empty paths.
     //! \note Not explicitly sorted by anything, neither by load order
     //! nor by path.
-    std::vector<boost::filesystem::path> currently_loaded_libraries();
+    std::vector<::boost::filesystem::path> currently_loaded_libraries();
 
     //! Given a \c scoped_dlhandle \a dlhandle_, call \c
     //! scoped_dlhandle::sym() with the name and type of the given \a

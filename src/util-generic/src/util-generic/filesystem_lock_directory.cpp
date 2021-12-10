@@ -25,9 +25,9 @@ namespace fhg
   namespace util
   {
     failed_to_create_lock::failed_to_create_lock
-      (boost::filesystem::path const& path)
+      (::boost::filesystem::path const& path)
         : std::runtime_error
-          ( ( boost::format ("Failed to create lock for %1%.")
+          ( ( ::boost::format ("Failed to create lock for %1%.")
             % path
             ).str()
           )
@@ -35,7 +35,7 @@ namespace fhg
     {}
 
     filesystem_lock_directory::filesystem_lock_directory
-      (boost::filesystem::path const& path)
+      (::boost::filesystem::path const& path)
     try
       : temporary_path (path)
     {}

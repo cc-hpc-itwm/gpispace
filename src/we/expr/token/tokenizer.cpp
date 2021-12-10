@@ -59,8 +59,8 @@ namespace expr
 
     namespace
     {
-      typedef boost::make_recursive_variant
-              < std::map<char, boost::recursive_variant_>
+      typedef ::boost::make_recursive_variant
+              < std::map<char, ::boost::recursive_variant_>
               , std::function<void (tokenizer&)>
               >::type node_type;
 
@@ -89,7 +89,7 @@ namespace expr
           put ( std::next (pos)
               , end
               , f
-              , boost::get<child_type>
+              , ::boost::get<child_type>
                 ( child == m.end()
                 ? m.insert (child, std::make_pair (*pos, child_type()))->second
                 : child->second
@@ -226,7 +226,7 @@ namespace expr
         return m;
       }
 
-      class visitor_names : public boost::static_visitor<void>
+      class visitor_names : public ::boost::static_visitor<void>
       {
       public:
         visitor_names (std::string& names, std::string const& prefix = "")
@@ -238,7 +238,7 @@ namespace expr
         {
           for (auto const& cn : m)
           {
-            boost::apply_visitor
+            ::boost::apply_visitor
               ( visitor_names (_names, _prefix + cn.first)
               , cn.second
               );
@@ -262,12 +262,12 @@ namespace expr
       {
         std::string names;
 
-        boost::apply_visitor (visitor_names (names), node);
+        ::boost::apply_visitor (visitor_names (names), node);
 
         return names;
       }
 
-      class visitor_tokenize : public boost::static_visitor<void>
+      class visitor_tokenize : public ::boost::static_visitor<void>
       {
       public:
         visitor_tokenize (tokenizer& t, bool const& first = true)
@@ -288,7 +288,7 @@ namespace expr
                   {
                     ++_tokenizer.pos();
 
-                    return boost::apply_visitor
+                    return ::boost::apply_visitor
                       (visitor_tokenize (_tokenizer, false), cn.second);
                   }
               }
@@ -498,7 +498,7 @@ namespace expr
       }
       else
       {
-        boost::apply_visitor (visitor_tokenize (*this), description());
+        ::boost::apply_visitor (visitor_tokenize (*this), description());
       }
     }
   }

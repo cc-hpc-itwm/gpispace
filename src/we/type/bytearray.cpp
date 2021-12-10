@@ -65,7 +65,7 @@ namespace we
 
     std::size_t hash_value (bytearray const& t)
     {
-      return boost::hash<std::vector<char>>()(t._v);
+      return ::boost::hash<std::vector<char>>()(t._v);
     }
 
     bool operator== (bytearray const& x, bytearray const& y)

@@ -189,7 +189,7 @@ BOOST_AUTO_TEST_CASE (nested)
     _type() = delete
 
 #define static_functions(_type)                                         \
-    static boost::optional<std::string> from_exception_ptr              \
+    static ::boost::optional<std::string> from_exception_ptr              \
       (std::exception_ptr ex_ptr)                                       \
     {                                                                   \
       try                                                               \
@@ -202,7 +202,7 @@ BOOST_AUTO_TEST_CASE (nested)
       }                                                                 \
       catch (...)                                                       \
       {                                                                 \
-        return boost::none;                                             \
+        return ::boost::none;                                             \
       }                                                                 \
     }                                                                   \
     [[noreturn]] static void throw_with_nested (std::string serialized) \

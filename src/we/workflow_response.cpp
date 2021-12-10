@@ -25,7 +25,7 @@ namespace we
 {
   namespace
   {
-    class is_field : public boost::static_visitor<bool>
+    class is_field : public ::boost::static_visitor<bool>
     {
     public:
       is_field (std::string const& name, std::string const& type)
@@ -47,7 +47,7 @@ namespace we
       std::string const _type;
     };
 
-    class has_field : public boost::static_visitor<bool>
+    class has_field : public ::boost::static_visitor<bool>
     {
     public:
       has_field (std::string const& name, std::string const& type)
@@ -64,7 +64,7 @@ namespace we
           ( s.second.begin(), s.second.end()
           , [this] (pnet::type::signature::field_type const& field)
             {
-              return boost::apply_visitor (is_field (_name, _type), field);
+              return ::boost::apply_visitor (is_field (_name, _type), field);
             }
           );
       }
@@ -78,7 +78,7 @@ namespace we
   bool is_response_description
     (pnet::type::signature::signature_type const& signature)
   {
-    return boost::apply_visitor (has_field ("response_id", "string"), signature);
+    return ::boost::apply_visitor (has_field ("response_id", "string"), signature);
   }
 
   std::string get_response_id (pnet::type::value::value_type const& description)

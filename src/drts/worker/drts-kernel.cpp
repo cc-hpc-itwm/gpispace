@@ -16,11 +16,10 @@
 
 #include <drts/worker/drts.hpp>
 
-#include <fhg/util/boost/program_options/validators/existing_path.hpp>
+#include <util-generic/boost/program_options/validators/existing_path.hpp>
 #include <util-generic/getenv.hpp>
 #include <util-generic/print_exception.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
-#include <fhg/util/thread/event.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/program_options.hpp>
@@ -30,9 +29,9 @@
 
 #include <hwloc.h>
 
-#include <functional>
 #include <memory>
 #include <set>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <tuple>
@@ -78,7 +77,7 @@ namespace
     if (target_socket >= available_sockets)
     {
       throw std::runtime_error
-        ( boost::str ( boost::format ("socket out of range: %1%/%2%")
+        ( ::boost::str ( ::boost::format ("socket out of range: %1%/%2%")
                      % target_socket
                      % (available_sockets-1)
                      )
@@ -108,8 +107,8 @@ namespace
       }
 
       throw std::runtime_error
-        ( boost::str
-        ( boost::format ("could not bind to socket #%1% with cpuset %2%: %3%")
+        ( ::boost::str
+        ( ::boost::format ("could not bind to socket #%1% with cpuset %2%: %3%")
         % target_socket
         % cpuset_string.data()
         % strerror (errno)
@@ -127,7 +126,7 @@ int main (int ac, char **av)
 
   try
   {
-    namespace po = boost::program_options;
+    namespace po = ::boost::program_options;
 
     po::options_description desc("options");
 
@@ -156,8 +155,8 @@ int main (int ac, char **av)
       , "capabilities of worker"
       )
       ( option_name::library_search_path
-      , po::value<std::vector<boost::filesystem::path>>()
-        ->default_value (std::vector<boost::filesystem::path>(), "{}")
+      , po::value<std::vector<::boost::filesystem::path>>()
+        ->default_value (std::vector<::boost::filesystem::path>(), "{}")
       , "paths to search for module call libraries"
       )
       ( option_name::socket
@@ -169,7 +168,7 @@ int main (int ac, char **av)
       , "parent to connect to (unique_name%host%port)"
       )
       ( option_name::certificates
-      , po::value<boost::filesystem::path>()
+      , po::value<::boost::filesystem::path>()
       , "folder containing SSL certificates"
       )
       ;
@@ -181,23 +180,16 @@ int main (int ac, char **av)
 
     fhg::logging::stream_emitter log_emitter;
 
-    fhg::util::thread::event<> stop_requested;
-    const std::function<void()> request_stop
-      (std::bind (&fhg::util::thread::event<>::notify, &stop_requested));
-
     fhg::util::signal_handler_manager signal_handlers;
     fhg::util::scoped_log_backtrace_and_exit_for_critical_errors const
       crit_error_handler (signal_handlers, log_emitter);
 
-    fhg::util::scoped_signal_handler const SIGTERM_handler
-      (signal_handlers, SIGTERM, std::bind (request_stop));
-    fhg::util::scoped_signal_handler const SIGINT_handler
-      (signal_handlers, SIGINT, std::bind (request_stop));
+    fhg::util::Execution execution (signal_handlers);
 
     std::unique_ptr<iml::Client> const virtual_memory_api
       ( vm.count (option_name::virtual_memory_socket)
       ? std::make_unique<iml::Client>
-          ( static_cast<boost::filesystem::path>
+          ( static_cast<::boost::filesystem::path>
               ( vm.at (option_name::virtual_memory_socket)
               .as<fhg::util::boost::program_options::existing_path>()
               )
@@ -219,9 +211,9 @@ int main (int ac, char **av)
     auto const parent_info
       ( [&]() -> std::tuple<fhg::com::host_t, fhg::com::port_t>
     {
-      boost::tokenizer<boost::char_separator<char>> const tok
+      ::boost::tokenizer<::boost::char_separator<char>> const tok
         ( vm.at (option_name::parent).as<std::string>()
-        , boost::char_separator<char> ("%")
+        , ::boost::char_separator<char> ("%")
         );
 
       std::vector<std::string> const parts (tok.begin(), tok.end());
@@ -232,8 +224,12 @@ int main (int ac, char **av)
           ("invalid parent information: has to be of format 'name%host%port'");
       }
 
+      unsigned short port;
+      std::istringstream iss (parts.at (2));
+      iss >> port;
+
       return std::make_tuple
-        (fhg::com::host_t (parts[1]), fhg::com::port_t (parts[2]));
+        (fhg::com::host_t (parts[1]), fhg::com::port_t {port});
     }()
         );
 
@@ -246,12 +242,12 @@ int main (int ac, char **av)
 
     if (vm.count (option_name::certificates))
     {
-      certificates = vm.at (option_name::certificates).as<boost::filesystem::path>();
+      certificates = vm.at (option_name::certificates).as<::boost::filesystem::path>();
     }
 
     DRTSImpl const plugin
-      ( request_stop
-      , std::make_unique<boost::asio::io_service>()
+      ( [&] { execution.stop(); }
+      , std::make_unique<::boost::asio::io_service>()
       , kernel_name
       , comm_port
       , virtual_memory_api.get()
@@ -260,14 +256,14 @@ int main (int ac, char **av)
       , vm.at (option_name::capability)
       .as<std::vector<std::string>>()
       , vm.at (option_name::library_search_path)
-      .as<std::vector<boost::filesystem::path>>()
+      .as<std::vector<::boost::filesystem::path>>()
       , log_emitter
       , certificates
       );
 
     promise.set_result (log_emitter.local_endpoint().to_string());
 
-    stop_requested.wait();
+    execution.wait();
 
     return 0;
   }

@@ -116,7 +116,7 @@ namespace fhg
       template<typename Exception, typename Fun>
         void require_exception_with_message_in
           ( Fun&& fun
-          , std::list<boost::format> const& fmts
+          , std::list<::boost::format> const& fmts
           );
 
       //! Equivalent to \see require_exception_with_message_in(), but
@@ -136,7 +136,7 @@ namespace fhg
       //! lead to incomplete comparison
       template<typename Exception, typename Fun>
         void require_exception_with_message ( Fun&& fun
-                                            , boost::format const& fmt
+                                            , ::boost::format const& fmt
                                             );
     }
   }

@@ -34,7 +34,7 @@
     }                                                                   \
   }                                                                     \
   template TMPL                                                         \
-  void boost::test_tools::tt_detail::print_log_value<SPEC_PARAM >::operator() \
+  void ::boost::test_tools::tt_detail::print_log_value<SPEC_PARAM >::operator() \
     (std::ostream& OS_NAME, const SPEC_PARAM& VAL_NAME) const
 
 #define FHG_BOOST_TEST_LOG_VALUE_PRINTER(SPEC_PARAM, OS_NAME, VAL_NAME) \
@@ -51,7 +51,7 @@
       }                                                                 \
     }                                                                   \
   }                                                                     \
-  void boost::test_tools::tt_detail::print_log_value<SPEC_PARAM >::operator() \
+  void ::boost::test_tools::tt_detail::print_log_value<SPEC_PARAM >::operator() \
     (std::ostream& OS_NAME, const SPEC_PARAM& VAL_NAME) const
 
 #define FHG_BOOST_TEST_LOG_VALUE_PRINTER_WRAPPED(SPEC_PARAM, WRAPPER)   \

@@ -41,15 +41,15 @@
 
 struct setup_and_cleanup_shared_file
 {
-  boost::filesystem::path get_beegfs_directory()
+  ::boost::filesystem::path get_beegfs_directory()
   {
-    boost::program_options::options_description options_description;
+    ::boost::program_options::options_description options_description;
     options_description.add (iml_test::options::beegfs_directory());
-    boost::program_options::variables_map vm;
-    boost::program_options::store
-      ( boost::program_options::command_line_parser
-          ( boost::unit_test::framework::master_test_suite().argc
-          , boost::unit_test::framework::master_test_suite().argv
+    ::boost::program_options::variables_map vm;
+    ::boost::program_options::store
+      ( ::boost::program_options::command_line_parser
+          ( ::boost::unit_test::framework::master_test_suite().argc
+          , ::boost::unit_test::framework::master_test_suite().argv
           )
       . options (options_description)
       . run()
@@ -62,7 +62,7 @@ struct setup_and_cleanup_shared_file
     : path_to_shared_file (get_beegfs_directory() / "beegfs_area_test_area")
   {}
 
-  boost::filesystem::path path_to_shared_file;
+  ::boost::filesystem::path path_to_shared_file;
 };
 
 namespace
@@ -121,7 +121,7 @@ BOOST_FIXTURE_TEST_CASE (existing_directory_is_failure, setup_and_cleanup_shared
 
   const iml::MemorySize size = 4096;
 
-  boost::filesystem::create_directories (path_to_shared_file);
+  ::boost::filesystem::create_directories (path_to_shared_file);
 
   BOOST_REQUIRE_THROW  ( gpi::pc::memory::beegfs_area_t ( true
                                                         , path_to_shared_file
@@ -131,7 +131,7 @@ BOOST_FIXTURE_TEST_CASE (existing_directory_is_failure, setup_and_cleanup_shared
                        , std::exception
                        );
 
-  boost::filesystem::remove (path_to_shared_file);
+  ::boost::filesystem::remove (path_to_shared_file);
 
   gpi::pc::memory::beegfs_area_t ( true
                                  , path_to_shared_file

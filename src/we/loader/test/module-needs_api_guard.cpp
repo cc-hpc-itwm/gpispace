@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE (ctor_failed_bad_boost_version)
     ( [] { we::loader::Module ("./libempty_not_linked_with_pnet.so"); }
     , we::loader::module_load_failed
         ( "./libempty_not_linked_with_pnet.so"
-        , ( boost::format
+        , ( ::boost::format
               ("dlopen: ./libempty_not_linked_with_pnet.so: undefined symbol: %1%")
           % XSTR (WE_GUARD_SYMBOL)
           ).str()

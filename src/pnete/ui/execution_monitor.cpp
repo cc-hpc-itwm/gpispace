@@ -75,7 +75,7 @@ namespace fhg
           template<class Archive>
             void serialize (Archive&, unsigned int)
           {
-            boost::serialization::void_cast_register
+            ::boost::serialization::void_cast_register
               ( static_cast<hostname_of_worker*> (nullptr)
               , static_cast<transform_functions_model::transform_function*> (nullptr)
               );
@@ -95,7 +95,7 @@ namespace fhg
           template<class Archive>
             void serialize (Archive&, unsigned int)
           {
-            boost::serialization::void_cast_register
+            ::boost::serialization::void_cast_register
               ( static_cast<worker_type_of_worker*> (nullptr)
               , static_cast<transform_functions_model::transform_function*> (nullptr)
               );
@@ -110,21 +110,21 @@ BOOST_CLASS_EXPORT (fhg::pnete::ui::hostname_of_worker)
 BOOST_CLASS_EXPORT (fhg::pnete::ui::worker_type_of_worker)
 
 template<typename T>
-  QDataStream& operator<< (QDataStream& stream, boost::shared_ptr<T> const& ptr)
+  QDataStream& operator<< (QDataStream& stream, ::boost::shared_ptr<T> const& ptr)
 {
   std::ostringstream os;
-  boost::archive::text_oarchive oa (os);
+  ::boost::archive::text_oarchive oa (os);
   oa << ptr;
   stream << QString::fromStdString (os.str());
   return stream;
 }
 template<typename T>
-  QDataStream& operator>> (QDataStream& stream, boost::shared_ptr<T>& ptr)
+  QDataStream& operator>> (QDataStream& stream, ::boost::shared_ptr<T>& ptr)
 {
   QString serialized;
   stream >> serialized;
   std::istringstream is (serialized.toStdString());
-  boost::archive::text_iarchive ia (is);
+  ::boost::archive::text_iarchive ia (is);
   ia >> ptr;
   return stream;
 }
@@ -147,7 +147,7 @@ namespace fhg
           roles[Qt::DisplayRole] = name;
           roles[transform_functions_model::function_role]
             = QVariant::fromValue
-            (boost::shared_ptr<transform_functions_model::transform_function> (f));
+            (::boost::shared_ptr<transform_functions_model::transform_function> (f));
           return roles;
         }
 
@@ -313,8 +313,8 @@ namespace fhg
           (new util::qt::mvc::transform_functions_model);
         add_defaults (available_transform_functions);
         qRegisterMetaTypeStreamOperators
-          <boost::shared_ptr<fhg::util::qt::mvc::transform_functions_model::transform_function>>
-          ("boost::shared_ptr<fhg::util::qt::mvc::transform_functions_model::transform_function>");
+          <::boost::shared_ptr<fhg::util::qt::mvc::transform_functions_model::transform_function>>
+          ("::boost::shared_ptr<fhg::util::qt::mvc::transform_functions_model::transform_function>");
 
         QAbstractItemModel* next (nullptr);
 
@@ -426,7 +426,7 @@ namespace fhg
               //! other invokations) when an editor is open while the
               //! model is reset. Thus, store which editor is
               //! visible, hide it, and show it again.
-              boost::optional<int> const section
+              ::boost::optional<int> const section
                 (header_view->current_editor());
               header_view->close_editor();
 

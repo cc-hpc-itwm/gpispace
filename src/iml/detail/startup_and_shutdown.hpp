@@ -40,7 +40,7 @@ namespace iml
     };
 
     // \todo Move to RuntimeSystem.cpp.
-    struct RuntimeSystem::ProcessesStorage : boost::noncopyable
+    struct RuntimeSystem::ProcessesStorage : ::boost::noncopyable
     {
       std::mutex _guard;
       std::unordered_map < rif::EntryPoint
@@ -54,11 +54,11 @@ namespace iml
       ~ProcessesStorage();
 
       void store (rif::EntryPoint const&, std::string const& name, pid_t);
-      boost::optional<pid_t> pidof
+      ::boost::optional<pid_t> pidof
         (rif::EntryPoint const&, std::string const& name);
 
       void startup
-        ( boost::filesystem::path gpi_socket
+        ( ::boost::filesystem::path gpi_socket
         , std::chrono::seconds vmem_startup_timeout
         , unsigned short vmem_port
         , gaspi::NetdevID vmem_netdev_id

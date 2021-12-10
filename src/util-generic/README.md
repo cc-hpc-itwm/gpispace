@@ -311,11 +311,6 @@ Rebind a variadic template `T = Sequence<U...>` to `To<U...>`.
 Given a type-sequence `Sequence = sequence_types<Types...>`, returns
 `sequence_type<unique (Types...)>`.
 
-## cxx14/integer_sequence
-
-Compile time sequences of integrals, mostly useful for parameter
-unpacking in metaprogramming.
-
 ## cxx17/apply
 
 Call a given function with the arguments in the given tuple.
@@ -435,11 +430,6 @@ A `set` container that stores unique objects of type `T`, but allows
 multiple references to them and only erases once as many `erase`s
 happened as `emplace`s happened before.
 
-## cxx14/make_unique
-
-Function to safely construct a unique pointer in the context of
-passing multiple ad-hoc created unique pointers to a single function.
-
 ## cxx17/future_error
 
 A way to construct a `std::future_error` independent of standard
@@ -462,7 +452,7 @@ evaluation of value is deferred, which is often a requirement when
 value is dependend on cond and would require `cond ?
 boost::optional<T> (value) : boost::optional<T>()` instead.
 
-## program_options/separated_argument_list_parser
+## boost/program_options/separated_argument_list_parser
 
 A Boost.ProgramOptions parser that takes all arguments between two
 sentinel values as the value for a given argument name, e.g. for

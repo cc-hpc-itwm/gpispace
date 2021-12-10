@@ -27,14 +27,14 @@ namespace fhg
   namespace util
   {
     template<typename T>
-      void write_file (boost::filesystem::path const& path, T const& x)
+      void write_file (::boost::filesystem::path const& path, T const& x)
     {
       std::ofstream stream (path.string());
 
       if (!stream)
       {
         throw std::runtime_error
-          ((boost::format ("Could not open %1% for writing.") % path).str());
+          ((::boost::format ("Could not open %1% for writing.") % path).str());
       }
 
       stream << x;
@@ -42,7 +42,7 @@ namespace fhg
       if (!stream)
       {
         throw std::runtime_error
-          ((boost::format ("Could not write to %1%.") % path).str());
+          ((::boost::format ("Could not write to %1%.") % path).str());
       }
     }
   }

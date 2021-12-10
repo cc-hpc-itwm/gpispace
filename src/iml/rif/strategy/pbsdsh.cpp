@@ -18,8 +18,8 @@
 
 #include <iml/rif/strategy/system_with_blocked_SIGCHLD.hpp>
 
-#include <fhg/util/boost/program_options/generic.hpp>
-#include <fhg/util/boost/program_options/validators/positive_integral.hpp>
+#include <util-generic/boost/program_options/generic.hpp>
+#include <util-generic/boost/program_options/validators/positive_integral.hpp>
 #include <util-generic/blocked.hpp>
 
 #include <boost/format.hpp>
@@ -58,20 +58,20 @@ namespace fhg
             auto const block_size (option::block_size.get_from (vm))
 
             void do_pbsdsh
-              (std::string const& hostname, boost::format const& command)
+              (std::string const& hostname, ::boost::format const& command)
             {
               //! \todo use torque's tm_spawn API directly to avoid system()
               util::system_with_blocked_SIGCHLD
-                (str (boost::format ("pbsdsh -h %1% %2%") % hostname % command));
+                (str (::boost::format ("pbsdsh -h %1% %2%") % hostname % command));
             }
           }
 
           std::unordered_map<std::string, std::exception_ptr>
             bootstrap ( std::vector<std::string> const& all_hostnames
-                      , boost::optional<unsigned short> const& port
+                      , ::boost::optional<unsigned short> const& port
                       , std::string const& register_host
                       , unsigned short register_port
-                      , boost::filesystem::path const& binary
+                      , ::boost::filesystem::path const& binary
                       , std::vector<std::string> const& parameters
                       , std::ostream&
                       )
@@ -85,7 +85,7 @@ namespace fhg
               , [&] (std::string const& hostname)
                 {
                   do_pbsdsh ( hostname
-                            , boost::format
+                            , ::boost::format
                                 ( "%1%"
                                   "%2%"
                                   " --register-host %3% --register-port %4%"
@@ -120,7 +120,7 @@ namespace fhg
               , [&] (std::pair<std::string, EntryPoint> const& entry_point)
                 {
                   do_pbsdsh ( entry_point.second.hostname
-                            , boost::format ("/bin/kill -TERM %1%")
+                            , ::boost::format ("/bin/kill -TERM %1%")
                             % entry_point.second.pid
                             );
                 }

@@ -25,7 +25,7 @@ namespace sdpa
     class JobFailedAckEvent : public JobEvent
     {
     public:
-      typedef boost::shared_ptr<JobFailedAckEvent> Ptr;
+      typedef ::boost::shared_ptr<JobFailedAckEvent> Ptr;
 
       using JobEvent::JobEvent;
 

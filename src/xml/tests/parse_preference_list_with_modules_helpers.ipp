@@ -42,7 +42,7 @@ namespace
     ( std::list<std::string> const& preference_targets
     , std::list<std::string> const& module_targets
     , std::string const& module_name
-    , boost::optional<std::string> const& add_trans_content
+    , ::boost::optional<std::string> const& add_trans_content
     )
   {
     std::string pnet_target_list = "";
@@ -81,7 +81,7 @@ namespace
       );
 
     return
-      ( boost::format (R"EOS(
+      ( ::boost::format (R"EOS(
         <defun name="n_preferences">
           <modules>
           %1%
@@ -99,7 +99,7 @@ namespace
     ( std::list<std::string> const& pref_targets
     , std::list<std::string> const& mod_targets
     , std::string const& mod_name
-    , boost::optional<std::string> const add_to_pnet
+    , ::boost::optional<std::string> const add_to_pnet
     )
     : module_name (mod_name)
     , pnet_xml ( gen_pnet_with_multi_modules
@@ -120,7 +120,7 @@ namespace
         , mod_targets
         , fhg::util::testing::random_identifier
           (MAX_MODNAME_LEN)
-        , boost::none
+        , ::boost::none
         )
   {}
 }

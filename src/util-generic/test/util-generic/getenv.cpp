@@ -27,9 +27,9 @@ namespace fhg
   {
     BOOST_AUTO_TEST_CASE (non_existing_returns_none)
     {
-      BOOST_REQUIRE_EQUAL (getenv (""), boost::none);
+      BOOST_REQUIRE_EQUAL (getenv (""), ::boost::none);
       BOOST_REQUIRE_EQUAL
-        (getenv ("this/hopefully(( does not exist"), boost::none);
+        (getenv ("this/hopefully(( does not exist"), ::boost::none);
     }
 
     BOOST_AUTO_TEST_CASE (returns_correct_value_if_set)

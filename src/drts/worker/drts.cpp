@@ -63,12 +63,12 @@ struct wfe_task_t
   std::string id;
   state_t state;
   we::type::Activity activity;
-  boost::optional<std::string> const target_impl;
+  ::boost::optional<std::string> const target_impl;
   drts::worker::context context;
 
   wfe_task_t ( std::string id_
              , we::type::Activity const& activity_
-             , boost::optional<std::string> const& target_impl_
+             , ::boost::optional<std::string> const& target_impl_
              , std::string worker_name
              , std::set<std::string> workers
              , fhg::logging::stream_emitter& logger
@@ -88,13 +88,13 @@ DRTSImpl::mark_remaining_tasks_as_canceled_helper::~mark_remaining_tasks_as_canc
     (_currently_executed_tasks_mutex);
   std::lock_guard<std::mutex> const jobs_lock (_jobs_guard);
 
-  for (auto& task : _currently_executed_tasks | boost::adaptors::map_values)
+  for (auto& task : _currently_executed_tasks | ::boost::adaptors::map_values)
   {
     task->state = wfe_task_t::CANCELED_DUE_TO_WORKER_SHUTDOWN;
     task->context.module_call_do_cancel();
   }
 
-  for (auto& job : _jobs | boost::adaptors::map_values)
+  for (auto& job : _jobs | ::boost::adaptors::map_values)
   {
     job->state = Job::state_t::CANCELED_DUE_TO_WORKER_SHUTDOWN;
   }
@@ -102,14 +102,14 @@ DRTSImpl::mark_remaining_tasks_as_canceled_helper::~mark_remaining_tasks_as_canc
 
 DRTSImpl::DRTSImpl
     ( std::function<void()> request_stop
-    , std::unique_ptr<boost::asio::io_service> peer_io_service
+    , std::unique_ptr<::boost::asio::io_service> peer_io_service
     , std::string const& kernel_name
     , unsigned short comm_port
     , iml::Client /*const*/* virtual_memory_api
     , iml::SharedMemoryAllocation /*const*/* shared_memory
     , std::tuple<fhg::com::host_t, fhg::com::port_t> const& parent
     , std::vector<std::string> const& capability_names
-    , std::vector<boost::filesystem::path> const& library_path
+    , std::vector<::boost::filesystem::path> const& library_path
     , fhg::logging::stream_emitter& log_emitter
     , fhg::com::Certificates const& certificates
     )
@@ -122,8 +122,7 @@ DRTSImpl::DRTSImpl
   , _virtual_memory_api (virtual_memory_api)
   , _shared_memory (shared_memory)
   , _peer ( std::move (peer_io_service)
-          , fhg::com::host_t ("*")
-          , fhg::com::port_t (std::to_string (comm_port))
+          , fhg::com::port_t {comm_port}
           , certificates
           , std::get<0> (parent)
           , std::get<1> (parent)
@@ -506,16 +505,13 @@ catch (decltype (m_pending_jobs)::interrupted const&)
 void DRTSImpl::start_receiver()
 {
   _peer.async_recv
-    ( [this] ( boost::system::error_code const& ec
-             , boost::optional<fhg::com::p2p::address_t> source
-             , fhg::com::message_t message
-             )
+    ( [this] (auto received)
       {
         static sdpa::events::Codec codec;
 
-        if (!ec)
+        if (!received.ec())
         {
-          if (source.get() != _peer.other_end())
+          if (received.source() != _peer.other_end())
           {
             throw std::runtime_error ("Message from unknown source.");
           }
@@ -523,7 +519,10 @@ void DRTSImpl::start_receiver()
           m_event_queue.put
             ( sdpa::events::SDPAEvent::Ptr
                 ( codec.decode
-                    (std::string (message.data.begin(), message.data.end()))
+                    ( std::string ( received.message().data.begin()
+                                  , received.message().data.end()
+                                  )
+                    )
                 )
             );
 

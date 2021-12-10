@@ -24,9 +24,9 @@ namespace boost
   namespace serialization
   {
     template<class Archive>
-      void serialize (Archive& ar, boost::filesystem::path& path, const unsigned int)
+      void serialize (Archive& ar, ::boost::filesystem::path& path, const unsigned int)
     {
-      boost::filesystem::path::string_type string;
+      ::boost::filesystem::path::string_type string;
       if (Archive::is_saving::value)
       {
         string = path.string();

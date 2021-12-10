@@ -43,7 +43,7 @@ namespace fhg
           void delegate_for_section (int, header_delegate*);
           header_delegate* delegate_for_section (int) const;
           void delegate (header_delegate*);
-          boost::optional<int> current_editor() const;
+          ::boost::optional<int> current_editor() const;
 
         public slots:
           void request_editor (int section);
@@ -73,10 +73,10 @@ namespace fhg
           header_delegate* _delegate;
           struct _editor_type
           {
-            boost::optional<int> section;
+            ::boost::optional<int> section;
             QWidget* widget;
             widget::mini_button* close_button;
-            _editor_type() : section (boost::none), widget (nullptr), close_button (nullptr) {}
+            _editor_type() : section (::boost::none), widget (nullptr), close_button (nullptr) {}
           } _editor;
 
           friend class header_delegate;

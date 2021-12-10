@@ -18,14 +18,14 @@
 #include <drts/drts.hpp>
 #include <drts/scoped_rifd.hpp>
 
-#include <fhg/util/boost/program_options/validators/existing_directory.hpp>
-#include <fhg/util/boost/program_options/validators/existing_path.hpp>
-#include <fhg/util/boost/program_options/validators/is_directory_if_exists.hpp>
-#include <fhg/util/boost/program_options/validators/nonempty_file.hpp>
-#include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
-#include <fhg/util/boost/program_options/validators/nonexisting_path.hpp>
-#include <fhg/util/boost/program_options/validators/nonexisting_path_in_existing_directory.hpp>
-#include <fhg/util/boost/program_options/validators/positive_integral.hpp>
+#include <util-generic/boost/program_options/validators/existing_directory.hpp>
+#include <util-generic/boost/program_options/validators/existing_path.hpp>
+#include <util-generic/boost/program_options/validators/is_directory_if_exists.hpp>
+#include <util-generic/boost/program_options/validators/nonempty_file.hpp>
+#include <util-generic/boost/program_options/validators/nonempty_string.hpp>
+#include <util-generic/boost/program_options/validators/nonexisting_path.hpp>
+#include <util-generic/boost/program_options/validators/nonexisting_path_in_existing_directory.hpp>
+#include <util-generic/boost/program_options/validators/positive_integral.hpp>
 #include <util-generic/join.hpp>
 
 #include <rif/strategy/meta.hpp>
@@ -95,7 +95,7 @@ namespace gspc
         std::string _value;
       };
       void validate
-        (boost::any&, std::vector<std::string> const&, env_key*, int);
+        (::boost::any&, std::vector<std::string> const&, env_key*, int);
 
       struct env_kvpair
       {
@@ -106,19 +106,19 @@ namespace gspc
         std::string _value;
       };
       void validate
-        (boost::any&, std::vector<std::string> const&, env_kvpair*, int);
+        (::boost::any&, std::vector<std::string> const&, env_kvpair*, int);
 
       env_key::env_key (std::string value)
         : _value (std::move (value))
       {
         if (_value.find ('=') != std::string::npos)
         {
-          throw boost::program_options::invalid_option_value
+          throw ::boost::program_options::invalid_option_value
             ("environment key shall not contain '='");
         }
         if (_value.empty())
         {
-          throw boost::program_options::invalid_option_value
+          throw ::boost::program_options::invalid_option_value
             ("environment key shall not be empty");
         }
       }
@@ -131,7 +131,7 @@ namespace gspc
         return os << v._value;
       }
       void validate
-        (boost::any& r, std::vector<std::string> const& vs, env_key*, int)
+        (::boost::any& r, std::vector<std::string> const& vs, env_key*, int)
       {
         fhg::util::boost::program_options::validate<env_key> (r, vs);
       }
@@ -142,14 +142,14 @@ namespace gspc
         auto pos (_value.find ('='));
         if (pos == std::string::npos)
         {
-          throw boost::program_options::invalid_option_value
+          throw ::boost::program_options::invalid_option_value
             ( "environment key-value pair shall contain '=' separating key "
               "and value"
             );
         }
         if (pos == 0)
         {
-          throw boost::program_options::invalid_option_value
+          throw ::boost::program_options::invalid_option_value
             ("environment key-value pair's key shall not be empty");
         }
       }
@@ -162,7 +162,7 @@ namespace gspc
         return os << v._value;
       }
       void validate
-        (boost::any& r, std::vector<std::string> const& vs, env_kvpair*, int)
+        (::boost::any& r, std::vector<std::string> const& vs, env_kvpair*, int)
       {
         fhg::util::boost::program_options::validate<env_kvpair> (r, vs);
       }
@@ -172,26 +172,26 @@ namespace gspc
 
   namespace options
   {
-    boost::program_options::options_description logging()
+    ::boost::program_options::options_description logging()
     {
-      boost::program_options::options_description logging ("Logging");
+      ::boost::program_options::options_description logging ("Logging");
 
       logging.add_options()
         ( name::log_host
-        , boost::program_options::value<validators::nonempty_string>()
+        , ::boost::program_options::value<validators::nonempty_string>()
         , "name of a host running a gspc-monitor with registration enabled"
         )
         ( name::log_port
-        , boost::program_options::value
+        , ::boost::program_options::value
           <validators::positive_integral<unsigned short>>()
         , "port on log-host running a gspc-monitor with registration enabled"
         )
         ( name::log_level
-        , boost::program_options::value<std::string>()
+        , ::boost::program_options::value<std::string>()
         , "DO NOT USE - log level to use"
         )
         ( name::log_directory
-        , boost::program_options::value<validators::is_directory_if_exists>()
+        , ::boost::program_options::value<validators::is_directory_if_exists>()
         , "DO NOT USE - directory where to store drts runtime log information"
         )
         ;
@@ -199,14 +199,14 @@ namespace gspc
       return logging;
     }
 
-    boost::program_options::options_description installation()
+    ::boost::program_options::options_description installation()
     {
-      boost::program_options::options_description
+      ::boost::program_options::options_description
         installation ("GSPC Installation");
 
       installation.add_options()
         ( name::gspc_home
-        , boost::program_options::value<validators::existing_directory>()
+        , ::boost::program_options::value<validators::existing_directory>()
         ->required()
         , "gspc installation directory"
         )
@@ -215,29 +215,29 @@ namespace gspc
       return installation;
     }
 
-    boost::program_options::options_description drts()
+    ::boost::program_options::options_description drts()
     {
-      boost::program_options::options_description drts ("Runtime system");
+      ::boost::program_options::options_description drts ("Runtime system");
 
       drts.add_options()
         //! \todo let it be a list of existing_directories
         ( name::application_search_path
-        , boost::program_options::value<validators::existing_directory>()
+        , ::boost::program_options::value<validators::existing_directory>()
         , "adds a path to the list of application search paths"
         )
         ( name::agent_port
-        , boost::program_options::value
+        , ::boost::program_options::value
           <validators::positive_integral<unsigned short>>()
         , "agent port"
         )
         ( name::worker_env_copy_variable
-        , boost::program_options::value<std::vector<validators::env_key>>()
+        , ::boost::program_options::value<std::vector<validators::env_key>>()
             ->default_value ({}, "none")
         , "Copy the given environment variables with the currently exported "
           "value to the remote workers."
         )
         ( name::worker_env_copy_current
-        , boost::program_options::value<bool>()
+        , ::boost::program_options::value<bool>()
             ->implicit_value (true)
             ->default_value (false)
         , "Copy the entire environment from the current process to the remote "
@@ -246,7 +246,7 @@ namespace gspc
           "environment."
         )
         ( name::worker_env_copy_file
-        , boost::program_options::value<std::vector<validators::existing_path>>()
+        , ::boost::program_options::value<std::vector<validators::existing_path>>()
             ->default_value ({}, "none")
         , "Copy the environment described in the given files to the remote "
           "worker. If multiple files are given which contain the same key, "
@@ -258,7 +258,7 @@ namespace gspc
           " and " OPTION_NAME_WORKER_ENV_COPY_CURRENT "."
         )
         ( name::worker_env_set_variable
-        , boost::program_options::value<std::vector<validators::env_kvpair>>()
+        , ::boost::program_options::value<std::vector<validators::env_kvpair>>()
             ->default_value ({}, "none")
         , "Set a given environment variable in the remote worker process.\n"
           "Arguments shall be of format `key=value`.\n"
@@ -271,14 +271,14 @@ namespace gspc
       return drts;
     }
 
-    boost::program_options::options_description external_rifd()
+    ::boost::program_options::options_description external_rifd()
     {
-      boost::program_options::options_description drts
+      ::boost::program_options::options_description drts
         ("Remote Interface Daemon (externally started)");
 
       drts.add_options()
         ( name::rif_entry_points_file
-        , boost::program_options::value<validators::nonempty_file>()
+        , ::boost::program_options::value<validators::nonempty_file>()
           ->required()
         , "entry point description of running remote-interface daemons"
         )
@@ -287,16 +287,16 @@ namespace gspc
       return drts;
     }
 
-    boost::program_options::options_description scoped_rifd (int options)
+    ::boost::program_options::options_description scoped_rifd (int options)
     {
-      boost::program_options::options_description drts
+      ::boost::program_options::options_description drts
         ("Remote Interface Daemon (internally started)");
 
       if (options & rifd::nodefile)
       {
         drts.add_options()
         ( name::nodefile
-        , boost::program_options::value<validators::existing_path>()->required()
+        , ::boost::program_options::value<validators::existing_path>()->required()
         , "nodefile"
         );
       }
@@ -304,7 +304,7 @@ namespace gspc
       {
         drts.add_options()
         ( name::rif_strategy
-        , boost::program_options::value<std::string>()->required()
+        , ::boost::program_options::value<std::string>()->required()
         , ( "strategy used to bootstrap rifd (one of "
           + fhg::util::join (fhg::rif::strategy::available_strategies(), ", ").string()
           + ")"
@@ -312,7 +312,7 @@ namespace gspc
         );
         drts.add_options()
         ( name::rif_strategy_parameters
-        , boost::program_options::value<std::vector<std::string>>()
+        , ::boost::program_options::value<std::vector<std::string>>()
           ->default_value (std::vector<std::string>(), "")->required()
         , "parameters passed to bootstrapping strategy"
         );
@@ -321,7 +321,7 @@ namespace gspc
       {
         drts.add_options()
         ( name::rif_port
-        , boost::program_options::value
+        , ::boost::program_options::value
           <fhg::util::boost::program_options::positive_integral<unsigned short>>()
         , "port for rifd to listen on"
         );
@@ -330,29 +330,29 @@ namespace gspc
       return drts;
     }
 
-    boost::program_options::options_description virtual_memory()
+    ::boost::program_options::options_description virtual_memory()
     {
-      boost::program_options::options_description vmem ("Virtual memory");
+      ::boost::program_options::options_description vmem ("Virtual memory");
 
       vmem.add_options()
         ( name::virtual_memory_socket
-        , boost::program_options::value
+        , ::boost::program_options::value
             <validators::nonexisting_path_in_existing_directory>()->required()
         , "socket file to communicate with the virtual memory manager"
         )
         ( name::virtual_memory_port
-        , boost::program_options::value<validators::positive_integral<unsigned short>>()
+        , ::boost::program_options::value<validators::positive_integral<unsigned short>>()
         ->required()
         , "internal communication port that shall be used by"
           " the virtual memory manager"
         )
         ( name::virtual_memory_startup_timeout
-        , boost::program_options::value<validators::positive_integral<unsigned long>>()
+        , ::boost::program_options::value<validators::positive_integral<unsigned long>>()
         ->required()
         , "timeout in seconds for the virtual memory manager to connect and start up."
         )
         ( name::virtual_memory_netdev_id
-        , boost::program_options::value<iml::gaspi::NetdevID>()
+        , ::boost::program_options::value<iml::gaspi::NetdevID>()
           ->default_value({})
         , "propose a network device ID to use ('auto' for automatic detection"
           ", or '0' or '1' to select a specific device)"
@@ -366,18 +366,18 @@ namespace gspc
   namespace
   {
     template<typename T>
-      void set_as ( boost::program_options::variables_map& vm
+      void set_as ( ::boost::program_options::variables_map& vm
                   , std::string const& option_name
                   , T value
                   , std::string const& value_string
                   )
     {
-      std::pair<boost::program_options::variables_map::iterator, bool> const
+      std::pair<::boost::program_options::variables_map::iterator, bool> const
         pos_and_success
         ( vm.insert
           ( std::make_pair
             ( option_name
-            , boost::program_options::variable_value (value, false)
+            , ::boost::program_options::variable_value (value, false)
             )
           )
         );
@@ -385,7 +385,7 @@ namespace gspc
       if (!pos_and_success.second)
       {
         throw std::runtime_error
-          (( boost::format
+          (( ::boost::format
              ("Failed to set option '%1%' to '%2%': Found old value '%3%'")
            % option_name
            % value_string
@@ -396,7 +396,7 @@ namespace gspc
     }
 
     template<typename T, typename U = T>
-      void set_as_vec ( boost::program_options::variables_map& vm
+      void set_as_vec ( ::boost::program_options::variables_map& vm
                       , std::string const& option_name
                       , std::vector<U> const& value
                       )
@@ -404,7 +404,7 @@ namespace gspc
       std::vector<T> value_u {value.begin(), value.end()};
       auto const pos_and_success
         ( vm.emplace ( option_name
-                     , boost::program_options::variable_value
+                     , ::boost::program_options::variable_value
                          (std::move (value_u), false)
                      )
         );
@@ -412,7 +412,7 @@ namespace gspc
       if (!pos_and_success.second)
       {
         throw std::runtime_error
-          (( boost::format
+          (( ::boost::format
              ("Failed to set option '%1%' to '%2%': Found old value '%3%'")
            % option_name
            % fhg::util::join (value, ",")
@@ -424,7 +424,7 @@ namespace gspc
     }
 
     template<typename T>
-      void set_as ( boost::program_options::variables_map& vm
+      void set_as ( ::boost::program_options::variables_map& vm
                   , std::string const& option_name
                   , std::string const& value
                   )
@@ -434,11 +434,11 @@ namespace gspc
   }
 
 #define SET(_name, _type)                                        \
-  void set_ ## _name ( boost::program_options::variables_map& vm \
+  void set_ ## _name ( ::boost::program_options::variables_map& vm \
                      , _type const& value                        \
                      )
 #define SET_PATH(_name, _as)                                            \
-  SET (_name, boost::filesystem::path)                                  \
+  SET (_name, ::boost::filesystem::path)                                  \
   {                                                                     \
     set_as<_as> (vm, name::_name, value.string());                      \
   }
@@ -460,24 +460,24 @@ namespace gspc
   }
 
 #define GET_MAYBE(_name, _type, _as)                                    \
-  boost::optional<_type> get_ ## _name                                  \
-    (boost::program_options::variables_map const& vm)                   \
+  ::boost::optional<_type> get_ ## _name                                  \
+    (::boost::program_options::variables_map const& vm)                   \
   {                                                                     \
     if (vm.count (name::_name))                                         \
     {                                                                   \
       return static_cast<_type> (vm.at (name::_name).as<_as>());        \
     }                                                                   \
                                                                         \
-    return boost::none;                                                 \
+    return ::boost::none;                                                 \
   }
 
-#define GET_PATH(_name, _as) GET_MAYBE (_name, boost::filesystem::path, _as)
+#define GET_PATH(_name, _as) GET_MAYBE (_name, ::boost::filesystem::path, _as)
 #define GET_STRING(_name, _as) GET_MAYBE (_name, std::string, _as)
 #define GET_POSITIVE_INTEGRAL(_name, _type)                             \
   GET_MAYBE (_name, _type, validators::positive_integral<_type>)
 #define GET_VECTOR(_name, _type, _as)                                   \
-  boost::optional<std::vector<_type>> get_ ## _name                     \
-    (boost::program_options::variables_map const& vm)                   \
+  ::boost::optional<std::vector<_type>> get_ ## _name                     \
+    (::boost::program_options::variables_map const& vm)                   \
   {                                                                     \
     if (vm.count (name::_name))                                         \
     {                                                                   \
@@ -485,12 +485,12 @@ namespace gspc
       return std::vector<_type> {v.begin(), v.end()};                   \
     }                                                                   \
                                                                         \
-    return boost::none;                                                 \
+    return ::boost::none;                                                 \
   }
 
 #define REQUIRE(_name, _type, _as)                                      \
   _type require_ ## _name                                               \
-    (boost::program_options::variables_map const& vm)                   \
+    (::boost::program_options::variables_map const& vm)                   \
   {                                                                     \
     if (vm.count (name::_name))                                         \
     {                                                                   \
@@ -498,21 +498,21 @@ namespace gspc
     }                                                                   \
                                                                         \
     throw std::logic_error                                              \
-      (( boost::format ("missing key '%1%' in variables map")           \
+      (( ::boost::format ("missing key '%1%' in variables map")           \
        % name::_name                                                    \
        ).str()                                                          \
       );                                                                \
   }
 
 #define REQUIRE_PATH(_name, _as)                \
-  REQUIRE (_name, boost::filesystem::path, _as)
+  REQUIRE (_name, ::boost::filesystem::path, _as)
 #define REQUIRE_STRING(_name, _as)              \
   REQUIRE (_name, std::string, _as)
 #define REQUIRE_POSITIVE_INTEGRAL(_name, _type)                 \
   REQUIRE (_name, _type, validators::positive_integral<_type>)
 #define REQUIRE_VECTOR(_name, _type, _as)                               \
   std::vector<_type> require_ ## _name                                  \
-    (boost::program_options::variables_map const& vm)                   \
+    (::boost::program_options::variables_map const& vm)                   \
   {                                                                     \
     if (vm.count (name::_name))                                         \
     {                                                                   \
@@ -521,7 +521,7 @@ namespace gspc
     }                                                                   \
                                                                         \
     throw std::logic_error                                              \
-      (( boost::format ("missing key '%1%' in variables map")           \
+      (( ::boost::format ("missing key '%1%' in variables map")           \
        % name::_name                                                    \
        ).str()                                                          \
       );                                                                \
@@ -554,7 +554,7 @@ namespace gspc
   ACCESS_VECTOR (worker_env_copy_variable, std::string, validators::env_key)
   ACCESS_BOOL (worker_env_copy_current)
   ACCESS_VECTOR
-    (worker_env_copy_file, boost::filesystem::path, validators::existing_path)
+    (worker_env_copy_file, ::boost::filesystem::path, validators::existing_path)
   ACCESS_VECTOR (worker_env_set_variable, std::string, validators::env_kvpair)
 
   ACCESS_STRING (log_host, validators::nonempty_string)

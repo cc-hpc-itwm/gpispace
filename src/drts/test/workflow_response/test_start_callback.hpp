@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <rpc/function_description.hpp>
+#include <util-rpc/function_description.hpp>
 
 namespace protocol
 {

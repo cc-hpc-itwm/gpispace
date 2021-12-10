@@ -55,7 +55,7 @@ namespace iml
       ( std::vector<std::string> const& hostnames
       , std::string const& strategy
       , std::vector<std::string> const& strategy_parameters = {}
-      , boost::optional<unsigned short> const& port = boost::none
+      , ::boost::optional<unsigned short> const& port = ::boost::none
       , std::ostream& output = std::cout
       );
   }

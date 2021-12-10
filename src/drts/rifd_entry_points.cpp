@@ -27,14 +27,14 @@ namespace gspc
 {
   namespace
   {
-    std::vector<fhg::rif::entry_point> parse (boost::filesystem::path const& path)
+    std::vector<fhg::rif::entry_point> parse (::boost::filesystem::path const& path)
     {
       std::vector<std::string> const lines (fhg::util::read_lines (path));
       return {lines.begin(), lines.end()};
     }
   }
 
-  rifd_entry_points::rifd_entry_points (boost::filesystem::path const& path)
+  rifd_entry_points::rifd_entry_points (::boost::filesystem::path const& path)
     : rifd_entry_points (new implementation (parse (path)))
   {}
   rifd_entry_points::rifd_entry_points (implementation* impl)
@@ -46,7 +46,7 @@ namespace gspc
     : _ (new implementation (*other._))
   {}
 
-  void rifd_entry_points::write_to_file (boost::filesystem::path const& path)
+  void rifd_entry_points::write_to_file (::boost::filesystem::path const& path)
   {
     std::ofstream file (path.string());
     if (!file)

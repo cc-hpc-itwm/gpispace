@@ -25,11 +25,11 @@
 #include <iml/vmem/gaspi/pc/memory/manager.hpp>
 #include <iml/vmem/gaspi_context.hpp>
 
-#include <rpc/function_description.hpp>
-#include <rpc/remote_tcp_endpoint.hpp>
-#include <rpc/service_tcp_provider.hpp>
-#include <rpc/service_dispatcher.hpp>
-#include <rpc/service_handler.hpp>
+#include <util-rpc/function_description.hpp>
+#include <util-rpc/remote_tcp_endpoint.hpp>
+#include <util-rpc/service_tcp_provider.hpp>
+#include <util-rpc/service_dispatcher.hpp>
+#include <util-rpc/service_handler.hpp>
 
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 
@@ -45,7 +45,7 @@ namespace gpi
   {
     namespace global
     {
-      class topology_t : boost::noncopyable
+      class topology_t : ::boost::noncopyable
                        , public itopology_t
       {
       public:

@@ -30,7 +30,7 @@ namespace xml
         , std::string const& global
         , std::string const& local
         , we::type::property::type const& properties
-        , boost::optional<bool> const& allow_empty_ranges
+        , ::boost::optional<bool> const& allow_empty_ranges
         )
           : with_position_of_definition (position_of_definition)
           , _global (global)
@@ -39,7 +39,7 @@ namespace xml
           , _allow_empty_ranges (allow_empty_ranges)
       {}
 
-      boost::optional<bool> const&
+      ::boost::optional<bool> const&
         memory_transfer_type::allow_empty_ranges() const
       {
         return _allow_empty_ranges;
@@ -50,7 +50,7 @@ namespace xml
         , std::string const& global
         , std::string const& local
         , we::type::property::type const& properties
-        , boost::optional<bool> const& allow_empty_ranges
+        , ::boost::optional<bool> const& allow_empty_ranges
         )
           : memory_transfer_type
               ( position_of_definition
@@ -66,8 +66,8 @@ namespace xml
         , std::string const& global
         , std::string const& local
         , we::type::property::type const& properties
-        , boost::optional<bool> const& not_modified_in_module_call
-        , boost::optional<bool> const& allow_empty_ranges
+        , ::boost::optional<bool> const& not_modified_in_module_call
+        , ::boost::optional<bool> const& allow_empty_ranges
         )
           : memory_transfer_type
               ( position_of_definition
@@ -84,8 +84,8 @@ namespace xml
         , std::string const& global
         , std::string const& local
         , we::type::property::type const& properties
-        , boost::optional<bool> const& not_modified_in_module_call
-        , boost::optional<bool> const& allow_empty_ranges
+        , ::boost::optional<bool> const& not_modified_in_module_call
+        , ::boost::optional<bool> const& allow_empty_ranges
         )
           : memory_transfer_type
               ( position_of_definition

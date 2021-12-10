@@ -60,11 +60,11 @@ namespace we
                 > tokens_on_place;
 
         for ( we::place_id_type const& place_id
-            : n.places() | boost::adaptors::map_keys
+            : n.places() | ::boost::adaptors::map_keys
             )
         {
           for ( pnet::type::value::value_type const& token
-              : n.get_token (place_id) | boost::adaptors::map_values
+              : n.get_token (place_id) | ::boost::adaptors::map_values
               )
           {
             tokens_on_place[place_id].emplace (token);

@@ -24,7 +24,7 @@
 #include <we/type/signature/is_literal.hpp>
 
 #include <fhg/assert.hpp>
-#include <fhg/util/boost/variant.hpp>
+#include <util-generic/cxx17/holds_alternative.hpp>
 
 #include <boost/format.hpp>
 
@@ -54,16 +54,16 @@ namespace xml
       std::size_t port_type::unique_key_type::hash_value() const
       {
         return std::hash<std::string>{}
-          (str (boost::format ("%1%%2%") % _name % _port_direction));
+          (str (::boost::format ("%1%%2%") % _name % _port_direction));
       }
 
       port_type::port_type ( util::position_type const& position_of_definition
                            , std::string const& name
                            , std::string const& type
-                           , boost::optional<std::string> const& _place
+                           , ::boost::optional<std::string> const& _place
                            , we::type::PortDirection const& direction
                            , we::type::property::type const& properties
-                           , boost::optional<pnet::type::signature::signature_type> signature
+                           , ::boost::optional<pnet::type::signature::signature_type> signature
                            )
         : with_position_of_definition (position_of_definition)
         , _name (name)
@@ -127,16 +127,16 @@ namespace xml
 
       namespace
       {
-        class type_checker : public boost::static_visitor<void>
+        class type_checker : public ::boost::static_visitor<void>
         {
         private:
           port_type const& _port;
-          boost::filesystem::path const& _path;
+          ::boost::filesystem::path const& _path;
           state::type const& _state;
 
         public:
           type_checker ( port_type const& port
-                       , boost::filesystem::path const& path
+                       , ::boost::filesystem::path const& path
                        , state::type const& state
                        )
             : _port (port)
@@ -159,7 +159,7 @@ namespace xml
             }
             else
             {
-              boost::optional<place_type const&>
+              ::boost::optional<place_type const&>
                 place (_port.resolved_place (net));
 
               if (not place)
@@ -214,12 +214,12 @@ namespace xml
         };
       }
 
-      void port_type::type_check ( boost::filesystem::path const& path
+      void port_type::type_check ( ::boost::filesystem::path const& path
                                  , state::type const& state
                                  , function_type const& parent
                                  ) const
       {
-        boost::apply_visitor
+        ::boost::apply_visitor
           (type_checker (*this, path, state), parent.content());
       }
 
@@ -228,12 +228,12 @@ namespace xml
         return _direction;
       }
 
-      boost::optional<place_type const&> port_type::resolved_place
+      ::boost::optional<place_type const&> port_type::resolved_place
         (net_type const& parent) const
       {
         if (!place)
         {
-          return boost::none;
+          return ::boost::none;
         }
 
         return parent.places().get (*place);
@@ -251,22 +251,22 @@ namespace xml
 
       bool port_type::is_input() const
       {
-        return fhg::util::boost::is_of_type<we::type::port::direction::In> (_direction);
+        return fhg::util::cxx17::holds_alternative<we::type::port::direction::In> (_direction);
       }
       bool port_type::is_output() const
       {
-        return fhg::util::boost::is_of_type<we::type::port::direction::Out> (_direction);
+        return fhg::util::cxx17::holds_alternative<we::type::port::direction::Out> (_direction);
       }
       bool port_type::is_tunnel() const
       {
-        return fhg::util::boost::is_of_type<we::type::port::direction::Tunnel> (_direction);
+        return fhg::util::cxx17::holds_alternative<we::type::port::direction::Tunnel> (_direction);
       }
 
       namespace dump
       {
         void dump (::fhg::util::xml::xmlstream& s, port_type const& p)
         {
-          s.open (str (boost::format ("%1%") % p.direction()));
+          s.open (str (::boost::format ("%1%") % p.direction()));
           s.attr ("name", p.name());
           s.attr ("type", p.type());
           s.attr ("place", p.place);

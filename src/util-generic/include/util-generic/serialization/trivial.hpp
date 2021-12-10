@@ -33,7 +33,7 @@ namespace fhg
       template<typename... Types>
         using is_trivially_serializable
           = cxx17::conjunction
-              <boost::serialization::is_bitwise_serializable<Types>...>;
+              <::boost::serialization::is_bitwise_serializable<Types>...>;
 
       //! Let the serialization of type_ with the
       //! base_or_members_... be trivial. base_or_members_... are

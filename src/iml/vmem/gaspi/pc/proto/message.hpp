@@ -69,7 +69,7 @@ namespace gpi
         }
       };
 
-      using message_impl = boost::variant< error::error_t
+      using message_impl = ::boost::variant< error::error_t
                                          , gpi::pc::proto::memory::message_t
                                          , gpi::pc::proto::segment::message_t
                                          , existing_segments
@@ -84,7 +84,7 @@ namespace gpi
         template<typename Archive>
           void serialize (Archive& ar, unsigned int)
         {
-          ar & boost::serialization::base_object<message_impl> (*this);
+          ar & ::boost::serialization::base_object<message_impl> (*this);
         }
       };
     }

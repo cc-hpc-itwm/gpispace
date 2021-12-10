@@ -28,7 +28,7 @@ namespace pnet
         typedef std::pair<std::list<std::string>, value_type> position_type;
         typedef std::list<position_type> positions_type;
 
-        class visitor_positions : public boost::static_visitor<void>
+        class visitor_positions : public ::boost::static_visitor<void>
         {
         public:
           visitor_positions ( std::list<std::string>& path
@@ -44,7 +44,7 @@ namespace pnet
             {
               path::append const _ (_path, key_value.first);
 
-              boost::apply_visitor (*this, key_value.second);
+              ::boost::apply_visitor (*this, key_value.second);
             }
           }
           template<typename T>
@@ -63,7 +63,7 @@ namespace pnet
         positions_type positions;
         std::list<std::string> path;
 
-        boost::apply_visitor (visitor_positions (path, positions), value);
+        ::boost::apply_visitor (visitor_positions (path, positions), value);
 
         return positions;
       }

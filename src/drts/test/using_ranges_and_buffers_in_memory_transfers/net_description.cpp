@@ -28,12 +28,12 @@ namespace drts
   {
     std::string net_description
       ( std::string const& type
-      , boost::optional<bool> allow_empty_ranges
+      , ::boost::optional<bool> allow_empty_ranges
       , bool with_alignment
       )
     {
       return
-        (boost::format
+        (::boost::format
           (R"EOS(<defun name="net">
             <include-structs href="memory/global/range.xpnet"/>
             <in name="global" type="global_memory_range" place="global"/>
@@ -93,14 +93,14 @@ namespace drts
             </net>
           </defun>)EOS")
           % ( with_alignment
-            ? ( boost::format ("<alignment>%1%UL</alignment>")
+            ? ( ::boost::format ("<alignment>%1%UL</alignment>")
               % std::pow (2, fhg::util::testing::random<std::size_t>{} (4, 0))
               ).str()
             : ""
             )
           % type
           % ( allow_empty_ranges
-            ? ( boost::format (" allow-empty-ranges=\"%1%\"")
+            ? ( ::boost::format (" allow-empty-ranges=\"%1%\"")
               % (*allow_empty_ranges ? "true" : "false")
               ).str()
             : ""

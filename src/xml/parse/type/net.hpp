@@ -73,7 +73,7 @@ namespace xml
 
         // ***************************************************************** //
 
-        boost::optional<tmpl_type const&>
+        ::boost::optional<tmpl_type const&>
           get_template (std::string const& name) const;
 
         // ***************************************************************** //

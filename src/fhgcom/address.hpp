@@ -16,10 +16,11 @@
 
 #pragma once
 
-#include <cstddef>
-#include <cstdint>
+#include <boost/uuid/uuid.hpp>
+
+#include <fhgcom/peer_info.hpp>
+
 #include <functional>
-#include <string>
 
 namespace fhg
 {
@@ -29,20 +30,21 @@ namespace fhg
     {
       struct address_t
       {
-        explicit
-        address_t ();
+        explicit address_t() = default;
 
-        address_t (std::string const& name);
+        //! \todo store host, port and let clients observe them!?
+        explicit address_t (host_t const&, port_t const&);
 
-        std::uint8_t data[16];
-      } __attribute__((packed));
+        ::boost::uuids::uuid _uuid;
+      };
+
+      static_assert (16ul == sizeof (address_t), "size of fhg::com::p2p::address_t");
 
       // standard operators
       bool operator==(address_t const& lhs, address_t const& rhs);
       bool operator!=(address_t const& lhs, address_t const& rhs);
       bool operator< (address_t const& lhs, address_t const& rhs);
 
-      std::string to_string_TESTING_ONLY (address_t const& a);
       std::size_t hash_value (address_t const& address);
     }
   }

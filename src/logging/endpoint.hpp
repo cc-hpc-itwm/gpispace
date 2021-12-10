@@ -57,12 +57,12 @@ namespace fhg
       endpoint (tcp_endpoint, socket_endpoint);
       endpoint (std::string combined_string);
 
-      boost::optional<tcp_endpoint> as_tcp;
-      boost::optional<socket_endpoint> as_socket;
+      ::boost::optional<tcp_endpoint> as_tcp;
+      ::boost::optional<socket_endpoint> as_socket;
 
       std::string to_string() const;
 
-      boost::variant<tcp_endpoint, socket_endpoint> best (std::string host) const;
+      ::boost::variant<tcp_endpoint, socket_endpoint> best (std::string host) const;
 
       endpoint() = default;
       endpoint (endpoint const&) = default;
@@ -76,7 +76,7 @@ namespace fhg
     };
 
     GSPC_DLLEXPORT void validate
-      (boost::any&, std::vector<std::string> const&, endpoint*, int);
+      (::boost::any&, std::vector<std::string> const&, endpoint*, int);
   }
 }
 

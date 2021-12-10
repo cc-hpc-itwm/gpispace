@@ -34,7 +34,7 @@ extended_add_library (NAME Generic
     "ostream/redirect_standard_streams.cpp"
     "print_exception.cpp"
     "procfs.cpp"
-    "program_options/separated_argument_list_parser.cpp"
+    "boost/program_options/separated_argument_list_parser.cpp"
     "read_lines.cpp"
     "sig_err.cpp"
     "serialization/exception.cpp"

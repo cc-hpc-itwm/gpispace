@@ -30,7 +30,7 @@ namespace
 
     FILE* pf
       ( fhg::util::syscall::popen
-          ( ( boost::format
+          ( ( ::boost::format
                ("netstat -lntp | grep -w '%1%' | awk '{print $NF}' | cut -d'/' -f2")
             % port
             ).str().c_str()

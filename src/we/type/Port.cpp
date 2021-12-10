@@ -16,7 +16,7 @@
 
 #include <we/type/Port.hpp>
 
-#include <fhg/util/boost/variant.hpp>
+#include <util-generic/cxx17/holds_alternative.hpp>
 
 namespace we
 {
@@ -57,7 +57,7 @@ namespace we
     Port::Port()
       : _name("default")
       , _direction (port::direction::In{})
-      , _associated_place (boost::none)
+      , _associated_place (::boost::none)
     {}
 
     Port::Port
@@ -69,7 +69,7 @@ namespace we
         : _name (name)
         , _direction (direction)
         , _signature (signature)
-        , _associated_place (boost::none)
+        , _associated_place (::boost::none)
         , _properties (prop)
     {}
 
@@ -100,7 +100,7 @@ namespace we
     {
       return _signature;
     }
-    boost::optional<we::place_id_type> const& Port::associated_place() const
+    ::boost::optional<we::place_id_type> const& Port::associated_place() const
     {
       return _associated_place;
     }
@@ -111,15 +111,15 @@ namespace we
 
     bool Port::is_input() const
     {
-      return fhg::util::boost::is_of_type<port::direction::In> (_direction);
+      return fhg::util::cxx17::holds_alternative<port::direction::In> (_direction);
     }
     bool Port::is_output() const
     {
-      return fhg::util::boost::is_of_type<port::direction::Out> (_direction);
+      return fhg::util::cxx17::holds_alternative<port::direction::Out> (_direction);
     }
     bool Port::is_tunnel() const
     {
-      return fhg::util::boost::is_of_type<port::direction::Tunnel> (_direction);
+      return fhg::util::cxx17::holds_alternative<port::direction::Tunnel> (_direction);
     }
   }
 }

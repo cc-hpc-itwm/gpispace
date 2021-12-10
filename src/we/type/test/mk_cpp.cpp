@@ -44,7 +44,7 @@ try
   structured_type l (std::make_pair ("line2D", ps));
   structured_type p (std::make_pair ("point2D", f));
 
-  namespace po = boost::program_options;
+  namespace po = ::boost::program_options;
 
   po::options_description desc ("Options");
 

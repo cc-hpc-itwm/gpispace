@@ -29,8 +29,8 @@ namespace iml
     public:
       Installation();
 
-      boost::filesystem::path const server_binary;
-      boost::filesystem::path const rifd_binary;
+      ::boost::filesystem::path const server_binary;
+      ::boost::filesystem::path const rifd_binary;
     };
   }
 }

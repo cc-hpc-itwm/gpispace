@@ -25,7 +25,7 @@ namespace iml
 {
   namespace rif
   {
-    EntryPoints read_from_file (boost::filesystem::path const& path)
+    EntryPoints read_from_file (::boost::filesystem::path const& path)
     try
     {
       EntryPoints entry_points;
@@ -58,7 +58,7 @@ namespace iml
     }
 
     void write_to_file ( EntryPoints const& entry_points
-                       , boost::filesystem::path const& path
+                       , ::boost::filesystem::path const& path
                        )
     try
     {

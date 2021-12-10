@@ -35,7 +35,7 @@ namespace pnet
                            , std::string const& s
                            )
         {
-          const boost::optional<signature_type> signature (resolver (s));
+          const ::boost::optional<signature_type> signature (resolver (s));
 
           if (!signature)
           {
@@ -45,7 +45,7 @@ namespace pnet
           return *signature;
         }
 
-        class resolve_structured : public boost::static_visitor<structured_type>
+        class resolve_structured : public ::boost::static_visitor<structured_type>
         {
         public:
           resolve_structured (resolver_type const&, std::list<std::string>&);
@@ -56,7 +56,7 @@ namespace pnet
           std::list<std::string>& _path;
         };
 
-        class mk_field : public boost::static_visitor<field_type>
+        class mk_field : public ::boost::static_visitor<field_type>
         {
         public:
           mk_field (std::string const& name)
@@ -74,7 +74,7 @@ namespace pnet
           std::string const& _name;
         };
 
-        class resolve_field : public boost::static_visitor<field_type>
+        class resolve_field : public ::boost::static_visitor<field_type>
         {
         public:
           resolve_field ( resolver_type const& resolver
@@ -97,7 +97,7 @@ namespace pnet
                                         )
                                    );
 
-            return boost::apply_visitor (mk_field (f.first), s);
+            return ::boost::apply_visitor (mk_field (f.first), s);
           }
           field_type operator () (structured_type const& s) const
           {
@@ -124,7 +124,7 @@ namespace pnet
           for (field_type const& f : s.second)
           {
             l.push_back
-              (boost::apply_visitor (resolve_field ( _resolver
+              (::boost::apply_visitor (resolve_field ( _resolver
                                                    , append (_path, s.first)
                                                    )
                                     , f

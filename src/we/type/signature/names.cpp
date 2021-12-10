@@ -52,7 +52,7 @@ namespace pnet
           std::unordered_set<std::string>& _names;
         };
 
-        class get_names : public boost::static_visitor<>
+        class get_names : public ::boost::static_visitor<>
         {
         public:
           get_names (std::unordered_set<std::string>& names)
@@ -76,7 +76,7 @@ namespace pnet
       {
         std::unordered_set<std::string> names;
 
-        boost::apply_visitor (get_names (names), signature);
+        ::boost::apply_visitor (get_names (names), signature);
 
         return names;
       }

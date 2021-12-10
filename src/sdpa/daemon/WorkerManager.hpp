@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <sdpa/daemon/Implementation.hpp>
 #include <sdpa/daemon/Worker.hpp>
 #include <sdpa/daemon/scheduler/Reservation.hpp>
 #include <sdpa/requirements_and_preferences.hpp>
@@ -45,7 +46,7 @@ namespace sdpa
     using Workers_implementation_and_transfer_cost =
       std::tuple<WorkerSet, Implementation, double>;
 
-    class WorkerManager : boost::noncopyable
+    class WorkerManager : ::boost::noncopyable
     {
       typedef std::unordered_map<worker_id_t, Worker> worker_map_t;
       using worker_iterator = worker_map_t::iterator;
@@ -92,11 +93,11 @@ namespace sdpa
 
       //! throws if workerId was not unique
       void add_worker ( worker_id_t const& workerId
-                     , capabilities_set_t const& cpbset
-                     , unsigned long allocated_shared_memory_size
-                     , std::string const& hostname
-                     , fhg::com::p2p::address_t const& address
-                     );
+                      , capabilities_set_t const& cpbset
+                      , unsigned long allocated_shared_memory_size
+                      , std::string const& hostname
+                      , fhg::com::p2p::address_t const& address
+                      );
 
       void delete_worker (worker_id_t const& workerId);
 
@@ -109,14 +110,14 @@ namespace sdpa
       void delete_job_from_worker (job_id_t const& job_id, worker_id_t const&, double);
 
       using worker_connections_t
-        = boost::bimap < boost::bimaps::unordered_set_of<std::string>
-                       , boost::bimaps::unordered_set_of<fhg::com::p2p::address_t>
+        = ::boost::bimap < ::boost::bimaps::unordered_set_of<std::string>
+                       , ::boost::bimaps::unordered_set_of<fhg::com::p2p::address_t>
                        >;
 
-      boost::optional<WorkerManager::worker_connections_t::right_iterator>
+      ::boost::optional<WorkerManager::worker_connections_t::right_iterator>
         worker_by_address (fhg::com::p2p::address_t const&);
 
-      boost::optional<WorkerManager::worker_connections_t::left_iterator>
+      ::boost::optional<WorkerManager::worker_connections_t::left_iterator>
         address_by_worker (std::string const&);
 
       unsigned long num_free_workers() const;

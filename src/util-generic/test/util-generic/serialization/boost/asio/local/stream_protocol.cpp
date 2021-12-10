@@ -27,12 +27,12 @@ BOOST_AUTO_TEST_CASE (path_is_passed_through)
   //! constant is taken from `endpoint::init()` in
   //! boost/1.61.0/include/boost/asio/local/detail/impl/endpoint.ipp.
   constexpr auto const max_length
-    = sizeof (boost::asio::detail::sockaddr_un_type::sun_path) - 1;
+    = sizeof (::boost::asio::detail::sockaddr_un_type::sun_path) - 1;
 
   FHG_UTIL_TESTING_REQUIRE_SERIALIZED_TO_ID
-    ( ( boost::asio::local::stream_protocol::endpoint
+    ( ( ::boost::asio::local::stream_protocol::endpoint
           {fhg::util::testing::random<std::string>{}().substr (0, max_length)}
       )
-    , boost::asio::local::stream_protocol::endpoint
+    , ::boost::asio::local::stream_protocol::endpoint
     );
 }

@@ -39,7 +39,7 @@ namespace we
       : _expr (expr)
       , _ast (expr)
    {
-     boost::trim (_expr);
+     ::boost::trim (_expr);
    }
 
     // should correspond!
@@ -47,7 +47,7 @@ namespace we
       : _expr (expr)
       , _ast (ast)
     {
-      boost::trim (_expr);
+      ::boost::trim (_expr);
     }
 
     std::string const& Expression::expression() const
@@ -83,7 +83,7 @@ namespace we
           {
             (void) expr::type::assign_result ({}, expected, _type);
           }
-        , str ( boost::format
+        , str ( ::boost::format
                    ("Expression '%1%' has incompatible type '%2%'."
                    " Expected type '%3%'."
                    )

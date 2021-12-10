@@ -20,12 +20,12 @@
 #include <drts/drts.hpp>
 #include <drts/scoped_rifd.hpp>
 
-#include <test/certificates_data.hpp>
-#include <test/make.hpp>
-#include <test/parse_command_line.hpp>
-#include <test/scoped_nodefile_from_environment.hpp>
-#include <test/source_directory.hpp>
-#include <test/shared_directory.hpp>
+#include <testing/certificates_data.hpp>
+#include <testing/make.hpp>
+#include <testing/parse_command_line.hpp>
+#include <testing/scoped_nodefile_from_environment.hpp>
+#include <testing/source_directory.hpp>
+#include <testing/shared_directory.hpp>
 
 #include <we/type/value.hpp>
 
@@ -43,7 +43,7 @@
 
 BOOST_AUTO_TEST_CASE (drts_parallel_running_workflows)
 {
-  boost::program_options::options_description options_description;
+  ::boost::program_options::options_description options_description;
 
   options_description.add (test::options::source_directory());
   options_description.add (test::options::shared_directory());
@@ -52,14 +52,14 @@ BOOST_AUTO_TEST_CASE (drts_parallel_running_workflows)
   options_description.add (gspc::options::scoped_rifd());
   options_description.add_options()
     ( "ssl-cert"
-    , boost::program_options::value<std::string>()->required()
+    , ::boost::program_options::value<std::string>()->required()
     , "enable or disable SSL certificate"
     );
 
-  boost::program_options::variables_map vm
+  ::boost::program_options::variables_map vm
     ( test::parse_command_line
-        ( boost::unit_test::framework::master_test_suite().argc
-        , boost::unit_test::framework::master_test_suite().argv
+        ( ::boost::unit_test::framework::master_test_suite().argc
+        , ::boost::unit_test::framework::master_test_suite().argv
         , options_description
         )
     );
@@ -79,8 +79,8 @@ BOOST_AUTO_TEST_CASE (drts_parallel_running_workflows)
     (shared_directory, vm);
 
   fhg::util::temporary_path const _installation_dir
-    (shared_directory / boost::filesystem::unique_path());
-  boost::filesystem::path const installation_dir (_installation_dir);
+    (shared_directory / ::boost::filesystem::unique_path());
+  ::boost::filesystem::path const installation_dir (_installation_dir);
 
   gspc::set_application_search_path (vm, installation_dir);
 
@@ -89,12 +89,12 @@ BOOST_AUTO_TEST_CASE (drts_parallel_running_workflows)
   gspc::installation const installation (vm);
 
   fhg::util::temporary_file const temporary_file_a
-    (shared_directory / boost::filesystem::unique_path());
+    (shared_directory / ::boost::filesystem::unique_path());
   fhg::util::temporary_file const temporary_file_b
-    (shared_directory / boost::filesystem::unique_path());
+    (shared_directory / ::boost::filesystem::unique_path());
 
-  boost::filesystem::path const filename_a (temporary_file_a);
-  boost::filesystem::path const filename_b (temporary_file_b);
+  ::boost::filesystem::path const filename_a (temporary_file_a);
+  ::boost::filesystem::path const filename_b (temporary_file_b);
 
   test::make_net_lib_install const make_wait_then_touch
     ( installation

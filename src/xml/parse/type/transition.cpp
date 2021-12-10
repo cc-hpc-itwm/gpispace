@@ -33,6 +33,8 @@
 #include <fhg/assert.hpp>
 #include <fhg/util/remove_prefix.hpp>
 
+#include <util-generic/cxx17/holds_alternative.hpp>
+
 #include <boost/variant.hpp>
 
 #include <xml/parse/rewrite/validprefix.hpp>
@@ -56,8 +58,8 @@ namespace xml
         , structs_type const& structs_
         , conditions_type const& conditions
         , requirements_type const& requirements_
-        , boost::optional<we::priority_type> const& priority_
-        , boost::optional<bool> const& finline_
+        , ::boost::optional<we::priority_type> const& priority_
+        , ::boost::optional<bool> const& finline_
         , we::type::property::type const& properties
         )
         : with_position_of_definition (pod)
@@ -162,7 +164,7 @@ namespace xml
       function_type const& transition_type::resolved_function() const
       {
         //! \note assume post processing pass (resolve_function_use_recursive)
-        return boost::get<function_type> (_function_or_use);
+        return ::boost::get<function_type> (_function_or_use);
       }
 
       std::string const& transition_type::name() const
@@ -200,7 +202,7 @@ namespace xml
 
       namespace
       {
-        class transition_specialize : public boost::static_visitor<void>
+        class transition_specialize : public ::boost::static_visitor<void>
         {
         private:
           type::type_map_type const& map;
@@ -235,7 +237,7 @@ namespace xml
                                        , state::type & state
                                        )
       {
-        boost::apply_visitor
+        ::boost::apply_visitor
           ( transition_specialize ( map
                                   , get
                                   , known_structs
@@ -331,7 +333,7 @@ namespace xml
                                                , std::string const& port_type
                                                ) const
       {
-        return (  direction == we::edge::TP_MANY
+        return (  fhg::util::cxx17::holds_alternative<we::edge::TP_MANY> (direction)
                && port_type == pnet::type::value::LIST()
                );
       }
@@ -342,7 +344,7 @@ namespace xml
                                        , net_type const& parent_net
                                        ) const
       {
-        const boost::optional<place_type const&> place
+        const ::boost::optional<place_type const&> place
           (parent_net.places().get (connect.place()));
 
         if (not place)
@@ -351,10 +353,10 @@ namespace xml
             (*this, connect);
         }
 
-        const boost::optional<port_type const&> port
+        const ::boost::optional<port_type const&> port
           ( resolved_function().ports().get
               ( { connect.port()
-                , ( we::edge::is_PT (connect.direction())
+                , ( we::edge::is_incoming (connect.direction())
                   ? we::type::PortDirection {we::type::port::direction::In{}}
                   : we::type::PortDirection {we::type::port::direction::Out{}}
                   )
@@ -382,7 +384,7 @@ namespace xml
 
       namespace
       {
-        class transition_type_check : public boost::static_visitor<void>
+        class transition_type_check : public ::boost::static_visitor<void>
         {
         private:
           state::type const& state;
@@ -416,16 +418,16 @@ namespace xml
           type_check (eureka, state);
         }
 
-        boost::apply_visitor (transition_type_check (state), _function_or_use);
+        ::boost::apply_visitor (transition_type_check (state), _function_or_use);
       }
 
       void transition_type::resolve_function_use_recursive
         (std::unordered_map<std::string, function_type const&> known)
       {
-        if (!!boost::get<use_type> (&_function_or_use))
+        if (!!::boost::get<use_type> (&_function_or_use))
         {
           std::string const name
-            (boost::get<use_type> (_function_or_use).name());
+            (::boost::get<use_type> (_function_or_use).name());
           auto const it (known.find (name));
           if (it == known.end())
           {
@@ -435,7 +437,7 @@ namespace xml
         }
         else
         {
-          boost::get<function_type> (_function_or_use)
+          ::boost::get<function_type> (_function_or_use)
             .resolve_function_use_recursive (known);
         }
       }
@@ -443,9 +445,9 @@ namespace xml
       void transition_type::resolve_types_recursive
         (std::unordered_map<std::string, pnet::type::signature::signature_type> known)
       {
-        if (!!boost::get<function_type> (&_function_or_use))
+        if (!!::boost::get<function_type> (&_function_or_use))
         {
-          boost::get<function_type> (_function_or_use)
+          ::boost::get<function_type> (_function_or_use)
             .resolve_types_recursive (known);
         }
       }
@@ -510,7 +512,7 @@ namespace xml
         {
           if (port_in.is_input())
           {
-            const boost::optional<port_type const&> port_out
+            const ::boost::optional<port_type const&> port_out
               (fun.get_port_out (port_in.name()));
 
             if (  port_out
@@ -573,7 +575,7 @@ namespace xml
               }
 
             //! \todo avoid copy by not modifying
-            net_type net (fun.get_net().get());
+            auto net (fun.net());
             net.set_prefix (prefix);
 
             // synthesize into this level
@@ -607,7 +609,7 @@ namespace xml
               , we::type::Expression (cond_in, parsed_condition_in)
               , properties
               , we::priority_type()
-              , boost::none //! \todo eureka_id
+              , ::boost::none //! \todo eureka_id
               , {}          //! \todo preferences
               );
 
@@ -653,7 +655,7 @@ namespace xml
                 if (port.is_input() && port.place)
                 {
                   we_net.add_connection
-                    ( we::edge::TP
+                    ( we::edge::TP{}
                     , tid_in
                     , get_pid (pid_of_place, prefix + *port.place)
                     , port_id_out.at (port.name())
@@ -664,7 +666,7 @@ namespace xml
 
               for (connect_type const& connect : trans.connections())
               {
-                if (we::edge::is_PT (connect.direction()))
+                if (we::edge::is_incoming (connect.direction()))
                 {
                   we_net.add_connection
                     ( connect.direction()
@@ -681,10 +683,10 @@ namespace xml
             we::type::Transition trans_out
               ( prefix + "OUT"
               , we::type::Expression()
-              , boost::none
+              , ::boost::none
               , properties
               , we::priority_type()
-              , boost::none //! \todo eureka_id
+              , ::boost::none //! \todo eureka_id
               , {}          //! \todo preferences
               );
 
@@ -732,7 +734,7 @@ namespace xml
                 if (port.is_output() && port.place)
                 {
                   we_net.add_connection
-                    ( we::edge::PT
+                    ( we::edge::PT{}
                     , tid_out
                     , get_pid (pid_of_place, prefix + *port.place)
                     , port_id_in.at (port.name())
@@ -743,7 +745,7 @@ namespace xml
 
               for (connect_type const& connect : trans.connections())
               {
-                if (!we::edge::is_PT (connect.direction()))
+                if (!we::edge::is_incoming (connect.direction()))
                 {
                   we_net.add_connection
                     ( connect.direction()
@@ -808,7 +810,7 @@ namespace xml
 
             for (connect_type const& connect : trans.connections())
             {
-              if (we::edge::is_PT (connect.direction()))
+              if (we::edge::is_incoming (connect.direction()))
               {
                 we_net.add_connection
                   ( connect.direction()
@@ -855,7 +857,7 @@ namespace xml
               properties.set ({"pnetc", "tunnel"}, we::type::property::value_type());
 
               we_net.add_connection
-                ( we::edge::PT
+                ( we::edge::PT{}
                 , tid
                 , get_pid (pids, association.second)
                 , association.first
@@ -873,7 +875,7 @@ namespace xml
       {
         namespace
         {
-          class dump_visitor : public boost::static_visitor<void>
+          class dump_visitor : public ::boost::static_visitor<void>
           {
           private:
             ::fhg::util::xml::xmlstream & s;
@@ -903,7 +905,7 @@ namespace xml
           ::we::type::property::dump::dump (s, t.properties());
           ::xml::parse::type::dump::dump (s, t.requirements);
 
-          boost::apply_visitor (dump_visitor (s), t.function_or_use());
+          ::boost::apply_visitor (dump_visitor (s), t.function_or_use());
 
           dumps (s, t.place_map());
           dumps (s, t.connections());

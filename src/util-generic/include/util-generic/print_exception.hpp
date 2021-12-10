@@ -47,14 +47,14 @@ namespace fhg
 
     private:
       exception_printer ( std::exception_ptr exception
-                        , boost::optional<std::size_t> indent
-                        , boost::optional<std::string> separator
+                        , ::boost::optional<std::size_t> indent
+                        , ::boost::optional<std::string> separator
                         );
 
       std::exception_ptr _exception;
       //! \todo either<>
-      boost::optional<std::size_t> _separate_with_line_break_and_indent_base;
-      boost::optional<std::string> _separate_static;
+      ::boost::optional<std::size_t> _separate_with_line_break_and_indent_base;
+      ::boost::optional<std::string> _separate_static;
     };
 
     //! An ostream modifier to print the currently in-flight

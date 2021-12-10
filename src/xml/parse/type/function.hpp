@@ -56,16 +56,16 @@ namespace xml
 
         typedef fhg::pnet::util::unique<port_type> ports_type;
 
-        typedef boost::variant < expression_type
+        typedef ::boost::variant < expression_type
                                , module_type
-                               , boost::recursive_wrapper<net_type>
+                               , ::boost::recursive_wrapper<net_type>
                                , multi_module_type
                                > content_type;
 
         // ***************************************************************** //
 
         function_type ( util::position_type const&
-                      , boost::optional<std::string> const& name
+                      , ::boost::optional<std::string> const& name
                       , ports_type const& ports
                       , fhg::pnet::util::unique<memory_buffer_type> const&
                       , std::list<memory_get> const&
@@ -96,12 +96,11 @@ namespace xml
         // ***************************************************************** //
 
         bool is_net() const;
-        boost::optional<net_type const&> get_net() const;
-        net_type& get_net();
+        net_type net() const;
 
         // ***************************************************************** //
 
-        boost::optional<std::string> const& name() const;
+        ::boost::optional<std::string> const& name() const;
 
         // ***************************************************************** //
 
@@ -114,8 +113,8 @@ namespace xml
 
         ports_type const& ports() const;
 
-        boost::optional<port_type const&> get_port_in (std::string const& name) const;
-        boost::optional<port_type const&> get_port_out (std::string const& name) const;
+        ::boost::optional<port_type const&> get_port_in (std::string const& name) const;
+        ::boost::optional<port_type const&> get_port_out (std::string const& name) const;
 
         bool is_known_port_in (std::string const& name) const;
         bool is_known_port_out (std::string const& name) const;
@@ -175,7 +174,7 @@ namespace xml
         //! this can destroy the unique_key() when stored in a unique
         //! and directly modifying it (there is no setter, use
         //! with_name() instead)
-        boost::optional<std::string> _name;
+        ::boost::optional<std::string> _name;
 
         ports_type _ports;
         fhg::pnet::util::unique<memory_buffer_type> _memory_buffers;
@@ -209,13 +208,13 @@ namespace xml
         std::string code;
         std::list<std::string> ldflags;
         std::list<std::string> cxxflags;
-        boost::filesystem::path path;
+        ::boost::filesystem::path path;
 
         fun_info_type ( std::string const& _name
                       , std::string const& _code
                       , std::list<std::string> const& _ldflags
                       , std::list<std::string> const& _cxxflags
-                      , boost::filesystem::path const& _path
+                      , ::boost::filesystem::path const& _path
                       );
 
         bool operator== (fun_info_type const& other) const;

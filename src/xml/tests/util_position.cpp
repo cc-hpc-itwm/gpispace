@@ -33,7 +33,7 @@ namespace
 
 BOOST_AUTO_TEST_CASE (path)
 {
-  const boost::filesystem::path p ("/some/path");
+  const ::boost::filesystem::path p ("/some/path");
   const xml::parse::util::position_type position (nullptr, nullptr, p);
 
   BOOST_REQUIRE_EQUAL (position.path(), p);
@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE (wrap_line)
 
 BOOST_AUTO_TEST_CASE (operator_out)
 {
-  const boost::filesystem::path p ("/some/path");
+  const ::boost::filesystem::path p ("/some/path");
   const xml::parse::util::position_type position (input, input + 53, p);
 
   std::ostringstream oss;

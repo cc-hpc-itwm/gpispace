@@ -16,13 +16,8 @@
 
 #include <fhgcom/address.hpp>
 
-#include <boost/lexical_cast.hpp>
-#include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/uuid_io.hpp>
 
-#include <cstring>
-#include <functional>
 #include <mutex>
 
 namespace fhg
@@ -31,48 +26,25 @@ namespace fhg
   {
     namespace p2p
     {
-      static boost::uuids::uuid fhg_com_uuid ()
+      static ::boost::uuids::uuid fhg_com_uuid (std::string const& name)
       {
-        static boost::uuids::string_generator g;
-        static boost::uuids::uuid u = g("c9fe00cb-d9f7-432e-9235-66b7929b6e2a");
-        return u;
+        static ::boost::uuids::name_generator m_gen
+          { ::boost::uuids::string_generator{}
+              ("c9fe00cb-d9f7-432e-9235-66b7929b6e2a")
+          };
+        static std::mutex m_mutex;
+        std::lock_guard<std::mutex> lock {m_mutex};
+        return m_gen (name);
       }
 
-      namespace detail
-      {
-        struct fhg_com_gen_uuid
-        {
-          fhg_com_gen_uuid ()
-            : m_gen (fhg_com_uuid())
-          {}
-
-          boost::uuids::uuid operator () (std::string const& name)
-          {
-            std::lock_guard<std::mutex> lock (m_mutex);
-            return m_gen (name);
-          }
-        private:
-          std::mutex m_mutex;
-          boost::uuids::name_generator m_gen;
-        };
-      }
-
-      address_t::address_t ()
-      {
-        std::memset (data, 0, sizeof (data));
-      }
-
-      address_t::address_t (std::string const& name)
-      {
-        static detail::fhg_com_gen_uuid gen;
-        boost::uuids::uuid u = gen (name);
-        memcpy (this, &u, sizeof (u));
-      }
+      address_t::address_t (host_t const& host, port_t const& port)
+        : _uuid {fhg_com_uuid (std::string {host} + ":" + to_string (port))}
+      {}
 
       // standard operators
       bool operator==(address_t const& lhs, address_t const& rhs)
       {
-        return memcmp (&lhs, &rhs, sizeof (address_t)) == 0;
+        return lhs._uuid == rhs._uuid;
       }
       bool operator!=(address_t const& lhs, address_t const& rhs)
       {
@@ -81,14 +53,7 @@ namespace fhg
 
       bool operator< (address_t const& lhs, address_t const& rhs)
       {
-        return lhs.data < rhs.data;
-      }
-
-      std::string to_string_TESTING_ONLY (address_t const& a)
-      {
-        boost::uuids::uuid u;
-        memcpy (&u, &a, sizeof (boost::uuids::uuid));
-        return boost::lexical_cast<std::string>(u);
+        return lhs._uuid < rhs._uuid;
       }
 
       std::size_t hash_value (address_t const& address)
@@ -104,8 +69,6 @@ namespace std
   size_t hash<fhg::com::p2p::address_t>::operator()
     (fhg::com::p2p::address_t const& a) const
   {
-    boost::uuids::uuid u;
-    memcpy (&u, &a, sizeof (boost::uuids::uuid));
-    return hash_value (u);
+    return hash_value (a._uuid);
   }
 }

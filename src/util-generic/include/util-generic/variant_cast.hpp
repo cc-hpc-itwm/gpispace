@@ -31,7 +31,7 @@ namespace fhg
       bad_variant_cast (std::string, std::string, std::string);
     };
 
-    //! Cast a From=boost::variant<T...> to To=boost::variant<U...>
+    //! Cast a From=::boost::variant<T...> to To=::boost::variant<U...>
     //! with runtime check to throw on cases where a T is not in U.
     template<typename To, typename From>
       To variant_cast (From&&);
@@ -42,7 +42,7 @@ namespace fhg
     }
 
     //! Call variant_cast<To> on all elements of
-    //! From=Sequence<boost::variant<T...>>, returning Sequence<To>.
+    //! From=Sequence<::boost::variant<T...>>, returning Sequence<To>.
     template<typename To, typename From>
       typename detail::variants_cast_return_type<From, To>::type
         variants_cast (From&&);

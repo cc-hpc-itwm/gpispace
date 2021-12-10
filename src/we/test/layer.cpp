@@ -52,11 +52,11 @@
 namespace
 {
   bool compare_workflow_response_result
-    ( boost::variant<std::exception_ptr, pnet::type::value::value_type> const& l
-    , boost::variant<std::exception_ptr, pnet::type::value::value_type> const& r
+    ( ::boost::variant<std::exception_ptr, pnet::type::value::value_type> const& l
+    , ::boost::variant<std::exception_ptr, pnet::type::value::value_type> const& r
     )
   {
-    struct : boost::static_visitor<bool>
+    struct : ::boost::static_visitor<bool>
     {
       bool operator() (std::exception_ptr const&, pnet::type::value::value_type const&) const { return false; }
       bool operator() (pnet::type::value::value_type const&, std::exception_ptr const&) const { return false; }
@@ -77,7 +77,7 @@ namespace
           == fhg::util::serialization::exception::serialize (rhs);
       }
     } visitor;
-    return boost::apply_visitor (visitor, l, r);
+    return ::boost::apply_visitor (visitor, l, r);
   }
 }
 
@@ -196,7 +196,7 @@ struct daemon
     INC_IN_PROGRESS (jobs_rts);
 
     std::list<expect_submit*>::iterator const e
-      ( boost::find_if ( _to_submit
+      ( ::boost::find_if ( _to_submit
                        , std::bind (&expect_submit::eq, std::placeholders::_1, &id, act)
                        )
         );
@@ -221,7 +221,7 @@ struct daemon
     ADD_CANCEL_IN_PROGRESS (id);
 
     std::list<expect_cancel*>::iterator const e
-      ( boost::find_if ( _to_cancel
+      ( ::boost::find_if ( _to_cancel
                        , std::bind (&expect_cancel::eq, std::placeholders::_1, id)
                        )
         );
@@ -248,7 +248,7 @@ struct daemon
                 )
   {
     std::list<expect_finished*>::iterator const e
-      ( boost::find_if ( _to_finished
+      ( ::boost::find_if ( _to_finished
                        , std::bind (&expect_finished::eq, std::placeholders::_1, id, act)
                        )
       );
@@ -275,7 +275,7 @@ struct daemon
   void failed (we::layer::id_type id, std::string message)
   {
     std::list<expect_failed*>::iterator const e
-      ( boost::find_if ( _to_failed
+      ( ::boost::find_if ( _to_failed
                        , std::bind (&expect_failed::eq, std::placeholders::_1, id, message)
                        )
       );
@@ -299,7 +299,7 @@ struct daemon
   void canceled (we::layer::id_type id)
   {
     std::list<expect_canceled*>::iterator const e
-      ( boost::find_if ( _to_canceled
+      ( ::boost::find_if ( _to_canceled
                        , std::bind (&expect_canceled::eq, std::placeholders::_1, id)
                        )
       );
@@ -323,7 +323,7 @@ struct daemon
   void token_put (std::string put_token_id)
   {
     std::list<expect_token_put*>::iterator const e
-      ( boost::find_if ( _to_token_put
+      ( ::boost::find_if ( _to_token_put
                        , std::bind (&expect_token_put::eq, std::placeholders::_1, put_token_id)
                        )
       );
@@ -338,21 +338,21 @@ struct daemon
 
   DECLARE_EXPECT_CLASS ( workflow_response
                        , std::string workflow_response_id
-        BOOST_PP_COMMA() boost::variant<std::exception_ptr BOOST_PP_COMMA() pnet::type::value::value_type> result
+        BOOST_PP_COMMA() ::boost::variant<std::exception_ptr BOOST_PP_COMMA() pnet::type::value::value_type> result
                        , _workflow_response_id (workflow_response_id)
         BOOST_PP_COMMA() _result (result)
                        , we::layer::id_type _workflow_response_id
-                       ; boost::variant<std::exception_ptr BOOST_PP_COMMA() pnet::type::value::value_type> _result
+                       ; ::boost::variant<std::exception_ptr BOOST_PP_COMMA() pnet::type::value::value_type> _result
                        , _workflow_response_id == workflow_response_id
                        && compare_workflow_response_result (_result, result)
                        );
 
   void workflow_response ( std::string workflow_response_id
-                         , boost::variant<std::exception_ptr, pnet::type::value::value_type> result
+                         , ::boost::variant<std::exception_ptr, pnet::type::value::value_type> result
                          )
   {
     std::list<expect_workflow_response*>::iterator const e
-      ( boost::find_if ( _to_workflow_response
+      ( ::boost::find_if ( _to_workflow_response
                        , std::bind (&expect_workflow_response::eq, std::placeholders::_1, workflow_response_id, result)
                        )
       );
@@ -435,7 +435,7 @@ struct daemon
   we::layer::id_type generate_id()
   {
     std::lock_guard<std::mutex> const _ (_generate_id_mutex);
-    return boost::lexical_cast<we::layer::id_type> (++_cnt);
+    return ::boost::lexical_cast<we::layer::id_type> (++_cnt);
   }
 
   std::mt19937 _random_engine;
@@ -447,16 +447,16 @@ struct daemon
   unsigned long _in_progress_replies;
 };
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
+BOOST_TEST_DECORATOR (*::boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE (expressions_shall_not_be_sumitted_to_rts, daemon)
 {
   we::type::Transition transition
     ( "expression"
     , we::type::Expression ("${out} := ${in} + 1L")
-    , boost::none
+    , ::boost::none
     , we::type::property::type()
     , we::priority_type()
-    , boost::optional<we::type::eureka_id_type>{}
+    , ::boost::optional<we::type::eureka_id_type>{}
     , std::list<we::type::Preference>{}
     );
   transition.add_port
@@ -492,7 +492,7 @@ BOOST_FIXTURE_TEST_CASE (expressions_shall_not_be_sumitted_to_rts, daemon)
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
+BOOST_TEST_DECORATOR (*::boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
 {
   we::type::Transition transition
@@ -506,10 +506,10 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
       , true
       , true
       )
-    , boost::none
+    , ::boost::none
     , we::type::property::type()
     , we::priority_type()
-    , boost::optional<we::type::eureka_id_type>{}
+    , ::boost::optional<we::type::eureka_id_type>{}
     , std::list<we::type::Preference>{}
     );
   transition.add_port ( we::type::Port ( "in"
@@ -554,7 +554,7 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
+BOOST_TEST_DECORATOR (*::boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (finished_shall_be_called_after_finished_one_child, daemon)
 {
@@ -582,7 +582,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
+BOOST_TEST_DECORATOR (*::boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (finished_shall_be_called_after_finished_two_childs, daemon)
 {
@@ -619,7 +619,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
+BOOST_TEST_DECORATOR (*::boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (two_sequential_jobs_shall_be_properly_handled, daemon)
 {
@@ -666,7 +666,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
+BOOST_TEST_DECORATOR (*::boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (two_interleaving_jobs_shall_be_properly_handled, daemon)
 {
@@ -715,7 +715,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
+BOOST_TEST_DECORATOR (*::boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (canceled_shall_be_called_after_cancel_one_child, daemon)
 {
@@ -822,18 +822,18 @@ namespace
     };
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
+BOOST_TEST_DECORATOR (*::boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (canceled_shall_be_called_after_cancel_two_childs, cancel_test_daemon)
 {
   test_routine (canceled, canceled);
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
+BOOST_TEST_DECORATOR (*::boost::unit_test::timeout (30))
 BOOST_DATA_TEST_CASE
   ( any_terminiation_during_canceling_is_equivalent_to_canceled
-  , boost::unit_test::data::make (cancel_test_daemon::methods)
-  * boost::unit_test::data::make (cancel_test_daemon::methods)
+  , ::boost::unit_test::data::make (cancel_test_daemon::methods)
+  * ::boost::unit_test::data::make (cancel_test_daemon::methods)
   , first_child
   , second_child
   )
@@ -841,7 +841,7 @@ BOOST_DATA_TEST_CASE
   cancel_test_daemon().test_routine (first_child, second_child);
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
+BOOST_TEST_DECORATOR (*::boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   ( canceled_shall_be_called_after_cancel_two_childs_with_one_child_finished
   , daemon
@@ -884,7 +884,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
+BOOST_TEST_DECORATOR (*::boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE (child_failure_shall_fail_parent, daemon)
 {
   we::type::Activity activity_input;
@@ -913,7 +913,7 @@ BOOST_FIXTURE_TEST_CASE (child_failure_shall_fail_parent, daemon)
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
+BOOST_TEST_DECORATOR (*::boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (sibling_jobs_shall_be_canceled_on_child_failure, daemon)
 {
@@ -955,7 +955,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
+BOOST_TEST_DECORATOR (*::boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (sibling_jobs_shall_be_canceled_on_child_failure_and_any_termination_is_okay, daemon)
 {
@@ -1001,7 +1001,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
+BOOST_TEST_DECORATOR (*::boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (finished_shall_be_called_after_finished_N_childs, daemon)
 {
@@ -1041,7 +1041,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
+BOOST_TEST_DECORATOR (*::boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE (layer_properly_puts_token, daemon)
 {
   we::type::Activity activity_input;
@@ -1112,9 +1112,9 @@ namespace
     we::place_id_type const place_id_in
       (net.add_place (place::type ("in", signature::CONTROL, true)));
     we::place_id_type const place_id_mid
-      (net.add_place (place::type ("mid", signature::CONTROL, boost::none)));
+      (net.add_place (place::type ("mid", signature::CONTROL, ::boost::none)));
     we::place_id_type const place_id_out
-      (net.add_place (place::type ("out", signature::CONTROL, boost::none)));
+      (net.add_place (place::type ("out", signature::CONTROL, ::boost::none)));
     we::place_id_type const place_id_request
       (net.add_place (place::type ("request", request_t, true)));
 
@@ -1130,10 +1130,10 @@ namespace
         , true
         , true
         )
-      , boost::none
+      , ::boost::none
       , we::type::property::type()
       , we::priority_type()
-      , boost::optional<we::type::eureka_id_type>{}
+      , ::boost::optional<we::type::eureka_id_type>{}
       , std::list<we::type::Preference>{}
       );
     we::port_id_type const trans_a_port_id_in
@@ -1157,10 +1157,10 @@ namespace
       ( "trans_b"
       , we::type::Expression
           ("${response} := ${request.value} + 1L; ${out} := ${in};")
-      , boost::none
+      , ::boost::none
       , we::type::property::type()
       , we::priority_type()
-      , boost::optional<we::type::eureka_id_type>{}
+      , ::boost::optional<we::type::eureka_id_type>{}
       , std::list<we::type::Preference>{}
       );
     we::port_id_type const trans_b_port_id_in
@@ -1204,32 +1204,30 @@ namespace
       net.put_value (put_on_input ? place_id_in : place_id_out, value::CONTROL);
 
     {
-      using we::edge::TP;
-      using we::edge::PT;
       we::type::property::type empty;
 
       net.add_connection
-        (PT, trans_a_id, place_id_in, trans_a_port_id_in, empty);
+        (we::edge::PT{}, trans_a_id, place_id_in, trans_a_port_id_in, empty);
       net.add_connection
-        (TP, trans_a_id, place_id_mid, trans_a_port_id_out, empty);
+        (we::edge::TP{}, trans_a_id, place_id_mid, trans_a_port_id_out, empty);
 
       net.add_connection
-        (PT, trans_b_id, place_id_mid, trans_b_port_id_in, empty);
+        (we::edge::PT{}, trans_b_id, place_id_mid, trans_b_port_id_in, empty);
       net.add_connection
-        (PT, trans_b_id, place_id_request, trans_b_port_id_request, empty);
+        (we::edge::PT{}, trans_b_id, place_id_request, trans_b_port_id_request, empty);
       net.add_response
         (trans_b_id, trans_b_port_id_response, "request", empty);
       net.add_connection
-        (TP, trans_b_id, place_id_out, trans_b_port_id_out, empty);
+        (we::edge::TP{}, trans_b_id, place_id_out, trans_b_port_id_out, empty);
     }
 
     return std::make_tuple
       ( we::type::Transition ( "net"
                                , net
-                               , boost::none
+                               , ::boost::none
                                , we::type::property::type()
                                , we::priority_type()
-                               , boost::optional<we::type::eureka_id_type>{}
+                               , ::boost::optional<we::type::eureka_id_type>{}
                                , std::list<we::type::Preference>{}
                                )
       , trans_a
@@ -1268,7 +1266,7 @@ namespace
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
+BOOST_TEST_DECORATOR (*::boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE (workflow_response_works, daemon)
 {
   we::type::Activity activity_input;
@@ -1353,7 +1351,7 @@ BOOST_FIXTURE_TEST_CASE (workflow_response_works, daemon)
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
+BOOST_TEST_DECORATOR (*::boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE (workflow_response_fails_when_workflow_fails, daemon)
 {
   we::type::Activity activity_input;
@@ -1396,7 +1394,7 @@ namespace std
     size_t operator()(we::type::Requirement const& requirement) const
     {
       size_t seed (0);
-      boost::hash_combine (seed, requirement.value());
+      ::boost::hash_combine (seed, requirement.value());
       return seed;
     }
   };
@@ -1419,10 +1417,10 @@ namespace
                                 , true
                                 , true
                                 )
-      , boost::none
+      , ::boost::none
       , we::type::property::type()
       , we::priority_type()
-      , boost::optional<we::type::eureka_id_type>{}
+      , ::boost::optional<we::type::eureka_id_type>{}
       , std::list<we::type::Preference>{}
       );
     transition.add_requirement (requirement);
@@ -1441,9 +1439,9 @@ namespace
       (net.add_transition (transition));
 
     we::place_id_type const place_id
-      (net.add_place (place::type (port_name, std::string ("control"), boost::none)));
+      (net.add_place (place::type (port_name, std::string ("control"), ::boost::none)));
 
-    net.add_connection ( we::edge::PT
+    net.add_connection ( we::edge::PT{}
                        , transition_id
                        , place_id
                        , port_id
@@ -1485,10 +1483,10 @@ namespace
     return we::type::Activity
       ( we::type::Transition ( fhg::util::testing::random_string()
                                , net
-                               , boost::none
+                               , ::boost::none
                                , we::type::property::type()
                                , we::priority_type()
-                               , boost::optional<we::type::eureka_id_type>{}
+                               , ::boost::optional<we::type::eureka_id_type>{}
                                , std::list<we::type::Preference>{}
                                )
       );
@@ -1557,7 +1555,7 @@ namespace
     we::layer::id_type generate_id()
     {
       std::lock_guard<std::mutex> const _ (_generate_id_mutex);
-      return boost::lexical_cast<we::layer::id_type> (++_cnt);
+      return ::boost::lexical_cast<we::layer::id_type> (++_cnt);
     }
 
   public:
@@ -1565,7 +1563,7 @@ namespace
   };
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
+BOOST_TEST_DECORATOR (*::boost::unit_test::timeout (30))
 BOOST_AUTO_TEST_CASE (layer_properly_forwards_requirements)
 {
   wfe_and_counter_of_submitted_requirements helper (30);
@@ -1616,10 +1614,10 @@ namespace
     we::type::Transition transition
       ( fhg::util::testing::random_string()
       , create_dummy_multi_mod (preferences)
-      , boost::none
+      , ::boost::none
       , we::type::property::type()
       , we::priority_type()
-      , boost::none
+      , ::boost::none
       , preferences
       );
 
@@ -1693,7 +1691,7 @@ namespace
     we::layer::id_type generate_id()
     {
       std::lock_guard<std::mutex> const _ (_generate_id_mutex);
-      return boost::lexical_cast<we::layer::id_type> (++_cnt);
+      return ::boost::lexical_cast<we::layer::id_type> (++_cnt);
     }
 
   public:
@@ -1701,7 +1699,7 @@ namespace
   };
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
+BOOST_TEST_DECORATOR (*::boost::unit_test::timeout (30))
 BOOST_AUTO_TEST_CASE (layer_properly_forwards_preferences)
 {
   wfe_remembering_submitted_preferences wfe;
@@ -1787,7 +1785,7 @@ namespace
           , true
           , true
           )
-        , boost::none
+        , ::boost::none
         , we::type::property::type()
         , we::priority_type()
         , oss.str()
@@ -1821,11 +1819,10 @@ namespace
 
       we::transition_id_type transition_id (net.add_transition (transition));
       {
-        using we::edge::PT;
         we::type::property::type empty;
 
         net.add_eureka (transition_id, port_id_out);
-        net.add_connection ( PT
+        net.add_connection ( we::edge::PT{}
                            , transition_id
                            , place_id_in
                            , port_id_in
@@ -1848,10 +1845,10 @@ namespace
       output = we::type::Activity
         ( we::type::Transition ( "net"
                                  , copy_of_net_without_inputs
-                                 , boost::none
+                                 , ::boost::none
                                  , we::type::property::type()
                                  , we::priority_type()
-                                 , boost::optional<we::type::eureka_id_type>{}
+                                 , ::boost::optional<we::type::eureka_id_type>{}
                                  , std::list<we::type::Preference>{}
                                  )
         );
@@ -1867,10 +1864,10 @@ namespace
       input = we::type::Activity
         ( we::type::Transition ( "net"
                                  , net
-                                 , boost::none
+                                 , ::boost::none
                                  , we::type::property::type()
                                  , we::priority_type()
-                                 , boost::optional<we::type::eureka_id_type>{}
+                                 , ::boost::optional<we::type::eureka_id_type>{}
                                  , std::list<we::type::Preference>{}
                                  )
         );
@@ -1906,7 +1903,7 @@ namespace
   };
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
+BOOST_TEST_DECORATOR (*::boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (first_child_task_calls_eureka, daemon)
 {
@@ -1947,7 +1944,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
+BOOST_TEST_DECORATOR (*::boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (no_child_task_calls_eureka, daemon)
 {
@@ -1983,7 +1980,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
+BOOST_TEST_DECORATOR (*::boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (last_of_the_child_tasks_call_eureka, daemon)
 {
@@ -2019,7 +2016,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
+BOOST_TEST_DECORATOR (*::boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (one_of_two_groups_call_eureka, daemon)
 {
@@ -2097,7 +2094,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
+BOOST_TEST_DECORATOR (*::boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (two_of_three_groups_call_eureka, daemon)
 {
@@ -2175,7 +2172,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
+BOOST_TEST_DECORATOR (*::boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (one_of_two_eureka_jobs_call_eureka, daemon)
 {
@@ -2253,7 +2250,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
+BOOST_TEST_DECORATOR (*::boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (calling_eureka_on_failed_child_tasks, daemon)
 {

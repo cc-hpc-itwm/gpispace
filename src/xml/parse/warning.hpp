@@ -29,11 +29,11 @@
 #include <we/type/property.hpp>
 #include <we/type/value/show.hpp>
 
-#include <fhg/util/boost/optional.hpp>
 #include <util-generic/join.hpp>
 
 #include <boost/format.hpp>
 #include <boost/optional.hpp>
+#include <boost/optional/optional_io.hpp>
 
 namespace xml
 {
@@ -47,7 +47,7 @@ namespace xml
         generic (std::string const& msg)
           : std::runtime_error ("WARNING: " + msg)
         {}
-        generic (boost::format const& bf)
+        generic (::boost::format const& bf)
           : std::runtime_error ("WARNING: " + bf.str())
         {}
       };
@@ -59,7 +59,7 @@ namespace xml
       private:
         std::string nice ( std::string const& name
                          , std::string const& pre
-                         , boost::filesystem::path const& path
+                         , ::boost::filesystem::path const& path
                          )
         {
           std::ostringstream s;
@@ -75,7 +75,7 @@ namespace xml
       public:
         unexpected_element ( std::string const& name
                            , std::string const& pre
-                           , boost::filesystem::path const& path
+                           , ::boost::filesystem::path const& path
                            )
           : generic (nice (name, pre, path))
         {}
@@ -88,7 +88,7 @@ namespace xml
       private:
         std::string nice ( std::string const& old_name
                          , std::string const& new_name
-                         , boost::filesystem::path const& path
+                         , ::boost::filesystem::path const& path
                          )
         {
           std::ostringstream s;
@@ -104,7 +104,7 @@ namespace xml
       public:
         overwrite_function_name_as ( std::string const& old_name
                                    , std::string const& new_name
-                                   , boost::filesystem::path const& path
+                                   , ::boost::filesystem::path const& path
                                    )
           : generic (nice (old_name, new_name, path))
         {}
@@ -117,7 +117,7 @@ namespace xml
       private:
         std::string nice ( std::string const& old_name
                          , std::string const& new_name
-                         , boost::filesystem::path const& path
+                         , ::boost::filesystem::path const& path
                          )
         {
           std::ostringstream s;
@@ -133,7 +133,7 @@ namespace xml
       public:
         overwrite_template_name_as ( std::string const& old_name
                                    , std::string const& new_name
-                                   , boost::filesystem::path const& path
+                                   , ::boost::filesystem::path const& path
                                    )
           : generic (nice (old_name, new_name, path))
         {}
@@ -144,9 +144,9 @@ namespace xml
       class shadow_function : public generic
       {
       private:
-        std::string nice ( boost::optional<std::string> const& name
-                         , boost::filesystem::path const& path_early
-                         , boost::filesystem::path const& path_late
+        std::string nice ( ::boost::optional<std::string> const& name
+                         , ::boost::filesystem::path const& path_early
+                         , ::boost::filesystem::path const& path_late
                          ) const
         {
           std::ostringstream s;
@@ -160,9 +160,9 @@ namespace xml
         }
 
       public:
-        shadow_function ( boost::optional<std::string> const& name
-                        , boost::filesystem::path const& path_early
-                        , boost::filesystem::path const& path_late
+        shadow_function ( ::boost::optional<std::string> const& name
+                        , ::boost::filesystem::path const& path_early
+                        , ::boost::filesystem::path const& path_late
                         )
           : generic (nice (name, path_early, path_late))
         {}
@@ -173,9 +173,9 @@ namespace xml
       class shadow_template : public generic
       {
       private:
-        std::string nice ( boost::optional<std::string> const& name
-                         , boost::filesystem::path const& path_early
-                         , boost::filesystem::path const& path_late
+        std::string nice ( ::boost::optional<std::string> const& name
+                         , ::boost::filesystem::path const& path_early
+                         , ::boost::filesystem::path const& path_late
                          ) const
         {
           std::ostringstream s;
@@ -189,9 +189,9 @@ namespace xml
         }
 
       public:
-        shadow_template ( boost::optional<std::string> const& name
-                        , boost::filesystem::path const& path_early
-                        , boost::filesystem::path const& path_late
+        shadow_template ( ::boost::optional<std::string> const& name
+                        , ::boost::filesystem::path const& path_early
+                        , ::boost::filesystem::path const& path_late
                         )
           : generic (nice (name, path_early, path_late))
         {}
@@ -202,9 +202,9 @@ namespace xml
       class shadow_specialize : public generic
       {
       private:
-        std::string nice ( boost::optional<std::string> const& name
-                         , boost::filesystem::path const& path_early
-                         , boost::filesystem::path const& path_late
+        std::string nice ( ::boost::optional<std::string> const& name
+                         , ::boost::filesystem::path const& path_early
+                         , ::boost::filesystem::path const& path_late
                          ) const
         {
           std::ostringstream s;
@@ -218,9 +218,9 @@ namespace xml
         }
 
       public:
-        shadow_specialize ( boost::optional<std::string> const& name
-                          , boost::filesystem::path const& path_early
-                          , boost::filesystem::path const& path_late
+        shadow_specialize ( ::boost::optional<std::string> const& name
+                          , ::boost::filesystem::path const& path_early
+                          , ::boost::filesystem::path const& path_late
                           )
           : generic (nice (name, path_early, path_late))
         {}
@@ -233,7 +233,7 @@ namespace xml
       private:
         std::string nice ( std::string const& place
                          , std::string const& field
-                         , boost::filesystem::path const& path
+                         , ::boost::filesystem::path const& path
                          )
         {
           std::ostringstream s;
@@ -253,7 +253,7 @@ namespace xml
       public:
         default_construction ( std::string const& place
                              , std::string const& field
-                             , boost::filesystem::path const& path
+                             , ::boost::filesystem::path const& path
                              )
           : generic (nice (place, field, path))
         {}
@@ -266,7 +266,7 @@ namespace xml
       private:
         std::string nice ( std::string const& place
                          , std::string const& field
-                         , boost::filesystem::path const& path
+                         , ::boost::filesystem::path const& path
                          )
         {
           std::ostringstream s;
@@ -283,7 +283,7 @@ namespace xml
       public:
         unused_field ( std::string const& place
                              , std::string const& field
-                             , boost::filesystem::path const& path
+                             , ::boost::filesystem::path const& path
                              )
           : generic (nice (place, field, path))
         {}
@@ -294,10 +294,10 @@ namespace xml
       class port_not_connected : public generic
       {
       public:
-        port_not_connected (type::port_type const&, boost::filesystem::path const&);
+        port_not_connected (type::port_type const&, ::boost::filesystem::path const&);
 
       private:
-        const boost::filesystem::path _path;
+        const ::boost::filesystem::path _path;
       };
 
       // ******************************************************************* //
@@ -317,7 +317,7 @@ namespace xml
       private:
         std::string nice ( we::type::property::path_type const& key
                          , we::type::property::value_type const& val
-                         , boost::filesystem::path const& path
+                         , ::boost::filesystem::path const& path
                          )
         {
           std::ostringstream s;
@@ -332,7 +332,7 @@ namespace xml
       public:
         property_unknown ( we::type::property::path_type const& key
                          , we::type::property::value_type const& val
-                         , boost::filesystem::path const& path
+                         , ::boost::filesystem::path const& path
                          )
           : generic (nice (key, val, path))
         {}
@@ -344,7 +344,7 @@ namespace xml
       {
       private:
         std::string nice ( std::string const& name
-                         , boost::filesystem::path const& path
+                         , ::boost::filesystem::path const& path
                          )
         {
           std::ostringstream s;
@@ -357,7 +357,7 @@ namespace xml
         }
       public:
         inline_many_output_ports ( std::string const& name
-                                 , boost::filesystem::path const& path
+                                 , ::boost::filesystem::path const& path
                                  )
           : generic (nice (name, path))
         {}
@@ -371,7 +371,7 @@ namespace xml
         std::string nice ( we::type::property::path_type const& key
                          , pnet::type::value::value_type const& old_val
                          , we::type::property::value_type const& new_val
-                         , boost::filesystem::path const& path
+                         , ::boost::filesystem::path const& path
                          )
         {
           std::ostringstream s;
@@ -388,7 +388,7 @@ namespace xml
         property_overwritten ( we::type::property::path_type const& key
                              , pnet::type::value::value_type const& old_val
                              , we::type::property::value_type const& new_val
-                             , boost::filesystem::path const& path
+                             , ::boost::filesystem::path const& path
                              )
           : generic (nice (key, old_val, new_val, path))
         {}
@@ -401,7 +401,7 @@ namespace xml
       private:
         std::string nice ( std::string const& replace
                          , std::string const& with
-                         , boost::filesystem::path const& path
+                         , ::boost::filesystem::path const& path
                          )
         {
           std::ostringstream s;
@@ -417,7 +417,7 @@ namespace xml
       public:
         type_map_duplicate ( std::string const& replace
                            , std::string const& with
-                           , boost::filesystem::path const& path
+                           , ::boost::filesystem::path const& path
                            )
           : generic (nice (replace, with, path))
         {}
@@ -429,7 +429,7 @@ namespace xml
       {
       private:
         std::string nice ( std::string const& name
-                         , boost::filesystem::path const& path
+                         , ::boost::filesystem::path const& path
                          )
         {
           std::ostringstream s;
@@ -442,7 +442,7 @@ namespace xml
         }
       public:
         type_get_duplicate ( std::string const& name
-                           , boost::filesystem::path const& path
+                           , ::boost::filesystem::path const& path
                            )
           : generic (nice (name, path))
         {}
@@ -454,7 +454,7 @@ namespace xml
       {
       private:
         std::string nice ( std::string const& name
-                         , boost::filesystem::path const& path
+                         , ::boost::filesystem::path const& path
                          )
         {
           std::ostringstream s;
@@ -467,7 +467,7 @@ namespace xml
         }
       public:
         independent_place ( std::string const& name
-                          , boost::filesystem::path const& path
+                          , ::boost::filesystem::path const& path
                           )
           : generic (nice (name, path))
         {}
@@ -479,7 +479,7 @@ namespace xml
       {
       private:
         std::string nice ( std::string const& name
-                         , boost::filesystem::path const& path
+                         , ::boost::filesystem::path const& path
                          )
         {
           std::ostringstream s;
@@ -493,7 +493,7 @@ namespace xml
         }
       public:
         independent_transition ( std::string const& name
-                               , boost::filesystem::path const& path
+                               , ::boost::filesystem::path const& path
                                )
           : generic (nice (name, path))
         {}
@@ -507,11 +507,11 @@ namespace xml
         conflicting_port_types ( type::transition_type const&
                                , type::port_type const& in
                                , type::port_type const& out
-                               , boost::filesystem::path const&
+                               , ::boost::filesystem::path const&
                                );
 
       private:
-        const boost::filesystem::path _path;
+        const ::boost::filesystem::path _path;
       };
 
       // ******************************************************************* //
@@ -519,8 +519,8 @@ namespace xml
       class backup_file : public generic
       {
       private:
-        std::string nice ( boost::filesystem::path const& from
-                         , boost::filesystem::path const& to
+        std::string nice ( ::boost::filesystem::path const& from
+                         , ::boost::filesystem::path const& to
                          ) const
         {
           std::ostringstream s;
@@ -531,8 +531,8 @@ namespace xml
         }
 
       public:
-        explicit backup_file ( boost::filesystem::path const& from
-                             , boost::filesystem::path const& to
+        explicit backup_file ( ::boost::filesystem::path const& from
+                             , ::boost::filesystem::path const& to
                              )
           : generic (nice (from, to))
         {}
@@ -543,7 +543,7 @@ namespace xml
       class overwrite_file : public generic
       {
       private:
-        std::string nice (boost::filesystem::path const& file) const
+        std::string nice (::boost::filesystem::path const& file) const
         {
           std::ostringstream s;
 
@@ -553,7 +553,7 @@ namespace xml
         }
 
       public:
-        overwrite_file (boost::filesystem::path const& file)
+        overwrite_file (::boost::filesystem::path const& file)
           : generic (nice (file))
         {}
       };
@@ -574,9 +574,9 @@ namespace xml
       {
       public:
         virtual_place_not_tunneled ( std::string const& name
-                                   , boost::filesystem::path const& file
+                                   , ::boost::filesystem::path const& file
                                    )
-          : generic ( boost::format ( "the virtual place %1%"
+          : generic ( ::boost::format ( "the virtual place %1%"
                                       " is not tunneled in %2%."
                                     )
                     % name
@@ -590,11 +590,11 @@ namespace xml
       class duplicate_template_parameter : public generic
       {
       public:
-        duplicate_template_parameter ( boost::optional<std::string> name
+        duplicate_template_parameter ( ::boost::optional<std::string> name
                                      , std::string const& tn
-                                     , boost::filesystem::path const& file
+                                     , ::boost::filesystem::path const& file
                                      )
-          : generic ( boost::format ( "duplicate typename %2%"
+          : generic ( ::boost::format ( "duplicate typename %2%"
                                       " in the definition of %1% in %3%"
                                     )
                     % (name ? *name : "<<noname>>")

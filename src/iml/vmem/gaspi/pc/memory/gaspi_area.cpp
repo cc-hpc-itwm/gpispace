@@ -102,8 +102,8 @@ namespace gpi
         {
           throw std::runtime_error
             ( std::string ("not all communication buffers could be allocated:")
-            + " com-size := " + boost::lexical_cast<std::string>(m_com_buffer_size)
-            + " mem-size := " + boost::lexical_cast<std::string>(_local_size)
+            + " com-size := " + ::boost::lexical_cast<std::string>(m_com_buffer_size)
+            + " mem-size := " + ::boost::lexical_cast<std::string>(_local_size)
             );
         }
       }

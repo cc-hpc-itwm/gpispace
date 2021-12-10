@@ -99,7 +99,7 @@ namespace sdpa
     {
     public:
       put_token_response ( std::string put_token_id
-                         , boost::optional<std::exception_ptr> error
+                         , ::boost::optional<std::exception_ptr> error
                          )
         : MgmtEvent()
         , _put_token_id (put_token_id)
@@ -126,14 +126,14 @@ namespace sdpa
       }
 
       //! \note for serialization only
-      boost::optional<std::exception_ptr> const& exception() const
+      ::boost::optional<std::exception_ptr> const& exception() const
       {
         return _error;
       }
 
     private:
       std::string _put_token_id;
-      boost::optional<std::exception_ptr> _error;
+      ::boost::optional<std::exception_ptr> _error;
     };
 
     SAVE_CONSTRUCT_DATA_DEF (put_token_response, e)
@@ -141,7 +141,7 @@ namespace sdpa
       SAVE_MGMTEVENT_CONSTRUCT_DATA (e);
       SAVE_TO_ARCHIVE (e->put_token_id());
 
-      boost::optional<std::string> exception (boost::none);
+      ::boost::optional<std::string> exception (::boost::none);
       if (!!e->exception())
       {
         exception = fhg::util::serialization::exception::serialize
@@ -154,10 +154,10 @@ namespace sdpa
     {
       LOAD_MGMTEVENT_CONSTRUCT_DATA();
       LOAD_FROM_ARCHIVE (std::string, put_token_id);
-      LOAD_FROM_ARCHIVE (boost::optional<std::string>, exception);
+      LOAD_FROM_ARCHIVE (::boost::optional<std::string>, exception);
       if (!exception)
       {
-        ::new (e) put_token_response (put_token_id, boost::none);
+        ::new (e) put_token_response (put_token_id, ::boost::none);
       }
       else
       {

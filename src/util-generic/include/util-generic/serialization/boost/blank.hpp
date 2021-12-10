@@ -20,4 +20,4 @@
 
 #include <boost/blank.hpp>
 
-FHG_UTIL_SERIALIZATION_TRIVIAL (boost::blank)
+FHG_UTIL_SERIALIZATION_TRIVIAL (::boost::blank)

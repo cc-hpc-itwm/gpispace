@@ -105,7 +105,7 @@ BOOST_AUTO_TEST_CASE (xml_parse_valid_preferences_and_generate_cpp)
   xml::parse::type::function_type fun
     = xml::parse::just_parse (state, input_stream);
 
-  boost::filesystem::path const path
+  ::boost::filesystem::path const path
     ( fhg::util::executable_path().parent_path()
       / "gen_modules_with_preferences_test"
     );
@@ -113,7 +113,7 @@ BOOST_AUTO_TEST_CASE (xml_parse_valid_preferences_and_generate_cpp)
 
   BOOST_REQUIRE_NO_THROW (xml::parse::generate_cpp (fun, state));
 
-  boost::filesystem::path const makefile_path
+  ::boost::filesystem::path const makefile_path
     (path.string() + "/Makefile");
   std::string const makefile
     {fhg::util::read_file<std::string> (makefile_path)};
@@ -131,21 +131,21 @@ BOOST_AUTO_TEST_CASE (xml_parse_valid_preferences_and_generate_cpp)
                                + "_" + target
                                );
 
-    boost::filesystem::path const wrapper_cpp
+    ::boost::filesystem::path const wrapper_cpp
       (path.string() + "/pnetc/op/" + mod_name + ".cpp");
 
-    boost::filesystem::path const func_def_cpp
+    ::boost::filesystem::path const func_def_cpp
       (path.string() + "/pnetc/op/" + mod_name + "/func.cpp");
 
-    boost::filesystem::path const func_def_hpp
+    ::boost::filesystem::path const func_def_hpp
       (path.string() + "/pnetc/op/" + mod_name + "/func.hpp");
 
     //! \note check if files generated for target
     BOOST_TEST_CONTEXT ("cpp generation for target = " << target)
     {
-      BOOST_REQUIRE (boost::filesystem::exists (wrapper_cpp));
-      BOOST_REQUIRE (boost::filesystem::exists (func_def_cpp));
-      BOOST_REQUIRE (boost::filesystem::exists (func_def_hpp));
+      BOOST_REQUIRE (::boost::filesystem::exists (wrapper_cpp));
+      BOOST_REQUIRE (::boost::filesystem::exists (func_def_cpp));
+      BOOST_REQUIRE (::boost::filesystem::exists (func_def_hpp));
     }
 
     //! \note check makefile for target ".so" build

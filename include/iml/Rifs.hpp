@@ -39,7 +39,7 @@ namespace iml
     //! writing messages to \a output.
     //! \see options()
     // \todo Alias for vm and option_description etc?
-    Rifs ( boost::program_options::variables_map const& vm
+    Rifs ( ::boost::program_options::variables_map const& vm
          , std::ostream& output = std::cout
          );
 
@@ -51,7 +51,7 @@ namespace iml
     Rifs ( std::vector<std::string> const& hostnames
          , std::string const& strategy
          , std::vector<std::string> const& strategy_parameters = {}
-         , boost::optional<unsigned short> const& port = boost::none
+         , ::boost::optional<unsigned short> const& port = ::boost::none
          , std::ostream& = std::cout
          );
 
@@ -63,7 +63,7 @@ namespace iml
     //! constructor.
     //! \see set_nodefile(), set_port(), set_strategy(),
     //! set_strategy_parameters()
-    static boost::program_options::options_description options();
+    static ::boost::program_options::options_description options();
 
     //! Overwrite the nodefile path that's read to determine the hosts
     //! to use in starting RIF daemons.
@@ -76,16 +76,16 @@ namespace iml
     // nodefile from the environment (instead of configuring it like the
     // strategy).
     static void set_nodefile
-      (boost::program_options::variables_map&, boost::filesystem::path);
+      (::boost::program_options::variables_map&, ::boost::filesystem::path);
     //! Overwrite the port to be used by the started RIF daemons.
     static void set_port
-      (boost::program_options::variables_map&, unsigned short);
+      (::boost::program_options::variables_map&, unsigned short);
     //! Overwrite the strategy used to start RIF daemons.
     static void set_strategy
-      (boost::program_options::variables_map&, std::string);
+      (::boost::program_options::variables_map&, std::string);
     //! Overwrite the strategy parameters used to start RIF daemons.
     static void set_strategy_parameters
-      (boost::program_options::variables_map&, std::vector<std::string>);
+      (::boost::program_options::variables_map&, std::vector<std::string>);
 
     Rifs() = delete;
     Rifs (Rifs const&) = delete;
@@ -98,7 +98,7 @@ namespace iml
   private:
     std::string _strategy;
     std::vector<std::string> _strategy_parameters;
-    boost::optional<unsigned short> _port;
+    ::boost::optional<unsigned short> _port;
     rif::EntryPoints _entry_points;
   };
 }

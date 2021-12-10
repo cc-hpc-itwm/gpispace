@@ -13,7 +13,6 @@ transfer and distributed task execution.
 GPI-Space targets x86-64 Linux systems. Other architectures are not
 supported at this point. It is built and tested daily on
 
-* Centos 6
 * Centos 7
 * Centos 8
 * Ubuntu 18.04 LTS
@@ -45,7 +44,7 @@ Note that some GPI-Space components can be disabled, which may remove
 some dependencies needed. Also see the "Building GPI-Space" section
 and subsection "Optional Components" below.
 
-* [GCC](https://gcc.gnu.org/) (>= 4.9.4), or compatible compiler
+* [GCC](https://gcc.gnu.org/) (>= 5.5.0), or compatible compiler
 * [CMake](https://cmake.org/) (>= 3.15)
   * Some distributions name the binary `cmake3` while others use
     `cmake`. Snippets below assume `cmake`.
@@ -164,8 +163,6 @@ assumed to be installed via the system package manager below).
 Libssh2_ROOT=<libssh2-install-prefix>
 libssh2_version=1.9.0
 
-export PKG_CONFIG_PATH="${Libssh2_ROOT}/lib/pkgconfig:${Libssh2_ROOT}/lib64/pkgconfig"${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
-
 wget "https://github.com/libssh2/libssh2/releases/download/libssh2-${libssh2_version}/libssh2-${libssh2_version}.tar.gz" \
   -O "libssh2-${libssh2_version}.tar.gz"
 tar xf "libssh2-${libssh2_version}.tar.gz"
@@ -197,8 +194,10 @@ system-wide.
   installations can be disabled with the CMake option
   `-DBoost_NO_BOOST_CMAKE=on`.
 - GPI-2: `PKG_CONFIG_PATH`
-- libssh2: `PKG_CONFIG_PATH`. Note that libssh2 also installs a CMake
-  new-config-format file, but GPI-Space currently does not support it.
+- libssh2: `Libssh2_ROOT`. By default CMake's new config format will be
+  automatically preferred if existing. Using config format
+  installations can be disabled with the CMake option
+  `-DLibssh2_NO_CMAKE=on` or the environment variable `Libssh2_NO_CMAKE=on`.
 - OpenSSL: `OPENSSL_ROOT_DIR`
 - hwloc: `PKG_CONFIG_PATH`
 - Qt5: `PATH` (the `qmake`/`qmake-qt5` binary), `Qt5_ROOT`, `Qt5_DIR`

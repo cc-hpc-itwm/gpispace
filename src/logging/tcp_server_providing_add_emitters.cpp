@@ -32,7 +32,7 @@ namespace fhg
       , add_emitters_service_provider
           ( io_service
           , service_dispatcher
-          , boost::asio::ip::tcp::endpoint (boost::asio::ip::tcp::v4(), port)
+          , ::boost::asio::ip::tcp::endpoint (::boost::asio::ip::tcp::v4(), port)
           )
     {}
   }

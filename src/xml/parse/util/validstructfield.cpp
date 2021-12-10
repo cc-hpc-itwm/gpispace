@@ -57,7 +57,7 @@ namespace xml
     }
 
     std::string validate_field_name ( std::string const& name
-                                    , boost::filesystem::path const& path
+                                    , ::boost::filesystem::path const& path
                                     )
     {
       static names_reserved reserved;

@@ -14,87 +14,134 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+cmake_minimum_required (VERSION 3.15)
+
+project (util-rpc
+  VERSION 1.0.0
+  LANGUAGES CXX
+)
+
+###############################################################################
+# Bootstrap packages
+###############################################################################
+
+# TODO: temporary fix, should be removed once everything is standalone
+set (UTIL_GENERIC_BUILD_TESTING OFF CACHE BOOL "Build util-generic tests")
+
+# temporary compatibility fix
+# if the project is not root skip bootstrapping
+# NOTE: the find_package call can move to the find dependencies section later on
+if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+  include (${PROJECT_SOURCE_DIR}/bootstrap/packages.cmake)
+  find_package (util-cmake REQUIRED)
+  find_package (util-generic REQUIRED)
+endif ()
+
+###############################################################################
+# Includes
+###############################################################################
+
+include (CMakePackageConfigHelpers)
+include (CTest)
+include (GNUInstallDirs)
+
 include (util-cmake/add_macros)
-include (util-cmake/add_unit_test)
+include (util-cmake/projects)
 
-include (util-cmake/beautify_find_boost)
-find_boost (1.59 REQUIRED QUIET
-  COMPONENTS coroutine
-             filesystem
-             iostreams
-             serialization
-             thread
+###############################################################################
+# Meta information
+###############################################################################
+
+util_cmake_is_project_root (_project_is_root)
+util_cmake_project_entry_name (_project_entry)
+
+###############################################################################
+# Options
+###############################################################################
+
+if (NOT DEFINED ${_project_entry}_BUILD_TESTING)
+  if (BUILD_TESTING)
+    set (${_project_entry}_BUILD_TESTING ${BUILD_TESTING} CACHE BOOL "Build ${PROJECT_NAME} tests")
+  else ()
+    set (${_project_entry}_BUILD_TESTING OFF CACHE BOOL "Build ${PROJECT_NAME} tests")
+  endif ()
+endif ()
+
+option (${_project_entry}_INSTALL
+  "Install ${PROJECT_NAME}"
+  ${_project_is_root}
+)
+mark_as_advanced (${_project_entry}_INSTALL)
+
+set (${_project_entry}_CONFIG_INSTALL_DIR
+  "${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake"
+  CACHE PATH
+  "${PROJECT_NAME} package configuration and cmake scripts installation path prefix. \
+  (default: ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake)"
+)
+mark_as_advanced (${_project_entry}_CONFIG_INSTALL_DIR)
+set (_project_config_install_dir ${${_project_entry}_CONFIG_INSTALL_DIR})
+
+set (${_project_entry}_CXX_STANDARD
+  14
+  CACHE STRING
+  "${PROJECT_NAME} C++ standard"
+)
+mark_as_advanced (${_project_entry}_CXX_STANDARD)
+set (_project_cxx_std "cxx_std_${${_project_entry}_CXX_STANDARD}")
+
+###############################################################################
+# Find dependencies
+###############################################################################
+
+find_package (Boost 1.61 REQUIRED
+  COMPONENTS
+    coroutine
+    filesystem
+    iostreams
+    serialization
+    thread
 )
 
-extended_add_library (NAME RPC
-  SOURCES "detail/async_task_termination_guard.cpp"
-          "locked_with_info_file.cpp"
-          "remote_socket_endpoint.cpp"
-          "remote_tcp_endpoint.cpp"
-          "service_dispatcher.cpp"
-          "service_socket_provider.cpp"
-          "service_tcp_provider.cpp"
-  LIBRARIES Util::Generic
-            Boost::coroutine
-            Boost::filesystem
-            Boost::iostreams
-            Boost::serialization
-            Boost::thread
-  POSITION_INDEPENDENT
-)
+###############################################################################
+# Project targets and tests
+###############################################################################
 
-# Boost.Asio's strands share queues for sake of performance. There by
-# default are 193 queues and a "random" distribution from strand to
-# queue. By defining this config flag, the randomness is removed at
-# least but the reuse persists.
-# Enabling this is debatable but feels like the more "natural"
-# assumption one would have about strands: The operations of a strand
-# only block between themselves, not with operations of some other
-# random strand.
-# Assuming no client has more than 193 operations / strands /
-# coroutines / service_providers / remote_endpoints, which should be a
-# sane assumption other than for performance tests, this helps users
-# of RPC to be a bit less correct with their callbacks as strands are
-# now reused with a chance of rolling 193 strands, rather than a
-# chance of up to 1 depending on the *address of the strand object*.
-target_compile_definitions (RPC PUBLIC
-  BOOST_ASIO_ENABLE_SEQUENTIAL_STRAND_ALLOCATION
-)
+add_subdirectory (src/util-rpc)
+add_subdirectory (test/util-rpc)
 
-function (rpc_unit_test _path)
-  if (NOT BUILD_TESTING)
-    return()
-  endif()
+###############################################################################
+# Install and configure package find script
+###############################################################################
 
-  _parse_arguments_with_unknown (ARG "" "" "LIBRARIES;SOURCES" "" ${ARGN})
-  string (REPLACE "/" "-" _name "rpc-${_path}")
-
-  add_unit_test (NAME "${_name}"
-    SOURCES "test/${_path}.cpp" ${ARG_SOURCES}
-    USE_BOOST
-    LIBRARIES RPC ${ARG_LIBRARIES}
-    ${ARG_UNPARSED_ARGUMENTS}
+if (${_project_entry}_INSTALL)
+  install (
+    DIRECTORY
+      "${PROJECT_SOURCE_DIR}/include/"
+    DESTINATION
+      "${CMAKE_INSTALL_INCLUDEDIR}"
   )
-endfunction()
 
-rpc_unit_test (basic)
+  set (_origin ".")
+  configure_package_config_file (
+    ${PROJECT_NAME}-config.cmake.in
+    ${PROJECT_NAME}-config.cmake
+    INSTALL_DESTINATION ${_project_config_install_dir}
+    PATH_VARS
+      _project_config_install_dir
+      _origin
+  )
 
-rpc_unit_test (exceptions)
+  write_basic_package_version_file (
+    ${PROJECT_NAME}-config-version.cmake
+    COMPATIBILITY SameMajorVersion
+  )
 
-rpc_unit_test (future)
-
-rpc_unit_test (locked_with_info_file)
-
-rpc_unit_test (many_threads_hammer_one_server RUN_SERIAL)
-
-rpc_unit_test (performance PERFORMANCE_TEST)
-
-if (BUILD_TESTING)
-  set_tests_properties (rpc-performance PROPERTIES TIMEOUT 300)
-endif()
-
-rpc_unit_test (socket)
-
-rpc_unit_test (socket_operation_preconditions)
-
-rpc_unit_test (templates)
+  install (
+    FILES
+      ${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
+      ${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake
+    DESTINATION
+      ${_project_config_install_dir}
+  )
+endif ()

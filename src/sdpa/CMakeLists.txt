@@ -26,6 +26,7 @@ gspc_add_library (NAME sdpa
           daemon/scheduler/CoallocationScheduler.cpp
           daemon/scheduler/Reservation.cpp
           events/Codec.cpp
+          events/EventHandler.cpp
   LIBRARIES PUBLIC pnet
             PUBLIC fhgcom
             PUBLIC fhg-util

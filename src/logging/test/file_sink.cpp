@@ -46,9 +46,9 @@ namespace fhg
 
     BOOST_AUTO_TEST_CASE (constructor_throws_if_file_not_writable)
     {
-      boost::filesystem::path const non_existing_path
+      ::boost::filesystem::path const non_existing_path
         ("/we/can't/write/to/this/because/missing");
-      BOOST_REQUIRE (!boost::filesystem::exists (non_existing_path));
+      BOOST_REQUIRE (!::boost::filesystem::exists (non_existing_path));
       auto const target (non_existing_path / "parent");
 
       util::testing::require_exception
@@ -57,7 +57,7 @@ namespace fhg
             file_sink sink ( register_only_endpoint
                            , target
                            , [] (std::ostream&, message const&) {}
-                           , boost::none
+                           , ::boost::none
                            );
           }
         , error::unable_to_write_to_file (target)
@@ -92,8 +92,8 @@ namespace fhg
       auto const sentinel (random_single_line_string());
 
       util::temporary_path const temporary_sink_dir;
-      boost::filesystem::path const sink_path
-        (static_cast<boost::filesystem::path> (temporary_sink_dir) / "log");
+      ::boost::filesystem::path const sink_path
+        (static_cast<::boost::filesystem::path> (temporary_sink_dir) / "log");
 
       {
         public_file_sink sink
@@ -103,7 +103,7 @@ namespace fhg
             {
               os << sentinel << '\n';
             }
-          , boost::none
+          , ::boost::none
           );
 
         for (std::size_t i (0); i < emit_count; ++i)
@@ -128,13 +128,13 @@ namespace fhg
     BOOST_AUTO_TEST_CASE (no_flushing_happens_if_none_given)
     {
       util::temporary_path const temporary_sink_dir;
-      boost::filesystem::path const path
-        (static_cast<boost::filesystem::path> (temporary_sink_dir) / "log");
+      ::boost::filesystem::path const path
+        (static_cast<::boost::filesystem::path> (temporary_sink_dir) / "log");
 
       auto const emits (util::testing::random<std::size_t>{}() % 134);
 
       {
-        public_file_sink sink (register_only_endpoint, path, &just_a_newline, boost::none);
+        public_file_sink sink (register_only_endpoint, path, &just_a_newline, ::boost::none);
 
         for (std::size_t i (0); i < emits; ++i)
         {
@@ -149,8 +149,8 @@ namespace fhg
     BOOST_AUTO_TEST_CASE (flushing_can_be_overwritten_by_an_evil_formatter)
     {
       util::temporary_path const temporary_sink_dir;
-      boost::filesystem::path const path
-        (static_cast<boost::filesystem::path> (temporary_sink_dir) / "log");
+      ::boost::filesystem::path const path
+        (static_cast<::boost::filesystem::path> (temporary_sink_dir) / "log");
 
       auto const emits (util::testing::random<std::size_t>{}() % 134);
 
@@ -162,7 +162,7 @@ namespace fhg
             {
               os << std::endl;
             }
-          , boost::none
+          , ::boost::none
           );
 
         for (std::size_t i (0); i < emits; ++i)
@@ -178,8 +178,8 @@ namespace fhg
     BOOST_AUTO_TEST_CASE (flush_interval_of_zero_always_flushes)
     {
       util::temporary_path const temporary_sink_dir;
-      boost::filesystem::path const path
-        (static_cast<boost::filesystem::path> (temporary_sink_dir) / "log");
+      ::boost::filesystem::path const path
+        (static_cast<::boost::filesystem::path> (temporary_sink_dir) / "log");
 
       auto const emits (util::testing::random<std::size_t>{}() % 134);
 
@@ -198,13 +198,13 @@ namespace fhg
 
     BOOST_DATA_TEST_CASE
       ( flushing_happens_in_given_interval
-      , boost::unit_test::data::make ({1ul, 2ul, 3ul, 5ul, 6ul, 13ul, 31ul})
+      , ::boost::unit_test::data::make ({1ul, 2ul, 3ul, 5ul, 6ul, 13ul, 31ul})
       , interval
       )
     {
       util::temporary_path const temporary_sink_dir;
-      boost::filesystem::path const path
-        (static_cast<boost::filesystem::path> (temporary_sink_dir) / "log");
+      ::boost::filesystem::path const path
+        (static_cast<::boost::filesystem::path> (temporary_sink_dir) / "log");
 
       constexpr std::size_t const repetitions (13);
       std::size_t expected_lines (0);
@@ -249,8 +249,8 @@ namespace fhg
       stream_emitter emitter;
 
       util::temporary_path const temporary_sink_dir;
-      boost::filesystem::path const path
-        (static_cast<boost::filesystem::path> (temporary_sink_dir) / "log");
+      ::boost::filesystem::path const path
+        (static_cast<::boost::filesystem::path> (temporary_sink_dir) / "log");
 
       {
         file_sink const sink
@@ -260,7 +260,7 @@ namespace fhg
             {
               os << sentinel << '\n';
             }
-          , boost::none
+          , ::boost::none
           );
 
         for (std::size_t i (0); i < emit_count; ++i)

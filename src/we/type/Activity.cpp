@@ -48,13 +48,13 @@
 
 namespace
 {
-  struct wfe_exec_context : public boost::static_visitor<expr::eval::context>
+  struct wfe_exec_context : public ::boost::static_visitor<expr::eval::context>
   {
     wfe_exec_context
       ( we::loader::loader& loader
       , iml::Client /*const*/* virtual_memory
       , iml::SharedMemoryAllocation /*const*/* shared_memory
-      , boost::optional<std::string> target_implementation
+      , ::boost::optional<std::string> target_implementation
       , drts::worker::context* worker_context
       , expr::eval::context const& evaluation_context
       , std::string const& name
@@ -137,7 +137,7 @@ namespace
     we::loader::loader& _loader;
     iml::Client /*const*/* _virtual_memory;
     iml::SharedMemoryAllocation /*const*/* _shared_memory;
-    boost::optional<std::string> _target_implementation;
+    ::boost::optional<std::string> _target_implementation;
     drts::worker::context* _worker_context;
     expr::eval::context const& _evaluation_context;
     std::string const& _name;
@@ -149,19 +149,19 @@ namespace we
   namespace type
   {
     Activity::Activity (we::type::Transition transition)
-      : Activity (std::move (transition), boost::none)
+      : Activity (std::move (transition), ::boost::none)
     {}
     Activity::Activity ( TESTING_ONLY
                            , we::type::Transition transition
                            , we::transition_id_type transition_id
                            )
       : Activity ( std::move (transition)
-                   , boost::optional<we::transition_id_type> (transition_id)
+                   , ::boost::optional<we::transition_id_type> (transition_id)
                    )
     {}
     Activity::Activity
       ( we::type::Transition transition
-      , boost::optional<we::transition_id_type> transition_id
+      , ::boost::optional<we::transition_id_type> transition_id
       )
         : _transition (std::move (transition))
         , _transition_id (std::move (transition_id))
@@ -173,28 +173,28 @@ namespace we
       {
         try
         {
-          boost::archive::text_iarchive ar (s);
+          ::boost::archive::text_iarchive ar (s);
 
-          ar >> BOOST_SERIALIZATION_NVP (t);
+          ar >> t;
         }
         catch (std::exception const& ex)
         {
           throw std::runtime_error
-            ( ( boost::format ("deserialization error: '%1%'") % ex.what()
+            ( ( ::boost::format ("deserialization error: '%1%'") % ex.what()
               ).str()
             );
         }
       }
     }
 
-    Activity::Activity (boost::filesystem::path const& path)
+    Activity::Activity (::boost::filesystem::path const& path)
     {
       std::ifstream stream (path.string().c_str());
 
       if (!stream)
       {
         throw std::runtime_error
-          ((boost::format ("could not open '%1%' for reading") % path).str());
+          ((::boost::format ("could not open '%1%' for reading") % path).str());
       }
 
       decode (stream, *this);
@@ -215,8 +215,8 @@ namespace we
     std::string Activity::to_string() const
     {
       std::ostringstream oss;
-      boost::archive::text_oarchive ar (oss);
-      ar << BOOST_SERIALIZATION_NVP (*this);
+      ::boost::archive::text_oarchive ar (oss);
+      ar << *this;
       return oss.str();
     }
 
@@ -273,7 +273,7 @@ namespace we
       return !!transition().net();
     }
 
-    boost::optional<eureka_id_type> const& Activity::eureka_id()
+    ::boost::optional<eureka_id_type> const& Activity::eureka_id()
     {
       if (!_eureka_id)
       {
@@ -281,7 +281,7 @@ namespace we
         {
           auto context (evaluation_context());
 
-          _eureka_id = boost::get<eureka_id_type>
+          _eureka_id = ::boost::get<eureka_id_type>
             (Expression (*id).ast().eval_all (context));
         }
       }
@@ -313,7 +313,7 @@ namespace we
                  , std::move (eureka_response)
                  );
     }
-    boost::optional<Activity>
+    ::boost::optional<Activity>
       Activity::extract
       ( std::mt19937& random_engine
       , workflow_response_callback const& workflow_response
@@ -369,7 +369,7 @@ namespace we
             (*p.second.associated_place());
 
           for ( pnet::type::value::value_type const& token
-              : transition().net()->get_token (pid) | boost::adaptors::map_values
+              : transition().net()->get_token (pid) | ::boost::adaptors::map_values
               )
           {
             output.emplace_back (token, port_id);
@@ -428,7 +428,7 @@ namespace we
 
       std::unordered_set<port_id_type> port_ids_with_output;
 
-      for (port_id_type port_id : out | boost::adaptors::map_values)
+      for (port_id_type port_id : out | ::boost::adaptors::map_values)
       {
         port_ids_with_output.emplace (port_id);
       }
@@ -440,12 +440,12 @@ namespace we
       ( we::loader::loader& loader
       , iml::Client /*const*/ * virtual_memory
       , iml::SharedMemoryAllocation /* const */ * shared_memory
-      , boost::optional<std::string> target_implementation
+      , ::boost::optional<std::string> target_implementation
       , drts::worker::context* worker_context
       )
     {
       add_output
-        ( boost::apply_visitor
+        ( ::boost::apply_visitor
           ( wfe_exec_context ( loader
                              , virtual_memory
                              , shared_memory
@@ -484,7 +484,7 @@ namespace we
     namespace
     {
       template<typename T>
-        boost::optional<T> evaluate_property
+        ::boost::optional<T> evaluate_property
         ( Transition const& transition
         , expr::eval::context context
         , property::path_type const& path
@@ -492,8 +492,8 @@ namespace we
       {
         if (auto const expression = transition.prop().get (path))
         {
-          return boost::get<T>
-            ( Expression (boost::get<std::string> (*expression))
+          return ::boost::get<T>
+            ( Expression (::boost::get<std::string> (*expression))
             . ast()
             . eval_all (context)
             );
@@ -509,7 +509,7 @@ namespace we
         (std::list<std::pair<we::local::range, we::global::range>> const& transfers)
       {
         std::list<iml::MemoryRegion> regions;
-        for (auto const& range: transfers | boost::adaptors::map_values)
+        for (auto const& range: transfers | ::boost::adaptors::map_values)
         {
           regions.emplace_back
             ( iml::MemoryLocation (range.handle().name(), range.offset())
@@ -641,12 +641,12 @@ namespace we
         auto const place_id
           (net.add_place (place::type ( wrapped_name (p.second)
                                       , p.second.signature()
-                                      , boost::none
+                                      , ::boost::none
                                       )
                          )
           );
 
-        net.add_connection ( we::edge::PT
+        net.add_connection ( we::edge::PT{}
                            , transition_id
                            , place_id
                            , p.first
@@ -661,12 +661,12 @@ namespace we
         auto const place_id
           (net.add_place (place::type ( wrapped_name (p.second)
                                       , p.second.signature()
-                                      , boost::none
+                                      , ::boost::none
                                       )
                          )
           );
 
-        net.add_connection ( we::edge::TP
+        net.add_connection ( we::edge::TP{}
                            , transition_id
                            , place_id
                            , p.first
@@ -688,10 +688,10 @@ namespace we
       we::type::Transition const
         transition_net_wrapper ( wrapped_activity_prefix() + name()
                                , net
-                               , boost::none
+                               , ::boost::none
                                , we::type::property::type()
                                , we::priority_type()
-                               , boost::optional<we::type::eureka_id_type>{}
+                               , ::boost::optional<we::type::eureka_id_type>{}
                                , std::list<we::type::Preference>{}
                                );
 
@@ -717,7 +717,7 @@ namespace we
           (net.port_to_place().at (transition_id_inner).at (p.first).first);
 
         for ( auto const& token
-            : net.get_token (place_id) | boost::adaptors::map_values
+            : net.get_token (place_id) | ::boost::adaptors::map_values
             )
         {
           activity_inner.add_output (p.first, token);

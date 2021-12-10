@@ -120,7 +120,7 @@ namespace gpi
         if (! (loc.offset < hdl_it->second.size && (loc.offset + size) <= hdl_it->second.size))
         {
           throw std::invalid_argument
-            ( ( boost::format ("out-of-bounds: access to %1%-handle:"
+            ( ( ::boost::format ("out-of-bounds: access to %1%-handle:"
                               " range [%2%,%3%) is not within [0,%4%)"
                               )
               % hdl_it->second.id
@@ -325,7 +325,7 @@ namespace gpi
         if (hdl_it == m_handles.end())
           throw std::runtime_error
             ( "location_to_offset(): no such handle: "
-            + boost::lexical_cast<std::string>(loc.allocation)
+            + ::boost::lexical_cast<std::string>(loc.allocation)
             );
 
         return hdl_it->second.offset + (loc.offset % hdl_it->second.local_size);

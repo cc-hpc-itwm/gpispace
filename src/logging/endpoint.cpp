@@ -17,7 +17,7 @@
 #include <logging/endpoint.hpp>
 
 #include <fhg/util/next.hpp>
-#include <fhg/util/boost/program_options/validators.hpp>
+#include <util-generic/boost/program_options/validators.hpp>
 
 namespace fhg
 {
@@ -217,7 +217,7 @@ namespace fhg
       }
     }
 
-    boost::variant<tcp_endpoint, socket_endpoint>
+    ::boost::variant<tcp_endpoint, socket_endpoint>
       endpoint::best (std::string host) const
     {
       REQUIRE_VALID()
@@ -249,7 +249,7 @@ namespace fhg
 
 #undef REQUIRE_VALID
 
-    void validate ( boost::any& result
+    void validate ( ::boost::any& result
                   , std::vector<std::string> const& values
                   , endpoint*
                   , int

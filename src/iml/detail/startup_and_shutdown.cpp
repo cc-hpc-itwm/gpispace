@@ -31,9 +31,9 @@
 #include <util-generic/split.hpp>
 #include <util-generic/wait_and_collect_exceptions.hpp>
 
-#include <rpc/remote_function.hpp>
-#include <rpc/remote_tcp_endpoint.hpp>
-#include <rpc/remote_socket_endpoint.hpp>
+#include <util-rpc/remote_function.hpp>
+#include <util-rpc/remote_tcp_endpoint.hpp>
+#include <util-rpc/remote_socket_endpoint.hpp>
 
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/predicate.hpp>
@@ -72,7 +72,7 @@ namespace iml
       if (!_[entry_point].emplace (name, pid).second)
       {
         throw std::logic_error
-          ( str ( boost::format
+          ( str ( ::boost::format
                     ( "process with name '%1%' on entry point '%2%' already "
                       "exists with pid %3%, new pid %4%"
                     )
@@ -84,7 +84,7 @@ namespace iml
           );
       }
     }
-    boost::optional<pid_t> RuntimeSystem::ProcessesStorage::pidof
+    ::boost::optional<pid_t> RuntimeSystem::ProcessesStorage::pidof
       (rif::EntryPoint const& entry_point, std::string const& name)
     {
       std::lock_guard<std::mutex> const guard (_guard);
@@ -93,21 +93,21 @@ namespace iml
 
       if (pos_entry_point == _.end())
       {
-        return boost::none;
+        return ::boost::none;
       }
 
       auto pos_name (pos_entry_point->second.find (name));
 
       if (pos_name == pos_entry_point->second.end())
       {
-        return boost::none;
+        return ::boost::none;
       }
 
       return pos_name->second;
     }
 
     void RuntimeSystem::ProcessesStorage::startup
-      ( boost::filesystem::path gpi_socket
+      ( ::boost::filesystem::path gpi_socket
       , std::chrono::seconds vmem_startup_timeout
       , unsigned short vmem_port
       , gaspi::NetdevID vmem_netdev_id
@@ -127,7 +127,7 @@ namespace iml
         ( [&]
           {
             for ( rif::EntryPoint const& entry_point
-                : rif_entry_points | boost::adaptors::map_values
+                : rif_entry_points | ::boost::adaptors::map_values
                 )
             {
               rif_connections.emplace_back
@@ -195,7 +195,7 @@ namespace iml
                 ( fails
                 , [] (std::pair<rif::EntryPoint, std::exception_ptr> const& fail)
                   {
-                    return ( boost::format ("vmem startup failed %1%: %2%")
+                    return ( ::boost::format ("vmem startup failed %1%: %2%")
                            % fail.first
                            % fhg::util::exception_printer (fail.second)
                            ).str();
@@ -240,7 +240,7 @@ namespace iml
         {
           for (auto const& it : entry_point_processes->second)
           {
-            if (boost::algorithm::starts_with (it.first, kind))
+            if (::boost::algorithm::starts_with (it.first, kind))
             {
               ++processes_to_kill;
             }
@@ -271,7 +271,7 @@ namespace iml
               ; ++it
               )
           {
-            if (boost::algorithm::starts_with (it->first, kind))
+            if (::boost::algorithm::starts_with (it->first, kind))
             {
               to_erase.emplace (it->second, it);
               pids.emplace_back (it->second);
@@ -379,7 +379,7 @@ namespace iml
               for (auto const& fails : failure.second.second)
               {
                 _info_output <<
-                  ( boost::format ("Could not terminate %1%[%2%] on %3%: %4%")
+                  ( ::boost::format ("Could not terminate %1%[%2%] on %3%: %4%")
                   % failure.second.first
                   % fails.first
                   % failure.first

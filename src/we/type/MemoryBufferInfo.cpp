@@ -39,7 +39,7 @@ namespace we
       (expr::eval::context const& input) const
     {
       expr::eval::context context (input);
-      return boost::get<unsigned long>
+      return ::boost::get<unsigned long>
         (_size.ast().eval_all (context));
     }
 
@@ -48,7 +48,7 @@ namespace we
      {
        expr::eval::context context (input);
        auto const alignment
-         ( boost::get<unsigned long>
+         ( ::boost::get<unsigned long>
              (_alignment.ast().eval_all (context))
          );
 
@@ -76,7 +76,7 @@ namespace we
           {
             _size.assert_type (expr::type::ULong{}, context);
           }
-        , str ( boost::format ("In the <size> expression '%1%'")
+        , str ( ::boost::format ("In the <size> expression '%1%'")
               % _size.expression()
               )
         );
@@ -85,7 +85,7 @@ namespace we
           {
             _alignment.assert_type (expr::type::ULong{}, context);
           }
-        , str ( boost::format ("In the <alignment> expression '%1%'")
+        , str ( ::boost::format ("In the <alignment> expression '%1%'")
               % _alignment.expression()
               )
         );

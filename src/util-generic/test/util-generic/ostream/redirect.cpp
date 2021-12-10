@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE (prepend_lines_in_scope)
   auto prepend
     ( [] (unsigned k, std::string const& s)
       {
-        return (boost::format ("%1%: %2%") % k % s).str();
+        return (::boost::format ("%1%: %2%") % k % s).str();
       }
     );
   std::ostringstream oss;
@@ -196,7 +196,7 @@ BOOST_AUTO_TEST_CASE (prepender_function_of_line)
     ( oss
     , [] (std::string const& line)
       {
-        return (boost::format ("[%1%]: ") % line.size()).str();
+        return (::boost::format ("[%1%]: ") % line.size()).str();
       }
     );
 
@@ -207,7 +207,7 @@ BOOST_AUTO_TEST_CASE (prepender_function_of_line)
   oss << line << '\n';
 
   BOOST_REQUIRE_EQUAL
-    (oss.str(), (boost::format ("[%1%]: %2%\n") % line.size() % line).str());
+    (oss.str(), (::boost::format ("[%1%]: %2%\n") % line.size() % line).str());
 }
 
 BOOST_AUTO_TEST_CASE (prepender_function_void)

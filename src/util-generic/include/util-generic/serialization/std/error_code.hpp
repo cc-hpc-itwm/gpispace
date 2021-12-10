@@ -69,7 +69,7 @@ namespace boost
       void serialize
         (Archive& ar, std::error_code& ec, const unsigned int version)
     {
-      boost::serialization::split_free (ar, ec, version);
+      ::boost::serialization::split_free (ar, ec, version);
     }
   }
 }

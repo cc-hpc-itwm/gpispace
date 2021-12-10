@@ -21,7 +21,7 @@ namespace iml
   template<typename BoostArchive>
     void MemoryRegion::serialize (BoostArchive& archive, unsigned int)
   {
-    archive & boost::serialization::base_object<MemoryLocation> (*this);
+    archive & ::boost::serialization::base_object<MemoryLocation> (*this);
     archive & size;
   }
 }

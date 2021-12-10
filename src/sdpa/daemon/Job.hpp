@@ -36,13 +36,13 @@ namespace sdpa
   namespace daemon
   {
     // front-end: define the FSM structure
-    struct JobFSM_ : public boost::msm::front::state_machine_def<JobFSM_>
+    struct JobFSM_ : public ::boost::msm::front::state_machine_def<JobFSM_>
     {
       virtual ~JobFSM_() = default;
 
-      struct s_pending : public boost::msm::front::state<>{};
-      struct s_running : public boost::msm::front::state<>{};
-      struct s_finished : public boost::msm::front::state<>
+      struct s_pending : public ::boost::msm::front::state<>{};
+      struct s_running : public ::boost::msm::front::state<>{};
+      struct s_finished : public ::boost::msm::front::state<>
       {
         we::type::Activity result;
         s_finished() = default;
@@ -50,7 +50,7 @@ namespace sdpa
           : result (std::move (result_))
         {}
       };
-      struct s_failed : public boost::msm::front::state<>
+      struct s_failed : public ::boost::msm::front::state<>
       {
         std::string message;
         s_failed() = default;
@@ -58,8 +58,8 @@ namespace sdpa
           : message (std::move (message_))
         {}
       };
-      struct s_canceling : public boost::msm::front::state<>{};
-      struct s_canceled : public boost::msm::front::state<>{};
+      struct s_canceling : public ::boost::msm::front::state<>{};
+      struct s_canceled : public ::boost::msm::front::state<>{};
 
       struct e_begin_cancel {};
       struct e_canceled {};
@@ -70,7 +70,7 @@ namespace sdpa
 
       typedef s_pending initial_state;
 
-      struct transition_table : boost::mpl::vector
+      struct transition_table : ::boost::mpl::vector
         <
         //     Start         Event              Next
         //   +-------------+------------------+-------------+
@@ -133,10 +133,10 @@ namespace sdpa
 
     //! \todo actually use in statemachine, currently used by
     //! CoallocationScheduler::Reservation only
-    using terminal_state = boost::variant < JobFSM_::s_finished
-                                          , JobFSM_::s_failed
-                                          , JobFSM_::s_canceled
-                                          >;
+    using terminal_state = ::boost::variant < JobFSM_::s_finished
+                                            , JobFSM_::s_failed
+                                            , JobFSM_::s_canceled
+                                            >;
     struct job_result_type
     {
       std::map<sdpa::worker_id_t, terminal_state> individual_results;
@@ -145,19 +145,19 @@ namespace sdpa
       JobFSM_::s_finished last_success;
     };
 
-    using Implementation = boost::optional<std::string>;
+    using Implementation = ::boost::optional<std::string>;
 
     struct job_source_wfe {};
     struct job_source_client {};
-    using job_source = boost::variant < job_source_wfe
-                                      , job_source_client
-                                      >;
+    using job_source = ::boost::variant < job_source_wfe
+                                        , job_source_client
+                                        >;
 
     struct job_handler_wfe {};
     struct job_handler_worker {};
-    using job_handler = boost::variant<job_handler_wfe, job_handler_worker>;
+    using job_handler = ::boost::variant<job_handler_wfe, job_handler_worker>;
 
-    class Job : public boost::msm::back::state_machine<JobFSM_>
+    class Job : public ::boost::msm::back::state_machine<JobFSM_>
     {
     public:
       Job ( job_id_t id

@@ -25,14 +25,14 @@ namespace fhg
 {
   namespace util
   {
-    std::vector<std::string> read_lines (boost::filesystem::path const& filename)
+    std::vector<std::string> read_lines (::boost::filesystem::path const& filename)
     {
       std::vector<std::string> lines;
       std::ifstream ifs (filename.string());
       if (!ifs)
       {
         throw std::runtime_error
-          ( ( boost::format ("could not open file '%1%' for reading: %2%")
+          ( ( ::boost::format ("could not open file '%1%' for reading: %2%")
             % filename.string()
             % strerror (errno)
             ).str()

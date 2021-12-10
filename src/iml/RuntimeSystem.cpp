@@ -19,8 +19,8 @@
 #include <iml/detail/option.hpp>
 #include <iml/detail/startup_and_shutdown.hpp>
 
-#include <fhg/util/boost/program_options/validators/nonexisting_path_in_existing_directory.hpp>
-#include <fhg/util/boost/program_options/validators/positive_integral.hpp>
+#include <util-generic/boost/program_options/validators/nonexisting_path_in_existing_directory.hpp>
+#include <util-generic/boost/program_options/validators/positive_integral.hpp>
 
 #include <iterator>
 #include <string>
@@ -30,7 +30,7 @@
 namespace iml
 {
   RuntimeSystem::RuntimeSystem ( rif::EntryPoints const& entry_points
-                               , boost::filesystem::path socket
+                               , ::boost::filesystem::path socket
                                , unsigned short port
                                , std::chrono::seconds timeout
                                , gaspi::NetdevID netdev_id
@@ -57,7 +57,7 @@ namespace iml
       namespace validators = fhg::util::boost::program_options;
 
       constexpr auto const name_socket ("iml-vmem-socket");
-      using type_socket = boost::filesystem::path;
+      using type_socket = ::boost::filesystem::path;
       using validator_socket = validators::nonexisting_path_in_existing_directory;
       constexpr auto const name_port ("iml-vmem-port");
       using type_port = unsigned short;
@@ -73,7 +73,7 @@ namespace iml
 
   RuntimeSystem::RuntimeSystem
       ( rif::EntryPoints const& entry_points
-      , boost::program_options::variables_map const& vm
+      , ::boost::program_options::variables_map const& vm
       , std::ostream& output
       )
     : RuntimeSystem
@@ -90,20 +90,20 @@ namespace iml
         )
   {}
 
-  boost::program_options::options_description RuntimeSystem::options()
+  ::boost::program_options::options_description RuntimeSystem::options()
   {
-    boost::program_options::options_description options ("Virtual memory");
+    ::boost::program_options::options_description options ("Virtual memory");
 
     options.add_options()
       ( option::name_socket
-      , boost::program_options::value<option::validator_socket>()
+      , ::boost::program_options::value<option::validator_socket>()
         ->required()
       , "socket file to communicate with the virtual memory manager"
       );
 
     options.add_options()
       ( option::name_port
-      , boost::program_options::value<option::validator_port>()
+      , ::boost::program_options::value<option::validator_port>()
         ->required()
       , "internal communication port that shall be used by"
         " the virtual memory manager"
@@ -111,7 +111,7 @@ namespace iml
 
     options.add_options()
       ( option::name_startup_timeout
-      , boost::program_options::value<option::validator_startup_timeout>()
+      , ::boost::program_options::value<option::validator_startup_timeout>()
         ->required()
       , "timeout in seconds for the virtual memory manager to connect and "
         "start up."
@@ -119,7 +119,7 @@ namespace iml
 
     options.add_options()
       ( option::name_netdev_id
-      , boost::program_options::value<option::type_netdev_id>()
+      , ::boost::program_options::value<option::type_netdev_id>()
         ->default_value({})
       , "propose a network device ID to use ('auto' for automatic detection"
         ", or '0' or '1' to select a specific device)"
@@ -129,7 +129,7 @@ namespace iml
   }
 
   void RuntimeSystem::set_socket
-    (boost::program_options::variables_map& vm, option::type_socket value)
+    (::boost::program_options::variables_map& vm, option::type_socket value)
   {
     detail::set<option::type_socket, option::validator_socket>
       ( vm, option::name_socket, value
@@ -141,7 +141,7 @@ namespace iml
   }
 
   void RuntimeSystem::set_port
-    (boost::program_options::variables_map& vm, option::type_port value)
+    (::boost::program_options::variables_map& vm, option::type_port value)
   {
     detail::set<option::type_port, option::validator_port>
       ( vm, option::name_port, value
@@ -153,7 +153,7 @@ namespace iml
   }
 
   void RuntimeSystem::set_startup_timeout
-    (boost::program_options::variables_map& vm, option::type_startup_timeout value)
+    (::boost::program_options::variables_map& vm, option::type_startup_timeout value)
   {
     detail::set<option::type_startup_timeout, option::validator_startup_timeout>
       ( vm, option::name_startup_timeout, value.count()
@@ -165,7 +165,7 @@ namespace iml
   }
 
   void RuntimeSystem::set_netdev_id
-    (boost::program_options::variables_map& vm, option::type_netdev_id value)
+    (::boost::program_options::variables_map& vm, option::type_netdev_id value)
   {
     detail::set<option::type_netdev_id, option::validator_netdev_id>
       ( vm, option::name_netdev_id, value

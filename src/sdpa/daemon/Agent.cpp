@@ -18,14 +18,12 @@
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
-#include <sdpa/events/JobStatusReplyEvent.hpp>
 #include <sdpa/events/SubscribeAckEvent.hpp>
 #include <sdpa/events/delayed_function_call.hpp>
 #include <sdpa/events/put_token.hpp>
 #include <sdpa/events/workflow_response.hpp>
 #include <sdpa/id_generator.hpp>
 
-#include <fhg/util/boost/optional.hpp>
 #include <fhg/util/macros.hpp>
 #include <util-generic/fallthrough.hpp>
 #include <util-generic/functor_visitor.hpp>
@@ -51,8 +49,8 @@ namespace sdpa
     {
       std::vector<std::string> require_proper_url (std::string url)
       {
-        const boost::tokenizer<boost::char_separator<char>> tok
-          (url, boost::char_separator<char> (":"));
+        const ::boost::tokenizer<::boost::char_separator<char>> tok
+          (url, ::boost::char_separator<char> (":"));
 
         const std::vector<std::string> vec (tok.begin(), tok.end());
 
@@ -71,16 +69,23 @@ namespace sdpa
       fhg::com::port_t port_from_url (std::string url)
       {
         const std::vector<std::string> vec (require_proper_url (url));
-        return fhg::com::port_t (vec.size() == 2 ? vec[1] : "0");
+        if (vec.size() == 2)
+        {
+          unsigned short port;
+          std::istringstream iss (vec[1]);
+          iss >> port;
+          return fhg::com::port_t {port};
+        }
+
+        return fhg::com::port_t {0};
       }
     }
 
     Agent::Agent
         ( std::string name
         , std::string url
-        , std::unique_ptr<boost::asio::io_service> peer_io_service
-        , boost::optional<boost::filesystem::path> const& vmem_socket
-        , bool create_wfe
+        , std::unique_ptr<::boost::asio::io_service> peer_io_service
+        , ::boost::optional<::boost::filesystem::path> const& vmem_socket
         , fhg::com::Certificates const& certificates
         )
       : _name (name)
@@ -97,8 +102,7 @@ namespace sdpa
       , _scheduling_requested_guard()
       , _scheduling_requested_condition()
       , _scheduling_requested (false)
-      , _random_extraction_engine
-        (boost::make_optional (create_wfe, std::mt19937 (std::random_device()())))
+      , _random_extraction_engine (std::random_device()())
       , mtx_subscriber_()
       , _log_emitter()
       , _event_queue()
@@ -113,20 +117,16 @@ namespace sdpa
                           , port_from_url (url)
                           , certificates
                           )
-      , ptr_workflow_engine_
-          ( create_wfe
-          ? new we::layer
-              ( std::bind (&Agent::submit, this, std::placeholders::_1, std::placeholders::_2)
-              , std::bind (&Agent::cancel, this, std::placeholders::_1)
-              , std::bind (&Agent::finished, this, std::placeholders::_1, std::placeholders::_2)
-              , std::bind (&Agent::failed, this, std::placeholders::_1, std::placeholders::_2)
-              , std::bind (&Agent::canceled, this, std::placeholders::_1)
-              , std::bind (&Agent::token_put, this, std::placeholders::_1, std::placeholders::_2)
-              , std::bind (&Agent::workflow_response_response, this, std::placeholders::_1, std::placeholders::_2)
-              , std::bind (&Agent::gen_id, this)
-              , *_random_extraction_engine
-              )
-          : nullptr
+      , _workflow_engine
+          ( std::bind (&Agent::submit, this, std::placeholders::_1, std::placeholders::_2)
+          , std::bind (&Agent::cancel, this, std::placeholders::_1)
+          , std::bind (&Agent::finished, this, std::placeholders::_1, std::placeholders::_2)
+          , std::bind (&Agent::failed, this, std::placeholders::_1, std::placeholders::_2)
+          , std::bind (&Agent::canceled, this, std::placeholders::_1)
+          , std::bind (&Agent::token_put, this, std::placeholders::_1, std::placeholders::_2)
+          , std::bind (&Agent::workflow_response_response, this, std::placeholders::_1, std::placeholders::_2)
+          , std::bind (&Agent::gen_id, this)
+          , _random_extraction_engine
           )
       , _scheduling_thread (&Agent::scheduling_thread, this)
       , _interrupt_scheduling_thread
@@ -153,7 +153,7 @@ namespace sdpa
 
     Agent::cleanup_job_map_on_dtor_helper::~cleanup_job_map_on_dtor_helper()
     {
-      for (const Job* const pJob : _ | boost::adaptors::map_values )
+      for (const Job* const pJob : _ | ::boost::adaptors::map_values )
       {
         delete pJob;
       }
@@ -164,7 +164,7 @@ namespace sdpa
       return _name;
     }
 
-    boost::asio::ip::tcp::endpoint Agent::peer_local_endpoint() const
+    ::boost::asio::ip::tcp::endpoint Agent::peer_local_endpoint() const
     {
       return _network_strategy.local_endpoint();
     }
@@ -307,7 +307,7 @@ namespace sdpa
           ("Cannot delete a job which is in a non-terminal state.");
       }
 
-      if (!boost::get<job_source_client> (&job->source()))
+      if (!::boost::get<job_source_client> (&job->source()))
       {
         throw std::invalid_argument
           ("tried deleting a job not submitted by a client");
@@ -341,8 +341,8 @@ namespace sdpa
       //! \note send immediately an acknowledgment to the component
       // that requested the cancellation if it does not get a
       // notification right after
-      if (boost::get<job_source_wfe> (&job->source())
-         || ( boost::get<job_source_client> (&job->source())
+      if (::boost::get<job_source_wfe> (&job->source())
+         || ( ::boost::get<job_source_client> (&job->source())
             && !isSubscriber (source, job->id())
             )
          )
@@ -350,12 +350,12 @@ namespace sdpa
         parent_proxy (this, source).cancel_job_ack (event->job_id());
       }
 
-      if (boost::get<job_handler_wfe> (&job->handler()))
+      if (::boost::get<job_handler_wfe> (&job->handler()))
       {
         if (job->getStatus() == sdpa::status::RUNNING)
         {
           job->CancelJob();
-          workflowEngine()->cancel (job->id());
+          _workflow_engine.cancel (job->id());
         }
         else
         {
@@ -396,7 +396,7 @@ namespace sdpa
     {
       try
       {
-        workflowEngine()->submit (job_id, pJob->activity());
+        _workflow_engine.submit (job_id, pJob->activity());
 
         // Should set the workflow_id here, or send it together with the activity
         pJob->Dispatch();
@@ -440,26 +440,16 @@ namespace sdpa
                           ( job_id
                           , e.activity()
                           , job_source (job_source_client{})
-                          , hasWorkflowEngine()
-                          ? job_handler (job_handler_wfe())
-                          : job_handler (job_handler_worker())
+                          , job_handler_wfe()
                           )
                       );
 
       parent_proxy (this, source).submit_job_ack (job_id);
 
-      // check if the message comes from outside or from WFE
-      // if it comes from outside and the agent has an WFE, submit it to it
-      if (boost::get<job_handler_wfe> (&pJob->handler()))
+      // the jobs submitted by clients are always handled by the workflow engine
+      if (workflow_engine_submit (job_id, pJob))
       {
-        if (workflow_engine_submit (job_id, pJob))
-        {
-          emit_gantt (job_id, pJob->activity(), NotificationEvent::STATE_STARTED);
-        }
-      }
-      else {
-        _scheduler.submit_job (job_id);
-        request_scheduling();
+        emit_gantt (job_id, pJob->activity(), NotificationEvent::STATE_STARTED);
       }
     }
 
@@ -480,7 +470,7 @@ namespace sdpa
       request_scheduling();
 
       child_proxy (this, source)
-        .worker_registration_response (boost::none);
+        .worker_registration_response (::boost::none);
     }
     catch (...)
     {
@@ -557,7 +547,7 @@ namespace sdpa
     }
     catch (...)
     {
-      workflowEngine()->failed
+      _workflow_engine.failed
         (job_id, fhg::util::current_exception_printer (": ").string());
     }
 
@@ -603,7 +593,7 @@ namespace sdpa
         _scheduler.release_reservation (job_id);
         _scheduler.delete_job (job_id);
 
-        if (!boost::get<job_source_client> (&pJob->source()))
+        if (!::boost::get<job_source_client> (&pJob->source()))
         {
           deleteJob (job_id);
         }
@@ -700,7 +690,7 @@ namespace sdpa
         for (auto& result : results->individual_results)
         {
           if ( JobFSM_::s_failed const* as_failed
-             = boost::get<JobFSM_::s_failed> (&result.second)
+             = ::boost::get<JobFSM_::s_failed> (&result.second)
              )
           {
             errors.emplace_back (result.first + ": " + as_failed->message);
@@ -720,7 +710,7 @@ namespace sdpa
       _scheduler.release_reservation (job->id());
       request_scheduling();
 
-      if (boost::get<job_source_wfe> (&job->source()))
+      if (::boost::get<job_source_wfe> (&job->source()))
       {
         deleteJob (job->id());
       }
@@ -779,17 +769,15 @@ namespace sdpa
 
       struct
       {
-        using result_type = void;
         void operator() (job_source_wfe const&) const
         {
-          _wfe->finished (_job->id(), _job->result());
+          _wfe.finished (_job->id(), _job->result());
         }
         void operator() (job_source_client const&) const {}
-        Agent* _this;
         Job* _job;
-        we::layer* _wfe;
-      } visitor = {this, job, ptr_workflow_engine_.get()};
-      boost::apply_visitor (visitor, job->source());
+        we::layer& _wfe;
+      } visitor = {job, _workflow_engine};
+      ::boost::apply_visitor (visitor, job->source());
 
       notify_subscribers<events::JobFinishedEvent>
         (job->id(), job->id(), job->result());
@@ -800,17 +788,15 @@ namespace sdpa
 
       struct
       {
-        using result_type = void;
         void operator() (job_source_wfe const&) const
         {
-          _wfe->failed (_job->id(), _job->error_message());
+          _wfe.failed (_job->id(), _job->error_message());
         }
         void operator() (job_source_client const&) const {}
-        Agent* _this;
         Job* _job;
-        we::layer* _wfe;
-      } visitor = {this, job, ptr_workflow_engine_.get()};
-      boost::apply_visitor (visitor, job->source());
+        we::layer& _wfe;
+      } visitor = {job, _workflow_engine};
+      ::boost::apply_visitor (visitor, job->source());
 
       notify_subscribers<events::JobFailedEvent>
         (job->id(), job->id(), job->error_message());
@@ -821,17 +807,15 @@ namespace sdpa
 
       struct
       {
-        using result_type = void;
         void operator() (job_source_wfe const&) const
         {
-          _wfe->canceled (_job->id());
+          _wfe.canceled (_job->id());
         }
         void operator() (job_source_client const&) const {}
-        Agent* _this;
         Job* _job;
-        we::layer* _wfe;
-      } visitor = {this, job, ptr_workflow_engine_.get()};
-      boost::apply_visitor (visitor, job->source());
+        we::layer& _wfe;
+      } visitor = {job, _workflow_engine};
+      ::boost::apply_visitor (visitor, job->source());
 
       notify_subscribers<events::CancelJobAckEvent> (job->id(), job->id());
     }
@@ -1072,11 +1056,11 @@ namespace sdpa
           {
             _put_token_source.emplace (event->put_token_id(), source);
 
-            workflowEngine()->put_token ( job_id
-                                        , event->put_token_id()
-                                        , event->place_name()
-                                        , event->value()
-                                        );
+            _workflow_engine.put_token ( job_id
+                                       , event->put_token_id()
+                                       , event->place_name()
+                                       , event->value()
+                                       );
           }
         );
     }
@@ -1097,7 +1081,7 @@ namespace sdpa
 
     void Agent::token_put
       ( std::string put_token_id
-      , boost::optional<std::exception_ptr> error
+      , ::boost::optional<std::exception_ptr> error
       )
     {
       delay
@@ -1106,7 +1090,7 @@ namespace sdpa
 
     void Agent::token_put_in_workflow
       ( std::string put_token_id
-      , boost::optional<std::exception_ptr> error
+      , ::boost::optional<std::exception_ptr> error
       )
     {
       parent_proxy (this, take (_put_token_source, put_token_id))
@@ -1160,11 +1144,11 @@ namespace sdpa
           {
             _workflow_response_source.emplace (event->workflow_response_id(), source);
 
-            workflowEngine()->request_workflow_response ( job_id
-                                                        , event->workflow_response_id()
-                                                        , event->place_name()
-                                                        , event->value()
-                                                        );
+            _workflow_engine.request_workflow_response ( job_id
+                                                       , event->workflow_response_id()
+                                                       , event->place_name()
+                                                       , event->value()
+                                                       );
           }
         );
     }
@@ -1184,7 +1168,7 @@ namespace sdpa
     }
     void Agent::workflow_response_response
       ( std::string workflow_response_id
-      , boost::variant<std::exception_ptr, pnet::type::value::value_type> result
+      , ::boost::variant<std::exception_ptr, pnet::type::value::value_type> result
       )
     {
       delay (std::bind ( &Agent::workflow_engine_workflow_response_response
@@ -1197,7 +1181,7 @@ namespace sdpa
 
     void Agent::workflow_engine_workflow_response_response
       ( std::string workflow_response_id
-      , boost::variant<std::exception_ptr, pnet::type::value::value_type> result
+      , ::boost::variant<std::exception_ptr, pnet::type::value::value_type> result
       )
     {
       parent_proxy (this, take (_workflow_response_source, workflow_response_id))
@@ -1256,16 +1240,16 @@ namespace sdpa
     {}
 
     void Agent::child_proxy::worker_registration_response
-      (boost::optional<std::exception_ptr> error) const
+      (::boost::optional<std::exception_ptr> error) const
     {
       _that->sendEventToOther<events::worker_registration_response>
         (_address, std::move (error));
     }
 
     void Agent::child_proxy::submit_job
-      ( boost::optional<job_id_t> id
+      ( ::boost::optional<job_id_t> id
       , we::type::Activity activity
-      , boost::optional<std::string> const& implementation
+      , ::boost::optional<std::string> const& implementation
       , std::set<worker_id_t> const& workers
       ) const
     {
@@ -1332,7 +1316,7 @@ namespace sdpa
     }
 
     void Agent::parent_proxy::put_token_response
-      (std::string put_token_id, boost::optional<std::exception_ptr> error) const
+      (std::string put_token_id, ::boost::optional<std::exception_ptr> error) const
     {
       _that->sendEventToOther<events::put_token_response>
         (_address, put_token_id, error);
@@ -1340,7 +1324,7 @@ namespace sdpa
 
     void Agent::parent_proxy::workflow_response_response
       ( std::string workflow_response_id
-      , boost::variant<std::exception_ptr, pnet::type::value::value_type> content
+      , ::boost::variant<std::exception_ptr, pnet::type::value::value_type> content
       ) const
     {
       _that->sendEventToOther<events::workflow_response_response>

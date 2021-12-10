@@ -34,7 +34,7 @@ namespace fhg
       if (int ec = std::system (command.c_str()))
       {
         throw std::runtime_error
-          ( ( boost::format ("Could not execute '%1%': %2%")
+          ( ( ::boost::format ("Could not execute '%1%': %2%")
             % command
             % std::strerror (wexitstatus (ec))
             ).str()

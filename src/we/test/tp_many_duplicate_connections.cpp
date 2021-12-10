@@ -33,26 +33,34 @@ BOOST_DATA_TEST_CASE ( add_connection_only_allows_a_tp_or_tp_many
   we::type::Transition trans_io
     ( "put_many_dup_test"
       , we::type::Expression ("")
-      , boost::none
+      , ::boost::none
       , {}
       , we::priority_type()
-    , boost::optional<we::type::eureka_id_type>{}
+    , ::boost::optional<we::type::eureka_id_type>{}
     , std::list<we::type::Preference>{}
     );
   we::transition_id_type const tid (net.add_transition (trans_io));
 
   we::place_id_type const pid_out_list
-    (net.add_place (place::type ("out_list", "list", boost::none)));
+    (net.add_place (place::type ("out_list", "list", ::boost::none)));
   we::place_id_type const pid_out_t
-    (net.add_place (place::type ("out", "long", boost::none)));
+    (net.add_place (place::type ("out", "long", ::boost::none)));
 
   we::port_id_type const port_out_list
     ( trans_io.add_port
       (we::type::Port ("out", we::type::port::direction::Out{}, "list", we::type::property::type{}))
     );
 
-  auto const edge_first (many_first ? we::edge::TP_MANY : we::edge::TP);
-  auto const edge_second (many_first ? we::edge::TP :  we::edge::TP_MANY);
+  auto const edge_first
+    ( many_first
+    ? we::edge::type {we::edge::TP_MANY{}}
+    : we::edge::type {we::edge::TP{}}
+    );
+  auto const edge_second
+    ( many_first
+    ? we::edge::type {we::edge::TP{}}
+    : we::edge::type {we::edge::TP_MANY{}}
+    );
   auto const pid_first (many_first ? pid_out_t : pid_out_list);
   auto const pid_second (many_first ? pid_out_list : pid_out_t);
 

@@ -46,9 +46,9 @@ namespace fhg
 
       public:
         using value_type = T;
-        using iterator = boost::transform_iterator
+        using iterator = ::boost::transform_iterator
           <decltype (&select_mutable), typename decltype (_values)::iterator>;
-        using const_iterator = boost::transform_iterator
+        using const_iterator = ::boost::transform_iterator
           <decltype (&select), typename decltype (_values)::const_iterator>;
 
         template<typename DuplicateException>
@@ -61,12 +61,12 @@ namespace fhg
           }
         }
 
-        boost::optional<T const&> get (key_type const& key) const
+        ::boost::optional<T const&> get (key_type const& key) const
         {
           auto const it (_values.find (key));
           if (it == _values.end())
           {
-            return boost::none;
+            return ::boost::none;
           }
           return it->second;
         }

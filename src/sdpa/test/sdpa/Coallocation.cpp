@@ -14,12 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+#include <sdpa/test/sdpa/UNSAFE_thread_event.hpp>
 #include <sdpa/test/sdpa/utils.hpp>
 #include <sdpa/types.hpp>
 
-#include <test/certificates_data.hpp>
+#include <testing/certificates_data.hpp>
 
-#include <fhg/util/thread/event.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/optional.hpp>
 
@@ -29,6 +29,7 @@
 
 #include <atomic>
 #include <chrono>
+#include <future>
 #include <string>
 #include <thread>
 
@@ -40,22 +41,22 @@ BOOST_DATA_TEST_CASE (coallocation_workflow, certificates_data, certificates)
   sdpa::job_id_t const job_id
     (client.submit_job (utils::net_with_one_child_requiring_workers (2)));
 
-  fhg::util::thread::event<std::string> job_submitted_0;
+  std::promise<std::string> job_submitted_0;
   utils::fake_drts_worker_waiting_for_finished_ack worker_0
-    ( [&job_submitted_0] (std::string s) { job_submitted_0.notify (s); }
+    ( [&job_submitted_0] (std::string s) { job_submitted_0.set_value (s); }
     , agent
     , certificates
     );
 
-  fhg::util::thread::event<std::string> job_submitted_1;
+  std::promise<std::string> job_submitted_1;
   utils::fake_drts_worker_waiting_for_finished_ack worker_1
-    ( [&job_submitted_1] (std::string s) { job_submitted_1.notify (s); }
+    ( [&job_submitted_1] (std::string s) { job_submitted_1.set_value (s); }
     , agent
     , certificates
     );
 
-  worker_0.finish_and_wait_for_ack (job_submitted_0.wait());
-  worker_1.finish_and_wait_for_ack (job_submitted_1.wait());
+  worker_0.finish_and_wait_for_ack (job_submitted_0.get_future().get());
+  worker_1.finish_and_wait_for_ack (job_submitted_1.get_future().get());
 
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
@@ -73,7 +74,7 @@ BOOST_DATA_TEST_CASE
   const utils::agent agent (certificates);
 
   // 1. start worker 1
-  fhg::util::thread::event<std::string> job_submitted_1;
+  fhg::util::thread::UNSAFE_event<std::string> job_submitted_1;
   utils::fake_drts_worker_waiting_for_finished_ack worker_1
     ([&job_submitted_1] (std::string j) { job_submitted_1.notify (j); }, agent, certificates);
 
@@ -83,7 +84,7 @@ BOOST_DATA_TEST_CASE
     (client.submit_job (utils::net_with_two_children_requiring_n_workers (2)));
 
   // 3. start worker 2
-  fhg::util::thread::event<std::string> job_submitted_2;
+  fhg::util::thread::UNSAFE_event<std::string> job_submitted_2;
   std::atomic<bool> worker_2_shall_not_get_a_job (false);
   std::atomic<bool> worker_2_got_a_job_while_forbidden (false);
   utils::fake_drts_worker_waiting_for_finished_ack worker_2
@@ -172,15 +173,15 @@ BOOST_DATA_TEST_CASE
 
   const utils::agent agent (certificates);
 
-  fhg::util::thread::event<std::string> job_submitted_1;
+  std::promise<std::string> job_submitted_1;
   utils::fake_drts_worker_waiting_for_finished_ack worker_1
-    ([&job_submitted_1] (std::string j) { job_submitted_1.notify (j); }, agent, certificates);
+    ([&job_submitted_1] (std::string j) { job_submitted_1.set_value (j); }, agent, certificates);
 
   utils::client client (agent, certificates);
   sdpa::job_id_t const job_id
     (client.submit_job (utils::net_with_two_children_requiring_n_workers (2)));
 
-  fhg::util::thread::event<std::string> job_submitted_2;
+  std::promise<std::string> job_submitted_2;
   std::atomic<bool> worker_2_shall_not_get_a_job (false);
   std::atomic<bool> worker_2_got_a_job_while_forbidden (false);
   utils::fake_drts_worker_waiting_for_finished_ack worker_2
@@ -190,30 +191,30 @@ BOOST_DATA_TEST_CASE
         // setting the forbidden-flag and checking!
         worker_2_got_a_job_while_forbidden
           = worker_2_got_a_job_while_forbidden || worker_2_shall_not_get_a_job;
-        job_submitted_2.notify (j);
+        job_submitted_2.set_value (j);
       }
     , agent
     , certificates
     );
 
-  const std::string job_name (job_submitted_1.wait());
-  BOOST_REQUIRE_EQUAL (job_name, job_submitted_2.wait());
+  const std::string job_name (job_submitted_1.get_future().get());
+  BOOST_REQUIRE_EQUAL (job_name, job_submitted_2.get_future().get());
 
   worker_2_shall_not_get_a_job = true;
   worker_2.finish_and_wait_for_ack (job_name);
 
   {
     //! \note starting _two_ workers, which get the second child job
-    fhg::util::thread::event<std::string> job_submitted_3;
+    std::promise<std::string> job_submitted_3;
     utils::fake_drts_worker_waiting_for_finished_ack worker_3
-      ([&job_submitted_3] (std::string j) { job_submitted_3.notify (j); }, agent, certificates);
+      ([&job_submitted_3] (std::string j) { job_submitted_3.set_value (j); }, agent, certificates);
 
-    fhg::util::thread::event<std::string> job_submitted_4;
+    std::promise<std::string> job_submitted_4;
     utils::fake_drts_worker_waiting_for_finished_ack worker_4
-      ([&job_submitted_4] (std::string j) { job_submitted_4.notify (j); }, agent, certificates);
+      ([&job_submitted_4] (std::string j) { job_submitted_4.set_value (j); }, agent, certificates);
 
-    const std::string _job_name (job_submitted_3.wait());
-    BOOST_REQUIRE_EQUAL (_job_name, job_submitted_4.wait());
+    const std::string _job_name (job_submitted_3.get_future().get());
+    BOOST_REQUIRE_EQUAL (_job_name, job_submitted_4.get_future().get());
 
     worker_3.finish_and_wait_for_ack (_job_name);
     worker_4.finish_and_wait_for_ack (_job_name);
@@ -245,8 +246,8 @@ BOOST_DATA_TEST_CASE
   sdpa::job_id_t const job_id
     (client.submit_job (utils::net_with_two_children_requiring_n_workers (3)));
 
-  fhg::util::thread::event<std::string> job_submitted_1;
-  fhg::util::thread::event<std::string> cancel_requested_1;
+  fhg::util::thread::UNSAFE_event<std::string> job_submitted_1;
+  fhg::util::thread::UNSAFE_event<std::string> cancel_requested_1;
   std::atomic<bool> worker_1_shall_not_get_a_job (false);
   std::atomic<bool> worker_1_got_a_job_while_forbidden (false);
   utils::fake_drts_worker_notifying_cancel worker_1
@@ -263,8 +264,8 @@ BOOST_DATA_TEST_CASE
     , certificates
     );
 
-  fhg::util::thread::event<std::string> job_submitted_2;
-  fhg::util::thread::event<std::string> cancel_requested_2;
+  fhg::util::thread::UNSAFE_event<std::string> job_submitted_2;
+  fhg::util::thread::UNSAFE_event<std::string> cancel_requested_2;
   utils::fake_drts_worker_notifying_cancel worker_2
     ( [&job_submitted_2] (std::string j) { job_submitted_2.notify (j); }
     , [&cancel_requested_2] (std::string j) { cancel_requested_2.notify (j); }
@@ -273,7 +274,7 @@ BOOST_DATA_TEST_CASE
     );
 
   {
-    fhg::util::thread::event<std::string> job_submitted_3;
+    fhg::util::thread::UNSAFE_event<std::string> job_submitted_3;
 
     const utils::fake_drts_worker_notifying_module_call_submission worker_3
       ( [&job_submitted_3] (std::string j) { job_submitted_3.notify (j); }
@@ -327,7 +328,7 @@ BOOST_DATA_TEST_CASE
 
   //! \note cleanup of both jobs
   {
-    fhg::util::thread::event<std::string> job_submitted_3;
+    fhg::util::thread::UNSAFE_event<std::string> job_submitted_3;
 
     utils::fake_drts_worker_waiting_for_finished_ack worker_3
       ( [&job_submitted_3] (std::string j) { job_submitted_3.notify (j); }
@@ -383,8 +384,8 @@ BOOST_DATA_TEST_CASE
   sdpa::job_id_t const job_id
     (client.submit_job (utils::net_with_two_children_requiring_n_workers (3)));
 
-  fhg::util::thread::event<std::string> job_submitted_1;
-  fhg::util::thread::event<std::string> cancel_requested_1;
+  fhg::util::thread::UNSAFE_event<std::string> job_submitted_1;
+  fhg::util::thread::UNSAFE_event<std::string> cancel_requested_1;
   utils::fake_drts_worker_notifying_cancel worker_1
     ( [&] (std::string j) { job_submitted_1.notify (j); }
     , [&cancel_requested_1] (std::string j) { cancel_requested_1.notify (j); }
@@ -392,8 +393,8 @@ BOOST_DATA_TEST_CASE
     , certificates
     );
 
-  fhg::util::thread::event<std::string> job_submitted_2;
-  fhg::util::thread::event<std::string> cancel_requested_2;
+  fhg::util::thread::UNSAFE_event<std::string> job_submitted_2;
+  fhg::util::thread::UNSAFE_event<std::string> cancel_requested_2;
   utils::fake_drts_worker_notifying_cancel worker_2
     ( [&job_submitted_2] (std::string j) { job_submitted_2.notify (j); }
     , [&cancel_requested_2] (std::string j) { cancel_requested_2.notify (j); }
@@ -402,7 +403,7 @@ BOOST_DATA_TEST_CASE
     );
 
   {
-    fhg::util::thread::event<std::string> job_submitted_3;
+    fhg::util::thread::UNSAFE_event<std::string> job_submitted_3;
 
     const utils::fake_drts_worker_notifying_module_call_submission worker_3
       ( [&job_submitted_3] (std::string j) { job_submitted_3.notify (j); }
@@ -420,7 +421,7 @@ BOOST_DATA_TEST_CASE
   worker_1.canceled (canceled_job_1);
 
   {
-    fhg::util::thread::event<std::string> job_submitted_3;
+    fhg::util::thread::UNSAFE_event<std::string> job_submitted_3;
 
     utils::fake_drts_worker_waiting_for_finished_ack worker_3
       ( [&job_submitted_3] (std::string j) { job_submitted_3.notify (j); }
@@ -464,7 +465,7 @@ BOOST_DATA_TEST_CASE
   sdpa::job_id_t const job_id
     (client.submit_job (utils::net_with_one_child_requiring_workers (2)));
 
-  fhg::util::thread::event<std::string> job_submitted_1;
+  fhg::util::thread::UNSAFE_event<std::string> job_submitted_1;
   auto worker_1
     ( std::make_unique<utils::fake_drts_worker_notifying_module_call_submission>
         ( [&job_submitted_1] (std::string j) { job_submitted_1.notify (j); }
@@ -473,8 +474,8 @@ BOOST_DATA_TEST_CASE
         )
     );
 
-  fhg::util::thread::event<std::string> job_submitted_2;
-  fhg::util::thread::event<std::string> cancel_requested_2;
+  fhg::util::thread::UNSAFE_event<std::string> job_submitted_2;
+  fhg::util::thread::UNSAFE_event<std::string> cancel_requested_2;
   utils::fake_drts_worker_notifying_cancel_but_never_replying worker_2
     ( [&job_submitted_2] (std::string j) { job_submitted_2.notify (j); }
     , [&cancel_requested_2] (std::string j) { cancel_requested_2.notify (j); }
@@ -491,7 +492,7 @@ BOOST_DATA_TEST_CASE
     worker_2.finish_and_wait_for_ack (submitted);
   }
 
-  fhg::util::thread::event<std::string> job_submitted_3;
+  fhg::util::thread::UNSAFE_event<std::string> job_submitted_3;
   utils::fake_drts_worker_waiting_for_finished_ack worker_3
     ( [&job_submitted_3] (std::string j) { job_submitted_3.notify (j); }
     , agent
@@ -522,8 +523,8 @@ BOOST_DATA_TEST_CASE
   sdpa::job_id_t const job_id
     (client.submit_job (utils::net_with_one_child_requiring_workers (3)));
 
-  fhg::util::thread::event<std::string> job_submitted_1;
-  fhg::util::thread::event<std::string> cancel_requested_1;
+  fhg::util::thread::UNSAFE_event<std::string> job_submitted_1;
+  fhg::util::thread::UNSAFE_event<std::string> cancel_requested_1;
 
   utils::fake_drts_worker_notifying_cancel worker_1
     ( [&] (std::string j) { job_submitted_1.notify (j); }
@@ -532,8 +533,8 @@ BOOST_DATA_TEST_CASE
     , certificates
     );
 
-  fhg::util::thread::event<std::string> job_submitted_2;
-  fhg::util::thread::event<std::string> cancel_requested_2;
+  fhg::util::thread::UNSAFE_event<std::string> job_submitted_2;
+  fhg::util::thread::UNSAFE_event<std::string> cancel_requested_2;
   utils::fake_drts_worker_notifying_cancel worker_2
     ( [&job_submitted_2] (std::string j) { job_submitted_2.notify (j); }
     , [&cancel_requested_2] (std::string j) { cancel_requested_2.notify (j); }
@@ -542,7 +543,7 @@ BOOST_DATA_TEST_CASE
     );
 
   {
-    fhg::util::thread::event<std::string> job_submitted_3;
+    fhg::util::thread::UNSAFE_event<std::string> job_submitted_3;
 
     utils::fake_drts_worker_waiting_for_finished_ack worker_3
       ( [&job_submitted_3] (std::string j) { job_submitted_3.notify (j); }

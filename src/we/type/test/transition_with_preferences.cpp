@@ -69,10 +69,10 @@ namespace {
     return we::type::Transition
       ( transition_name
       , dtype()
-      , boost::none
+      , ::boost::none
       , {}
       , we::priority_type()
-      , boost::none
+      , ::boost::none
       , std::list<we::type::Preference> { "target1"
                                           , "target2"
                                           }

@@ -26,7 +26,7 @@ namespace sdpa
     class CancelJobAckEvent : public JobEvent
     {
     public:
-      typedef boost::shared_ptr<CancelJobAckEvent> Ptr;
+      typedef ::boost::shared_ptr<CancelJobAckEvent> Ptr;
 
       using JobEvent::JobEvent;
 

@@ -19,7 +19,7 @@
 #include <sdpa/com/NetworkStrategy.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 
-#include <test/certificates_data.hpp>
+#include <testing/certificates_data.hpp>
 
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
@@ -44,7 +44,7 @@ namespace
     {}
 
     void perform ( fhg::com::p2p::address_t const&
-                 , boost::shared_ptr<sdpa::events::SDPAEvent> const&
+                 , ::boost::shared_ptr<sdpa::events::SDPAEvent> const&
                  )
     {
       std::lock_guard<std::mutex> _ (_counter_mutex);
@@ -85,9 +85,9 @@ BOOST_DATA_TEST_CASE (test_strategy, certificates_data, certificates)
                 , std::placeholders::_1
                 , std::placeholders::_2
                 )
-    , std::make_unique<boost::asio::io_service>()
+    , std::make_unique<::boost::asio::io_service>()
     , fhg::com::host_t ("localhost")
-    , fhg::com::port_t ("0")
+    , fhg::com::port_t (0)
     , certificates
     );
 
@@ -96,7 +96,7 @@ BOOST_DATA_TEST_CASE (test_strategy, certificates_data, certificates)
         ( fhg::com::host_t ( fhg::util::connectable_to_address_string
                                (net.local_endpoint().address())
                            )
-        , fhg::com::port_t (std::to_string (net.local_endpoint().port()))
+        , fhg::com::port_t (net.local_endpoint().port())
         )
     , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
     , "success"

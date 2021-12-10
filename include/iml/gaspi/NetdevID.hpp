@@ -58,7 +58,7 @@ namespace iml
     //! framework.
     IML_DLLEXPORT
       void validate
-        (boost::any&, std::vector<std::string> const&, NetdevID*, int);
+        (::boost::any&, std::vector<std::string> const&, NetdevID*, int);
   }
 }
 

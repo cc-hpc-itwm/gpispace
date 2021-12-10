@@ -21,8 +21,8 @@
 #include <logging/tcp_server_providing_add_emitters.hpp>
 
 #include <fhg/project_version.hpp>
-#include <fhg/util/boost/program_options/generic.hpp>
-#include <fhg/util/boost/program_options/validators/positive_integral.hpp>
+#include <util-generic/boost/program_options/generic.hpp>
+#include <util-generic/boost/program_options/validators/positive_integral.hpp>
 #include <util-generic/print_exception.hpp>
 #include <util-generic/wait_and_collect_exceptions.hpp>
 
@@ -62,7 +62,7 @@ namespace
 int main (int ac, char *av[])
 try
 {
-  boost::program_options::variables_map const vm
+  ::boost::program_options::variables_map const vm
     ( fhg::util::boost::program_options::options ("GPI-Space monitor")
     . add (option::emitters)
     . add (option::port)
@@ -93,12 +93,12 @@ try
       }
     );
 
-  boost::optional<fhg::logging::tcp_server_providing_add_emitters>
+  ::boost::optional<fhg::logging::tcp_server_providing_add_emitters>
     tcp_server_providing_add_emitters;
   auto const port (option::port.get<unsigned short> (vm));
   if (port)
   {
-    tcp_server_providing_add_emitters = boost::in_place (&log_receiver, *port);
+    tcp_server_providing_add_emitters = ::boost::in_place (&log_receiver, *port);
   }
 
   auto add_emitter (window.menuBar()->addAction ("Add emitters"));

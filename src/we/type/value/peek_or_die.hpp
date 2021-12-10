@@ -37,12 +37,12 @@ namespace pnet
                       , std::list<std::string> const& path
                       )
       {
-        boost::optional<value_type const&> const value (peek (path, store));
+        ::boost::optional<value_type const&> const value (peek (path, store));
 
         if (!value)
         {
           throw std::logic_error
-            (( boost::format ("Could not peek '%1%' from '%2%'")
+            (( ::boost::format ("Could not peek '%1%' from '%2%'")
              % path::join (path)
              % show (store)
              ).str()

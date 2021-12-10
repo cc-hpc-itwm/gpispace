@@ -62,7 +62,7 @@ namespace fhg
     };
 
     GSPC_DLLEXPORT void validate
-      (boost::any&, std::vector<std::string> const&, tcp_endpoint*, int);
+      (::boost::any&, std::vector<std::string> const&, tcp_endpoint*, int);
   }
 }
 

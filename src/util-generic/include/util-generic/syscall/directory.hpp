@@ -26,7 +26,7 @@ namespace fhg
     {
       struct directory
       {
-        directory (boost::filesystem::path const&);
+        directory (::boost::filesystem::path const&);
         ~directory();
 
         int fd() const;

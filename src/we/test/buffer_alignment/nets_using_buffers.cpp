@@ -49,7 +49,7 @@ namespace we
         };
 
         void align_up_worst
-          (std::size_t& pos, boost::optional<std::size_t> align)
+          (std::size_t& pos, ::boost::optional<std::size_t> align)
         {
           // Don't assume base alignment, so every case should be
           // worst case.
@@ -92,17 +92,17 @@ namespace we
           return create_net_description (buffers);
         }
 
-        boost::none_t always_none()
+        ::boost::none_t always_none()
         {
-          return boost::none;
+          return ::boost::none;
         }
         unsigned long random_power_of_two()
         {
           return 1ul << fhg::util::testing::random<unsigned long>{} (10, 0);
         }
-        boost::optional<unsigned long> random_power_of_two_or_none()
+        ::boost::optional<unsigned long> random_power_of_two_or_none()
         {
-          return boost::make_optional
+          return ::boost::make_optional
             (fhg::util::testing::random<bool>{}(), random_power_of_two());
         }
       }

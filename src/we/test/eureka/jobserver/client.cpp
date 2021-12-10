@@ -17,8 +17,8 @@
 #include <we/test/eureka/jobserver/client.hpp>
 #include <we/test/eureka/jobserver/protocol.hpp>
 
-#include <rpc/remote_function.hpp>
-#include <rpc/remote_tcp_endpoint.hpp>
+#include <util-rpc/remote_function.hpp>
+#include <util-rpc/remote_tcp_endpoint.hpp>
 
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 

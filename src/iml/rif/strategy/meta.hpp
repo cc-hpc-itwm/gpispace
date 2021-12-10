@@ -17,7 +17,7 @@
 #pragma once
 
 #include <iml/rif/EntryPoint.hpp>
-#include <rpc/function_description.hpp>
+#include <util-rpc/function_description.hpp>
 
 #include <string>
 #include <vector>
@@ -52,7 +52,7 @@ namespace fhg
                    > bootstrap
           ( std::string const& strategy
           , std::vector<std::string> const& hostnames
-          , boost::optional<unsigned short> const& port
+          , ::boost::optional<unsigned short> const& port
           , std::vector<std::string> const& parameters
           , std::ostream&
           );

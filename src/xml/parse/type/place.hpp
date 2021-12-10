@@ -49,11 +49,11 @@ namespace xml
         place_type ( util::position_type const&
                    , std::string const& name
                    , std::string const& type
-                   , boost::optional<bool> is_virtual
-                   , boost::optional<bool> put_token
+                   , ::boost::optional<bool> is_virtual
+                   , ::boost::optional<bool> put_token
                    , std::list<token_type> tokens = {}
                    , we::type::property::type properties = {}
-                   , boost::optional<pnet::type::signature::signature_type> = boost::none
+                   , ::boost::optional<pnet::type::signature::signature_type> = ::boost::none
                    );
 
         std::string const& name() const;
@@ -71,9 +71,9 @@ namespace xml
                                , state::type const&
                                ) const;
 
-        boost::optional<bool> const& get_is_virtual (void) const;
+        ::boost::optional<bool> const& get_is_virtual (void) const;
         bool is_virtual (void) const;
-        boost::optional<bool> const& put_token() const
+        ::boost::optional<bool> const& put_token() const
         {
           return _put_token;
         }
@@ -84,12 +84,12 @@ namespace xml
         unique_key_type const& unique_key() const;
 
       private:
-        boost::optional<bool> _is_virtual;
-        boost::optional<bool> _put_token;
+        ::boost::optional<bool> _is_virtual;
+        ::boost::optional<bool> _put_token;
 
         std::string const _name;
         std::string _type;
-        boost::optional<pnet::type::signature::signature_type> _signature;
+        ::boost::optional<pnet::type::signature::signature_type> _signature;
 
         //! \todo All these should be private with accessors.
       public:

@@ -23,7 +23,7 @@
 //! \todo remove, at the moment needed to make net_type a complete type
 #include <we/type/net.hpp>
 
-#include <fhg/util/boost/variant.hpp>
+#include <util-generic/cxx17/holds_alternative.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/random.hpp>
 #include <util-generic/testing/require_exception.hpp>
@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE (memory_buffer_without_size_throws)
   std::string const name (random_identifier_with_valid_prefix());
 
   std::string const input
-    ( ( boost::format (R"EOS(
+    ( ( ::boost::format (R"EOS(
 <defun>
   <memory-buffer name="%1%"/>
   <expression/>
@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE (memory_buffer_without_size_throws)
       { std::istringstream input_stream (input);
         xml::parse::just_parse (state, input_stream);
       }
-      , boost::format ("ERROR: memory-buffer '%1%' without size, at %2%")
+      , ::boost::format ("ERROR: memory-buffer '%1%' without size, at %2%")
       % name
       % "[<stdin>:3:3]"
       );
@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE
   std::string const default_alignment ("1UL");
 
   std::string const input
-    ( ( boost::format (R"EOS(
+    ( ( ::boost::format (R"EOS(
 <defun>
   <memory-buffer name="%1%"><size>%2%</size></memory-buffer>
   <module name="%3%" function="%4%"/>
@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE (duplicate_memory_buffer_throws)
   std::string const name (random_identifier_with_valid_prefix());
 
   std::string const input
-    ( ( boost::format (R"EOS(
+    ( ( ::boost::format (R"EOS(
 <defun>
   <memory-buffer name="%1%"><size/></memory-buffer>
   <memory-buffer name="%1%"><size/></memory-buffer>
@@ -138,7 +138,7 @@ BOOST_AUTO_TEST_CASE (duplicate_memory_buffer_throws)
       { std::istringstream input_stream (input);
         xml::parse::just_parse (state, input_stream);
       }
-      , boost::format ("ERROR: duplicate memory-buffer '%1%'"
+      , ::boost::format ("ERROR: duplicate memory-buffer '%1%'"
                       " at %2%, earlier definition is at %3%"
                       )
       % name
@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_CASE (memory_buffer_is_stored_in_function)
   std::string const size (fhg::util::testing::random_content_string());
 
   std::string const input
-    ( ( boost::format (R"EOS(
+    ( ( ::boost::format (R"EOS(
 <defun>
   <memory-buffer name="%1%"><size>%2%</size></memory-buffer>
   <module name="%3%" function="%4%"/>
@@ -189,7 +189,7 @@ BOOST_AUTO_TEST_CASE (memory_buffers_are_stored_in_function)
   std::string const size_2 (fhg::util::testing::random_content_string());
 
   std::string const input
-    ( ( boost::format (R"EOS(
+    ( ( ::boost::format (R"EOS(
 <defun>
   <memory-buffer name="%1%"><size>%2%</size></memory-buffer>
   <memory-buffer name="%3%"><size>%4%</size></memory-buffer>
@@ -227,7 +227,7 @@ namespace
     std::string const name_function (fhg::util::testing::random_identifier());
 
     std::string const input
-      ( ( boost::format (R"EOS(
+      ( ( ::boost::format (R"EOS(
 <defun name="%1%">
   <memory-buffer name="%3%"><size/></memory-buffer>
   <%2%/>
@@ -246,7 +246,7 @@ namespace
       { std::istringstream input_stream (input);
         xml::parse::just_parse (state, input_stream);
       }
-      , boost::format ("ERROR: non module call function 'Just %1%'"
+      , ::boost::format ("ERROR: non module call function ' %1%'"
                       " with %2% memory buffer%3%"
                       ", function defined at %4%"
                       ", memory buffer%3% defined at %5%"
@@ -266,7 +266,7 @@ namespace
     std::string const name_function (fhg::util::testing::random_identifier());
 
     std::string const input
-      ( ( boost::format (R"EOS(
+      ( ( ::boost::format (R"EOS(
 <defun name="%1%">
   <memory-buffer name="%3%"><size/></memory-buffer>
   <memory-buffer name="%4%"><size/></memory-buffer>
@@ -287,7 +287,7 @@ namespace
       { std::istringstream input_stream (input);
         xml::parse::just_parse (state, input_stream);
       }
-      , { boost::format ("ERROR: non module call function 'Just %1%'"
+      , { ::boost::format ("ERROR: non module call function ' %1%'"
                         " with %2% memory buffer%3%"
                         ", function defined at %4%"
                         ", memory buffer%3% defined at %5%"
@@ -297,7 +297,7 @@ namespace
         % "s"
         % "[<stdin>:2:1]"
         % "{[<stdin>:3:3], [<stdin>:4:3]}"
-        , boost::format ("ERROR: non module call function 'Just %1%'"
+        , ::boost::format ("ERROR: non module call function ' %1%'"
                         " with %2% memory buffer%3%"
                         ", function defined at %4%"
                         ", memory buffer%3% defined at %5%"
@@ -333,7 +333,7 @@ namespace
       (random_identifier_with_valid_prefix());
 
     std::string const input
-      ( ( boost::format (R"EOS(
+      ( ( ::boost::format (R"EOS(
 <defun>
   <%2% name="%1%" type=""/>
   <memory-buffer name="%1%"><size/></memory-buffer>
@@ -354,7 +354,7 @@ namespace
       { std::istringstream input_stream (input);
         xml::parse::just_parse (state, input_stream);
       }
-      , boost::format ("ERROR: memory buffer '%1%' defined at %2%"
+      , ::boost::format ("ERROR: memory buffer '%1%' defined at %2%"
                       " with the same name as the %3%-port defined at %4%"
                       )
       %  name_port_and_memory_buffer
@@ -381,7 +381,7 @@ namespace
     std::string const name_port_and_memory_buffer (port_names());
 
     std::string const input
-      ( ( boost::format (R"EOS(
+      ( ( ::boost::format (R"EOS(
 <defun>
   <in name="%1%" type=""/>
   <memory-buffer name="%2%"><size/></memory-buffer>
@@ -404,7 +404,7 @@ namespace
       { std::istringstream input_stream (input);
         xml::parse::just_parse (state, input_stream);
       }
-      , boost::format ("ERROR: memory buffer '%1%' defined at %2%"
+      , ::boost::format ("ERROR: memory buffer '%1%' defined at %2%"
                       " with the same name as the %3%-port defined at %4%"
                       )
       %  name_port_and_memory_buffer
@@ -427,7 +427,7 @@ BOOST_AUTO_TEST_CASE (memory_buffer_accepted_as_argument_in_function_signature)
   std::string const name_memory_buffer (random_identifier_with_valid_prefix());
 
   std::string const input
-    ( ( boost::format (R"EOS(
+    ( ( ::boost::format (R"EOS(
 <defun>
   <memory-buffer name="%1%"><size/></memory-buffer>
   <module name="" function="%2% (%1%)"/>
@@ -443,12 +443,12 @@ BOOST_AUTO_TEST_CASE (memory_buffer_accepted_as_argument_in_function_signature)
     xml::parse::type::function_type const function
       (xml::parse::just_parse (state, input_stream));
 
-    BOOST_REQUIRE ( fhg::util::boost::is_of_type<xml::parse::type::module_type>
+    BOOST_REQUIRE ( fhg::util::cxx17::holds_alternative<xml::parse::type::module_type>
                     (function.content())
                   );
 
     xml::parse::type::module_type const& module_call
-      ( boost::get<xml::parse::type::module_type>
+      ( ::boost::get<xml::parse::type::module_type>
         (function.content())
       );
 
@@ -465,7 +465,7 @@ BOOST_AUTO_TEST_CASE (memory_buffer_accepted_as_arguments_in_function_signature)
   std::string const name_memory_buffer_B (buffer_names());
 
   std::string const input
-    ( ( boost::format (R"EOS(
+    ( ( ::boost::format (R"EOS(
 <defun>
   <memory-buffer name="%1%"><size/></memory-buffer>
   <memory-buffer name="%2%"><size/></memory-buffer>
@@ -483,12 +483,12 @@ BOOST_AUTO_TEST_CASE (memory_buffer_accepted_as_arguments_in_function_signature)
     xml::parse::type::function_type const function
       (xml::parse::just_parse (state, input_stream));
 
-    BOOST_REQUIRE ( fhg::util::boost::is_of_type<xml::parse::type::module_type>
+    BOOST_REQUIRE ( fhg::util::cxx17::holds_alternative<xml::parse::type::module_type>
                     (function.content())
                   );
 
     xml::parse::type::module_type const& module_call
-      ( boost::get<xml::parse::type::module_type>
+      ( ::boost::get<xml::parse::type::module_type>
         (function.content())
       );
 
@@ -510,7 +510,7 @@ BOOST_AUTO_TEST_CASE
   std::string const name_memory_buffer (port_and_buffer_names());
 
   std::string const input
-    ( ( boost::format (R"EOS(
+    ( ( ::boost::format (R"EOS(
 <defun>
   <in name="%1%" type=""/>
   <memory-buffer name="%2%"><size/></memory-buffer>
@@ -528,12 +528,12 @@ BOOST_AUTO_TEST_CASE
     xml::parse::type::function_type const function
       (xml::parse::just_parse (state, input_stream));
 
-    BOOST_REQUIRE ( fhg::util::boost::is_of_type<xml::parse::type::module_type>
+    BOOST_REQUIRE ( fhg::util::cxx17::holds_alternative<xml::parse::type::module_type>
                     (function.content())
                   );
 
     xml::parse::type::module_type const& module_call
-      ( boost::get<xml::parse::type::module_type>
+      ( ::boost::get<xml::parse::type::module_type>
         (function.content())
       );
 
@@ -550,7 +550,7 @@ BOOST_AUTO_TEST_CASE (memory_buffer_accepted_as_return_in_function_signature)
   std::string const name_memory_buffer (random_identifier_with_valid_prefix());
 
   std::string const input
-    ( ( boost::format (R"EOS(
+    ( ( ::boost::format (R"EOS(
 <defun>
   <memory-buffer name="%1%"><size/></memory-buffer>
   <module name="" function="%1% %2% ()"/>
@@ -566,12 +566,12 @@ BOOST_AUTO_TEST_CASE (memory_buffer_accepted_as_return_in_function_signature)
     xml::parse::type::function_type const function
       (xml::parse::just_parse (state, input_stream));
 
-    BOOST_REQUIRE ( fhg::util::boost::is_of_type<xml::parse::type::module_type>
+    BOOST_REQUIRE ( fhg::util::cxx17::holds_alternative<xml::parse::type::module_type>
                     (function.content())
                   );
 
     xml::parse::type::module_type const& module_call
-      ( boost::get<xml::parse::type::module_type>
+      ( ::boost::get<xml::parse::type::module_type>
         (function.content())
       );
 
@@ -585,7 +585,7 @@ BOOST_AUTO_TEST_CASE
   std::string const name_memory_buffer (random_identifier_with_valid_prefix());
 
   std::string const input
-    ( ( boost::format (R"EOS(
+    ( ( ::boost::format (R"EOS(
 <defun>
   <memory-buffer name="%1%"><size/></memory-buffer>
   <module name="" function="%1% %2% (%1%)"/>
@@ -601,12 +601,12 @@ BOOST_AUTO_TEST_CASE
     xml::parse::type::function_type const function
       (xml::parse::just_parse (state, input_stream));
 
-    BOOST_REQUIRE ( fhg::util::boost::is_of_type<xml::parse::type::module_type>
+    BOOST_REQUIRE ( fhg::util::cxx17::holds_alternative<xml::parse::type::module_type>
                     (function.content())
                   );
 
     xml::parse::type::module_type const& module_call
-      ( boost::get<xml::parse::type::module_type>
+      ( ::boost::get<xml::parse::type::module_type>
         (function.content())
       );
 

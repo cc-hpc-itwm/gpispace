@@ -20,13 +20,13 @@
 #include <drts/drts.hpp>
 #include <drts/scoped_rifd.hpp>
 
-#include <test/make.hpp>
-#include <test/parse_command_line.hpp>
-#include <test/scoped_nodefile_from_environment.hpp>
-#include <test/source_directory.hpp>
-#include <test/shared_directory.hpp>
+#include <testing/make.hpp>
+#include <testing/parse_command_line.hpp>
+#include <testing/scoped_nodefile_from_environment.hpp>
+#include <testing/source_directory.hpp>
+#include <testing/shared_directory.hpp>
 
-#include <fhg/util/boost/program_options/validators/positive_integral.hpp>
+#include <util-generic/boost/program_options/validators/positive_integral.hpp>
 
 #include <util-generic/read_lines.hpp>
 #include <util-generic/temporary_file.hpp>
@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE (run_bunch_of_tasks)
 {
   namespace validators = fhg::util::boost::program_options;
 
-  boost::program_options::options_description options_description;
+  ::boost::program_options::options_description options_description;
 
   options_description.add (test::options::source_directory());
   options_description.add (test::options::shared_directory());
@@ -59,19 +59,19 @@ BOOST_AUTO_TEST_CASE (run_bunch_of_tasks)
   options_description.add (gspc::options::scoped_rifd());
   options_description.add_options()
     ( "num-workers"
-    , boost::program_options::value<validators::positive_integral<long>>()->required()
+    , ::boost::program_options::value<validators::positive_integral<long>>()->required()
     , "number of workers"
     );
   options_description.add_options()
     ( "num-tasks"
-    , boost::program_options::value<validators::positive_integral<long>>()->required()
+    , ::boost::program_options::value<validators::positive_integral<long>>()->required()
     , "number of tasks"
     );
 
-  boost::program_options::variables_map vm
+  ::boost::program_options::variables_map vm
     ( test::parse_command_line
-        ( boost::unit_test::framework::master_test_suite().argc
-        , boost::unit_test::framework::master_test_suite().argv
+        ( ::boost::unit_test::framework::master_test_suite().argc
+        , ::boost::unit_test::framework::master_test_suite().argv
         , options_description
         )
     );
@@ -90,8 +90,8 @@ BOOST_AUTO_TEST_CASE (run_bunch_of_tasks)
     (shared_directory, vm);
 
   fhg::util::temporary_path const _installation_dir
-    (shared_directory / boost::filesystem::unique_path());
-  boost::filesystem::path const installation_dir (_installation_dir);
+    (shared_directory / ::boost::filesystem::unique_path());
+  ::boost::filesystem::path const installation_dir (_installation_dir);
 
   gspc::set_application_search_path (vm, installation_dir);
 

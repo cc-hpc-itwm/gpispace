@@ -32,7 +32,7 @@ namespace we
     memory_transfer::memory_transfer
       ( std::string const& global
       , std::string const& local
-      , boost::optional<bool> const& not_modified_in_module_call
+      , ::boost::optional<bool> const& not_modified_in_module_call
       , bool allow_empty_ranges
       )
         : _global (global)
@@ -48,7 +48,7 @@ namespace we
     {
       return _local;
     }
-    boost::optional<bool> const& memory_transfer::not_modified_in_module_call() const
+    ::boost::optional<bool> const& memory_transfer::not_modified_in_module_call() const
     {
       return _not_modified_in_module_call;
     }
@@ -73,7 +73,7 @@ namespace we
 
             Expression (_local).assert_type (expected, context);
           }
-        , str ( boost::format ("In the <local> expression '%1%'")
+        , str ( ::boost::format ("In the <local> expression '%1%'")
               % _local
               )
         );
@@ -97,7 +97,7 @@ namespace we
 
             Expression (_global).assert_type (expected, context);
           }
-        , str ( boost::format ("In the <global> expression '%1%'")
+        , str ( ::boost::format ("In the <global> expression '%1%'")
               % _global
               )
         );

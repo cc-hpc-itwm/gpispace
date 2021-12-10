@@ -23,7 +23,7 @@ namespace iml
     {
       // Inlined copy of util-generic/serialization/boost/filesystem/path.hpp
       // to avoid dependency in public API.
-      boost::filesystem::path::string_type path_string;
+      ::boost::filesystem::path::string_type path_string;
       if (BoostArchive::is_saving::value)
       {
         path_string = path.string();

@@ -38,4 +38,8 @@ gspc_add_executable (NAME gspc-monitor
   CREATE_BUNDLE_INFO
 )
 
+target_compile_options (gspc-monitor
+  PRIVATE -Wno-deprecated-declarations
+)
+
 add_subdirectory (test)

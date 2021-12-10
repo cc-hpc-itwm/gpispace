@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <fhgcom/address.hpp>
 #include <fhgcom/header.hpp>
 
 #include <cstddef>
@@ -28,22 +29,17 @@ namespace fhg
   {
     struct message_t
     {
-      void resize (std::size_t n)
-      {
-        data.resize (n);
-        header.length = n;
-      }
+      message_t (p2p::address_t src, p2p::address_t dst);
 
-      void resize ()
-      {
-        data.resize (header.length);
-      }
+      struct Hello{};
 
-      void assign (std::string const& x)
-      {
-        data.assign (x.begin(), x.end());
-        header.length = data.size ();
-      }
+      message_t (Hello, p2p::address_t src, p2p::address_t dst);
+
+      bool is_hello() const;
+
+      void resize();
+
+      message_t (std::string const&, p2p::address_t src, p2p::address_t dst);
 
       p2p::header_t header;
       std::vector<char> data;

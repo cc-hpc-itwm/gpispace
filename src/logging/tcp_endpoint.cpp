@@ -16,7 +16,7 @@
 
 #include <logging/tcp_endpoint.hpp>
 
-#include <fhg/util/boost/program_options/validators.hpp>
+#include <util-generic/boost/program_options/validators.hpp>
 
 #include <stdexcept>
 
@@ -92,7 +92,7 @@ namespace fhg
       return {host, port};
     }
 
-    void validate ( boost::any& result
+    void validate ( ::boost::any& result
                   , std::vector<std::string> const& values
                   , tcp_endpoint*
                   , int

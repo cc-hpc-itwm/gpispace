@@ -16,7 +16,7 @@
 
 #include <iml/testing/beegfs_directory.hpp>
 
-#include <fhg/util/boost/program_options/validators/existing_directory.hpp>
+#include <util-generic/boost/program_options/validators/existing_directory.hpp>
 
 namespace iml_test
 {
@@ -32,13 +32,13 @@ namespace iml_test
       }
     }
 
-    boost::program_options::options_description beegfs_directory()
+    ::boost::program_options::options_description beegfs_directory()
     {
-      boost::program_options::options_description beegfs_directory;
+      ::boost::program_options::options_description beegfs_directory;
 
       beegfs_directory.add_options()
         ( name::beegfs_directory
-        , boost::program_options::value<validators::existing_directory>()
+        , ::boost::program_options::value<validators::existing_directory>()
         ->required()
         , "BeeGFS directory to store test data in"
         )
@@ -48,8 +48,8 @@ namespace iml_test
     }
   }
 
-  boost::filesystem::path beegfs_directory
-    (boost::program_options::variables_map const& vm)
+  ::boost::filesystem::path beegfs_directory
+    (::boost::program_options::variables_map const& vm)
   {
     return vm.at (options::name::beegfs_directory)
       .as<validators::existing_directory>();

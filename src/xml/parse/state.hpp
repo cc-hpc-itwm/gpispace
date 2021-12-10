@@ -48,7 +48,7 @@ namespace xml
       struct type
       {
       private:
-        typedef std::list<boost::filesystem::path> in_progress_type;
+        typedef std::list<::boost::filesystem::path> in_progress_type;
         typedef std::vector<std::string> search_path_type;
         typedef std::map< const char*
                         , util::position_type
@@ -75,14 +75,14 @@ namespace xml
                                 , we::type::property::value_type const& value
                                 );
 
-        void set_input (boost::filesystem::path const& path);
+        void set_input (::boost::filesystem::path const& path);
         void set_input (std::string const& file);
 
-        boost::filesystem::path file_in_progress() const;
+        ::boost::filesystem::path file_in_progress() const;
         void set_in_progress_position (const char*);
         util::position_type position (const xml_node_type*) const;
 
-        std::set<boost::filesystem::path> const& dependencies() const;
+        std::set<::boost::filesystem::path> const& dependencies() const;
 
 #define ACCESS(name)                     \
         std::string const& name() const; \
@@ -199,7 +199,7 @@ namespace xml
 
         template<typename T>
         T generic_parse ( std::function<T (std::istream&, type&)> parse
-                        , boost::filesystem::path const& path
+                        , ::boost::filesystem::path const& path
                         )
         {
           _in_progress.push_back (path);
@@ -217,14 +217,14 @@ namespace xml
           return x;
         }
 
-        void check_for_include_loop (boost::filesystem::path const& path) const;
+        void check_for_include_loop (::boost::filesystem::path const& path) const;
 
         template<typename T>
         T generic_include ( std::function<T (std::istream&, type&)> parse
                           , std::string const& file
                           )
         {
-          const boost::filesystem::path path (expand (file));
+          const ::boost::filesystem::path path (expand (file));
 
           _dependencies.insert (path);
 
@@ -233,10 +233,10 @@ namespace xml
           return generic_parse<T> (parse, path);
         }
 
-        void add_options (boost::program_options::options_description& desc);
+        void add_options (::boost::program_options::options_description& desc);
 
-        boost::filesystem::path strip_path_prefix
-          (boost::filesystem::path const&) const;
+        ::boost::filesystem::path strip_path_prefix
+          (::boost::filesystem::path const&) const;
 
       private:
         ::xml::parse::type::requirements_type _requirements;
@@ -245,7 +245,7 @@ namespace xml
         gen_param_type _gen_cxxflags;
         in_progress_type _in_progress;
         mutable in_progress_position_type _in_progress_position;
-        std::set<boost::filesystem::path> _dependencies;
+        std::set<::boost::filesystem::path> _dependencies;
         we::type::property::path_type _prop_path;
         bool _ignore_properties;
         bool _warning_error;
@@ -349,7 +349,7 @@ namespace xml
                           , std::string const& flag
                           ) const;
 
-        boost::filesystem::path expand (std::string const& file) const;
+        ::boost::filesystem::path expand (std::string const& file) const;
       };
 
       std::pair<std::string, std::string> reg_M (std::string const& s);

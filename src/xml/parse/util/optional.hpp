@@ -26,6 +26,6 @@ namespace xml
 {
   namespace parse
   {
-    boost::optional<std::string> optional (const xml_node_type*, const Ch*);
+    ::boost::optional<std::string> optional (const xml_node_type*, const Ch*);
   }
 }

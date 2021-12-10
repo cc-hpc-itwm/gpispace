@@ -54,15 +54,15 @@ namespace
   void cancel (we::layer::id_type){}
   void failed (we::layer::id_type, std::string){}
   void canceled (we::layer::id_type){}
-  void token_put (std::string, boost::optional<std::exception_ptr>){}
-  void workflow_response_response (std::string, boost::variant<std::exception_ptr, pnet::type::value::value_type>){}
+  void token_put (std::string, ::boost::optional<std::exception_ptr>){}
+  void workflow_response_response (std::string, ::boost::variant<std::exception_ptr, pnet::type::value::value_type>){}
 
   std::mutex generate_id_mutex;
   we::layer::id_type generate_id()
   {
     std::unique_lock<std::mutex> const _ (generate_id_mutex);
     static unsigned long _cnt (0);
-    return boost::lexical_cast<we::layer::id_type> (++_cnt);
+    return ::boost::lexical_cast<we::layer::id_type> (++_cnt);
   }
 }
 

@@ -37,14 +37,14 @@ namespace fhg
             struct serializer
               < Exception
               , cxx17::void_t
-                  < decltype (std::declval<boost::archive::binary_oarchive>() << std::declval<Exception const&>())
-                  , decltype (std::declval<boost::archive::binary_iarchive>() >> std::declval<Exception&>())
+                  < decltype (std::declval<::boost::archive::binary_oarchive>() << std::declval<Exception const&>())
+                  , decltype (std::declval<::boost::archive::binary_iarchive>() >> std::declval<Exception&>())
                   , decltype (std::declval<Exception&>() = std::declval<Exception>())
                   , decltype (Exception{})
                   >
               >
           {
-            static boost::optional<std::string> from_ptr (std::exception_ptr ex_ptr)
+            static ::boost::optional<std::string> from_ptr (std::exception_ptr ex_ptr)
             {
               try
               {
@@ -53,19 +53,19 @@ namespace fhg
               catch (Exception const& ex)
               {
                 std::ostringstream oss;
-                boost::archive::binary_oarchive oa (oss);
+                ::boost::archive::binary_oarchive oa (oss);
                 oa << ex;
                 return oss.str();
               }
               catch (...) {}
 
-              return boost::none;
+              return ::boost::none;
             }
 
             static Exception from_string (std::string const& serialized)
             {
               std::istringstream iss (serialized);
-              boost::archive::binary_iarchive ia (iss);
+              ::boost::archive::binary_iarchive ia (iss);
               Exception ex;
               ia >> ex;
               return ex;
@@ -86,12 +86,12 @@ namespace fhg
             struct serializer
               < Exception
               , cxx17::void_t
-                  < decltype (std::declval<Exception const&>().serialize (std::declval<boost::archive::binary_oarchive&>()))
-                  , decltype (std::declval<Exception&>() = Exception::deserialize (std::declval<boost::archive::binary_iarchive&>()))
+                  < decltype (std::declval<Exception const&>().serialize (std::declval<::boost::archive::binary_oarchive&>()))
+                  , decltype (std::declval<Exception&>() = Exception::deserialize (std::declval<::boost::archive::binary_iarchive&>()))
                   >
               >
           {
-            static boost::optional<std::string> from_ptr (std::exception_ptr ex_ptr)
+            static ::boost::optional<std::string> from_ptr (std::exception_ptr ex_ptr)
             {
               try
               {
@@ -100,19 +100,19 @@ namespace fhg
               catch (Exception const& ex)
               {
                 std::ostringstream oss;
-                boost::archive::binary_oarchive oa (oss);
+                ::boost::archive::binary_oarchive oa (oss);
                 ex.serialize (oa);
                 return oss.str();
               }
               catch (...) {}
 
-              return boost::none;
+              return ::boost::none;
             }
 
             static Exception from_string (std::string const& serialized)
             {
               std::istringstream iss (serialized);
-              boost::archive::binary_iarchive ia (iss);
+              ::boost::archive::binary_iarchive ia (iss);
               return Exception::deserialize (ia);
             }
 
@@ -136,7 +136,7 @@ namespace fhg
                   >
               >
           {
-            static boost::optional<std::string> from_ptr (std::exception_ptr ex_ptr)
+            static ::boost::optional<std::string> from_ptr (std::exception_ptr ex_ptr)
             {
               try
               {
@@ -148,7 +148,7 @@ namespace fhg
               }
               catch (...) {}
 
-              return boost::none;
+              return ::boost::none;
             }
 
             static std::exception_ptr to_ptr (std::string const& serialized)
@@ -166,13 +166,13 @@ namespace fhg
             struct serializer
               < Exception
               , cxx17::void_t
-                  < decltype (std::declval<boost::optional<std::string>&>() = Exception::from_exception_ptr(std::declval<std::exception_ptr>()))
+                  < decltype (std::declval<::boost::optional<std::string>&>() = Exception::from_exception_ptr(std::declval<std::exception_ptr>()))
                   , decltype (std::declval<std::exception_ptr&>() = Exception::to_exception_ptr (std::declval<std::string>()))
                   , decltype (Exception::throw_with_nested (std::declval<std::string>()))
                   >
               >
           {
-            static boost::optional<std::string> from_ptr (std::exception_ptr ex)
+            static ::boost::optional<std::string> from_ptr (std::exception_ptr ex)
             {
               return Exception::from_exception_ptr (ex);
             }

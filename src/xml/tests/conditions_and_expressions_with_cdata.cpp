@@ -18,7 +18,7 @@
 
 #include <xml/parse/parser.hpp>
 
-#include <fhg/util/boost/variant.hpp>
+#include <util-generic/cxx17/holds_alternative.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/random/string.hpp>
@@ -29,7 +29,7 @@
 BOOST_AUTO_TEST_CASE (conditions_and_expressions_with_cdata)
 {
   std::string const input
-    ( ( boost::format (R"EOS(
+    ( ( ::boost::format (R"EOS(
 <defun name="%1%">
 <expression>${b} := ${a}
 <![CDATA[${c} := ${a} + 1L]]>
@@ -64,7 +64,7 @@ ${another} := ${expression}
     , function.conditions().begin(), function.conditions().end()
     );
 
-  BOOST_REQUIRE (fhg::util::boost::is_of_type<xml::parse::type::expression_type>
+  BOOST_REQUIRE (fhg::util::cxx17::holds_alternative<xml::parse::type::expression_type>
                   (function.content())
                 );
 
@@ -73,7 +73,7 @@ ${another} := ${expression}
     ("${b} := ${a}\n; ${c} := ${a} + 1L; \n${d} := 2L*${a};\n${another} := ${expression}\n");
 
   BOOST_REQUIRE_EQUAL
-    ( boost::get<xml::parse::type::expression_type> (function.content())
+    ( ::boost::get<xml::parse::type::expression_type> (function.content())
     . expression()
     , expected_expression
     );

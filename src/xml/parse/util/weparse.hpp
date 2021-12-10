@@ -35,7 +35,7 @@ namespace xml
                                    , std::string const& descr
                                    , std::string const& type
                                    , std::string const& name
-                                   , boost::filesystem::path const&
+                                   , ::boost::filesystem::path const&
                                    );
    }
   }

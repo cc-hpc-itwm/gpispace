@@ -70,7 +70,7 @@ namespace fhg
         }
 
         template<typename Key, typename Val>
-          void attr (Key const& key, boost::optional<Val> const& val) const
+          void attr (Key const& key, ::boost::optional<Val> const& val) const
         {
           if (val)
           {
@@ -79,7 +79,7 @@ namespace fhg
         }
 
         template<typename Key>
-          void attr (Key const&, boost::none_t const&) const
+          void attr (Key const&, ::boost::none_t const&) const
         {
         }
 

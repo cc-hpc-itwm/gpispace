@@ -25,7 +25,7 @@ namespace pnet
       namespace
       {
         template<typename P>
-        class apply_field : public boost::static_visitor<>
+        class apply_field : public ::boost::static_visitor<>
         {
         public:
           apply_field (P p)
@@ -56,7 +56,7 @@ namespace pnet
 
             for (field_type& f : s.second)
             {
-              boost::apply_visitor (apply_field<mapper> (*this), f);
+              ::boost::apply_visitor (apply_field<mapper> (*this), f);
             }
           }
           void _field (std::pair<std::string, std::string>& f) const

@@ -32,7 +32,7 @@ namespace pnet
     {
       namespace
       {
-        class visitor_unary : public boost::static_visitor<value_type>
+        class visitor_unary : public ::boost::static_visitor<value_type>
         {
         public:
           visitor_unary (expr::token::type const& token)
@@ -251,7 +251,7 @@ namespace pnet
           }
         };
 
-        class visitor_binary : public boost::static_visitor<value_type>
+        class visitor_binary : public ::boost::static_visitor<value_type>
         {
         public:
           visitor_binary (expr::token::type const& token)
@@ -453,7 +453,7 @@ namespace pnet
                        && lpos->first == rpos->first
                        )
                  {
-                   if (  boost::apply_visitor
+                   if (  ::boost::apply_visitor
                            (*this, lpos->second, rpos->second)
                       == value_type (early)
                       )
@@ -591,14 +591,14 @@ namespace pnet
 
       value_type unary (expr::token::type const& t, value_type const& x)
       {
-        return boost::apply_visitor (visitor_unary (t), x);
+        return ::boost::apply_visitor (visitor_unary (t), x);
       }
       value_type binary ( expr::token::type const& t
                         , value_type const& l
                         , value_type const& r
                         )
       {
-        return boost::apply_visitor (visitor_binary (t), l, r);
+        return ::boost::apply_visitor (visitor_binary (t), l, r);
       }
     }
   }

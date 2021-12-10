@@ -24,8 +24,8 @@
 BOOST_AUTO_TEST_CASE (executable_path)
 {
   BOOST_REQUIRE_EQUAL
-    ( boost::filesystem::canonical
-      (boost::unit_test::framework::master_test_suite().argv[0])
+    ( ::boost::filesystem::canonical
+      (::boost::unit_test::framework::master_test_suite().argv[0])
     , fhg::util::executable_path()
     );
 }
@@ -35,8 +35,8 @@ static int symbol_in_this_binary;
 BOOST_AUTO_TEST_CASE (executable_path_symbol)
 {
   BOOST_REQUIRE_EQUAL
-    ( boost::filesystem::canonical
-      (boost::unit_test::framework::master_test_suite().argv[0])
+    ( ::boost::filesystem::canonical
+      (::boost::unit_test::framework::master_test_suite().argv[0])
     , fhg::util::executable_path (&symbol_in_this_binary)
     );
 }

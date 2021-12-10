@@ -150,7 +150,7 @@ namespace
 
     wrapping_stream.append (":");
 
-    for (boost::filesystem::path const& path : state.dependencies())
+    for (::boost::filesystem::path const& path : state.dependencies())
     {
       std::string const& dep (path.string());
 
@@ -164,7 +164,7 @@ namespace
 
     if (state.dependencies_add_phony_targets())
     {
-      for (boost::filesystem::path const& path : state.dependencies())
+      for (::boost::filesystem::path const& path : state.dependencies())
       {
         std::string const& dep (path.string());
 
@@ -208,7 +208,7 @@ namespace
 
     stream << quote_for_list (input) << std::endl;
 
-    for (boost::filesystem::path const& p : state.dependencies())
+    for (::boost::filesystem::path const& p : state.dependencies())
     {
       stream << quote_for_list (p.string()) << std::endl;
     }
@@ -220,7 +220,7 @@ int main (int argc, char** argv)
   std::string input ("/dev/stdin");
   std::string output ("/dev/stdout");
 
-  namespace po = boost::program_options;
+  namespace po = ::boost::program_options;
 
   po::options_description desc ("General");
 

@@ -45,7 +45,7 @@ namespace gspc
     std::unique_ptr<iml::Rifs> rifds;
     std::unique_ptr<iml::RuntimeSystem> rts;
 
-    iml_runtime_system ( boost::program_options::variables_map const& vm
+    iml_runtime_system ( ::boost::program_options::variables_map const& vm
                        , std::ostream& info_output
                        );
     iml_runtime_system (iml_runtime_system const&) = delete;
@@ -57,10 +57,10 @@ namespace gspc
 
   struct scoped_runtime_system::implementation
   {
-    implementation ( boost::program_options::variables_map const& vm
+    implementation ( ::boost::program_options::variables_map const& vm
                    , installation const&
                    , std::string const& topology_description
-                   , boost::optional<rifd_entry_points> const& entry_points
+                   , ::boost::optional<rifd_entry_points> const& entry_points
                    , rifd_entry_point const& parent
                    , std::ostream& info_output
                    , Certificates const& certificates
@@ -80,25 +80,25 @@ namespace gspc
                       >
       remove_worker (rifd_entry_points const&);
 
-    boost::optional<boost::filesystem::path> _virtual_memory_socket;
+    ::boost::optional<::boost::filesystem::path> _virtual_memory_socket;
 
-    boost::optional<iml_runtime_system> _iml_rts;
+    ::boost::optional<iml_runtime_system> _iml_rts;
 
     struct started_runtime_system
     {
-      started_runtime_system ( boost::optional<unsigned short> const& agent_port
-                             , boost::optional<boost::filesystem::path> gpi_socket
-                             , std::vector<boost::filesystem::path> app_path
+      started_runtime_system ( ::boost::optional<unsigned short> const& agent_port
+                             , ::boost::optional<::boost::filesystem::path> gpi_socket
+                             , std::vector<::boost::filesystem::path> app_path
                              , std::vector<std::string> worker_env_copy_variable
                              , bool worker_env_copy_current
-                             , std::vector<boost::filesystem::path> worker_env_copy_file
+                             , std::vector<::boost::filesystem::path> worker_env_copy_file
                              , std::vector<std::string> worker_env_set_variable
                              , installation_path
                              , std::vector<worker_description> worker_descriptions
                              , std::vector<fhg::rif::entry_point> const& rif_entry_points
                              , fhg::rif::entry_point const& parent
                              , std::ostream& info_output
-                             , boost::optional<fhg::rif::entry_point> log_rif_entry_point
+                             , ::boost::optional<fhg::rif::entry_point> log_rif_entry_point
                              , std::vector<fhg::logging::endpoint> default_log_receivers
                              , Certificates const& certificates
                              );
@@ -126,15 +126,15 @@ namespace gspc
 
       std::ostream& _info_output;
       fhg::rif::entry_point _parent;
-      boost::optional<boost::filesystem::path> _gpi_socket;
-      std::vector<boost::filesystem::path> _app_path;
+      ::boost::optional<::boost::filesystem::path> _gpi_socket;
+      std::vector<::boost::filesystem::path> _app_path;
       std::vector<std::string> _worker_env_copy_variable;
       bool _worker_env_copy_current;
-      std::vector<boost::filesystem::path> _worker_env_copy_file;
+      std::vector<::boost::filesystem::path> _worker_env_copy_file;
       std::vector<std::string> _worker_env_set_variable;
       installation_path _installation_path;
-      boost::optional<fhg::rif::entry_point> _logging_rif_entry_point;
-      boost::optional<fhg::rif::protocol::start_logging_demultiplexer_result>
+      ::boost::optional<fhg::rif::entry_point> _logging_rif_entry_point;
+      ::boost::optional<fhg::rif::protocol::start_logging_demultiplexer_result>
         _logging_rif_info;
       std::vector<worker_description> _worker_descriptions;
 

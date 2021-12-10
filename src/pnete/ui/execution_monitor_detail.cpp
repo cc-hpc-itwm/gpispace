@@ -662,8 +662,8 @@ namespace fhg
 
         case execution_monitor_proxy::current_states_column:
           {
-            const QList<boost::optional<worker_model::value_type>> current_intervals
-              ( util::qt::collect<boost::optional<worker_model::value_type>>
+            const QList<::boost::optional<worker_model::value_type>> current_intervals
+              ( util::qt::collect<::boost::optional<worker_model::value_type>>
                 (index.data (worker_model::current_interval_role))
               );
 
@@ -681,7 +681,7 @@ namespace fhg
 
             QHash<worker_model::state_type, int> in_state;
 
-            for ( boost::optional<worker_model::value_type> current
+            for ( ::boost::optional<worker_model::value_type> current
                 : current_intervals
                 )
             {

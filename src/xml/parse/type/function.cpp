@@ -30,7 +30,7 @@
 
 #include <xml/parse/type/dumps.hpp>
 
-#include <fhg/util/boost/variant.hpp>
+#include <util-generic/cxx17/holds_alternative.hpp>
 #include <util-generic/first_then.hpp>
 
 #include <fhg/util/cpp/block.hpp>
@@ -76,7 +76,7 @@ namespace xml
     {
       function_type::function_type
         ( util::position_type const& pod
-        , boost::optional<std::string> const& name
+        , ::boost::optional<std::string> const& name
         , ports_type const& ports
         , fhg::pnet::util::unique<memory_buffer_type> const& memory_buffers
         , std::list<memory_get> const& memory_gets
@@ -109,7 +109,7 @@ namespace xml
         {
           if (!port.is_tunnel())
           {
-            boost::optional<port_type const&> const other
+            ::boost::optional<port_type const&> const other
               ( _ports.get ( { port.name()
                              , ( port.is_input()
                                ? we::type::PortDirection {we::type::port::direction::Out{}}
@@ -125,7 +125,7 @@ namespace xml
             }
           }
 
-          boost::optional<memory_buffer_type const&> const memory_buffer
+          ::boost::optional<memory_buffer_type const&> const memory_buffer
             (_memory_buffers.get (port.name()));
 
           if (!!memory_buffer)
@@ -138,7 +138,7 @@ namespace xml
         for (memory_buffer_type const& memory_buffer : _memory_buffers)
         {
           {
-            boost::optional<port_type const&> const port_in
+            ::boost::optional<port_type const&> const port_in
               (get_port_in (memory_buffer.name()));
 
             if (!!port_in)
@@ -149,7 +149,7 @@ namespace xml
           }
 
           {
-            boost::optional<port_type const&> const port_out
+            ::boost::optional<port_type const&> const port_out
               (get_port_out (memory_buffer.name()));
 
             if (!!port_out)
@@ -160,7 +160,7 @@ namespace xml
           }
         }
 
-        if (!fhg::util::boost::is_of_type<module_type> (_content))
+        if (!fhg::util::cxx17::holds_alternative<module_type> (_content))
         {
           if (!_memory_buffers.empty())
           {
@@ -215,21 +215,17 @@ namespace xml
 
       bool function_type::is_net() const
       {
-        return fhg::util::boost::is_of_type<net_type> (content());
+        return fhg::util::cxx17::holds_alternative<net_type> (content());
       }
 
-      boost::optional<net_type const&> function_type::get_net() const
+      net_type function_type::net() const
       {
-        return fhg::util::boost::get_or_none<net_type> (content());
-      }
-      net_type& function_type::get_net()
-      {
-        return boost::get<net_type> (_content);
+        return ::boost::get<net_type> (_content);
       }
 
       // ******************************************************************* //
 
-      boost::optional<std::string> const& function_type::name() const
+      ::boost::optional<std::string> const& function_type::name() const
       {
         return _name;
       }
@@ -260,13 +256,13 @@ namespace xml
         return _ports;
       }
 
-      boost::optional<port_type const&>
+      ::boost::optional<port_type const&>
       function_type::get_port_in (std::string const& name) const
       {
         return ports().get ({name, we::type::port::direction::In{}});
       }
 
-      boost::optional<port_type const&>
+      ::boost::optional<port_type const&>
       function_type::get_port_out (std::string const& name) const
       {
         return ports().get ({name, we::type::port::direction::Out{}});
@@ -334,7 +330,7 @@ namespace xml
 
         if (is_net())
         {
-          boost::get<net_type> (_content).type_check (state);
+          ::boost::get<net_type> (_content).type_check (state);
         }
       }
 
@@ -343,7 +339,7 @@ namespace xml
       {
         if (is_net())
         {
-          boost::get<net_type> (_content)
+          ::boost::get<net_type> (_content)
             .resolve_function_use_recursive (known);
         }
       }
@@ -353,7 +349,7 @@ namespace xml
       {
         auto&& resolve
           ( [this, &known] (std::string name)
-          -> boost::optional<pnet::type::signature::signature_type>
+          -> ::boost::optional<pnet::type::signature::signature_type>
             {
               auto const known_it (known.find (name));
               if (known_it != known.end())
@@ -375,7 +371,7 @@ namespace xml
                   (local_it->signature());
               }
 
-              return boost::none;
+              return ::boost::none;
             }
           );
 
@@ -389,7 +385,7 @@ namespace xml
 
         if (is_net())
         {
-          boost::get<net_type> (_content).resolve_types_recursive (known);
+          ::boost::get<net_type> (_content).resolve_types_recursive (known);
         }
 
         for (port_type& port : _ports)
@@ -401,7 +397,7 @@ namespace xml
       // ***************************************************************** //
 
       class function_synthesize
-        : public boost::static_visitor<we::type::Transition>
+        : public ::boost::static_visitor<we::type::Transition>
       {
       private:
         std::string const& _name;
@@ -556,7 +552,7 @@ namespace xml
             memory_gets.emplace_back
               ( mg.global()
               , mg.local()
-              , boost::none
+              , ::boost::none
               , mg.allow_empty_ranges().get_value_or (false)
               );
           }
@@ -574,7 +570,7 @@ namespace xml
             memory_gets.emplace_back
               ( mgp.global()
               , mgp.local()
-              , boost::none
+              , ::boost::none
               , mgp.allow_empty_ranges().get_value_or (false)
               );
             memory_puts.emplace_back
@@ -638,7 +634,7 @@ namespace xml
             , condition()
             , _properties
             , _priority
-            , boost::none //! \todo eureka_id
+            , ::boost::none //! \todo eureka_id
             , {}          //! \todo preferences
             );
 
@@ -691,7 +687,7 @@ namespace xml
             , condition()
             , properties
             , _priority
-            , boost::none //! \todo eureka_id
+            , ::boost::none //! \todo eureka_id
             , {}          //! \todo preferences
             );
 
@@ -741,7 +737,7 @@ namespace xml
         ) const
       try
       {
-        return boost::apply_visitor
+        return ::boost::apply_visitor
           ( function_synthesize ( name
                                 , state
                                 , *this
@@ -761,7 +757,7 @@ namespace xml
       {
         std::throw_with_nested
           ( std::runtime_error
-            (str ( boost::format ("In '%1%' defined at %2%.")
+            (str ( ::boost::format ("In '%1%' defined at %2%.")
                  % (this->name() ? this->name().get() : name)
                  % this->position_of_definition()
                  )
@@ -786,7 +782,7 @@ namespace xml
 
       namespace
       {
-        class function_specialize : public boost::static_visitor<void>
+        class function_specialize : public ::boost::static_visitor<void>
         {
         private:
           type::type_map_type const& map;
@@ -850,7 +846,7 @@ namespace xml
 
         namespace st = xml::parse::structure_type_util;
 
-        boost::apply_visitor
+        ::boost::apply_visitor
           ( function_specialize
             ( map
             , get
@@ -880,7 +876,7 @@ namespace xml
                                    , std::string const& _code
                                    , std::list<std::string> const& _ldflags
                                    , std::list<std::string> const& _cxxflags
-                                   , boost::filesystem::path const& _path
+                                   , ::boost::filesystem::path const& _path
                                    )
         : name (_name)
         , code (_code)
@@ -898,7 +894,7 @@ namespace xml
 
       typedef std::unordered_map<std::string,fun_infos_type> fun_info_map;
 
-      typedef boost::filesystem::path path_t;
+      typedef ::boost::filesystem::path path_t;
 
       void mk_wrapper ( state::type const& state
                       , fun_info_map const& m
@@ -957,9 +953,9 @@ namespace xml
         const std::string file_global_cxxflags ("Makefile.CXXFLAGS");
         const std::string file_global_ldflags ("Makefile.LDFLAGS");
 
-        boost::filesystem::create_directories (prefix);
+        ::boost::filesystem::create_directories (prefix);
 
-        if (not boost::filesystem::is_directory (prefix))
+        if (not ::boost::filesystem::is_directory (prefix))
         {
           throw error::could_not_create_directory (prefix);
         }
@@ -994,7 +990,7 @@ namespace xml
         stream << "ifeq '' '$(findstring clang,$(CXX))'"           << std::endl;
         stream << "  CXXFLAGS += -fno-gnu-unique"                  << std::endl;
         stream << "endif"                                          << std::endl;
-        stream << "CXXFLAGS += --std=c++11"                        << std::endl;
+        stream << "CXXFLAGS += --std=c++14"                        << std::endl;
         stream                                                     << std::endl;
         stream << "CXXFLAGS += -I."                                << std::endl;
         stream << "CXXFLAGS += -isystem "
@@ -1345,7 +1341,7 @@ namespace xml
       namespace
       {
         class transition_find_module_calls_visitor
-          : public boost::static_visitor<bool>
+          : public ::boost::static_visitor<bool>
         {
         private:
           state::type const& state;
@@ -1391,7 +1387,7 @@ namespace xml
           for (transition_type& transition : n.transitions())
             {
               n.contains_a_module_call
-                |= boost::apply_visitor
+                |= ::boost::apply_visitor
                 ( transition_find_module_calls_visitor
                   (state, transition, m, mcs)
                 , transition.function_or_use()
@@ -1524,7 +1520,7 @@ namespace xml
               using pnet::type::signature::complete;
 
               os << complete (_port.type) << " " << _amper << _port.name << " ("
-                 << "boost::get< " << complete (_port.type) << " >"
+                 << "::boost::get< " << complete (_port.type) << " >"
                  << " (_pnetc_input.value (std::list<std::string> (1, \"" << _port.name << "\"))));";
             }
             else
@@ -1567,7 +1563,7 @@ namespace xml
         void
         mod_signature ( Stream& s
                       , fhg::util::indenter& indent
-                      , boost::optional<port_with_type> const& port_return
+                      , ::boost::optional<port_with_type> const& port_return
                       , ports_with_type_type const& ports_const
                       , ports_with_type_type const& ports_mutable
                       , ports_with_type_type const& ports_out
@@ -1645,7 +1641,7 @@ namespace xml
                     , ports_with_type_type const& ports_const
                     , ports_with_type_type const& ports_mutable
                     , ports_with_type_type const& ports_out
-                    , boost::optional<port_with_type> const& port_return
+                    , ::boost::optional<port_with_type> const& port_return
                     , std::unordered_set<std::string> const& types
                     , function_type const& function
                     )
@@ -1801,7 +1797,7 @@ namespace xml
       namespace
       {
         class find_module_calls_visitor
-          : public boost::static_visitor<bool>
+          : public ::boost::static_visitor<bool>
         {
         private:
           state::type const& state;
@@ -1863,7 +1859,7 @@ namespace xml
             ports_with_type_type ports_const;
             ports_with_type_type ports_mutable;
             ports_with_type_type ports_out;
-            boost::optional<port_with_type> port_return;
+            ::boost::optional<port_with_type> port_return;
             types_type types;
 
             if (mod.port_return())
@@ -2135,7 +2131,7 @@ namespace xml
                              )
       {
         function.contains_a_module_call
-          = boost::apply_visitor
+          = ::boost::apply_visitor
           ( find_module_calls_visitor (state, function, m, mcs)
           , function.content()
           );
@@ -2156,10 +2152,10 @@ namespace xml
           {
             structnames.insert (structure.name());
 
-            const boost::filesystem::path prefix (state.path_to_cpp());
+            const ::boost::filesystem::path prefix (state.path_to_cpp());
 
             {
-              const boost::filesystem::path file
+              const ::boost::filesystem::path file
                 ( prefix
                 / "pnetc/type"
                 / (structure.name() + ".hpp")
@@ -2191,7 +2187,7 @@ namespace xml
             }
 
             {
-              const boost::filesystem::path file
+              const ::boost::filesystem::path file
                 ( prefix
                 / "pnetc/type"
                 / structure.name()
@@ -2225,7 +2221,7 @@ namespace xml
             }
 
             {
-              const boost::filesystem::path file
+              const ::boost::filesystem::path file
                 ( prefix
                 / "pnetc/type"
                 / structure.name()
@@ -2251,7 +2247,7 @@ namespace xml
           }
         }
 
-        class visitor_to_cpp : public boost::static_visitor<void>
+        class visitor_to_cpp : public ::boost::static_visitor<void>
         {
         public:
           visitor_to_cpp ( state::type const& _state
@@ -2274,7 +2270,7 @@ namespace xml
 
               for (transition_type const& transition : n.transitions())
               {
-                boost::apply_visitor (*this, transition.function_or_use());
+                ::boost::apply_visitor (*this, transition.function_or_use());
               }
             }
           }
@@ -2304,7 +2300,7 @@ namespace xml
         {
           to_cpp (function.structs, state, structnames);
 
-          boost::apply_visitor ( visitor_to_cpp (state, structnames)
+          ::boost::apply_visitor ( visitor_to_cpp (state, structnames)
                                , function.content()
                                );
         }
@@ -2328,7 +2324,7 @@ namespace xml
 
         namespace
         {
-          class function_dump_visitor : public boost::static_visitor<void>
+          class function_dump_visitor : public ::boost::static_visitor<void>
           {
           private:
             ::fhg::util::xml::xmlstream & s;
@@ -2365,7 +2361,7 @@ namespace xml
           dumps (s, f.memory_puts());
           dumps (s, f.memory_getputs());
 
-          boost::apply_visitor (function_dump_visitor (s), f.content());
+          ::boost::apply_visitor (function_dump_visitor (s), f.content());
 
           for (std::string const& cond : f.conditions())
           {

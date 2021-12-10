@@ -24,6 +24,8 @@
 #include <we/type/value/read.hpp>
 #include <we/type/value/serialize.hpp>
 
+#include <util-generic/serialization/exception.hpp>
+
 #include <boost/optional.hpp>
 
 #include <exception>
@@ -99,7 +101,7 @@ namespace sdpa
     {
     public:
       using value_t = pnet::type::value::value_type;
-      using content_t = boost::variant<value_t, std::exception_ptr>;
+      using content_t = ::boost::variant<value_t, std::exception_ptr>;
 
       workflow_response_response ( std::string workflow_response_id
                                  , content_t content
@@ -116,13 +118,13 @@ namespace sdpa
 
       value_t const& get() const
       {
-        if (boost::get<value_t> (&_content))
+        if (::boost::get<value_t> (&_content))
         {
-          return boost::get<value_t> (_content);
+          return ::boost::get<value_t> (_content);
         }
         else
         {
-          std::rethrow_exception (boost::get<std::exception_ptr> (_content));
+          std::rethrow_exception (::boost::get<std::exception_ptr> (_content));
         }
       }
 
@@ -138,7 +140,7 @@ namespace sdpa
         return _content;
       }
 
-      using serialized = boost::variant< pnet::type::value::value_type
+      using serialized = ::boost::variant< pnet::type::value::value_type
                                        , std::string
                                        >;
 
@@ -152,7 +154,7 @@ namespace sdpa
       SAVE_MGMTEVENT_CONSTRUCT_DATA (e);
       SAVE_TO_ARCHIVE (e->workflow_response_id());
 
-      struct : public boost::static_visitor<workflow_response_response::serialized>
+      struct : public ::boost::static_visitor<workflow_response_response::serialized>
       {
         workflow_response_response::serialized operator()
           (workflow_response_response::value_t const& value) const
@@ -167,7 +169,7 @@ namespace sdpa
       } visitor;
 
       SAVE_TO_ARCHIVE_WITH_TEMPORARY
-        (workflow_response_response::serialized, boost::apply_visitor (visitor, e->content()))
+        (workflow_response_response::serialized, ::boost::apply_visitor (visitor, e->content()))
     }
 
     LOAD_CONSTRUCT_DATA_DEF (workflow_response_response, e)
@@ -177,7 +179,7 @@ namespace sdpa
 
       LOAD_FROM_ARCHIVE (workflow_response_response::serialized, content);
 
-      struct : public boost::static_visitor<workflow_response_response::content_t>
+      struct : public ::boost::static_visitor<workflow_response_response::content_t>
       {
         workflow_response_response::content_t operator()
           (pnet::type::value::value_type const& value) const
@@ -194,7 +196,7 @@ namespace sdpa
 
       ::new (e) workflow_response_response
           ( workflow_response_id
-          , boost::apply_visitor (visitor, content)
+          , ::boost::apply_visitor (visitor, content)
           );
     }
   }

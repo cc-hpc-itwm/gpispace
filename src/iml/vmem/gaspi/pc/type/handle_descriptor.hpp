@@ -18,8 +18,6 @@
 
 #include <vector>
 
-// serialization
-#include <boost/serialization/nvp.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/vector.hpp>
 
@@ -53,15 +51,15 @@ namespace gpi
           {}
 
         private:
-          friend class boost::serialization::access;
+          friend class ::boost::serialization::access;
           template<typename Archive>
           void serialize (Archive & ar, unsigned int /*version*/)
           {
-            ar & BOOST_SERIALIZATION_NVP( id );
-            ar & BOOST_SERIALIZATION_NVP( offset );
-            ar & BOOST_SERIALIZATION_NVP( size );
-            ar & BOOST_SERIALIZATION_NVP (local_size);
-            ar & BOOST_SERIALIZATION_NVP( flags );
+            ar & id;
+            ar & offset;
+            ar & size;
+            ar & local_size;
+            ar & flags;
           }
         };
       }

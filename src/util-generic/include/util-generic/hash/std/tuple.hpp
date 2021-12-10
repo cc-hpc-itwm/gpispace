@@ -33,7 +33,7 @@ namespace std
         static void apply (size_t& seed, tuple_type const& tuple)
         {
           hash_value_impl<tuple_type, index - 1>::apply (seed, tuple);
-          boost::hash_combine (seed, std::get<index> (tuple));
+          ::boost::hash_combine (seed, std::get<index> (tuple));
         }
       };
 
@@ -42,7 +42,7 @@ namespace std
     {
       static void apply (size_t& seed, tuple_type const& tuple)
       {
-        boost::hash_combine (seed, std::get<0> (tuple));
+        ::boost::hash_combine (seed, std::get<0> (tuple));
       }
     };
   }

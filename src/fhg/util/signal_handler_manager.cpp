@@ -17,8 +17,9 @@
 #include <fhg/util/signal_handler_manager.hpp>
 
 #include <fhg/assert.hpp>
-#include <util-generic/syscall.hpp>
 #include <fhg/util/backtracing_exception.hpp>
+#include <util-generic/syscall.hpp>
+#include <util-generic/this_bound_mem_fn.hpp>
 
 #include <boost/range/adaptor/map.hpp>
 
@@ -157,5 +158,32 @@ namespace fhg
       , _abrt (manager, SIGABRT, _handler)
       , _fpe (manager, SIGFPE, _handler)
     {}
+
+    Execution::Execution
+      (signal_handler_manager& manager)
+        : _term (manager, SIGTERM, fhg::util::bind_this (this, &Execution::notify))
+        , _int (manager, SIGINT, fhg::util::bind_this (this, &Execution::notify))
+    {}
+
+    void Execution::notify (int, siginfo_t*, void*)
+    {
+      return stop();
+    }
+
+    void Execution::stop()
+    {
+      std::lock_guard<std::mutex> const lock (_guard_terminated);
+
+      _terminated = true;
+
+      _was_terminated.notify_all();
+    }
+
+    void Execution::wait()
+    {
+      std::unique_lock<std::mutex> lock (_guard_terminated);
+
+      _was_terminated.wait (lock, [&] { return _terminated; });
+    }
   }
 }

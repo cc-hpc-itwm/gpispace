@@ -36,7 +36,7 @@ namespace gpi
       class beegfs_area_t : public area_t
       {
       public:
-        typedef boost::filesystem::path path_t;
+        typedef ::boost::filesystem::path path_t;
 
         static const int BEEGFS_AREA_VERSION = 0x0001;
 
@@ -95,7 +95,7 @@ namespace gpi
           lock_file_helper (beegfs_area_t&);
         };
         bool _is_creator;
-        //! \todo boost::optional with move-assignment support
+        //! \todo ::boost::optional with move-assignment support
         std::unique_ptr<lock_file_helper> _lock_file;
         path_t m_path;
         int    m_version;

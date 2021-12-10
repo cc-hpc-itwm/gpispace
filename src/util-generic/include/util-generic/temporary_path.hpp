@@ -31,42 +31,42 @@ namespace fhg
     {
       struct path_already_exists : std::logic_error
       {
-        boost::filesystem::path path;
+        ::boost::filesystem::path path;
         path_already_exists (decltype (path) p)
           : std::logic_error
-              ((boost::format ("Temporary path %1% already exists.") % p).str())
+              ((::boost::format ("Temporary path %1% already exists.") % p).str())
           , path (std::move (p))
         {}
       };
     }
 
-    class temporary_path : boost::noncopyable
+    class temporary_path : ::boost::noncopyable
     {
     public:
-      temporary_path (boost::filesystem::path const& path)
-        : _path (boost::filesystem::absolute (path))
+      temporary_path (::boost::filesystem::path const& path)
+        : _path (::boost::filesystem::absolute (path))
       {
-        if (boost::filesystem::exists (_path))
+        if (::boost::filesystem::exists (_path))
         {
           throw error::path_already_exists (path);
         }
 
-        boost::filesystem::create_directories (_path);
+        ::boost::filesystem::create_directories (_path);
       }
       temporary_path()
-        : temporary_path (boost::filesystem::unique_path())
+        : temporary_path (::boost::filesystem::unique_path())
       {}
       ~temporary_path()
       {
-        boost::filesystem::remove_all (_path);
+        ::boost::filesystem::remove_all (_path);
       }
-      operator boost::filesystem::path() const
+      operator ::boost::filesystem::path() const
       {
         return _path;
       }
 
     private:
-      boost::filesystem::path _path;
+      ::boost::filesystem::path _path;
     };
   }
 }

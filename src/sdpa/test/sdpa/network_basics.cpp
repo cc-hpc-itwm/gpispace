@@ -20,7 +20,7 @@
 #include <sdpa/test/sdpa/utils.hpp>
 #include <sdpa/types.hpp>
 
-#include <test/certificates_data.hpp>
+#include <testing/certificates_data.hpp>
 
 #include <util-generic/hostname.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
@@ -65,24 +65,12 @@ namespace
 
     void perform_WorkerRegistrationEvent (fhg::com::p2p::address_t addr);
 
-    template<typename Event>
-      using Events
-        = fhg::util::threadsafe_queue
-            <std::pair<fhg::com::p2p::address_t, Event>>;
+    fhg::util::threadsafe_queue
+      <std::pair< fhg::com::p2p::address_t
+                , ::boost::optional<std::exception_ptr>
+                >
+      > worker_registration_responses;
 
-    Events<sdpa::events::ErrorEvent> errors;
-    Events<sdpa::events::WorkerRegistrationEvent> worker_registrations;
-    Events<sdpa::events::worker_registration_response>
-      worker_registration_responses;
-
-    virtual void handleErrorEvent
-      ( fhg::com::p2p::address_t const& source
-      , sdpa::events::ErrorEvent const* event
-      ) override;
-    virtual void handleWorkerRegistrationEvent
-      ( fhg::com::p2p::address_t const& source
-      , sdpa::events::WorkerRegistrationEvent const* event
-      ) override;
     virtual void handle_worker_registration_response
       ( fhg::com::p2p::address_t const& source
       , sdpa::events::worker_registration_response const* event
@@ -119,30 +107,16 @@ namespace
       );
   }
 
-  void drts_component::handleErrorEvent
-    ( fhg::com::p2p::address_t const& source
-    , sdpa::events::ErrorEvent const* event
-    )
-  {
-    errors.put (source, *event);
-  }
-  void drts_component::handleWorkerRegistrationEvent
-    ( fhg::com::p2p::address_t const& source
-    , sdpa::events::WorkerRegistrationEvent const* event
-    )
-  {
-    worker_registrations.put (source, *event);
-  }
   void drts_component::handle_worker_registration_response
     ( fhg::com::p2p::address_t const& source
     , sdpa::events::worker_registration_response const* event
     )
   {
-    worker_registration_responses.put (source, *event);
+    worker_registration_responses.put (source, event->exception());
   }
 
   auto const avoid_infinite_wait_for_events
-    (boost::unit_test::timeout (11));
+    (::boost::unit_test::timeout (11));
 }
 
 BOOST_TEST_DECORATOR (*avoid_infinite_wait_for_events)
@@ -159,8 +133,8 @@ BOOST_DATA_TEST_CASE
 
   auto const response (observer.worker_registration_responses.get());
 
-  BOOST_REQUIRE_EQUAL (response.first, addr);
-  BOOST_REQUIRE_NO_THROW (response.second.get());
+  BOOST_REQUIRE (response.first == addr);
+  BOOST_REQUIRE (!response.second);
 }
 
 BOOST_TEST_DECORATOR (*avoid_infinite_wait_for_events)
@@ -180,9 +154,10 @@ BOOST_DATA_TEST_CASE
 
   auto const response (observer.worker_registration_responses.get());
 
-  BOOST_REQUIRE_EQUAL (response.first, addr);
+  BOOST_REQUIRE (response.first == addr);
+  BOOST_REQUIRE (!!response.second);
   fhg::util::testing::require_exception
-    ( [&] { response.second.get(); }
+    ( [&] { std::rethrow_exception (*response.second); }
     , std::runtime_error ("worker '" + observer.name() + "' already exists")
     );
 }

@@ -36,12 +36,12 @@ namespace we
       memory_transfer
         ( std::string const& global
         , std::string const& local
-        , boost::optional<bool> const& not_modified_in_module_call
+        , ::boost::optional<bool> const& not_modified_in_module_call
         , bool allow_empty_ranges
         );
       std::string const& global() const;
       std::string const& local() const;
-      boost::optional<bool> const& not_modified_in_module_call() const;
+      ::boost::optional<bool> const& not_modified_in_module_call() const;
       bool const& allow_empty_ranges() const;
 
       void assert_correct_expression_types
@@ -50,10 +50,10 @@ namespace we
     private:
       std::string _global;
       std::string _local;
-      boost::optional<bool> _not_modified_in_module_call;
+      ::boost::optional<bool> _not_modified_in_module_call;
       bool _allow_empty_ranges;
 
-      friend class boost::serialization::access;
+      friend class ::boost::serialization::access;
       template<class Archive> void serialize (Archive&, unsigned int);
     };
   }

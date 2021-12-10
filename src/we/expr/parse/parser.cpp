@@ -107,7 +107,7 @@ namespace expr
       //! \todo more intelligent check, e.g. identify ${a} == ${a}
       try
       {
-        return boost::get<bool> (eval_all());
+        return ::boost::get<bool> (eval_all());
       }
       catch (pnet::exception::missing_binding const&)
       {
@@ -186,7 +186,7 @@ namespace expr
       {
         throw exception::parse::exception
           ( "left hand of "
-          + boost::lexical_cast<std::string> (token)
+          + ::boost::lexical_cast<std::string> (token)
           + " must be reference name"
           , k
           );
@@ -353,7 +353,7 @@ namespace expr
                 break;
               default:
                 throw exception::parse::exception
-                  ( boost::lexical_cast<std::string> (action)
+                  ( ::boost::lexical_cast<std::string> (action)
                   , token.pos().eaten()
                   );
               }

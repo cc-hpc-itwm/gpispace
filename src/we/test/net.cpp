@@ -37,10 +37,10 @@ BOOST_AUTO_TEST_CASE (transition_without_input_port_can_not_fire)
   net.add_transition ( we::type::Transition
                        ( fhg::util::testing::random_string()
                        , we::type::Expression()
-                       , boost::none
+                       , ::boost::none
                        , no_properties()
                        , we::priority_type()
-                       , boost::optional<we::type::eureka_id_type>{}
+                       , ::boost::optional<we::type::eureka_id_type>{}
                        , std::list<we::type::Preference>{}
                        )
                      );
@@ -54,17 +54,17 @@ BOOST_AUTO_TEST_CASE (transition_without_input_port_can_not_fire)
 BOOST_AUTO_TEST_CASE (deserialized_transition_without_input_port_can_not_fire)
 {
   std::stringstream iostream;
-  boost::archive::text_oarchive oar (iostream);
+  ::boost::archive::text_oarchive oar (iostream);
 
   {
     we::type::net_type net;
     net.add_transition ( we::type::Transition
                          ( fhg::util::testing::random_string()
                          , we::type::Expression()
-                         , boost::none
+                         , ::boost::none
                          , no_properties()
                          , we::priority_type()
-                         , boost::optional<we::type::eureka_id_type>{}
+                         , ::boost::optional<we::type::eureka_id_type>{}
                          , std::list<we::type::Preference>{}
                          )
                        );
@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE (deserialized_transition_without_input_port_can_not_fire)
     oar << net;
   }
 
-  boost::archive::text_iarchive iar (iostream);
+  ::boost::archive::text_iarchive iar (iostream);
 
   we::type::net_type net;
   iar >> net;
@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE (transition_that_depends_on_own_output_can_fire)
        return net.add_place
          (place::type ( std::to_string (++place)
                       , signature
-                      , boost::none
+                      , ::boost::none
                       , no_properties()
                       )
          );
@@ -115,10 +115,10 @@ BOOST_AUTO_TEST_CASE (transition_that_depends_on_own_output_can_fire)
   we::type::Transition transition
     ( fhg::util::testing::random_identifier()
     , we::type::Expression ("${out} := ${in}")
-    , boost::none
+    , ::boost::none
     , no_properties()
     , we::priority_type()
-    , boost::optional<we::type::eureka_id_type>{}
+    , ::boost::optional<we::type::eureka_id_type>{}
     , std::list<we::type::Preference>{}
     );
 
@@ -146,10 +146,10 @@ BOOST_AUTO_TEST_CASE (transition_that_depends_on_own_output_can_fire)
      }
     );
 
-  connect (we::edge::PT, place_in, port_in);
-  connect (we::edge::TP, place_out, port_out);
-  connect (we::edge::PT, place_credit, port_credit_in);
-  connect (we::edge::TP, place_credit, port_credit_out);
+  connect (we::edge::PT{}, place_in, port_in);
+  connect (we::edge::TP{}, place_out, port_out);
+  connect (we::edge::PT{}, place_credit, port_credit_in);
+  connect (we::edge::TP{}, place_credit, port_credit_out);
 
   BOOST_REQUIRE_EQUAL (net.get_token (place_in).size(), 1);
   BOOST_REQUIRE (net.get_token (place_out).empty());

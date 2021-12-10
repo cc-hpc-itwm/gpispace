@@ -88,12 +88,12 @@ namespace fhg
         current_index = 0;
 
         std::stringstream ss;
-        boost::archive::binary_oarchive oa {ss};
+        ::boost::archive::binary_oarchive oa {ss};
 
         order_checker const original{};
         oa << original;
 
-        boost::archive::binary_iarchive ia {ss};
+        ::boost::archive::binary_iarchive ia {ss};
         order_checker deserialized;
         ia >> deserialized;
 

@@ -26,17 +26,23 @@ namespace fhg
   {
     namespace p2p
     {
-        static const int HELLO_PACKET = 0x8;
-
       struct header_t
       {
-        header_t();
+        header_t (address_t src, address_t dst);
 
-        std::uint32_t type_of_msg;
-        std::uint32_t length;      // size of payload in bytes
+        struct Hello{};
+
+        header_t (Hello, address_t src, address_t dst);
+
+        bool is_hello() const;
+
+        std::uint32_t type_of_msg {0};
+        std::uint32_t length {0};  // size of payload in bytes
         address_t src;             // unique source address
         address_t dst;             // unique destination address
-      } __attribute__ ((packed));
+      };
+
+      static_assert (40ul == sizeof (header_t), "size of fhg::com::p2p::header_t");
     }
   }
 }

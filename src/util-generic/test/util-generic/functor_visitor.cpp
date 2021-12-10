@@ -22,8 +22,8 @@ struct A {};
 struct B {};
 struct C {};
 
-using A_or_B = boost::variant<A, B>;
-using A_or_B_or_C = boost::variant<A, B, C>;
+using A_or_B = ::boost::variant<A, B>;
+using A_or_B_or_C = ::boost::variant<A, B, C>;
 
 BOOST_AUTO_TEST_CASE (basic_use_case)
 {
@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE (basic_use_case)
   BOOST_REQUIRE (fhg::util::visit<bool> (A_or_B (A()), visitor));
 
   A_or_B const x {A()};
-  BOOST_REQUIRE (boost::apply_visitor (visitor, x));
+  BOOST_REQUIRE (::boost::apply_visitor (visitor, x));
 }
 
 BOOST_AUTO_TEST_CASE (convenience_visit)
@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE (exactly_one_function_is_called)
 BOOST_AUTO_TEST_CASE (coalescing_lambda)
 {
   auto visitor ( fhg::util::make_visitor<bool>
-                   ( [] (boost::variant<A, B> const&) { return true; }
+                   ( [] (::boost::variant<A, B> const&) { return true; }
                    , [] (C) { return false; }
                    )
                );
@@ -89,7 +89,7 @@ BOOST_AUTO_TEST_CASE (coalescing_lambda)
 namespace
 {
   template<typename T>
-    struct is_T : boost::static_visitor<bool>
+    struct is_T : ::boost::static_visitor<bool>
   {
     bool operator() (T const&) const { return true; }
     template<typename U> bool operator() (U) const { return false; }
@@ -129,11 +129,11 @@ namespace fhg
         bool visited = false;
       };
 
-      boost::variant<D> x {D{}};
+      ::boost::variant<D> x {D{}};
 
       fhg::util::visit<void> (x, [] (D& d) { d.visited = true; }, [] {});
 
-      BOOST_REQUIRE_EQUAL (boost::get<D> (x).visited, true);
+      BOOST_REQUIRE_EQUAL (::boost::get<D> (x).visited, true);
     }
   }
 }

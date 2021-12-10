@@ -1,0 +1,45 @@
+// This file is part of GPI-Space.
+// Copyright (C) 2021 Fraunhofer ITWM
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+#include <fhg/util/signal_handler_manager.hpp>
+
+#include <util-generic/print_exception.hpp>
+
+#include <iostream>
+#include <thread>
+
+#define TEST(STOP_METHOD...)                                            \
+  int main()                                                            \
+  try                                                                   \
+  {                                                                     \
+    fhg::util::signal_handler_manager manager;                          \
+                                                                        \
+    fhg::util::Execution execution (manager);                           \
+                                                                        \
+    std::thread thread ([&] { STOP_METHOD; });                          \
+                                                                        \
+    execution.wait();                                                   \
+                                                                        \
+    if (thread.joinable()) { thread.join(); }                           \
+                                                                        \
+    return 0;                                                           \
+  }                                                                     \
+  catch (...)                                                           \
+  {                                                                     \
+    std::cerr << fhg::util::current_exception_printer() << "\n";        \
+                                                                        \
+    return 1;                                                           \
+  }

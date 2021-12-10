@@ -62,7 +62,7 @@ namespace expr
       //!   assert (!!c.at (path));
       //!   assert (*c.at (path) == type);
       //!   assert (!c.at (different_path));
-      boost::optional<Type> at (Path const& path) const noexcept;
+      ::boost::optional<Type> at (Path const& path) const noexcept;
 
     private:
       //! \note "Misuse" of 'Struct' instead of 'map<path.front(), Type>'

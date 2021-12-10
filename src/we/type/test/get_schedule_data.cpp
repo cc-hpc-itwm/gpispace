@@ -30,10 +30,10 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_not_set)
   we::type::Transition const transition
     ( fhg::util::testing::random_string()
     , we::type::Expression()
-    , boost::none
+    , ::boost::none
     , we::type::property::type()
     , we::priority_type()
-    , boost::optional<we::type::eureka_id_type>{}
+    , ::boost::optional<we::type::eureka_id_type>{}
     , std::list<we::type::Preference>{}
     );
   we::type::Activity activity (transition);
@@ -53,10 +53,10 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_constant_string)
   we::type::Transition const transition
     ( fhg::util::testing::random_string()
     , we::type::Expression()
-    , boost::none
+    , ::boost::none
     , properties
     , we::priority_type()
-    , boost::optional<we::type::eureka_id_type>{}
+    , ::boost::optional<we::type::eureka_id_type>{}
     , std::list<we::type::Preference>{}
     );
   we::type::Activity activity (transition);
@@ -77,10 +77,10 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_expression_simple)
   we::type::Transition transition
     ( fhg::util::testing::random_string()
     , we::type::Expression()
-    , boost::none
+    , ::boost::none
     , properties
     , we::priority_type()
-    , boost::optional<we::type::eureka_id_type>{}
+    , ::boost::optional<we::type::eureka_id_type>{}
     , std::list<we::type::Preference>{}
     );
 
@@ -125,10 +125,10 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_expression_sum)
   we::type::Transition transition
     ( fhg::util::testing::random_string()
     , we::type::Expression()
-    , boost::none
+    , ::boost::none
     , properties
     , we::priority_type()
-    , boost::optional<we::type::eureka_id_type>{}
+    , ::boost::optional<we::type::eureka_id_type>{}
     , std::list<we::type::Preference>{}
     );
 

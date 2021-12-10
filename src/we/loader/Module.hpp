@@ -33,12 +33,12 @@ namespace we
   {
     struct RequireModuleUnloadsWithoutRest{};
 
-    class Module : public IModule, boost::noncopyable
+    class Module : public IModule, ::boost::noncopyable
     {
     public:
-      Module (boost::filesystem::path const& path);
+      Module (::boost::filesystem::path const& path);
       Module ( RequireModuleUnloadsWithoutRest
-             , boost::filesystem::path const& path
+             , ::boost::filesystem::path const& path
              );
 
       void call ( std::string const& f
@@ -51,7 +51,7 @@ namespace we
       virtual void add_function (std::string const&, WrapperFunction) override;
 
     private:
-      boost::filesystem::path path_;
+      ::boost::filesystem::path path_;
 
       fhg::util::scoped_dlhandle _dlhandle;
       std::unordered_map<std::string, WrapperFunction> call_table_;

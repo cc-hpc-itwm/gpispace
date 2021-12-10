@@ -71,7 +71,7 @@ namespace expr
 
       namespace
       {
-        class visitor_show : public boost::static_visitor<void>
+        class visitor_show : public ::boost::static_visitor<void>
         {
         private:
           std::ostream & s;
@@ -119,7 +119,7 @@ namespace expr
                   ;
                 break;
               default: throw std::runtime_error
-                  (( boost::format ("show_parse_node_ternary (%1%)")
+                  (( ::boost::format ("show_parse_node_ternary (%1%)")
                    % expr::token::show (t.token)
                    ).str()
                   );
@@ -130,7 +130,7 @@ namespace expr
 
       std::ostream& operator << (std::ostream & s, type const& node)
       {
-        boost::apply_visitor (visitor_show (s), node);
+        ::boost::apply_visitor (visitor_show (s), node);
 
         return s;
       }
@@ -138,7 +138,7 @@ namespace expr
       namespace
       {
         class visitor_get_value
-          : public boost::static_visitor<pnet::type::value::value_type const&>
+          : public ::boost::static_visitor<pnet::type::value::value_type const&>
         {
         public:
           pnet::type::value::value_type const& operator () (pnet::type::value::value_type const& v) const
@@ -155,12 +155,12 @@ namespace expr
 
       pnet::type::value::value_type const& get (type const& node)
       {
-        return boost::apply_visitor (visitor_get_value(), node);
+        return ::boost::apply_visitor (visitor_get_value(), node);
       }
 
       namespace
       {
-        class visitor_is_value : public boost::static_visitor<bool>
+        class visitor_is_value : public ::boost::static_visitor<bool>
         {
         public:
           bool operator () (pnet::type::value::value_type const&) const { return true; }
@@ -173,12 +173,12 @@ namespace expr
 
       bool is_value (type const& node)
       {
-        return boost::apply_visitor (visitor_is_value(), node);
+        return ::boost::apply_visitor (visitor_is_value(), node);
       }
 
       namespace
       {
-        class visitor_is_ref : public boost::static_visitor<bool>
+        class visitor_is_ref : public ::boost::static_visitor<bool>
         {
         public:
           bool operator () (pnet::type::value::value_type const&) const { return false; }
@@ -191,12 +191,12 @@ namespace expr
 
       bool is_ref (type const& node)
       {
-        return boost::apply_visitor (visitor_is_ref(), node);
+        return ::boost::apply_visitor (visitor_is_ref(), node);
       }
 
       namespace
       {
-        class visitor_rename : public boost::static_visitor<void>
+        class visitor_rename : public ::boost::static_visitor<void>
         {
         public:
           visitor_rename (std::string const& _from, std::string const& _to)
@@ -218,20 +218,20 @@ namespace expr
 
           void operator () (unary_t & u) const
           {
-            boost::apply_visitor (*this, u.child);
+            ::boost::apply_visitor (*this, u.child);
           }
 
           void operator () (binary_t & b) const
           {
-            boost::apply_visitor (*this, b.l);
-            boost::apply_visitor (*this, b.r);
+            ::boost::apply_visitor (*this, b.l);
+            ::boost::apply_visitor (*this, b.r);
           }
 
           void operator () (ternary_t & t) const
           {
-            boost::apply_visitor (*this, t.child0);
-            boost::apply_visitor (*this, t.child1);
-            boost::apply_visitor (*this, t.child2);
+            ::boost::apply_visitor (*this, t.child0);
+            ::boost::apply_visitor (*this, t.child1);
+            ::boost::apply_visitor (*this, t.child2);
           }
 
         private:
@@ -242,12 +242,12 @@ namespace expr
 
       void rename (type& t, std::string const& from, std::string const& to)
       {
-        boost::apply_visitor (visitor_rename (from, to), t);
+        ::boost::apply_visitor (visitor_rename (from, to), t);
       }
 
       namespace
       {
-        struct visitor_collect_key_roots : boost::static_visitor<void>
+        struct visitor_collect_key_roots : ::boost::static_visitor<void>
         {
           visitor_collect_key_roots (KeyRoots& roots) : _roots (roots) {}
 
@@ -267,20 +267,20 @@ namespace expr
 
           void operator() (unary_t const& u) const
           {
-            boost::apply_visitor (*this, u.child);
+            ::boost::apply_visitor (*this, u.child);
           }
 
           void operator() (binary_t const& b) const
           {
-            boost::apply_visitor (*this, b.l);
-            boost::apply_visitor (*this, b.r);
+            ::boost::apply_visitor (*this, b.l);
+            ::boost::apply_visitor (*this, b.r);
           }
 
           void operator() (ternary_t const& t) const
           {
-            boost::apply_visitor (*this, t.child0);
-            boost::apply_visitor (*this, t.child1);
-            boost::apply_visitor (*this, t.child2);
+            ::boost::apply_visitor (*this, t.child0);
+            ::boost::apply_visitor (*this, t.child1);
+            ::boost::apply_visitor (*this, t.child2);
           }
 
         private:
@@ -290,7 +290,7 @@ namespace expr
 
       void collect_key_roots (type const& node, KeyRoots& roots)
       {
-        boost::apply_visitor (visitor_collect_key_roots (roots), node);
+        ::boost::apply_visitor (visitor_collect_key_roots (roots), node);
       }
     }
   }

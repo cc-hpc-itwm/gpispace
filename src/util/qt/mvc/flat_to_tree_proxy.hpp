@@ -111,10 +111,10 @@ namespace fhg
           struct item
           {
             item();
-            item (QString, boost::shared_ptr<transform_function>);
+            item (QString, ::boost::shared_ptr<transform_function>);
 
             QString name;
-            boost::shared_ptr<transform_function> function;
+            ::boost::shared_ptr<transform_function> function;
           };
 
           QList<item> _items;
@@ -125,4 +125,4 @@ namespace fhg
 }
 
 Q_DECLARE_METATYPE
-  (boost::shared_ptr<fhg::util::qt::mvc::transform_functions_model::transform_function>)
+  (::boost::shared_ptr<fhg::util::qt::mvc::transform_functions_model::transform_function>)

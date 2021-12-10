@@ -39,7 +39,7 @@ namespace gpi
 {
   namespace api
   {
-    class gaspi_t : boost::noncopyable
+    class gaspi_t : ::boost::noncopyable
     {
     public:
       gaspi_t ( fhg::iml::vmem::gaspi_context&
@@ -160,7 +160,7 @@ namespace gpi
       std::map<notification_t, std::size_t> _outstanding_notifications;
 
       std::atomic<bool> _notification_check_interrupted;
-      std::unique_ptr<boost::strict_scoped_thread<>> _notification_check;
+      std::unique_ptr<::boost::strict_scoped_thread<>> _notification_check;
       fhg::util::finally_t<std::function<void()>> _interrupt_notification_check;
       void notification_check();
     };

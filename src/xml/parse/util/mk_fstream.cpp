@@ -28,7 +28,7 @@ namespace xml
     {
       check_no_change_fstream::check_no_change_fstream
       ( state::type const& state
-      , boost::filesystem::path const& file
+      , ::boost::filesystem::path const& file
       , std::function<bool (std::string const&, std::string const&)> equal
       )
         : _state (state)
@@ -47,7 +47,7 @@ namespace xml
       }
       void check_no_change_fstream::commit() const
       {
-        if (boost::filesystem::is_regular_file (_file))
+        if (::boost::filesystem::is_regular_file (_file))
           {
             std::ifstream ifs (_file.string().c_str());
 
@@ -71,15 +71,15 @@ namespace xml
 
             if (_state.do_file_backup())
               {
-                const boost::filesystem::path backup
+                const ::boost::filesystem::path backup
                   (_file.string() + _state.backup_extension());
 
                 _state.warn (warning::backup_file (_file, backup));
 
-                boost::filesystem::copy_file
+                ::boost::filesystem::copy_file
                   ( _file
                   , backup
-                  , boost::filesystem::copy_option::overwrite_if_exists
+                  , ::boost::filesystem::copy_option::overwrite_if_exists
                   );
               }
 
@@ -90,13 +90,13 @@ namespace xml
       }
       void check_no_change_fstream::write() const
       {
-        boost::filesystem::path path (_file);
+        ::boost::filesystem::path path (_file);
 
         path.remove_filename();
 
-        boost::filesystem::create_directories (path);
+        ::boost::filesystem::create_directories (path);
 
-        if (not boost::filesystem::is_directory (path))
+        if (not ::boost::filesystem::is_directory (path))
           {
             throw error::could_not_create_directory (path);
           }

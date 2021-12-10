@@ -44,7 +44,7 @@ namespace pnet
           const std::string _what;
         };
 
-        class visitor_poke : public boost::static_visitor<value_type&>
+        class visitor_poke : public ::boost::static_visitor<value_type&>
         {
         public:
           visitor_poke ( std::list<std::string>::const_iterator const& key
@@ -67,7 +67,7 @@ namespace pnet
           {
             return (_key == _end)
               ? (_node = _value)
-              : deeper (boost::get<structured_type> (_node = structured_type())
+              : deeper (::boost::get<structured_type> (_node = structured_type())
                        )
               ;
           }
@@ -90,7 +90,7 @@ namespace pnet
 
             value_type& v (pos->second);
 
-            return boost::apply_visitor
+            return ::boost::apply_visitor
               (visitor_poke (std::next (_key), _end, v, _value), v);
           }
         };
@@ -102,7 +102,7 @@ namespace pnet
                        , value_type const& value
                        )
       {
-        return boost::apply_visitor
+        return ::boost::apply_visitor
           (visitor_poke (key, end, node, value), node);
       }
       value_type& poke ( std::list<std::string> const& path

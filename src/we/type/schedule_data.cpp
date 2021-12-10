@@ -23,7 +23,7 @@ namespace we
   namespace type
   {
     schedule_data::schedule_data
-      (boost::optional<unsigned long> const& num_worker)
+      (::boost::optional<unsigned long> const& num_worker)
         : _num_worker (num_worker)
     {
       if (!!_num_worker && _num_worker.get() == 0UL)
@@ -32,7 +32,7 @@ namespace we
       }
     }
 
-    const boost::optional<unsigned long>& schedule_data::num_worker() const
+    const ::boost::optional<unsigned long>& schedule_data::num_worker() const
     {
       return _num_worker;
     }

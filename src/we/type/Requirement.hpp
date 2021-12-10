@@ -35,7 +35,7 @@ namespace we
     private:
       std::string _value;
 
-      friend class boost::serialization::access;
+      friend class ::boost::serialization::access;
       template<typename Archive>
         void serialize (Archive&, unsigned int);
     };

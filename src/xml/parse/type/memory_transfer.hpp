@@ -41,7 +41,7 @@ namespace xml
                              , std::string const& global
                              , std::string const& local
                              , we::type::property::type const&
-                             , boost::optional<bool> const&
+                             , ::boost::optional<bool> const&
                              );
 
         std::string const& global() const
@@ -56,13 +56,13 @@ namespace xml
         {
           return _properties;
         }
-        boost::optional<bool> const& allow_empty_ranges() const;
+        ::boost::optional<bool> const& allow_empty_ranges() const;
 
       private:
         std::string _global;
         std::string _local;
         we::type::property::type _properties;
-        boost::optional<bool> _allow_empty_ranges;
+        ::boost::optional<bool> _allow_empty_ranges;
       };
 
       struct memory_get : memory_transfer_type
@@ -72,7 +72,7 @@ namespace xml
                    , std::string const& global
                    , std::string const& local
                    , we::type::property::type const&
-                   , boost::optional<bool> const&
+                   , ::boost::optional<bool> const&
                    );
       };
 
@@ -83,16 +83,16 @@ namespace xml
                    , std::string const& global
                    , std::string const& local
                    , we::type::property::type const&
-                   , boost::optional<bool> const&
-                   , boost::optional<bool> const&
+                   , ::boost::optional<bool> const&
+                   , ::boost::optional<bool> const&
                    );
-        boost::optional<bool> const& not_modified_in_module_call() const
+        ::boost::optional<bool> const& not_modified_in_module_call() const
         {
           return _not_modified_in_module_call;
         }
 
       private:
-        boost::optional<bool> _not_modified_in_module_call;
+        ::boost::optional<bool> _not_modified_in_module_call;
       };
 
       struct memory_getput : memory_transfer_type
@@ -102,16 +102,16 @@ namespace xml
                       , std::string const& global
                       , std::string const& local
                       , we::type::property::type const&
-                      , boost::optional<bool> const&
-                      , boost::optional<bool> const&
+                      , ::boost::optional<bool> const&
+                      , ::boost::optional<bool> const&
                       );
-        boost::optional<bool> const& not_modified_in_module_call() const
+        ::boost::optional<bool> const& not_modified_in_module_call() const
         {
           return _not_modified_in_module_call;
         }
 
       private:
-        boost::optional<bool> _not_modified_in_module_call;
+        ::boost::optional<bool> _not_modified_in_module_call;
       };
 
       namespace dump

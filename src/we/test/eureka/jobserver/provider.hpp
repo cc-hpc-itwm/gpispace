@@ -20,9 +20,9 @@
 #include <we/test/eureka/jobserver/Task.hpp>
 #include <we/test/eureka/jobserver/protocol.hpp>
 
-#include <rpc/service_dispatcher.hpp>
-#include <rpc/service_handler.hpp>
-#include <rpc/service_tcp_provider.hpp>
+#include <util-rpc/service_dispatcher.hpp>
+#include <util-rpc/service_handler.hpp>
+#include <util-rpc/service_tcp_provider.hpp>
 
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 
@@ -60,7 +60,7 @@ namespace gspc
             struct Cancelled{};
             struct ExitedOrCancelled{};
 
-            using State = boost::variant<Running, Cancelled, ExitedOrCancelled>;
+            using State = ::boost::variant<Running, Cancelled, ExitedOrCancelled>;
 
             void wait (std::size_t, EurekaGroup, State);
             void wait (std::size_t, TasksByEurekaGroup, State);

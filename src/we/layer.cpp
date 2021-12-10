@@ -35,8 +35,8 @@ namespace we
         , std::function<void (id_type, type::Activity)> rts_finished
         , std::function<void (id_type, std::string)> rts_failed
         , std::function<void (id_type)> rts_canceled
-        , std::function<void (std::string, boost::optional<std::exception_ptr>)> rts_token_put
-        , std::function<void (std::string workflow_response_id, boost::variant<std::exception_ptr, pnet::type::value::value_type>)> rts_workflow_response
+        , std::function<void (std::string, ::boost::optional<std::exception_ptr>)> rts_token_put
+        , std::function<void (std::string workflow_response_id, ::boost::variant<std::exception_ptr, pnet::type::value::value_type>)> rts_workflow_response
         , std::function<id_type()> rts_id_generator
         , std::mt19937& random_extraction_engine
         )
@@ -66,7 +66,7 @@ namespace we
 
     void layer::finished (id_type id, type::Activity result)
     {
-      boost::optional<id_type> const parent (_running_jobs.parent (id));
+      ::boost::optional<id_type> const parent (_running_jobs.parent (id));
       fhg_assert (parent);
 
       //! \todo Don't forget that this child actually finished and
@@ -111,7 +111,7 @@ namespace we
 
     void layer::failed (id_type id, std::string reason)
     {
-      boost::optional<id_type> const parent (_running_jobs.parent (id));
+      ::boost::optional<id_type> const parent (_running_jobs.parent (id));
       fhg_assert (parent);
 
       //! \todo Don't forget that this child actually failed and
@@ -150,7 +150,7 @@ namespace we
 
     void layer::canceled (id_type child)
     {
-      boost::optional<id_type> const parent (_running_jobs.parent (child));
+      ::boost::optional<id_type> const parent (_running_jobs.parent (child));
 
       if (!parent)
       {
@@ -194,7 +194,7 @@ namespace we
         {
           activity_data._activity->put_token (place_name, value);
 
-          _rts_token_put (put_token_id, boost::none);
+          _rts_token_put (put_token_id, ::boost::none);
         }
         , std::bind (_rts_token_put, put_token_id, std::placeholders::_1)
         );
@@ -232,7 +232,7 @@ namespace we
   void layer::workflow_response
     ( id_type id
     , std::string const& response_id
-    , boost::variant<std::exception_ptr, pnet::type::value::value_type> const& response
+    , ::boost::variant<std::exception_ptr, pnet::type::value::value_type> const& response
     )
   {
     _rts_workflow_response (response_id, response);
@@ -245,7 +245,7 @@ namespace we
   }
 
   void layer::eureka_response ( id_type parent
-                              , boost::optional<id_type> eureka_calling_child
+                              , ::boost::optional<id_type> eureka_calling_child
                               , type::eureka_ids_type const& eureka_ids
                               )
   {
@@ -288,7 +288,7 @@ namespace we
         //! fire_expression_and_extract_activity_random (endless loop
         //! in expressions)?
 
-        boost::optional<type::Activity> activity;
+        ::boost::optional<type::Activity> activity;
         try
         {
           fhg::util::nest_exceptions<std::runtime_error>
@@ -308,7 +308,7 @@ namespace we
                       , [this, &activity_data] (type::eureka_ids_type const& eureka_ids)
                         {
                           eureka_response ( activity_data._id
-                                          , boost::none
+                                          , ::boost::none
                                           , eureka_ids
                                           );
                         }
@@ -755,7 +755,7 @@ namespace we
     void layer::locked_parent_child_relation_type::started
       ( id_type parent
       , id_type child
-      , boost::optional<type::eureka_id_type> const& eureka_id
+      , ::boost::optional<type::eureka_id_type> const& eureka_id
       )
     {
       std::lock_guard<std::mutex> const _ (_relation_mutex);
@@ -781,7 +781,7 @@ namespace we
       return _relation.left.find (parent) == _relation.left.end();
     }
 
-    boost::optional<layer::id_type>
+    ::boost::optional<layer::id_type>
       layer::locked_parent_child_relation_type::parent (id_type child)
     {
       std::lock_guard<std::mutex> const _ (_relation_mutex);
@@ -794,7 +794,7 @@ namespace we
         return pos->second;
       }
 
-      return boost::none;
+      return ::boost::none;
     }
 
     bool layer::locked_parent_child_relation_type::contains
@@ -811,7 +811,7 @@ namespace we
       std::lock_guard<std::mutex> const _ (_relation_mutex);
 
       for ( id_type child
-          : _relation.left.equal_range (parent) | boost::adaptors::map_values
+          : _relation.left.equal_range (parent) | ::boost::adaptors::map_values
           )
       {
         fun (child);
@@ -822,7 +822,7 @@ namespace we
     void layer::locked_parent_child_relation_type::apply_and_remove_eureka
       ( type::eureka_id_type const& eureka_id
       , id_type const& parent
-      , boost::optional<id_type> const& eureka_caller
+      , ::boost::optional<id_type> const& eureka_caller
       , std::function<void (id_type)> cancel
       )
     {
@@ -832,7 +832,7 @@ namespace we
 
       for ( id_type child
           : _eureka_in_progress.left.equal_range (eureka_by_parent)
-          | boost::adaptors::map_values
+          | ::boost::adaptors::map_values
           )
       {
         if (eureka_caller != child)

@@ -53,7 +53,7 @@ set_and_check (GSPC_gspc_LIBRARY "${GSPC_HOME}/lib/libgspc.so")
 set_and_check (GSPC_APIGuard_LIBRARY "${GSPC_HOME}/lib/libGPISpace-APIGuard.so")
 set_and_check (GSPC_pnetc_BINARY "${GSPC_HOME}/bin/pnetc")
 set_and_check (GSPC_INCLUDE_DIR "${GSPC_HOME}/include")
-set_and_check (GSPC_XPNET_XSD "${GSPC_HOME}/share/gspc/xml/xsd/pnet.xsd")
+set_and_check (GSPC_XPNET_XSD "${GSPC_HOME}/share/GPISpace/xml/xsd/pnet.xsd")
 set_and_check (GSPC_GIT_SUBMODULES_FILE "${GSPC_HOME}/git.submodules")
 
 set (GSPC_WITH_MONITOR_APP "@GSPC_WITH_MONITOR_APP@")
@@ -81,16 +81,16 @@ endforeach()
 set (GSPC_HOME "${GSPC_HOME}" CACHE PATH "" FORCE)
 mark_as_advanced (GSPC_HOME)
 
-################################################################################
-# Dependency: Util-CMake                                                       #
-################################################################################
+###############################################################################
+# Dependency: Util-CMake
+###############################################################################
 
 set (util-cmake_ROOT "${GSPC_HOME}")
 find_dependency (util-cmake REQUIRED)
 
-################################################################################
-# Dependency: Boost                                                            #
-################################################################################
+###############################################################################
+# Dependency: Boost
+###############################################################################
 
 # \todo BOOST_ROOT vs @BOOST_ROOT@ vs $GSPC_HOME/external/boost
 set (BOOST_ROOT "${GSPC_HOME}/external/boost" CACHE PATH "BOOST ROOT")
@@ -153,16 +153,32 @@ if (NOT _boost_po_link_workaround IN_LIST _current_options)
   )
 endif()
 
-################################################################################
-# Dependency: Util-Generic                                                     #
-################################################################################
+###############################################################################
+# Dependency: Util-Generic
+###############################################################################
 
 set (util-generic_ROOT "${GSPC_HOME}")
 find_dependency (util-generic REQUIRED)
 
-################################################################################
-# Dependency: IML                                                              #
-################################################################################
+###############################################################################
+# Dependency: Util-Qt
+###############################################################################
+
+if (GSPC_WITH_MONITOR_APP)
+  set (util-qt_ROOT "${GSPC_HOME}")
+  find_dependency (util-qt REQUIRED)
+endif()
+
+###############################################################################
+# Dependency: Util-Qt
+###############################################################################
+
+set (util-rpc_ROOT "${GSPC_HOME}")
+find_dependency (util-rpc REQUIRED)
+
+###############################################################################
+# Dependency: IML
+###############################################################################
 
 find_dependency (IML
   @PROJECT_VERSION@ EXACT
@@ -170,9 +186,9 @@ find_dependency (IML
   CONFIG HINTS "${GSPC_HOME}"
 )
 
-################################################################################
-# Git submodule check                                                          #
-################################################################################
+###############################################################################
+# Git submodule check
+###############################################################################
 
 # \todo Is this still something we want?
 # \todo avoid temporary file?
@@ -192,13 +208,13 @@ endif()
 if (${_gspc_do_submodules_check})
   find_dependency (Git REQUIRED)
 
-  #! Assuming \c CMAKE_SOURCE_DIR is a git repository, list all git
+  #! Assuming \c PROJECT_SOURCE_DIR is a git repository, list all git
   #! submodules checked out there, their path and version in \a FILE.
   #! \note Assumes `grep`, `git`, `sort`, `readlink` `sed` to exist and
   #! be executable by name alone, i.e. be contained in `$PATH`.
   function (list_and_store_git_submodules FILE)
     execute_process (COMMAND git submodule --quiet foreach "echo $(grep -m1 url $(sed \"s,gitdir: ,,\" .git 2>/dev/null || readlink -f .git)/config | sed \"s,.*:,,;s,.git,,\") $sha1"
-      WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+      WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
       OUTPUT_VARIABLE _list_git_submodules
       RESULT_VARIABLE _result_list_git_submodules
       OUTPUT_STRIP_TRAILING_WHITESPACE
@@ -221,12 +237,12 @@ if (${_gspc_do_submodules_check})
 
   #! Produces the file \a NAME in \c CMAKE_BINARY_DIR either by calling
   #! `list_and_store_git_submodules (${CMAKE_BINARY_DIR}/${NAME})`, or
-  #! if file `${CMAKE_SOURCE_DIR}/${NAME}` exists by copying that
+  #! if file `${PROJECT_SOURCE_DIR}/${NAME}` exists by copying that
   #! without additional checks.
   function (list_and_store_git_submodules_if_not_exists NAME)
-    if (EXISTS "${CMAKE_SOURCE_DIR}/${NAME}")
-      message (STATUS "Using git submodules from file ${CMAKE_SOURCE_DIR}/${NAME}")
-      file (COPY "${CMAKE_SOURCE_DIR}/${NAME}" DESTINATION "${CMAKE_BINARY_DIR}")
+    if (EXISTS "${PROJECT_SOURCE_DIR}/${NAME}")
+      message (STATUS "Using git submodules from file ${PROJECT_SOURCE_DIR}/${NAME}")
+      file (COPY "${PROJECT_SOURCE_DIR}/${NAME}" DESTINATION "${CMAKE_BINARY_DIR}")
     else()
       list_and_store_git_submodules ("${CMAKE_BINARY_DIR}/${NAME}")
     endif()
@@ -280,9 +296,9 @@ if (${_gspc_do_submodules_check})
   assert_same_git_submodules ("${CMAKE_CURRENT_BINARY_DIR}/git.submodules" "${GSPC_GIT_SUBMODULES_FILE}")
 endif()
 
-################################################################################
-# GPISpace targets                                                             #
-################################################################################
+###############################################################################
+# GPISpace targets
+###############################################################################
 
 add_library (GPISpace::header-only INTERFACE IMPORTED)
 target_include_directories (GPISpace::header-only SYSTEM
@@ -351,9 +367,9 @@ set_target_properties (GPISpace::pnetc PROPERTIES
 )
 
 
-################################################################################
-# deployment helpers                                                           #
-################################################################################
+###############################################################################
+# deployment helpers
+###############################################################################
 
 # There are multiple ways to deploy an application that is using
 # GPISpace. Not all strategies are available depending on the GPISpace
@@ -657,7 +673,7 @@ macro (_GPISpace_parse_arguments _prefix _options _one_value_options _multi_valu
   endif()
 endmacro()
 
-################################################################################
+###############################################################################
 
 # - actually support components (monitoring, sdk)
 check_required_components (GPISpace)

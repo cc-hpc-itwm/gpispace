@@ -55,7 +55,7 @@ namespace fhg
     };
 
     template<typename Ret>
-      struct functor_visitor<Ret> : boost::static_visitor<Ret> {};
+      struct functor_visitor<Ret> : ::boost::static_visitor<Ret> {};
 
     template<typename Ret, typename... Functors>
       functor_visitor<Ret, Functors...> make_visitor (Functors&&... lambdas)
@@ -66,7 +66,7 @@ namespace fhg
     template<typename Ret, typename Variant, typename Visitor>
       Ret visit (Variant&& variant, Visitor&& visitor)
     {
-      return boost::apply_visitor (std::forward<Visitor> (visitor), variant);
+      return ::boost::apply_visitor (std::forward<Visitor> (visitor), variant);
     }
     template<typename Ret, typename Variant, typename... Functors>
       Ret visit (Variant&& variant, Functors&&... lambdas)

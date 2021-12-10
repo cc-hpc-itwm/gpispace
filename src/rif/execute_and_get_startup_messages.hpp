@@ -38,7 +38,7 @@ namespace fhg
       std::vector<std::string> messages;
     };
     StartupResult execute_and_get_startup_messages
-      ( boost::filesystem::path command
+      ( ::boost::filesystem::path command
       , std::vector<std::string> arguments
       , std::unordered_map<std::string, std::string> environment
       );
