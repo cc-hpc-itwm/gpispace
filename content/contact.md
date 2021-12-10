@@ -8,7 +8,6 @@ permalink: /contact
 
 | Author | Affiliation |
 | :-: | :-: |
-| Bernd Lörwald | Fraunhofer ITWM |
 | Rui Machado | Fraunhofer ITWM |
 | Mirko Rahn | Fraunhofer ITWM |
 | Tiberiu Rotaru | Fraunhofer ITWM |
@@ -28,13 +27,15 @@ better.
 For referencing GPI-Space in publications, please use the following BibTeX entry.
 
 ```
+{% raw %}
 @misc {GSPC,
   author = {Fraunhofer ITWM, Competence Center High Performance Computing},
-  title = {GPI-Space},
+  title = {{GPI}-Space},
   year = {2020},
   month = {September},
   howpublished = {https://www.gpi-space.de},
 }
+{% endraw %}
 ```
 
 ## How to Contribute

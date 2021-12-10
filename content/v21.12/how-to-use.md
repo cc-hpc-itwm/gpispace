@@ -1,7 +1,7 @@
 ---
 layout: versioned_page
 title: How to use GPI-Space
-permalink: /v21.09/how-to-use
+permalink: /v21.12/how-to-use
 ---
 
 This document provides a step-by-step guide on how to create a first
@@ -1065,6 +1065,7 @@ listening on port `7777`:
 
 ## See Also
 
-- [XPNET Format Schema](https://github.com/cc-hpc-itwm/gpispace/blob/v21.09/share/xsd/pnet.xsd)
-- [Additonal Examples](https://github.com/cc-hpc-itwm/gpispace/tree/v21.09/doc/tutorial)
-- [GSPC-Monitor Documentation](https://github.com/cc-hpc-itwm/gpispace/blob/v21.09/doc/gspc-monitor/gspc-monitor.md)
+- [XPNET Format Schema](https://github.com/cc-hpc-itwm/gpispace/blob/v21.12/share/xml/xsd/pnet.xsd)
+- [Additional Examples](https://github.com/cc-hpc-itwm/gpispace/tree/v21.12/share/doc/example)
+- [GSPC-Monitor Documentation](https://github.com/cc-hpc-itwm/gpispace/blob/v21.12/share/doc/gspc-monitor/gspc-monitor.md)
+- [Feature Documentation](https://github.com/cc-hpc-itwm/gpispace/blob/v21.12/share/doc)

@@ -42,7 +42,7 @@ below:
 
 * Two `t1` transitions can fire simultaneously (data-parallel), each
   consuming one token at input place `p1`.
-* Transition `t1`, `t2` and `t3` can figure simultaneously
+* Transition `t1`, `t2` and `t3` can fire simultaneously
   (task-parallel), in the figure below.
 
 ![A Petri Net with four transitions Tx and six places Px: T1 has one

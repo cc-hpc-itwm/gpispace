@@ -3,16 +3,32 @@ layout: default
 ---
 
 {% assign page_name = page.name | replace: '.md', '' %}
-{% assign latest_release = '/' | append: site.download_branch | append: '/' %}
+{% assign latest_release = '/' | append: site.last_tag | append: '/' %}
+
+{% assign first_release_date = site.first_tag | remove_first: 'v' %}
+{% assign first_year = first_release_date | floor %}
+{% assign first = first_release_date | minus: first_year | times: 100 %}
+{% assign first = first_year | times: 12 | plus: first | minus: 1 %}
+
+{% assign last_release_date = site.last_tag | remove_first: 'v' %}
+{% assign last_year = last_release_date | floor %}
+{% assign last = last_release_date | minus: last_year | times: 100 %}
+{% assign last = last_year | times: 12 | plus: last | minus: 1 %}
+
+{% assign num_releases = last | minus: first | divided_by: 3 | to_integer %}
 
 <article class="post">
 
   <header class="post-header">
     <select id="page_version" onchange="update()">
-      <option value="{{ '/v21.06/' | append: page_name | relative_url }}">v21.06</option>
-      <option value="{{ '/v21.09/' | append: page_name | relative_url }}">v21.09</option>
+      {% for i in (0..num_releases) %}
+        {% assign release = i | times: 3 | plus: first %}
+        {% assign year = release | divided_by: 12 | floor %}
+        {% assign release = release | modulo: 12 | plus: 1 | divided_by: 100 | plus: year %}
+        <option value="{{ '/v' | append: release | append: '/' | append: page_name | relative_url }}">{{ v | append: release }}</option>
+      {% endfor %}
       <option value="{{ latest_release | append: page_name | relative_url }}">latest release ({{
-        site.download_branch }})</option>
+        site.last_tag }})</option>
     </select>
     <h1 class="post-title">{{ page.title | escape }}</h1>
     <script type="text/javascript">

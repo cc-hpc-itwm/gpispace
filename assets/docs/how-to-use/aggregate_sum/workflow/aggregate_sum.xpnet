@@ -1,0 +1,29 @@
+<defun name="aggregate_sum">
+  <in name="values" type="int" place="values"/>
+  <out name="sum" type="int" place="sum"/>
+
+  <net>
+    <place name="values" type="int"/>
+    <place name="sum" type="int">
+      <token>
+        <value>0</value>
+      </token>
+    </place>
+
+    <transition name="aggregate">
+      <defun>
+        <in name="value" type="int"/>
+        <inout name="sum" type="int"/>
+
+        <module name="aggregate_sum" function="plus (value, sum)">
+        <code><![CDATA[
+          sum += value;
+        ]]></code>
+        </module>
+      </defun>
+
+      <connect-in port="value" place="values"/>
+      <connect-inout port="sum" place="sum"/>
+    </transition>
+  </net>
+</defun>
