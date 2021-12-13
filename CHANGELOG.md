@@ -1,3 +1,9 @@
+# [21.12.1] - 2021-12-13
+
+## Hotfix
+
+- The `BUILD_TESTING` default is changed back to `OFF`
+
 # [21.12] - 2021-12-10
 
 ## Spack Package Deployment

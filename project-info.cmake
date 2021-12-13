@@ -14,5 +14,5 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-set (GSPC_VERSION 21.12)
+set (GSPC_VERSION 21.12.1)
 set (PROJECT_CONTACT "gpispace-support@itwm.fraunhofer.de")

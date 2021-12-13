@@ -56,6 +56,8 @@ include (GNUInstallDirs)
 set (GSPC_SHARE_INSTALL_DIR "${CMAKE_INSTALL_DATAROOTDIR}/GPISpace")
 set (GSPC_CONFIG_INSTALL_DIR "${GSPC_SHARE_INSTALL_DIR}/cmake")
 
+set (BUILD_TESTING OFF CACHE BOOL "")
+
 # TODO: temporary fix, should be removed once everything is standalone
 set (UTIL_CMAKE_INSTALL ON)
 set (UTIL_GENERIC_INSTALL ON)
