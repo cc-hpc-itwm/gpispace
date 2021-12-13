@@ -8,8 +8,11 @@ company_logo: /assets/img/logo/itwm.svg
 editors:
   - Max Zeyen
 
-first_tag: v21.06
-last_tag: &last_tag v21.12
+releases:
+  - v21.06
+  - v21.09
+  - v21.12
+  - v21.12.1
 
 show_downloads: true
 download_branch: v21.12.1
