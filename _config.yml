@@ -12,7 +12,7 @@ first_tag: v21.06
 last_tag: &last_tag v21.12
 
 show_downloads: true
-download_branch: v21.12
+download_branch: v21.12.1
 
 show_excerpts: false
 
