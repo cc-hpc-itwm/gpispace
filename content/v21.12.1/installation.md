@@ -24,8 +24,21 @@ The source and build directories are not required to be shared
 and for best performance it is recommended to place them in a
 fast (local) file system.
 
-### Dependencies
+### Spack Package
 
+The recommended way of installing GPI-Space is with the `Spack` package
+manager (see [Spack - Getting Started](https://spack.readthedocs.io/en/latest/getting_started.html) and [Spack - Basic Usage](https://spack.readthedocs.io/en/latest/basic_usage.html) for more information).
+
+The most recent version of GPI-Space can be installed using the following
+command:
+
+```bash
+spack install gpi-space
+```
+
+### Manual Installation
+
+Alternatively, GPI-Space can also be installed manually.
 GPI-Space requires some third-party dependencies. Most of the
 following are provided out of the box as (-devel/-dev) packages or
 other binary distributions on most supported operating systems.
@@ -175,7 +188,7 @@ cmake -D CRYPTO_BACKEND=OpenSSL                 \
 cmake --build . --target install -- -j$(nproc)
 ```
 
-### Building GPI-Space
+#### Building GPI-Space
 
 GPI-Space can be built as described below. The dependencies are found
 via various environment variables in addition to being searched in
@@ -281,12 +294,17 @@ ctest --output-on-failure \
 ## Optional Components
 
 GPI-Space supports disabling some components at configuration time to
-reduce the dependencies needed as well as build time. The following
-options can be given to CMake with either `=OFF` or `=ON` appended:
+reduce the dependencies needed as well as build time.
 
-- `-DGSPC_WITH_MONITOR_APP`: The `gspc-monitor` (also known as
-  "gantt") application for execution monitoring. This component
-  requires Qt5.
+### GSPC Monitor
+
+The `gspc-monitor` (also known as "gantt") application for execution monitoring
+requires Qt5. The following options can be used to enable or disable this
+feature (enabled by default):
+
+| Spack | CMake |
+| - | - |
+| `[+|~]monitor` | `-D GSPC_WITH_MONITOR_APP=[ON|OFF]` |
 
 ## Next steps
 
