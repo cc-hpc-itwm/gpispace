@@ -1,16 +1,15 @@
 ---
 layout: versioned_page
 title: Installation
-version: 21.06
-permalink: /v21.06/installation
+version: 22.03
+permalink: /v22.03/installation
 ---
 
 GPI-Space targets x86-64 Linux systems. Other architectures are not
 supported at this point. It is built and tested daily on
 
-* Centos 6
 * Centos 7
-* Centos 8
+* Oracle Linux 8
 * Ubuntu 18.04 LTS
 * Ubuntu 20.04 LTS
 
@@ -26,8 +25,31 @@ The source and build directories are not required to be shared
 and for best performance it is recommended to place them in a
 fast (local) file system.
 
-### Dependencies
+### Spack Package
 
+The recommended way of installing GPI-Space is with the `Spack` package
+manager:
+
+  - [Spack - Getting Started](https://spack.readthedocs.io/en/latest/getting_started.html)
+  - [Spack - Basic Usage](https://spack.readthedocs.io/en/latest/basic_usage.html)
+
+The most recent version of GPI-Space can be installed using the following
+command:
+
+```bash
+spack install gpi-space
+```
+
+> ---
+> **NOTE:**
+>
+> There might be a time delay between a GPI-Space release and its availability in the Spack package.
+>
+> ---
+
+### Manual Installation
+
+Alternatively, GPI-Space can also be installed manually.
 GPI-Space requires some third-party dependencies. Most of the
 following are provided out of the box as (-devel/-dev) packages or
 other binary distributions on most supported operating systems.
@@ -40,10 +62,13 @@ Note that some GPI-Space components can be disabled, which may remove
 some dependencies needed. Also see the "Building GPI-Space" section
 and subsection "Optional Components" below.
 
-* [GCC](https://gcc.gnu.org/) (>= 4.9.4), or compatible compiler
-* [CMake](https://cmake.org/) (>= 3.13)
+* [GCC](https://gcc.gnu.org/) (>= 5.5.0), or compatible compiler
+* [CMake](https://cmake.org/) (>= 3.15)
   * Some distributions name the binary `cmake3` while others use
     `cmake`. Snippets below assume `cmake`.
+* [pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/) (>= 0.23)
+  , or an equivalent [pkgconf](http://pkgconf.org/). Both offer the `pkg-config`
+  program.
 * [OpenSSL](https://www.openssl.org/) (>= 0.9)
   * When using OpenSSL >= 1.1, Boost >= 1.62 and libssh2 (>= 1.8) are
     required for compatibility.
@@ -58,7 +83,7 @@ and subsection "Optional Components" below.
     is compatible.
   * Among others, Ubuntu 20.04 ships with libgcrypt as backend as well
     as OpenSSH 8.2, thus needs a custom installation of libssh2.
-* [GPI-2](http://www.gpi-site.com) (1.3.2)
+* [GPI-2](http://www.gpi-site.com) (1.3.3)
 
 > ---
 > **WARNING:**
@@ -119,7 +144,7 @@ below or installing GPI-2 will fail.
 ```bash
 GPI2_ROOT=<gpi2-install-prefix>
 #with_ethernet=--with-ethernet ## remove '#' if no Infiniband
-gpi2_version=1.3.2
+gpi2_version=1.3.3
 
 export PKG_CONFIG_PATH="${GPI2_ROOT}/lib64/pkgconfig"${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
 
@@ -174,7 +199,7 @@ cmake -D CRYPTO_BACKEND=OpenSSL                 \
 cmake --build . --target install -- -j$(nproc)
 ```
 
-### Building GPI-Space
+#### Building GPI-Space
 
 GPI-Space can be built as described below. The dependencies are found
 via various environment variables in addition to being searched in
@@ -258,7 +283,7 @@ self-test example as follows:
 # and SWH_INSTALL_DIR:
 #   export SWH_INSTALL_DIR=<a-shared-directory-visible-on-all-nodes>
 
-"${GPISpace_ROOT}/share/gspc/example/stochastic_with_heureka/selftest"
+"${GPISpace_ROOT}/share/GPISpace/doc/example/stochastic_with_heureka/selftest"
 ```
 
 If GPI-Space has been built with testing enabled, then `ctest` can be
@@ -280,12 +305,17 @@ ctest --output-on-failure \
 ## Optional Components
 
 GPI-Space supports disabling some components at configuration time to
-reduce the dependencies needed as well as build time. The following
-options can be given to CMake with either `=OFF` or `=ON` appended:
+reduce the dependencies needed as well as build time.
 
-- `-DGSPC_WITH_MONITOR_APP`: The `gspc-monitor` (also known as
-  "gantt") application for execution monitoring. This component
-  requires Qt5.
+### GSPC Monitor
+
+The `gspc-monitor` (also known as "gantt") application for execution monitoring
+requires Qt5. The following options can be used to enable or disable this
+feature (enabled by default):
+
+| Spack | CMake |
+| - | - |
+| `[+|~]monitor` | `-D GSPC_WITH_MONITOR_APP=[ON|OFF]` |
 
 ## Next steps
 

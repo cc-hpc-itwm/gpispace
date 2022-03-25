@@ -1,8 +1,8 @@
 ---
 layout: versioned_page
 title: How to use GPI-Space
-version: 21.12.1
-permalink: /v21.12.1/how-to-use
+version: 22.03
+permalink: /v22.03/how-to-use
 ---
 
 This document provides a step-by-step guide on how to create a first

@@ -3,7 +3,7 @@ layout: default
 ---
 
 {% assign page_name = page.name | replace: '.md', '' %}
-{% assign latest_release = '/' | append: site.download_branch | append: '/' %}
+{% assign latest_release = site.releases | first | prepend: "/" | append: "/" %}
 
 <article class="post">
 

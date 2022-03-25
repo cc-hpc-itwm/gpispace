@@ -9,13 +9,13 @@ editors:
   - Max Zeyen
 
 releases:
-  - v21.06
-  - v21.09
-  - v21.12
+  - v22.03
   - v21.12.1
+  - v21.12
+  - v21.09
+  - v21.06
 
 show_downloads: true
-download_branch: v21.12.1
 
 show_excerpts: false
 

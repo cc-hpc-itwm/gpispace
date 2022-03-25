@@ -1,7 +1,8 @@
 <header class="site-header">
 
-  {% assign zip_url = site.github.repository_url | append: "/zipball/" | append: site.download_branch %}
-  {% assign tar_url = site.github.repository_url | append: "/tarball/" | append: site.download_branch %}
+  {% assign latest_release = site.releases | first %}
+  {% assign zip_url = site.github.repository_url | append: "/zipball/" %}
+  {% assign tar_url = site.github.repository_url | append: "/tarball/" %}
 
   <div class="wrapper">
     {%- assign default_paths = site.pages | map: "path" -%}
@@ -12,8 +13,8 @@
     <div style="float:right">
       {% if site.show_downloads %}
       <ul class="downloads">
-        <li><a href="{{ zip_url }}">Download <strong>ZIP File</strong></a></li>
-        <li><a href="{{ tar_url }}">Download <strong>TAR Ball</strong></a></li>
+        <li><a href="{{ zip_url }}{{ latest_release }}">Download <strong>ZIP File</strong></a></li>
+        <li><a href="{{ tar_url }}{{ latest_release }}">Download <strong>TAR Ball</strong></a></li>
         <li><a href="{{ site.github.repository_url }}">View On <strong>GitHub</strong></a></li>
       </ul>
       {% endif %}

@@ -1,6 +1,7 @@
 ---
 layout: versioned_page
 title: How to use GPI-Space
+version: 21.12
 permalink: /v21.12/how-to-use
 ---
 
@@ -1065,7 +1066,7 @@ listening on port `7777`:
 
 ## See Also
 
-- [XPNET Format Schema](https://github.com/cc-hpc-itwm/gpispace/blob/v21.12/share/xml/xsd/pnet.xsd)
-- [Additional Examples](https://github.com/cc-hpc-itwm/gpispace/tree/v21.12/share/doc/example)
-- [GSPC-Monitor Documentation](https://github.com/cc-hpc-itwm/gpispace/blob/v21.12/share/doc/gspc-monitor/gspc-monitor.md)
-- [Feature Documentation](https://github.com/cc-hpc-itwm/gpispace/blob/v21.12/share/doc)
+- [XPNET Format Schema](https://github.com/cc-hpc-itwm/gpispace/blob/v{{ page.version }}/share/xml/xsd/pnet.xsd)
+- [Additional Examples](https://github.com/cc-hpc-itwm/gpispace/tree/v{{ page.version }}/share/doc/example)
+- [GSPC-Monitor Documentation](https://github.com/cc-hpc-itwm/gpispace/blob/v{{ page.version }}/share/doc/gspc-monitor/gspc-monitor.md)
+- [Feature Documentation](https://github.com/cc-hpc-itwm/gpispace/blob/v{{ page.version }}/share/doc)

@@ -1,6 +1,7 @@
 ---
 layout: versioned_page
 title: Installation
+version: 21.09
 permalink: /v21.09/installation
 ---
 
@@ -294,4 +295,4 @@ options can be given to CMake with either `=OFF` or `=ON` appended:
 After a successful GPI-Space installation, the next step is to make
 use of it and create the first application. For that, a step-by-step
 guide on how to get started and create a first application is
-available [here]({{ "/how-to-use" | relative_url }}).
+available [here]({{ "v" | append: page.version | append: "/how-to-use" | relative_url }}).

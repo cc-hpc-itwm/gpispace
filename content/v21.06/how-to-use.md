@@ -1,6 +1,7 @@
 ---
 layout: versioned_page
 title: How to use GPI-Space
+version: 21.06
 permalink: /v21.06/how-to-use
 ---
 

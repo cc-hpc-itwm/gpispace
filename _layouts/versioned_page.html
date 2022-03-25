@@ -3,16 +3,16 @@ layout: default
 ---
 
 {% assign page_name = page.name | replace: '.md', '' %}
-{% assign latest_release = site.releases | last %}
+{% assign latest_release = site.releases | first %}
 
 <article class="post">
 
   <header class="post-header">
     <select id="page_version" onchange="update()">
+      <option value="{{ '/' | append: latest_release | append: '/' | append: page_name | relative_url }}">latest release ({{ latest_release }})</option>
       {% for tag in site.releases %}
       <option value="{{ '/' | append: tag | append: '/' | append: page_name | relative_url }}">{{ tag }}</option>
       {% endfor %}
-      <option value="{{ '/' | append: latest_release | append: '/' | append: page_name | relative_url }}">latest release ({{ latest_release }})</option>
     </select>
     <h1 class="post-title">{{ page.title | escape }}</h1>
     <script type="text/javascript">
@@ -25,6 +25,7 @@ layout: default
         for (let i = 0; i < options.length; i++) {
           if (options[i].value == current) {
             selected = i;
+            break;
           }
         }
         select.selectedIndex = selected;

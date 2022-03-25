@@ -1,6 +1,7 @@
 ---
 layout: versioned_page
 title: Installation
+version: 21.12.1
 permalink: /v21.12.1/installation
 ---
 
@@ -272,7 +273,7 @@ self-test example as follows:
 # and SWH_INSTALL_DIR:
 #   export SWH_INSTALL_DIR=<a-shared-directory-visible-on-all-nodes>
 
-"${GPISpace_ROOT}/share/gspc/example/stochastic_with_heureka/selftest"
+"${GPISpace_ROOT}/share/GPISpace/doc/example/stochastic_with_heureka/selftest"
 ```
 
 If GPI-Space has been built with testing enabled, then `ctest` can be
@@ -311,4 +312,4 @@ feature (enabled by default):
 After a successful GPI-Space installation, the next step is to make
 use of it and create the first application. For that, a step-by-step
 guide on how to get started and create a first application is
-available [here]({{ "/how-to-use" | relative_url }}).
+available [here]({{ "v" | append: page.version | append: "/how-to-use" | relative_url }}).
