@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -53,6 +53,10 @@ namespace gpi
                       );
 
         virtual ~beegfs_area_t () override;
+        beegfs_area_t (beegfs_area_t const&) = delete;
+        beegfs_area_t (beegfs_area_t&&) = delete;
+        beegfs_area_t& operator= (beegfs_area_t const&) = delete;
+        beegfs_area_t& operator= (beegfs_area_t&&) = delete;
 
       protected:
         global::itopology_t& global_topology() override;

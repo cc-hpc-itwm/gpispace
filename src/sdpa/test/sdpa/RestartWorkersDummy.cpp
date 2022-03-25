@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,6 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+#include <drts/private/scheduler_types_implementation.hpp>
+
+#include <sdpa/daemon/GetSchedulerType.hpp>
 #include <sdpa/test/sdpa/utils.hpp>
 #include <sdpa/types.hpp>
 
@@ -22,21 +25,41 @@
 #include <util-generic/latch.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/optional.hpp>
+#include <util-generic/testing/random.hpp>
 
 #include <boost/test/data/monomorphic.hpp>
+#include <boost/test/data/monomorphic/generators/xrange.hpp>
 #include <boost/test/data/test_case.hpp>
 #include <boost/test/unit_test.hpp>
 
 #include <future>
+#include <memory>
 #include <string>
+#include <vector>
+
+namespace
+{
+  auto const boolean_test_data {::boost::unit_test::data::make ({false, true})};
+}
 
 BOOST_DATA_TEST_CASE
-  (restart_worker_with_dummy_workflow, certificates_data, certificates)
+  ( restart_worker_with_dummy_workflow
+  , certificates_data * boolean_test_data
+  , certificates
+  , might_require_multiple_workers
+  )
 {
   const utils::agent agent (certificates);
 
   utils::client client (agent, certificates);
-  sdpa::job_id_t const job_id (client.submit_job (utils::module_call()));
+  auto const activity
+    ( utils::module_call
+        ( fhg::util::testing::random_string()
+        , might_require_multiple_workers
+        )
+    );
+
+  sdpa::job_id_t const job_id (client.submit_job (activity));
 
   sdpa::worker_id_t worker_id;
 
@@ -68,4 +91,45 @@ BOOST_DATA_TEST_CASE
 
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
+
+  client.delete_job (job_id);
+}
+
+BOOST_DATA_TEST_CASE
+  ( retry_job_a_specified_number_of_times
+  , certificates_data
+  , certificates
+  )
+{
+  unsigned long const maximum_number_of_retries (2);
+
+  utils::agent const agent (certificates);
+
+  utils::client client (agent, certificates);
+  auto const activity
+    (utils::module_call_with_max_num_retries (maximum_number_of_retries));
+
+  sdpa::job_id_t const job_id (client.submit_job (activity));
+
+  for (unsigned long i {0}; i <= maximum_number_of_retries; ++i)
+  {
+    fhg::util::latch job_submitted (1);
+
+    const utils::fake_drts_worker_notifying_module_call_submission worker
+      ( [&job_submitted] (std::string) { job_submitted.count_down(); }
+      , agent
+      , certificates
+      );
+
+    job_submitted.wait();
+  }
+
+  sdpa::client::job_info_t job_info;
+
+  BOOST_REQUIRE_EQUAL
+    (client.wait_for_terminal_state (job_id, job_info), sdpa::status::FAILED);
+
+  BOOST_REQUIRE_EQUAL (job_info.error_message, "Number of retries exceeded!");
+
+  client.delete_job (job_id);
 }

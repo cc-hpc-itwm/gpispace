@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,14 +18,19 @@
 
 #include <we/type/Activity.hpp>
 #include <we/type/Expression.hpp>
+#include <we/type/MemoryBufferInfo.hpp>
+#include <we/type/ModuleCall.hpp>
 #include <we/type/net.hpp>
 #include <we/type/Transition.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/random.hpp>
 #include <util-generic/testing/random/string.hpp>
 
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
+#include <boost/test/data/monomorphic.hpp>
+#include <boost/test/data/test_case.hpp>
 
 #include <sstream>
 
@@ -163,6 +168,144 @@ BOOST_AUTO_TEST_CASE (transition_that_depends_on_own_output_can_fire)
   BOOST_REQUIRE (net.get_token (place_in).empty());
   BOOST_REQUIRE_EQUAL (net.get_token (place_out).size(), 1);
   BOOST_REQUIRE_EQUAL (net.get_token (place_credit).size(), 1);
+}
+
+BOOST_DATA_TEST_CASE
+  ( might_use_virtual_memory_is_correctly_inferred
+  , ::boost::unit_test::data::make ({true, false})
+  , has_memory_buffers
+  )
+{
+  we::type::net_type net;
+
+  we::type::Transition transition
+    ( fhg::util::testing::random_string()
+    , we::type::ModuleCall
+        ( fhg::util::testing::random_string()
+        , fhg::util::testing::random_string()
+        , ( has_memory_buffers
+          ? std::unordered_map<std::string, we::type::MemoryBufferInfo>
+              {{fhg::util::testing::random_string(), we::type::MemoryBufferInfo()}}
+          : std::unordered_map<std::string, we::type::MemoryBufferInfo> {}
+          )
+        , std::list<we::type::memory_transfer>()
+        , std::list<we::type::memory_transfer>()
+        , fhg::util::testing::random<bool>{}()
+        , fhg::util::testing::random<bool>{}()
+        )
+    , ::boost::none
+    , {}
+    , we::priority_type()
+    , ::boost::optional<we::type::eureka_id_type>{}
+    , std::list<we::type::Preference>{}
+    );
+
+  net.add_transition (transition);
+
+  BOOST_REQUIRE_EQUAL (net.might_use_virtual_memory(), has_memory_buffers);
+}
+
+namespace
+{
+  we::type::MultiModuleCall create_testing_multimodule
+    (std::list<we::type::Preference> const& preferences, bool has_memory_buffers)
+  {
+    we::type::MultiModuleCall multimodule;
+
+    for (auto const& target : preferences)
+    {
+      multimodule.emplace
+        ( target
+        , we::type::ModuleCall
+            ( fhg::util::testing::random_string()
+            , fhg::util::testing::random_string()
+            , ( has_memory_buffers
+              ? std::unordered_map<std::string, we::type::MemoryBufferInfo>
+                  {{fhg::util::testing::random_string(), we::type::MemoryBufferInfo()}}
+              : std::unordered_map<std::string, we::type::MemoryBufferInfo> {}
+              )
+            , std::list<we::type::memory_transfer>()
+            , std::list<we::type::memory_transfer>()
+            , fhg::util::testing::random<bool>{}()
+            , fhg::util::testing::random<bool>{}()
+            )
+        );
+    }
+
+    return multimodule;
+  }
+}
+
+BOOST_DATA_TEST_CASE
+  ( might_use_virtual_memory_is_correctly_inferred_when_using_preferences
+  , ::boost::unit_test::data::make ({true, false})
+  , has_memory_buffers
+  )
+{
+  we::type::net_type net;
+
+  auto const preferences
+    ( fhg::util::testing::unique_randoms<std::list<we::type::Preference>>
+        (fhg::util::testing::random<std::size_t>{} (10, 1))
+    );
+
+  we::type::Transition transition
+    ( fhg::util::testing::random_string()
+    , create_testing_multimodule (preferences, has_memory_buffers)
+    , ::boost::none
+    , {}
+    , we::priority_type()
+    , ::boost::optional<we::type::eureka_id_type>{}
+    , preferences
+    );
+
+  net.add_transition (transition);
+
+  BOOST_REQUIRE_EQUAL (net.might_use_virtual_memory(), has_memory_buffers);
+}
+
+BOOST_DATA_TEST_CASE
+  ( might_have_tasks_requiring_multiple_workers_is_correctly_inferred
+  , ::boost::unit_test::data::make ({false, true})
+  , has_tasks_requiring_multiple_workers
+  )
+{
+  we::type::net_type net;
+
+  we::type::property::type properties;
+
+  if (has_tasks_requiring_multiple_workers)
+  {
+    properties.set
+      ( {"fhg", "drts", "schedule", "num_worker"}
+      , std::to_string (fhg::util::testing::random<unsigned long>{}(10, 2)) + "UL"
+      );
+  }
+
+  we::type::Transition transition
+    ( fhg::util::testing::random_string()
+    , we::type::ModuleCall
+        ( fhg::util::testing::random_string()
+        , fhg::util::testing::random_string()
+        , std::unordered_map<std::string, we::type::MemoryBufferInfo> {}
+        , std::list<we::type::memory_transfer>()
+        , std::list<we::type::memory_transfer>()
+        , fhg::util::testing::random<bool>{}()
+        , fhg::util::testing::random<bool>{}()
+        )
+    , ::boost::none
+    , properties
+    , we::priority_type()
+    , ::boost::optional<we::type::eureka_id_type>{}
+    , std::list<we::type::Preference>{}
+    );
+
+  net.add_transition (transition);
+
+  BOOST_REQUIRE_EQUAL
+    ( net.might_have_tasks_requiring_multiple_workers()
+    , has_tasks_requiring_multiple_workers
+    );
 }
 
 namespace we

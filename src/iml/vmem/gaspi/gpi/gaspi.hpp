@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -23,7 +23,6 @@
 #include <util-generic/finally.hpp>
 #include <util-generic/threadsafe_queue.hpp>
 
-#include <boost/noncopyable.hpp>
 #include <boost/thread/scoped_thread.hpp>
 
 #include <atomic>
@@ -39,7 +38,7 @@ namespace gpi
 {
   namespace api
   {
-    class gaspi_t : ::boost::noncopyable
+    class gaspi_t
     {
     public:
       gaspi_t ( fhg::iml::vmem::gaspi_context&
@@ -47,6 +46,10 @@ namespace gpi
               , fhg::iml::vmem::gaspi_timeout&
               );
       ~gaspi_t();
+      gaspi_t (gaspi_t const&) = delete;
+      gaspi_t (gaspi_t&&) = delete;
+      gaspi_t& operator= (gaspi_t const&) = delete;
+      gaspi_t& operator= (gaspi_t&&) = delete;
 
       gpi::size_t per_node_size() const;
 

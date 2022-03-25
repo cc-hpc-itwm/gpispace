@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -436,6 +436,21 @@ namespace we
       return port_ids_with_output.size() != transition().ports_output().size();
     }
 
+    bool Activity::might_use_virtual_memory() const
+    {
+      return transition().might_use_virtual_memory();
+    }
+
+    bool Activity::might_have_tasks_requiring_multiple_workers() const
+    {
+      return transition().might_have_tasks_requiring_multiple_workers();
+    }
+
+    bool Activity::might_use_modules_with_multiple_implementations() const
+    {
+      return transition().might_use_modules_with_multiple_implementations();
+    }
+
     void Activity::execute
       ( we::loader::loader& loader
       , iml::Client /*const*/ * virtual_memory
@@ -543,6 +558,14 @@ namespace we
           ("Not allowed to use coallocation for activities with multiple module implementations!");
       }
 
+      auto const maximum_number_of_retries
+        ( evaluate_property<unsigned long>
+            ( transition()
+            , context
+            , {"fhg", "drts", "schedule", "maximum_number_of_retries"}
+            )
+        );
+
       const double computational_cost (1.0); //!Note: use here an adequate cost provided by we! (can be the wall time)
 
       auto requirements (transition().requirements());
@@ -560,7 +583,7 @@ namespace we
 
       return
         { requirements
-        , {num_worker}
+        , {num_worker, maximum_number_of_retries}
         , [&]() -> decltype (null_transfer_cost)
           {
             if (!transition().module_call())

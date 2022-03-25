@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -34,6 +34,10 @@ namespace fhg
     {
       signal_handler_manager();
       ~signal_handler_manager();
+      signal_handler_manager (signal_handler_manager const&) = delete;
+      signal_handler_manager (signal_handler_manager&&) = delete;
+      signal_handler_manager& operator= (signal_handler_manager const&) = delete;
+      signal_handler_manager& operator= (signal_handler_manager&&) = delete;
 
       void handle (int sig_num, siginfo_t* info, void* context) const;
 
@@ -52,6 +56,10 @@ namespace fhg
                             , std::function<void (int, siginfo_t*, void*)>
                             );
       ~scoped_signal_handler();
+      scoped_signal_handler (scoped_signal_handler const&) = delete;
+      scoped_signal_handler (scoped_signal_handler&&) = delete;
+      scoped_signal_handler& operator= (scoped_signal_handler const&) = delete;
+      scoped_signal_handler& operator= (scoped_signal_handler&&) = delete;
 
     private:
       signal_handler_manager& _manager;

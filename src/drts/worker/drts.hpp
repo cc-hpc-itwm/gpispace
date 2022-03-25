@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -99,6 +99,10 @@ public:
     , fhg::com::Certificates const& certificates
     );
   ~DRTSImpl() override;
+  DRTSImpl (DRTSImpl const&) = delete;
+  DRTSImpl (DRTSImpl&&) = delete;
+  DRTSImpl& operator= (DRTSImpl const&) = delete;
+  DRTSImpl& operator= (DRTSImpl&&) = delete;
 
   virtual void handle_worker_registration_response
     (fhg::com::p2p::address_t const& source, const sdpa::events::worker_registration_response *e) override;
@@ -159,7 +163,22 @@ private:
 
   struct mark_remaining_tasks_as_canceled_helper
   {
+    mark_remaining_tasks_as_canceled_helper
+      ( std::mutex& currently_executed_tasks_mutex
+      , std::map<std::string, wfe_task_t *>& currently_executed_tasks
+      , std::mutex& jobs_guard
+      , map_of_jobs_t& jobs
+      )
+        : _currently_executed_tasks_mutex {currently_executed_tasks_mutex}
+        , _currently_executed_tasks {currently_executed_tasks}
+        , _jobs_guard {jobs_guard}
+        , _jobs {jobs}
+    {}
     ~mark_remaining_tasks_as_canceled_helper();
+    mark_remaining_tasks_as_canceled_helper (mark_remaining_tasks_as_canceled_helper const&) = delete;
+    mark_remaining_tasks_as_canceled_helper (mark_remaining_tasks_as_canceled_helper&&) = delete;
+    mark_remaining_tasks_as_canceled_helper& operator= (mark_remaining_tasks_as_canceled_helper const&) = delete;
+    mark_remaining_tasks_as_canceled_helper& operator= (mark_remaining_tasks_as_canceled_helper&&) = delete;
 
     std::mutex& _currently_executed_tasks_mutex;
     std::map<std::string, wfe_task_t *>& _currently_executed_tasks;

@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -31,6 +31,10 @@ namespace fhg
           , const QObject* const receiver, const char* const method
           );
         ~scoped_disconnect();
+        scoped_disconnect (scoped_disconnect const&) = delete;
+        scoped_disconnect (scoped_disconnect&&) = delete;
+        scoped_disconnect& operator= (scoped_disconnect const&) = delete;
+        scoped_disconnect& operator= (scoped_disconnect&&) = delete;
 
       private:
         const QObject* const _sender;

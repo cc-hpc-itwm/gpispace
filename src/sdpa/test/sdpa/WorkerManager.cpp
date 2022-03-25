@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE (add_worker)
 
         worker_manager.add_worker
           ( worker_id
-          , {sdpa::capability_t (capability_name)}
+          , {sdpa::Capability (capability_name)}
           , fhg::util::testing::random<unsigned long>{}()
           , hostname
           , fhg::com::p2p::address_t
@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE (delete_worker)
 
         worker_manager.add_worker
           ( worker_id
-          , {sdpa::capability_t (capability_name)}
+          , {sdpa::Capability (capability_name)}
           , fhg::util::testing::random<unsigned long>{}()
           , hostname
           , fhg::com::p2p::address_t
@@ -154,7 +154,7 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_worker)
   fhg::util::testing::random<unsigned short> const random_ushort;
   auto const hostname {random_string()};
   worker_manager.add_worker ( worker_ids[0]
-                            , {sdpa::capability_t ("A")}
+                            , {sdpa::Capability ("A")}
                             , fhg::util::testing::random<unsigned long>{}()
                             , hostname
                             , fhg::com::p2p::address_t
@@ -198,7 +198,7 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_coallocated_workers)
   {
     auto const hostname {random_string()};
     worker_manager.add_worker ( worker_ids[k]
-                              , {sdpa::capability_t ("A")}
+                              , {sdpa::Capability ("A")}
                               , fhg::util::testing::random<unsigned long>{}()
                               , hostname
                               , fhg::com::p2p::address_t
@@ -284,7 +284,7 @@ BOOST_AUTO_TEST_CASE (issue_675_reference_to_popped_queue_element)
 
                         worker_manager.add_worker
                           ( worker_id
-                          , {sdpa::capability_t (capability_name)}
+                          , {sdpa::Capability (capability_name)}
                           , fhg::util::testing::random<unsigned long>{}()
                           , hostname
                           , fhg::com::p2p::address_t
@@ -336,7 +336,7 @@ BOOST_AUTO_TEST_CASE (issue_675_reference_to_popped_queue_element)
                 (reservations.at (job_id).get());
             }
           );
-        worker_manager.steal_work (reservation);
+        worker_manager.steal_work (sdpa::daemon::CostModel{}, reservation);
       }
     );
 

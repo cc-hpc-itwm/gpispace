@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,8 +18,6 @@
 
 #include <iml/MemorySize.hpp>
 
-#include <boost/noncopyable.hpp>
-
 #include <cstddef>
 #include <string>
 
@@ -35,6 +33,10 @@ namespace iml
                          );
 
       ~OpenedSharedMemory();
+      OpenedSharedMemory (OpenedSharedMemory const&) = delete;
+      OpenedSharedMemory (OpenedSharedMemory&&) = delete;
+      OpenedSharedMemory& operator= (OpenedSharedMemory const&) = delete;
+      OpenedSharedMemory& operator= (OpenedSharedMemory&&) = delete;
 
       void create (mode_t mode = 00600);
       void open ();

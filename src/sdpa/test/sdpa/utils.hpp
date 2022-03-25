@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 #pragma once
 
 #include <sdpa/client.hpp>
-#include <sdpa/com/NetworkStrategy.hpp>
+#include <sdpa/test/NetworkStrategy.hpp>
 #include <sdpa/daemon/Agent.hpp>
 #include <sdpa/test/sdpa/UNSAFE_thread_event.hpp>
 
@@ -65,8 +65,17 @@ namespace utils
 
   we::type::Activity module_call();
 
+  we::type::Activity module_call
+    (std::string name, bool might_use_multiple_workers);
+
+  we::type::Activity module_call_with_max_num_retries
+    (unsigned long maximum_number_of_retries);
+
   we::type::Activity net_with_one_child_requiring_workers
     (unsigned long count);
+
+  we::type::Activity net_with_one_child_requiring_workers_and_num_retries
+    (unsigned long count, unsigned long maximum_number_of_retries);
 
   we::type::Activity net_with_two_children_requiring_n_workers
     (unsigned long n);
@@ -130,7 +139,7 @@ namespace utils
 
   protected:
     std::string _name;
-    sdpa::com::NetworkStrategy _network;
+    sdpa::test::NetworkStrategy _network;
 
     void event_thread_fun();
 
@@ -150,7 +159,7 @@ namespace utils
   public:
     basic_drts_component (fhg::com::Certificates const&);
     basic_drts_component ( agent const& parent
-                         , sdpa::capabilities_set_t
+                         , sdpa::Capabilities
                          , fhg::com::Certificates const&
                          );
     basic_drts_component ( agent const& parent
@@ -209,7 +218,7 @@ namespace utils
         );
       basic_drts_worker
         ( agent const& parent
-        , sdpa::capabilities_set_t
+        , sdpa::Capabilities
         , fhg::com::Certificates const&
         );
       basic_drts_worker
@@ -303,7 +312,7 @@ namespace utils
                       , fhg::com::Certificates const&
                       );
     basic_drts_worker ( agent const& parent
-                      , sdpa::capabilities_set_t
+                      , sdpa::Capabilities
                       , fhg::com::Certificates const&
                       );
 
@@ -418,6 +427,10 @@ namespace utils
 
     void cancel_job (sdpa::job_id_t const&);
 
+    we::type::Activity result (sdpa::job_id_t const&) const;
+
     sdpa::client::Client _;
   };
+
+  std::string get_scheduler_type (bool);
 }

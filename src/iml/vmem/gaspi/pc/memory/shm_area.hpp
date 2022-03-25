@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -34,6 +34,11 @@ namespace gpi
                    );
 
         virtual ~shm_area_t () override;
+        shm_area_t (shm_area_t const&) = delete;
+        shm_area_t (shm_area_t&&) = delete;
+        shm_area_t& operator= (shm_area_t const&) = delete;
+        shm_area_t& operator= (shm_area_t&&) = delete;
+
       protected:
         virtual bool is_shm_segment() const override;
 

@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -25,8 +25,8 @@
 
 #include <boost/bimap.hpp>
 #include <boost/bimap/unordered_set_of.hpp>
-#include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
+#include <boost/variant.hpp>
 
 #include <functional>
 #include <map>
@@ -42,11 +42,11 @@ namespace sdpa
 {
   namespace daemon
   {
-    using WorkerSet = std::set<worker_id_t>;
-    using Workers_implementation_and_transfer_cost =
-      std::tuple<WorkerSet, Implementation, double>;
+    struct UsingCosts{};
+    struct NotUsingCosts{};
+    using CostModel = boost::variant<UsingCosts, NotUsingCosts>;
 
-    class WorkerManager : ::boost::noncopyable
+    class WorkerManager
     {
       typedef std::unordered_map<worker_id_t, Worker> worker_map_t;
       using worker_iterator = worker_map_t::iterator;
@@ -69,8 +69,8 @@ namespace sdpa
         void inc_running_jobs (unsigned int);
         void dec_running_jobs (unsigned int);
 
-        unsigned int n_pending_jobs() const;
-        unsigned int n_running_jobs() const;
+        unsigned int num_pending_jobs() const;
+        unsigned int num_running_jobs() const;
 
         void add_worker_entry (worker_iterator);
         void remove_worker_entry (worker_iterator);
@@ -81,19 +81,27 @@ namespace sdpa
           );
 
       private:
-        unsigned int _n_pending_jobs;
-        unsigned int _n_running_jobs;
+        unsigned int _num_pending_jobs;
+        unsigned int _num_running_jobs;
+        unsigned long _num_free_workers;
         std::unordered_set<worker_id_t> _idle_workers;
         std::set<std::set<std::string>> _stealing_allowed_classes;
       };
 
     public:
+      WorkerManager() = default;
+      ~WorkerManager() = default;
+      WorkerManager (WorkerManager const&) = delete;
+      WorkerManager (WorkerManager&&) = delete;
+      WorkerManager& operator= (WorkerManager const&) = delete;
+      WorkerManager& operator= (WorkerManager&&) = delete;
+
       std::unordered_set<worker_id_t> find_subm_or_ack_workers
         (sdpa::job_id_t const&, std::set<worker_id_t> const&) const;
 
       //! throws if workerId was not unique
       void add_worker ( worker_id_t const& workerId
-                      , capabilities_set_t const& cpbset
+                      , Capabilities const& cpbset
                       , unsigned long allocated_shared_memory_size
                       , std::string const& hostname
                       , fhg::com::p2p::address_t const& address
@@ -101,7 +109,7 @@ namespace sdpa
 
       void delete_worker (worker_id_t const& workerId);
 
-      void steal_work (std::function<scheduler::Reservation* (job_id_t const&)> reservation);
+      void steal_work (CostModel, std::function<scheduler::Reservation* (job_id_t const&)>);
 
       void assign_job_to_worker
         (job_id_t const&, worker_id_t const&, double cost, Preferences const&);
@@ -120,7 +128,7 @@ namespace sdpa
       ::boost::optional<WorkerManager::worker_connections_t::left_iterator>
         address_by_worker (std::string const&);
 
-      unsigned long num_free_workers() const;
+      unsigned long num_free_workers (std::set<std::string> const&) const;
       bool all_free (std::set<worker_id_t> const&) const;
 
       std::unordered_set<job_id_t> pending_jobs (worker_id_t const& worker) const;
@@ -133,6 +141,14 @@ namespace sdpa
       unsigned long number_of_workers() const;
       std::map<std::set<std::string>, std::unordered_set<worker_id_t>> const&
         classes_and_workers() const;
+
+      boost::optional<job_id_t> get_next_worker_pending_job_to_submit (worker_id_t const&);
+      unsigned long num_running_jobs (std::set<std::string> const&);
+      unsigned long num_pending_jobs (std::set<std::string> const&);
+
+      //! Note: the worker manager is shared between the agent and the scheduler.
+      // Before accessing it, this mutex should be locked.
+      mutable std::mutex _mutex;
     private:
       void assign_job_to_worker
         (job_id_t const&, worker_iterator, double cost, Preferences const&);
@@ -143,8 +159,6 @@ namespace sdpa
       worker_connections_t worker_connections_;
       std::map<std::set<std::string>, WorkerEquivalenceClass> worker_equiv_classes_;
       std::map<std::set<std::string>, std::unordered_set<worker_id_t>> _classes_and_worker_ids;
-
-      unsigned long _num_free_workers {0};
     };
   }
 }

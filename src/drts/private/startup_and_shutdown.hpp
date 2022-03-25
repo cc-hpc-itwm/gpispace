@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -30,7 +30,6 @@
 #include <rif/protocol.hpp>
 
 #include <boost/filesystem/path.hpp>
-#include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
 
 #include <chrono>
@@ -57,7 +56,7 @@ namespace fhg
       logging_demultiplexer,
     };
 
-    struct processes_storage : ::boost::noncopyable
+    struct processes_storage
     {
       std::mutex _guard;
       std::unordered_map < fhg::rif::entry_point
@@ -69,6 +68,10 @@ namespace fhg
       {}
 
       ~processes_storage();
+      processes_storage (processes_storage const&) = delete;
+      processes_storage (processes_storage&&) = delete;
+      processes_storage& operator= (processes_storage const&) = delete;
+      processes_storage& operator= (processes_storage&&) = delete;
       std::unordered_map
         < rif::entry_point
         , std::pair< std::string /* kind */

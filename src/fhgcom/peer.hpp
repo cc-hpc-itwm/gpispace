@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -62,7 +62,7 @@ namespace fhg
     /*!
       This class abstracts from an endpoint
      */
-    class peer_t : private ::boost::noncopyable
+    class peer_t
     {
     public:
       typedef std::function <void (::boost::system::error_code const&)> handler_t;
@@ -74,6 +74,10 @@ namespace fhg
              );
 
       virtual ~peer_t ();
+      peer_t (peer_t const&) = delete;
+      peer_t (peer_t&&) = delete;
+      peer_t& operator= (peer_t const&) = delete;
+      peer_t& operator= (peer_t&&) = delete;
 
       p2p::address_t const& address () const { return my_addr_.get(); }
       ::boost::asio::ip::tcp::endpoint local_endpoint() const

@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -16,9 +16,13 @@
 
 #pragma once
 
+#include <sdpa/daemon/Assignment.hpp>
+#include <sdpa/daemon/Implementation.hpp>
 #include <sdpa/daemon/Job.hpp>
-#include <sdpa/daemon/WorkerManager.hpp>
 #include <sdpa/daemon/scheduler/Reservation.hpp>
+#include <sdpa/daemon/scheduler/CostAwareWithWorkStealingStrategy.hpp>
+#include <sdpa/daemon/WorkerManager.hpp>
+#include <sdpa/daemon/WorkerSet.hpp>
 #include <sdpa/types.hpp>
 
 #include <fhgcom/address.hpp>
@@ -28,128 +32,78 @@
 #include <algorithm>
 #include <functional>
 #include <mutex>
+#include <set>
+#include <string>
 #include <unordered_set>
 
 namespace sdpa
 {
   namespace daemon
   {
-    class CoallocationScheduler : ::boost::noncopyable
+    class CoallocationScheduler : public Scheduler
     {
     public:
       CoallocationScheduler
-        (std::function<Requirements_and_preferences (sdpa::job_id_t const&)>);
+        ( std::function<Requirements_and_preferences (sdpa::job_id_t const&)>
+        , WorkerManager&
+        );
 
-      // -- used by daemon
-      void delete_job (sdpa::job_id_t const&);
-
-      void store_result
-        (fhg::com::p2p::address_t const&, job_id_t const&, terminal_state);
-      ::boost::optional<job_result_type>
-        get_aggregated_results_if_all_terminated (job_id_t const&);
-
-      // -- used by daemon and self
-      void submit_job (sdpa::job_id_t const&);
+      virtual ~CoallocationScheduler() override = default;
+      CoallocationScheduler (CoallocationScheduler const&) = delete;
+      CoallocationScheduler (CoallocationScheduler&&) = delete;
+      CoallocationScheduler& operator= (CoallocationScheduler const&) = delete;
+      CoallocationScheduler& operator= (CoallocationScheduler&&) = delete;
 
       // used by daemon and self and test
-      void release_reservation (sdpa::job_id_t const&);
-      void assign_jobs_to_workers();
-      void steal_work();
+      virtual void release_reservation (sdpa::job_id_t const&) override;
+      virtual void assign_jobs_to_workers() override;
 
-      bool cancel_job_and_siblings
+      virtual bool cancel_job
         ( job_id_t const&
         , bool
         , std::function<void (fhg::com::p2p::address_t const&)>
-        );
-      void notify_submitted_or_acknowledged_workers
+        ) override;
+      virtual void notify_submitted_or_acknowledged_workers
         ( job_id_t const&
-        , std::function<void ( fhg::com::p2p::address_t const&)>
-        );
-      void reschedule_worker_jobs_and_maybe_remove_worker
+        , std::function<void (fhg::com::p2p::address_t const&)>
+        ) override;
+      virtual void reschedule_worker_jobs_and_maybe_remove_worker
         ( fhg::com::p2p::address_t const&
         , std::function<Job* (sdpa::job_id_t const&)>
         , std::function<void (fhg::com::p2p::address_t const& addr, job_id_t const&)>
-        );
+        , std::function<void (Job*)>
+        ) override;
 
-      bool reschedule_job_if_the_reservation_was_canceled
-        (job_id_t const& job, status::code const);
+      virtual bool reschedule_job_if_the_reservation_was_canceled
+        (job_id_t const& job, status::code const) override;
 
-      void start_pending_jobs
+      virtual void start_pending_jobs
         (std::function<void ( WorkerSet const&
                             , Implementation const&
                             , job_id_t const&
                             , std::function<fhg::com::p2p::address_t (worker_id_t const&)>
                             )
                       >
-        );
+        ) override;
+      virtual void submit_job (sdpa::job_id_t const&) override;
+      virtual void acknowledge_job_sent_to_worker
+        (job_id_t const&, fhg::com::p2p::address_t const&) override;
+      virtual ::boost::optional<job_result_type>
+        store_individual_result_and_get_final_if_group_finished
+          ( fhg::com::p2p::address_t const&
+          , job_id_t const&
+          , terminal_state const&
+          ) override;
 
-      void add_worker ( worker_id_t const&
-                      , capabilities_set_t const&
-                      , unsigned long
-                      , std::string const&
-                      , fhg::com::p2p::address_t const&
-                      );
-
-      void delete_worker_TESTING_ONLY (worker_id_t const&);
-
-      void acknowledge_job_sent_to_worker
-        (job_id_t const&, fhg::com::p2p::address_t const&);
+      CostAwareWithWorkStealingStrategy& strategy_TESTING_ONLY();
 
     private:
-      void release_reservation
-        ( sdpa::job_id_t const&
-        , std::lock_guard<std::mutex> const&
-        , std::lock_guard<std::mutex> const&
-        );
+      CostAwareWithWorkStealingStrategy _strategy;
 
-      std::unordered_set<sdpa::job_id_t> delete_or_cancel_worker_jobs
-        ( worker_id_t const&
-        , std::function<Job* (sdpa::job_id_t const&)>
-        , std::function<void (fhg::com::p2p::address_t const&, job_id_t const&)>
-        , std::lock_guard<std::mutex> const&
-        , std::lock_guard<std::mutex> const&
-        );
-
-      Workers_implementation_and_transfer_cost find_assignment
+      Assignment find_assignment
         ( Requirements_and_preferences const&
         , std::lock_guard<std::mutex> const&
         ) const;
-
-      std::pair<::boost::optional<double>, ::boost::optional<std::string>>
-        match_requirements_and_preferences
-          ( Requirements_and_preferences const&
-          , std::set<std::string> const&
-          ) const;
-
-      std::function<Requirements_and_preferences (sdpa::job_id_t const&)>
-        _requirements_and_preferences;
-
-      std::mutex _mtx_worker_man;
-      WorkerManager _worker_manager;
-
-      class locked_job_id_list
-      {
-      public:
-        inline void push (job_id_t const& item);
-        template <typename Range>
-        inline void push (Range const& items);
-        inline size_t erase (job_id_t const& item);
-
-        std::list<job_id_t> get_and_clear();
-
-      private:
-        std::mutex mtx_;
-        std::list<job_id_t> container_;
-      } _jobs_to_schedule;
-
-      std::mutex mtx_alloc_table_;
-      using allocation_table_t
-        = std::unordered_map<job_id_t, std::unique_ptr<scheduler::Reservation>>;
-      allocation_table_t allocation_table_;
-
-      std::unordered_set<job_id_t> _pending_jobs;
-
-      friend class access_allocation_table_TESTING_ONLY;
     };
   }
 }

@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -95,6 +95,89 @@ namespace utils
     return module_call (fhg::util::testing::random_string());
   }
 
+  we::type::Activity module_call (std::string name, bool might_use_multiple_workers)
+  {
+    we::type::property::type properties;
+
+    if (might_use_multiple_workers)
+    {
+      properties.set
+        ({"fhg", "drts", "schedule", "num_worker"}, std::to_string (1) + "UL");
+    }
+
+    we::type::Transition transition
+      ( name
+      , we::type::ModuleCall
+          ( fhg::util::testing::random_string()
+          , fhg::util::testing::random_string()
+          , std::unordered_map<std::string, we::type::MemoryBufferInfo>()
+          , std::list<we::type::memory_transfer>()
+          , std::list<we::type::memory_transfer>()
+          , true
+          , true
+          )
+      , ::boost::none
+      , properties
+      , we::priority_type()
+      , ::boost::optional<we::type::eureka_id_type>{}
+      , std::list<we::type::Preference>{}
+      );
+    auto const port_name (fhg::util::testing::random_string());
+    transition.add_port ( we::type::Port ( port_name
+                                           , we::type::port::direction::In{}
+                                           , std::string ("string")
+                                           , we::type::property::type()
+                                           )
+                        );
+    we::type::Activity act (transition);
+    act.add_input ( port_name
+                  //! \todo Investigate why we can't take a random
+                  //! string with \\ or \": parse error on deserialization
+                  , fhg::util::testing::random_string_without ("\\\"")
+                  );
+    return act;
+  }
+
+  we::type::Activity module_call_with_max_num_retries
+    (unsigned long maximum_number_of_retries)
+  {
+    we::type::property::type properties;
+
+    properties.set
+      ( {"fhg", "drts", "schedule", "maximum_number_of_retries"}
+      , std::to_string (maximum_number_of_retries) + "UL"
+      );
+
+    we::type::Transition transition
+      ( fhg::util::testing::random_string()
+      , we::type::ModuleCall
+          ( fhg::util::testing::random_string()
+          , fhg::util::testing::random_string()
+          , std::unordered_map<std::string, we::type::MemoryBufferInfo>()
+          , std::list<we::type::memory_transfer>()
+          , std::list<we::type::memory_transfer>()
+          , true
+          , true
+          )
+      , ::boost::none
+      , properties
+      , we::priority_type()
+      , ::boost::optional<we::type::eureka_id_type>{}
+      , std::list<we::type::Preference>{}
+      );
+    auto const port_name (fhg::util::testing::random_string());
+    transition.add_port ( we::type::Port ( port_name
+                                         , we::type::port::direction::In{}
+                                         , std::string ("string")
+                                         , we::type::property::type()
+                                         )
+                        );
+    we::type::Activity activity (transition);
+    activity.add_input
+      (port_name, fhg::util::testing::random_string_without ("\\\""));
+    return activity;
+  }
+
   we::type::Activity net_with_one_child_requiring_workers (unsigned long count)
   {
     we::type::property::type props;
@@ -156,6 +239,78 @@ namespace utils
                                , ::boost::optional<we::type::eureka_id_type>{}
                                , std::list<we::type::Preference>{}
                                )
+      );
+  }
+
+  we::type::Activity net_with_one_child_requiring_workers_and_num_retries
+    (unsigned long count, unsigned long maximum_number_of_retries)
+  {
+    we::type::property::type properties;
+    properties.set
+      ( {"fhg", "drts", "schedule", "num_worker"}
+        , std::to_string (count) + "UL"
+      );
+
+    properties.set
+      ( {"fhg", "drts", "schedule", "maximum_number_of_retries"}
+      , std::to_string (maximum_number_of_retries) + "UL"
+      );
+
+    we::type::Transition transition
+      ( fhg::util::testing::random_string()
+      , we::type::ModuleCall
+          ( fhg::util::testing::random_string()
+          , fhg::util::testing::random_string()
+          , std::unordered_map<std::string, we::type::MemoryBufferInfo>()
+          , std::list<we::type::memory_transfer>()
+          , std::list<we::type::memory_transfer>()
+          , true
+          , true
+          )
+      , ::boost::none
+      , properties
+      , we::priority_type()
+      , ::boost::optional<we::type::eureka_id_type>{}
+      , std::list<we::type::Preference>{}
+      );
+    auto const port_name (fhg::util::testing::random_string());
+    auto const port_id_in
+      ( transition.add_port ( we::type::Port ( port_name
+                                               , we::type::port::direction::In{}
+                                               , std::string ("string")
+                                               , we::type::property::type()
+                                               )
+                            )
+      );
+
+    we::type::net_type net;
+
+    auto const place_id_in
+      ( net.add_place
+          (place::type (port_name, std::string ("string"), ::boost::none))
+      );
+
+    net.put_value
+      (place_id_in, fhg::util::testing::random_string_without ("\\\""));
+
+    auto const transition_id (net.add_transition (transition));
+
+    net.add_connection ( we::edge::PT{}
+                       , transition_id
+                       , place_id_in
+                       , port_id_in
+                       , we::type::property::type()
+                       );
+
+    return we::type::Activity
+      ( we::type::Transition ( fhg::util::testing::random_string()
+                             , net
+                             , ::boost::none
+                             , we::type::property::type()
+                             , we::priority_type()
+                             , ::boost::optional<we::type::eureka_id_type>{}
+                             , std::list<we::type::Preference>{}
+                             )
       );
   }
 
@@ -368,7 +523,7 @@ namespace utils
   {
     _parent = _network.connect_to_TESTING_ONLY (parent.host(), parent.port());
 
-    sdpa::capabilities_set_t capabilities;
+    sdpa::Capabilities capabilities;
     for (auto& capability_name : capability_names)
     {
       capabilities.emplace (capability_name);
@@ -385,7 +540,7 @@ namespace utils
 
   basic_drts_component::basic_drts_component
       ( agent const& parent
-      , sdpa::capabilities_set_t capabilities
+      , sdpa::Capabilities capabilities
       , fhg::com::Certificates const& certificates
       )
     : basic_drts_component (certificates)
@@ -414,7 +569,7 @@ namespace utils
     _network.perform<sdpa::events::WorkerRegistrationEvent>
       ( _parent.get()
       , _name
-      , sdpa::capabilities_set_t{}
+      , sdpa::Capabilities{}
       , fhg::util::testing::random<unsigned long>{}()
       , fhg::util::testing::random_string()
       );
@@ -494,7 +649,7 @@ namespace utils
     {}
     basic_drts_worker::basic_drts_worker
         ( agent const& parent
-        , sdpa::capabilities_set_t capabilities
+        , sdpa::Capabilities capabilities
         , fhg::com::Certificates const& certificates
         )
       : basic_drts_component
@@ -638,7 +793,7 @@ namespace utils
   {}
   basic_drts_worker::basic_drts_worker
       ( agent const& parent
-      , sdpa::capabilities_set_t capabilities
+      , sdpa::Capabilities capabilities
       , fhg::com::Certificates const& certificates
       )
     : no_thread::basic_drts_worker (parent, std::move (capabilities), certificates)
@@ -796,5 +951,10 @@ namespace utils
   void client::cancel_job (sdpa::job_id_t const& id)
   {
     return _.cancelJob (id);
+  }
+
+  we::type::Activity client::result (sdpa::job_id_t const& job) const
+  {
+    return _.result (job);
   }
 }

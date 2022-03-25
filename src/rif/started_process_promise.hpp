@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -31,6 +31,10 @@ namespace fhg
       //! \note will remove special arguments
       started_process_promise (int& argc, char**& argv);
       ~started_process_promise();
+      started_process_promise (started_process_promise const&) = delete;
+      started_process_promise (started_process_promise&&) = delete;
+      started_process_promise& operator= (started_process_promise const&) = delete;
+      started_process_promise& operator= (started_process_promise&&) = delete;
 
       void set_result (std::vector<std::string> messages);
       template<typename... String>

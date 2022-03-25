@@ -1,5 +1,5 @@
 # This file is part of GPI-Space.
-# Copyright (C) 2021 Fraunhofer ITWM
+# Copyright (C) 2022 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ gspc_add_library (NAME fhgcom
           "fhgcom/peer.cpp"
           "fhgcom/peer_info.cpp"
   LIBRARIES
-    PRIVATE Util::Generic
+    PUBLIC Util::Generic
     PRIVATE OpenSSL::Crypto
     PRIVATE OpenSSL::SSL
     PUBLIC Boost::filesystem
@@ -130,6 +130,9 @@ gspc_add_library (NAME pnet
 
           "we/loader/Module.cpp"
           "we/workflow_response.cpp"
+
+          # cyclic dependency into sdpa
+          "sdpa/requirements_and_preferences.cpp"
 
           "xml/parse/error.cpp"
           "xml/parse/parser.cpp"

@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -29,10 +29,16 @@ namespace we
 {
   namespace loader
   {
-    class loader : ::boost::noncopyable
+    class loader
     {
     public:
       loader (std::list<::boost::filesystem::path> const&);
+
+      ~loader() = default;
+      loader (loader const&) = delete;
+      loader (loader&&) = delete;
+      loader& operator= (loader const&) = delete;
+      loader& operator= (loader&&) = delete;
 
       Module const& operator[] (std::string const& m)
       {

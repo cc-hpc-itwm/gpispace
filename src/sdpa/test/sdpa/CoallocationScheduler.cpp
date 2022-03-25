@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -16,6 +16,9 @@
 
 #include <sdpa/daemon/WorkerManager.hpp>
 #include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
+#include <sdpa/daemon/scheduler/Scheduler.hpp>
+#include <sdpa/daemon/scheduler/CostAwareWithWorkStealingStrategy.hpp>
+#include <sdpa/daemon/WorkerSet.hpp>
 #include <sdpa/test/sdpa/utils.hpp>
 #include <sdpa/types.hpp>
 
@@ -40,6 +43,8 @@
 #include <functional>
 #include <iterator>
 #include <map>
+#include <memory>
+#include <mutex>
 #include <numeric>
 #include <random>
 #include <set>
@@ -115,18 +120,6 @@
       ("No job expected to be served");       \
   }
 
-#define SERVE_JOB_AND_CHECK_IS_ONE_OF(jobs)   \
-  [&jobs]                                     \
-  ( sdpa::daemon::WorkerSet const&            \
-  , sdpa::daemon::Implementation const&       \
-  , sdpa::job_id_t const& started_job         \
-  , std::function<fhg::com::p2p::address_t    \
-      (sdpa::worker_id_t const&)>             \
-  )                                           \
-  {                                           \
-    BOOST_REQUIRE (jobs.count (started_job)); \
-  }
-
 namespace
 {
   unsigned long random_ulong()
@@ -142,8 +135,8 @@ namespace sdpa
     class access_allocation_table_TESTING_ONLY
     {
     public:
-      access_allocation_table_TESTING_ONLY (CoallocationScheduler& _scheduler)
-        : _allocation_table (_scheduler.allocation_table_)
+      access_allocation_table_TESTING_ONLY (CostAwareWithWorkStealingStrategy& _strategy)
+        : _allocation_table (_strategy.allocation_table_)
       {}
       std::map<job_id_t, std::set<worker_id_t>> get_current_assignment() const
       {
@@ -152,7 +145,7 @@ namespace sdpa
           ( _allocation_table.begin()
           , _allocation_table.end()
           , std::inserter (assignment, assignment.end())
-          , [] (CoallocationScheduler::allocation_table_t::value_type const& p)
+          , [] (auto const& p)
             {
               return std::make_pair (p.first, p.second->workers());
             }
@@ -172,7 +165,7 @@ namespace sdpa
       }
 
     private:
-      CoallocationScheduler::allocation_table_t& _allocation_table;
+      CostAwareWithWorkStealingStrategy::allocation_table_t& _allocation_table;
     };
   }
 }
@@ -183,16 +176,23 @@ struct fixture_scheduler_and_requirements_and_preferences
   typedef std::set<sdpa::job_id_t> set_jobs_t;
 
   fixture_scheduler_and_requirements_and_preferences()
-    : _scheduler
-      ( std::bind ( &fixture_scheduler_and_requirements_and_preferences::requirements_and_preferences
-                  , this
-                  , std::placeholders::_1
-                  )
-      )
-    , _access_allocation_table (_scheduler)
+    : _worker_manager()
+    , _scheduler
+        ( std::make_unique<sdpa::daemon::CoallocationScheduler>
+            ( std::bind
+                ( &fixture_scheduler_and_requirements_and_preferences::requirements_and_preferences
+                , this
+                , std::placeholders::_1
+                )
+            , _worker_manager
+            )
+        )
+    , _access_allocation_table
+        (dynamic_cast<sdpa::daemon::CoallocationScheduler*> (_scheduler.get())->strategy_TESTING_ONLY())
   {}
 
-  sdpa::daemon::CoallocationScheduler _scheduler;
+  sdpa::daemon::WorkerManager _worker_manager;
+  std::unique_ptr<sdpa::daemon::Scheduler> _scheduler;
   sdpa::daemon::access_allocation_table_TESTING_ONLY _access_allocation_table;
 
   ~fixture_scheduler_and_requirements_and_preferences()
@@ -220,7 +220,7 @@ struct fixture_scheduler_and_requirements_and_preferences
   {
     auto const job_id (job_ids());
     _requirements_and_preferences.emplace (job_id, std::move (reqs_and_prefs));
-    _scheduler.submit_job (job_id);
+    _scheduler->submit_job (job_id);
     return job_id;
   }
 
@@ -301,7 +301,7 @@ struct fixture_scheduler_and_requirements_and_preferences
 
     while (remaining_tasks > 0)
     {
-      _scheduler.steal_work();
+      _scheduler->assign_jobs_to_workers();
 
       if (remaining_tasks > test_workers.size())
       {
@@ -313,7 +313,7 @@ struct fixture_scheduler_and_requirements_and_preferences
       }
 
       std::set<sdpa::job_id_t> started_tasks;
-      _scheduler.start_pending_jobs
+      _scheduler->start_pending_jobs
       ( [this, &started_tasks]
         ( sdpa::daemon::WorkerSet const& assigned_workers
         , sdpa::daemon::Implementation const& implementation
@@ -343,7 +343,7 @@ struct fixture_scheduler_and_requirements_and_preferences
 
       for (unsigned int i (0) ; i < num_tasks_to_finish; ++i)
       {
-        _scheduler.release_reservation (running_tasks.back());
+        _scheduler->release_reservation (running_tasks.back());
         running_tasks.pop_back();
         remaining_tasks--;
       }
@@ -362,7 +362,7 @@ struct fixture_scheduler_and_requirements_and_preferences
     while (!worker_tasks.empty())
     {
       std::set<sdpa::job_id_t> started_tasks;
-      _scheduler.start_pending_jobs
+      _scheduler->start_pending_jobs
         ( [this, &started_tasks]
           ( sdpa::daemon::WorkerSet const& assigned_workers
           , sdpa::daemon::Implementation const& implementation
@@ -381,7 +381,7 @@ struct fixture_scheduler_and_requirements_and_preferences
       {
         if (worker_tasks.count (task))
         {
-          _scheduler.release_reservation (task);
+          _scheduler->release_reservation (task);
           worker_tasks.erase (task);
         }
       }
@@ -392,7 +392,7 @@ struct fixture_scheduler_and_requirements_and_preferences
 
     auto const all_tasks_before_stealing (all_assigned_tasks());
 
-    _scheduler.steal_work();
+    _scheduler->assign_jobs_to_workers();
 
     CHECK_ALL_WORKERS_HAVE_AT_LEAST_ONE_TASK_ASSIGNED (test_workers);
 
@@ -403,22 +403,13 @@ struct fixture_scheduler_and_requirements_and_preferences
 namespace
 {
   const double computational_cost = 1.0;
-
-  Requirements_and_preferences require (std::string name_1)
-  {
-    return { {we::type::Requirement (name_1)}
-           , we::type::schedule_data()
-           , null_transfer_cost
-           , computational_cost
-           , 0
-           , {}
-           };
-  }
+  const ::boost::optional<unsigned long> no_max_num_retries;
 
   Requirements_and_preferences require (std::string name, unsigned long workers)
   {
+
     return { {we::type::Requirement (name)}
-           , we::type::schedule_data (workers)
+           , {workers, no_max_num_retries}
            , null_transfer_cost
            , computational_cost
            , 0
@@ -429,36 +420,11 @@ namespace
   Requirements_and_preferences require (unsigned long workers)
   {
     return { {}
-           , we::type::schedule_data (workers)
+           , {workers, no_max_num_retries}
            , null_transfer_cost
            , computational_cost
            , 0
            , {}
-           };
-  }
-
-  Requirements_and_preferences no_requirements_and_preferences()
-  {
-    return { {}
-           , we::type::schedule_data()
-           , null_transfer_cost
-           , computational_cost
-           , 0
-           , {}
-           };
-  }
-
-  Requirements_and_preferences require
-    ( std::string capability
-    , Preferences const& preferences
-    )
-  {
-    return { {we::type::Requirement (capability)}
-           , we::type::schedule_data()
-           , null_transfer_cost
-           , computational_cost
-           , 0
-           , preferences
            };
   }
 
@@ -469,7 +435,7 @@ namespace
      )
   {
     return { {we::type::Requirement (capability)}
-           , we::type::schedule_data (num_workers)
+           , {num_workers, no_max_num_retries}
            , null_transfer_cost
            , computational_cost
            , 0
@@ -477,9 +443,9 @@ namespace
            };
   }
 
-  void add_worker ( sdpa::daemon::CoallocationScheduler& scheduler
+  void add_worker ( sdpa::daemon::WorkerManager& worker_manager
                   , sdpa::worker_id_t worker_id
-                  , sdpa::capabilities_set_t capabilities = {}
+                  , sdpa::Capabilities capabilities = {}
                   )
   {
     fhg::util::testing::random<std::string> const random_string;
@@ -487,72 +453,35 @@ namespace
 
     auto const hostname {random_string()};
 
-    scheduler.add_worker ( worker_id
-                         , capabilities
-                         , fhg::util::testing::random<unsigned long>{}()
-                         , hostname
-                         , fhg::com::p2p::address_t
-                             { fhg::com::host_t {hostname}
-                             , fhg::com::port_t {random_ushort()}
-                             }
-                         );
-  }
-}
-
-BOOST_FIXTURE_TEST_CASE
-  ( load_balancing
-  , fixture_scheduler_and_requirements_and_preferences
-  )
-{
-  add_worker (_scheduler, "worker_0");
-  add_worker (_scheduler, "worker_1");
-
-  const unsigned int n_jobs (100);
-  for (unsigned int i (0); i < n_jobs; ++i)
-  {
-    add_and_enqueue_job (no_requirements_and_preferences());
+    std::lock_guard<std::mutex> lock (worker_manager._mutex);
+    worker_manager.add_worker
+      ( worker_id
+      , capabilities
+      , fhg::util::testing::random<unsigned long>{}()
+      , hostname
+      , fhg::com::p2p::address_t
+          { fhg::com::host_t {hostname}
+          , fhg::com::port_t {random_ushort()}
+          }
+      );
   }
 
-  _scheduler.assign_jobs_to_workers();
-  auto const assignment (get_current_assignment());
-
-  auto const assigned_to_worker_0
-    (count_assigned_jobs (assignment, "worker_0"));
-  auto const assigned_to_worker_1
-    (count_assigned_jobs (assignment, "worker_1"));
-
-  BOOST_REQUIRE (  (assigned_to_worker_0 <= assigned_to_worker_1 + 1L)
-                && (assigned_to_worker_1 <= assigned_to_worker_0 + 1L)
-                );
-}
-
-BOOST_FIXTURE_TEST_CASE
-  ( tesLBOneWorkerJoinsLater
-  , fixture_scheduler_and_requirements_and_preferences
-  )
-{
-  add_worker (_scheduler, "worker_0");
-
-  add_and_enqueue_job (no_requirements_and_preferences());
-  add_and_enqueue_job (no_requirements_and_preferences());
-
+  void add_worker ( sdpa::daemon::WorkerManager& worker_manager
+                  , sdpa::worker_id_t worker_id
+                  , sdpa::Capabilities capabilities
+                  , unsigned long allocated_shared_memory_size
+                  , std::string const& hostname
+                  , fhg::com::p2p::address_t const& address
+                  )
   {
-    _scheduler.assign_jobs_to_workers();
-    _scheduler.steal_work();
-    auto const assignment (get_current_assignment());
-
-    BOOST_REQUIRE_EQUAL (count_assigned_jobs (assignment, "worker_0"), 2);
-  }
-
-  add_worker (_scheduler, "worker_1");
-
-  {
-    _scheduler.assign_jobs_to_workers();
-    _scheduler.steal_work();
-    auto const assignment (get_current_assignment());
-
-    BOOST_REQUIRE_EQUAL (count_assigned_jobs (assignment, "worker_0"), 1);
-    BOOST_REQUIRE_EQUAL (count_assigned_jobs (assignment, "worker_1"), 1);
+    std::lock_guard<std::mutex> lock (worker_manager._mutex);
+    worker_manager.add_worker
+      ( worker_id
+      , capabilities
+      , allocated_shared_memory_size
+      , hostname
+      , address
+      );
   }
 }
 
@@ -561,16 +490,16 @@ BOOST_FIXTURE_TEST_CASE
   , fixture_scheduler_and_requirements_and_preferences
   )
 {
-  add_worker (_scheduler, "A0", {sdpa::capability_t ("A")});
-  add_worker (_scheduler, "B0", {sdpa::capability_t ("B")});
-  add_worker (_scheduler, "A1", {sdpa::capability_t ("A")});
-  add_worker (_scheduler, "B1", {sdpa::capability_t ("B")});
+  add_worker (_worker_manager, "A0", {sdpa::Capability ("A")});
+  add_worker (_worker_manager, "B0", {sdpa::Capability ("B")});
+  add_worker (_worker_manager, "A1", {sdpa::Capability ("A")});
+  add_worker (_worker_manager, "B1", {sdpa::Capability ("B")});
 
   auto const job_2a (add_and_enqueue_job (require ("A", 2)));
   auto const job_2b (add_and_enqueue_job (require ("B", 2)));
 
   {
-    _scheduler.assign_jobs_to_workers();
+    _scheduler->assign_jobs_to_workers();
     auto const assignment (get_current_assignment());
 
     BOOST_REQUIRE_EQUAL (assignment.at (job_2a), set_workers_t ({"A0", "A1"}));
@@ -580,7 +509,7 @@ BOOST_FIXTURE_TEST_CASE
   auto const job_1a (add_and_enqueue_job (require ("A", 1)));
 
   {
-    _scheduler.assign_jobs_to_workers();
+    _scheduler->assign_jobs_to_workers();
     auto const assignment (get_current_assignment());
 
     BOOST_REQUIRE ( assignment.at (job_1a) == set_workers_t ({"A0"})
@@ -590,59 +519,16 @@ BOOST_FIXTURE_TEST_CASE
 }
 
 BOOST_FIXTURE_TEST_CASE
-  ( tesLBStopRestartWorker
-  , fixture_scheduler_and_requirements_and_preferences
-  )
-{
-  add_worker (_scheduler, "worker_0");
-  add_worker (_scheduler, "worker_1");
-
-  auto const job_0
-    (add_and_enqueue_job (no_requirements_and_preferences()));
-  auto const job_1
-    (add_and_enqueue_job (no_requirements_and_preferences()));
-
-  _scheduler.assign_jobs_to_workers();
-  auto const assignment (get_current_assignment());
-
-  BOOST_REQUIRE ( assignment.at (job_0) == set_workers_t ({"worker_0"})
-               || assignment.at (job_0) == set_workers_t ({"worker_1"})
-                );
-
-  BOOST_REQUIRE ( assignment.at (job_1) == set_workers_t ({"worker_0"})
-               || assignment.at (job_1) == set_workers_t ({"worker_1"})
-                );
-
-  BOOST_REQUIRE( assignment.at (job_0) !=  assignment.at (job_1));
-
-  sdpa::job_id_t job_assigned_to_worker_0
-    (assignment.at (job_0) == set_workers_t ({"worker_0"}) ? job_0 : job_1);
-
-  _scheduler.release_reservation (job_assigned_to_worker_0);
-  _scheduler.delete_worker_TESTING_ONLY ("worker_0");
-  _scheduler.submit_job (job_assigned_to_worker_0);
-
-  add_worker (_scheduler, "worker_0");
-
-  _scheduler.assign_jobs_to_workers();
-  auto const new_assignment (get_current_assignment());
-
-  BOOST_REQUIRE_EQUAL ( new_assignment.at (job_assigned_to_worker_0)
-                      , set_workers_t ({"worker_0"})
-                      );
-}
-
-BOOST_FIXTURE_TEST_CASE
   ( not_schedulable_job_does_not_block_others
   , fixture_scheduler_and_requirements_and_preferences
   )
 {
-  add_worker (_scheduler, "worker");
+  add_worker (_worker_manager, "worker");
 
   add_and_enqueue_job (require (2));
 
   {
-    _scheduler.assign_jobs_to_workers();
+    _scheduler->assign_jobs_to_workers();
     auto const assignment (get_current_assignment());
 
     BOOST_REQUIRE (assignment.empty());
@@ -651,7 +537,7 @@ BOOST_FIXTURE_TEST_CASE
   auto const job (add_and_enqueue_job (require (1)));
 
   {
-    _scheduler.assign_jobs_to_workers();
+    _scheduler->assign_jobs_to_workers();
     auto const assignment (get_current_assignment());
 
     BOOST_REQUIRE_EQUAL ( assignment.at (job)
@@ -659,147 +545,8 @@ BOOST_FIXTURE_TEST_CASE
                         );
   }
 
-  _scheduler.start_pending_jobs (SERVE_JOB_AND_CHECK_EXPECTED (job));
+  _scheduler->start_pending_jobs (SERVE_JOB_AND_CHECK_EXPECTED (job));
 }
-
-BOOST_FIXTURE_TEST_CASE ( multiple_job_submissions_with_no_children_allowed
-                        , fixture_scheduler_and_requirements_and_preferences
-                        )
-{
-  sdpa::worker_id_t const worker_id (utils::random_peer_name());
-  add_worker (_scheduler, worker_id);
-
-  auto const job_id_0
-    (add_and_enqueue_job (no_requirements_and_preferences()));
-
-  {
-    _scheduler.assign_jobs_to_workers();
-    auto const assignment (get_current_assignment());
-
-    BOOST_REQUIRE_EQUAL ( assignment.at (job_id_0)
-                        , set_workers_t ({worker_id})
-                        );
-  }
-
-  _scheduler.start_pending_jobs (SERVE_JOB_AND_CHECK_EXPECTED (job_id_0));
-
-  auto const job_id_1
-    (add_and_enqueue_job (no_requirements_and_preferences()));
-
-  {
-    _scheduler.assign_jobs_to_workers();
-    auto const assignment (get_current_assignment());
-
-    BOOST_REQUIRE_EQUAL ( assignment.at (job_id_1)
-                        , set_workers_t ({worker_id})
-                        );
-  }
-
-  BOOST_REQUIRE_NO_THROW
-   (_scheduler.start_pending_jobs (EXPECT_NO_JOB_SERVED));
-
-  _scheduler.release_reservation (job_id_0);
-
-  _scheduler.start_pending_jobs (SERVE_JOB_AND_CHECK_EXPECTED (job_id_1));
-}
-
-BOOST_FIXTURE_TEST_CASE
-  ( multiple_worker_job_submissions_with_requirements_and_preferences_no_children_allowed
-  , fixture_scheduler_and_requirements_and_preferences
-  )
-{
-  sdpa::worker_id_t const worker_id (utils::random_peer_name());
-  add_worker ( _scheduler
-             , worker_id
-             , { sdpa::capability_t ("A")
-               , sdpa::capability_t ("B")
-               }
-             );
-
-  auto const job_id_0 (add_and_enqueue_job (require ("A")));
-
-  {
-    _scheduler.assign_jobs_to_workers();
-    auto const assignment (get_current_assignment());
-
-     BOOST_REQUIRE_EQUAL ( assignment.at (job_id_0)
-                         , set_workers_t ({worker_id})
-                         );
-  }
-
-  _scheduler.start_pending_jobs (SERVE_JOB_AND_CHECK_EXPECTED (job_id_0));
-
-  auto const job_id_1 (add_and_enqueue_job (require ("B")));
-
-  {
-    _scheduler.assign_jobs_to_workers();
-    auto const assignment (get_current_assignment());
-
-    BOOST_REQUIRE_EQUAL ( assignment.at (job_id_1)
-                        , set_workers_t ({worker_id})
-                        );
-  }
-
-   BOOST_REQUIRE_NO_THROW (_scheduler.start_pending_jobs (EXPECT_NO_JOB_SERVED));
-
-  _scheduler.release_reservation (job_id_0);
-
-  _scheduler.start_pending_jobs (SERVE_JOB_AND_CHECK_EXPECTED (job_id_1));
-}
-
-struct fixture_minimal_cost_assignment
-{
-  fixture_minimal_cost_assignment()
-  : _scheduler
-      ( [] (sdpa::job_id_t const&)
-        {
-          return no_requirements_and_preferences();
-        }
-      )
-  {
-    fhg::util::testing::random<unsigned short> const random_ushort;
-    auto const random_port
-      { [&]
-        {
-          return fhg::com::port_t {random_ushort()};
-        }
-      };
-
-    _scheduler.add_worker ("worker_01", {}, random_ulong(), "node1", fhg::com::p2p::address_t {fhg::com::host_t {"node1"}, random_port()});
-    _scheduler.add_worker ("worker_02", {}, random_ulong(), "node1", fhg::com::p2p::address_t {fhg::com::host_t {"node1"}, random_port()});
-    _scheduler.add_worker ("worker_03", {}, random_ulong(), "node1", fhg::com::p2p::address_t {fhg::com::host_t {"node1"}, random_port()});
-    _scheduler.add_worker ("worker_04", {}, random_ulong(), "node1", fhg::com::p2p::address_t {fhg::com::host_t {"node1"}, random_port()});
-    _scheduler.add_worker ("worker_05", {}, random_ulong(), "node2", fhg::com::p2p::address_t {fhg::com::host_t {"node2"}, random_port()});
-    _scheduler.add_worker ("worker_06", {}, random_ulong(), "node2", fhg::com::p2p::address_t {fhg::com::host_t {"node2"}, random_port()});
-    _scheduler.add_worker ("worker_07", {}, random_ulong(), "node2", fhg::com::p2p::address_t {fhg::com::host_t {"node2"}, random_port()});
-    _scheduler.add_worker ("worker_08", {}, random_ulong(), "node2", fhg::com::p2p::address_t {fhg::com::host_t {"node2"}, random_port()});
-    _scheduler.add_worker ("worker_09", {}, random_ulong(), "node3", fhg::com::p2p::address_t {fhg::com::host_t {"node3"}, random_port()});
-    _scheduler.add_worker ("worker_10", {}, random_ulong(), "node3", fhg::com::p2p::address_t {fhg::com::host_t {"node3"}, random_port()});
-    _scheduler.add_worker ("worker_11", {}, random_ulong(), "node3", fhg::com::p2p::address_t {fhg::com::host_t {"node3"}, random_port()});
-    _scheduler.add_worker ("worker_12", {}, random_ulong(), "node3", fhg::com::p2p::address_t {fhg::com::host_t {"node3"}, random_port()});
-    _scheduler.add_worker ("worker_13", {}, random_ulong(), "node4", fhg::com::p2p::address_t {fhg::com::host_t {"node4"}, random_port()});
-    _scheduler.add_worker ("worker_14", {}, random_ulong(), "node4", fhg::com::p2p::address_t {fhg::com::host_t {"node4"}, random_port()});
-    _scheduler.add_worker ("worker_15", {}, random_ulong(), "node4", fhg::com::p2p::address_t {fhg::com::host_t {"node4"}, random_port()});
-    _scheduler.add_worker ("worker_16", {}, random_ulong(), "node4", fhg::com::p2p::address_t {fhg::com::host_t {"node4"}, random_port()});
-    _scheduler.add_worker ("worker_17", {}, random_ulong(), "node5", fhg::com::p2p::address_t {fhg::com::host_t {"node5"}, random_port()});
-    _scheduler.add_worker ("worker_18", {}, random_ulong(), "node5", fhg::com::p2p::address_t {fhg::com::host_t {"node5"}, random_port()});
-    _scheduler.add_worker ("worker_19", {}, random_ulong(), "node5", fhg::com::p2p::address_t {fhg::com::host_t {"node5"}, random_port()});
-    _scheduler.add_worker ("worker_20", {}, random_ulong(), "node5", fhg::com::p2p::address_t {fhg::com::host_t {"node5"}, random_port()});
-  }
-
-  double max_value (std::map<std::string, double> const& map_cost)
-  {
-    return std::max_element ( map_cost.begin()
-                            , map_cost.end()
-                            , [] ( std::pair<std::string, double> const& lhs
-                                 , std::pair<std::string, double> const& rhs
-                                 )
-                                 {return lhs.second < rhs.second;}
-                            )->second;
-  }
-
-  sdpa::daemon::CoallocationScheduler _scheduler;
-};
 
 struct serve_job_and_check_for_minimal_cost_assignement
 {
@@ -879,37 +626,46 @@ BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_and_random_costs
                          }
                        );
 
-  sdpa::daemon::CoallocationScheduler
-    _scheduler (  [&test_transfer_cost] (sdpa::job_id_t const&)
-                  {
-                    return Requirements_and_preferences
-                      ( {}
-                      , we::type::schedule_data (n_req_workers)
-                      , test_transfer_cost
-                      , computational_cost
-                      , 0
-                      , {}
-                      );
-                  }
-               );
+  sdpa::daemon::WorkerManager worker_manager;
+  auto const _scheduler
+    ( std::make_unique<sdpa::daemon::CoallocationScheduler>
+        ( [&test_transfer_cost] (sdpa::job_id_t const&)
+          {
+            return Requirements_and_preferences
+              ( {}
+              , {n_req_workers, no_max_num_retries}
+              , test_transfer_cost
+              , computational_cost
+              , 0
+              , {}
+              );
+          }
+        , worker_manager
+        )
+    );
 
   fhg::util::testing::random<unsigned short> const random_ushort;
 
   for (sdpa::worker_id_t const& worker_id : worker_ids)
   {
-    _scheduler.add_worker (worker_id, {}, random_ulong(), worker_id
-                          , fhg::com::p2p::address_t
-                              { fhg::com::host_t {worker_id}
-                              , fhg::com::port_t {random_ushort()}
-                              }
-                          );
+    std::lock_guard<std::mutex> lock (worker_manager._mutex);
+    worker_manager.add_worker
+      ( worker_id
+      , {}
+      , random_ulong()
+      , worker_id
+      , fhg::com::p2p::address_t
+          { fhg::com::host_t {worker_id}
+          , fhg::com::port_t {random_ushort()}
+          }
+      );
   }
 
   const sdpa::job_id_t job_id (fhg::util::testing::random_string());
-  _scheduler.submit_job (job_id);
+  _scheduler->submit_job (job_id);
 
-  _scheduler.assign_jobs_to_workers();
-  _scheduler.start_pending_jobs
+  _scheduler->assign_jobs_to_workers();
+  _scheduler->start_pending_jobs
     ( [this, &job_id, &test_transfer_cost, &worker_ids]
       ( sdpa::daemon::WorkerSet const& assigned_workers
       , sdpa::daemon::Implementation const& implementation
@@ -970,43 +726,53 @@ BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_preassignment_and_load_balan
                          }
                        );
 
-  sdpa::daemon::CoallocationScheduler
-    _scheduler ( [&test_transfer_cost, &_computational_cost] (sdpa::job_id_t const&)
-                 {
-                   return Requirements_and_preferences
-                     ( {}
-                     , we::type::schedule_data (n_req_workers)
-                     , test_transfer_cost
-                     , _computational_cost
-                     , 0
-                     , {}
-                     );
-                 }
-               );
+  sdpa::daemon::WorkerManager worker_manager;
+  auto const _scheduler
+    ( std::make_unique<sdpa::daemon::CoallocationScheduler>
+        ( [&test_transfer_cost, &_computational_cost]
+          (sdpa::job_id_t const&)
+          {
+            return Requirements_and_preferences
+              ( {}
+              , {n_req_workers, no_max_num_retries}
+              , test_transfer_cost
+              , _computational_cost
+              , 0
+              , {}
+              );
+          }
+        , worker_manager
+        )
+    );
 
   fhg::util::testing::random<unsigned short> const random_ushort;
 
   for (decltype (worker_ids)::size_type i=0; i<n_workers;i++)
   {
-    _scheduler.add_worker (worker_ids[i], {}, random_ulong(), host_ids[i]
-                          , fhg::com::p2p::address_t
-                              { fhg::com::host_t {host_ids.at (i)}
-                              , fhg::com::port_t {random_ushort()}
-                              }
-                          );
+    std::lock_guard<std::mutex> lock (worker_manager._mutex);
+    worker_manager.add_worker
+      ( worker_ids[i]
+      , {}
+      , random_ulong()
+      , host_ids[i]
+      , fhg::com::p2p::address_t
+          { fhg::com::host_t {host_ids.at (i)}
+          , fhg::com::port_t {random_ushort()}
+          }
+      );
   }
 
   fhg::util::testing::unique_random<sdpa::job_id_t> job_ids;
   for (unsigned int i (0); i < n_jobs; ++i)
   {
-    _scheduler.submit_job (job_ids());
+    _scheduler->submit_job (job_ids());
   }
 
-  _scheduler.assign_jobs_to_workers();
+  _scheduler->assign_jobs_to_workers();
+  auto const allocation_table
+    (sdpa::daemon::access_allocation_table_TESTING_ONLY (_scheduler.get()->strategy_TESTING_ONLY()));
   auto const assignment
-    ( sdpa::daemon::access_allocation_table_TESTING_ONLY (_scheduler)
-    . get_current_assignment()
-    );
+    (allocation_table. get_current_assignment());
 
   std::vector<double> sum_costs_assigned_jobs (n_workers, 0.0);
   const double max_job_cost ( *std::max_element (transfer_costs.begin(), transfer_costs.end())
@@ -1044,15 +810,17 @@ BOOST_FIXTURE_TEST_CASE
 
   auto const hostname {random_string()};
 
-  _scheduler.add_worker ( "worker_0"
-                        , {}
-                        , avail_mem
-                        , hostname
-                        , fhg::com::p2p::address_t
-                            { fhg::com::host_t {hostname}
-                            , fhg::com::port_t {random_ushort()}
-                            }
-                        );
+  add_worker
+    ( _worker_manager
+    , "worker_0"
+    , {}
+    , avail_mem
+    , hostname
+    , fhg::com::p2p::address_t
+        { fhg::com::host_t {hostname}
+        , fhg::com::port_t {random_ushort()}
+        }
+    );
 
   add_and_enqueue_job
     ( Requirements_and_preferences ( {}
@@ -1064,7 +832,7 @@ BOOST_FIXTURE_TEST_CASE
                                    )
     );
 
-  _scheduler.assign_jobs_to_workers();
+  _scheduler->assign_jobs_to_workers();
 
   BOOST_REQUIRE (get_current_assignment().empty());
 }
@@ -1084,44 +852,50 @@ BOOST_FIXTURE_TEST_CASE ( invariant_assignment_for_jobs_with_different_memory_re
   {
     auto const hostname {random_string()};
 
-  _scheduler.add_worker ( "worker_0"
-                        , {}
-                        , size_0
-                        , hostname
-                        , fhg::com::p2p::address_t
-                            { fhg::com::host_t {hostname}
-                            , fhg::com::port_t {random_ushort()}
-                            }
-                        );
+    add_worker
+      ( _worker_manager
+      , "worker_0"
+      , {}
+      , size_0
+      , hostname
+      , fhg::com::p2p::address_t
+          { fhg::com::host_t {hostname}
+          , fhg::com::port_t {random_ushort()}
+          }
+      );
   }
 
   {
     auto const hostname {random_string()};
 
-  _scheduler.add_worker ( "worker_1"
-                        , {}
-                        , size_1
-                        , hostname
-                        , fhg::com::p2p::address_t
-                            { fhg::com::host_t {hostname}
-                            , fhg::com::port_t {random_ushort()}
-                            }
-                        );
+    add_worker
+      ( _worker_manager
+      , "worker_1"
+      , {}
+      , size_1
+      , hostname
+      , fhg::com::p2p::address_t
+          { fhg::com::host_t {hostname}
+          , fhg::com::port_t {random_ushort()}
+          }
+      );
   }
 
 
   {
     auto const hostname {random_string()};
 
-  _scheduler.add_worker ( "worker_2"
-                        , {}
-                        , size_0 + size_1
-                        , hostname
-                        , fhg::com::p2p::address_t
-                            { fhg::com::host_t {hostname}
-                            , fhg::com::port_t {random_ushort()}
-                            }
-                        );
+    add_worker
+      ( _worker_manager
+      , "worker_2"
+      , {}
+      , size_0 + size_1
+      , hostname
+      , fhg::com::p2p::address_t
+          { fhg::com::host_t {hostname}
+          , fhg::com::port_t {random_ushort()}
+          }
+      );
   }
 
   auto const job_id_0
@@ -1149,7 +923,7 @@ BOOST_FIXTURE_TEST_CASE ( invariant_assignment_for_jobs_with_different_memory_re
     );
 
   {
-    _scheduler.assign_jobs_to_workers();
+    _scheduler->assign_jobs_to_workers();
     auto const assignment (get_current_assignment());
 
     BOOST_REQUIRE (!assignment.empty());
@@ -1160,14 +934,14 @@ BOOST_FIXTURE_TEST_CASE ( invariant_assignment_for_jobs_with_different_memory_re
     BOOST_REQUIRE_EQUAL (assignment.at (job_id_1), set_1);
   }
 
-  _scheduler.release_reservation (job_id_0);
-  _scheduler.release_reservation (job_id_1);
+  _scheduler->release_reservation (job_id_0);
+  _scheduler->release_reservation (job_id_1);
 
-  _scheduler.submit_job (job_id_1);
-  _scheduler.submit_job (job_id_0);
+  _scheduler->submit_job (job_id_1);
+  _scheduler->submit_job (job_id_0);
 
   {
-    _scheduler.assign_jobs_to_workers();
+    _scheduler->assign_jobs_to_workers();
     auto const assignment (get_current_assignment());
 
     BOOST_REQUIRE (!assignment.empty());
@@ -1177,69 +951,6 @@ BOOST_FIXTURE_TEST_CASE ( invariant_assignment_for_jobs_with_different_memory_re
     BOOST_REQUIRE_EQUAL (assignment.at (job_id_0), set_0);
     BOOST_REQUIRE_EQUAL (assignment.at (job_id_1), set_1);
   }
-}
-
-BOOST_FIXTURE_TEST_CASE
-  ( assign_job_without_requirements_and_preferences_to_worker_with_least_capabilities
-  , fixture_scheduler_and_requirements_and_preferences
-  )
-{
-  std::string const name_worker_0 {utils::random_peer_name()};
-  std::string const name_worker_1 {utils::random_peer_name()};
-  std::string const name_capability {fhg::util::testing::random_string()};
-  add_worker (_scheduler, name_worker_0);
-  add_worker ( _scheduler
-             , name_worker_1
-             , {sdpa::Capability (name_capability)}
-             );
-
-  auto const job_id (add_and_enqueue_job (no_requirements_and_preferences()));
-
-  _scheduler.assign_jobs_to_workers();
-  auto const assignment (get_current_assignment());
-
-  BOOST_REQUIRE_EQUAL (assignment.size(), 1);
-  BOOST_REQUIRE (assignment.count (job_id));
-
-  BOOST_REQUIRE_EQUAL
-    (assignment.at (job_id), std::set<sdpa::worker_id_t> {name_worker_0});
-}
-
-BOOST_FIXTURE_TEST_CASE ( assign_job_to_the_matching_worker_with_less_capabilities_when_same_costs
-                        , fixture_scheduler_and_requirements_and_preferences
-                        )
-{
-  std::set<sdpa::worker_id_t> set_0 {"worker_0"};
-
-  add_worker ( _scheduler
-             , "worker_0"
-             , {sdpa::Capability ("A")}
-             );
-
-  add_worker ( _scheduler
-             , "worker_1"
-             , { sdpa::Capability ("A")
-               , sdpa::Capability ("B")
-               }
-             );
-
-  add_worker ( _scheduler
-             , "worker_2"
-             , { sdpa::Capability ("A")
-               , sdpa::Capability ("B")
-               , sdpa::Capability ("C")
-               }
-             );
-
-  auto const job_id (add_and_enqueue_job (require ("A")));
-
-  _scheduler.assign_jobs_to_workers();
-  auto const assignment (get_current_assignment());
-
-  BOOST_REQUIRE (!assignment.empty());
-  BOOST_REQUIRE (assignment.count (job_id));
-
-  BOOST_REQUIRE_EQUAL (assignment.at (job_id), set_0);
 }
 
 BOOST_FIXTURE_TEST_CASE ( assign_to_the_same_worker_if_the_total_cost_is_lower
@@ -1255,25 +966,29 @@ BOOST_FIXTURE_TEST_CASE ( assign_to_the_same_worker_if_the_total_cost_is_lower
 
   fhg::util::testing::random<unsigned short> const random_ushort;
 
-  _scheduler.add_worker ( name_worker_0
-                        , {}
-                        , 199
-                        , name_node_0
-                        , fhg::com::p2p::address_t
-                            { fhg::com::host_t {name_node_0}
-                            , fhg::com::port_t {random_ushort()}
-                            }
-                        );
+  add_worker
+    ( _worker_manager
+    , name_worker_0
+    , {}
+    , 199
+    , name_node_0
+    , fhg::com::p2p::address_t
+        { fhg::com::host_t {name_node_0}
+        , fhg::com::port_t {random_ushort()}
+        }
+    );
 
-  _scheduler.add_worker ( name_worker_1
-                        , {}
-                        , 200
-                        , name_node_1
-                        , fhg::com::p2p::address_t
-                            { fhg::com::host_t {name_node_1}
-                            , fhg::com::port_t {random_ushort()}
-                            }
-                        );
+    add_worker
+      ( _worker_manager
+      , name_worker_1
+      , {}
+      , 200
+      , name_node_1
+      , fhg::com::p2p::address_t
+          { fhg::com::host_t {name_node_1}
+          , fhg::com::port_t {random_ushort()}
+          }
+      );
 
   std::function<double (std::string const&)> const
     test_transfer_cost ( [&name_node_0, &name_node_1](std::string const& host) -> double
@@ -1286,198 +1001,63 @@ BOOST_FIXTURE_TEST_CASE ( assign_to_the_same_worker_if_the_total_cost_is_lower
                          }
                        );
 
-  auto const job_id_0
-    ( add_and_enqueue_job
-        ( Requirements_and_preferences ( {}
-                                       , we::type::schedule_data()
-                                       , test_transfer_cost
-                                       , 1.0
-                                       , 100
-                                       , {}
-                                       )
-        )
-    );
+  std::set<sdpa::job_id_t> jobs;
 
-  auto const job_id_1
-    ( add_and_enqueue_job
-        ( Requirements_and_preferences ( {}
-                                       , we::type::schedule_data()
-                                       , test_transfer_cost
-                                       , 1.0
-                                       , 200
-                                       , {}
-                                       )
-        )
-    );
+  for ( unsigned long k = 0
+      ; k < fhg::util::testing::random<std::size_t>{} (100, 3)
+      ; ++k
+      )
+  {
+    jobs.emplace
+      ( add_and_enqueue_job
+          ( Requirements_and_preferences ( {}
+                                         , we::type::schedule_data()
+                                         , test_transfer_cost
+                                         , 1.0
+                                         , 100
+                                         , {}
+                                         )
+          )
+      );
+  }
 
-  _scheduler.assign_jobs_to_workers();
+  _scheduler->assign_jobs_to_workers();
   auto const assignment (get_current_assignment());
 
   BOOST_REQUIRE (!assignment.empty());
-  BOOST_REQUIRE (assignment.count (job_id_0));
-  BOOST_REQUIRE (assignment.count (job_id_1));
-
-  BOOST_REQUIRE_EQUAL (assignment.at (job_id_0), expected_assignment);
-  BOOST_REQUIRE_EQUAL (assignment.at (job_id_1), expected_assignment);
-}
-
-BOOST_FIXTURE_TEST_CASE ( work_stealing
-                        , fixture_scheduler_and_requirements_and_preferences
-                        )
-{
-  std::set<sdpa::worker_id_t> set_0 {"worker_0"};
-
-  add_worker
-    (_scheduler, "worker_0", {sdpa::Capability ("A")});
-  add_worker
-    (_scheduler, "worker_1", {sdpa::Capability ("A")});
-
-  auto const job_0 (add_and_enqueue_job (require ("A")));
-  auto const job_1 (add_and_enqueue_job (require ("A")));
-  auto const job_2 (add_and_enqueue_job (require ("A")));
-
+  for (auto const& job_id : jobs)
   {
-    _scheduler.assign_jobs_to_workers();
-    auto const assignment (get_current_assignment());
-
-    BOOST_REQUIRE (!assignment.empty());
-    BOOST_REQUIRE (assignment.count (job_0));
-    BOOST_REQUIRE (assignment.count (job_1));
-    BOOST_REQUIRE (assignment.count (job_2));
+    BOOST_REQUIRE (assignment.count (job_id));
   }
 
-  add_worker
-    (_scheduler, "worker_2", {sdpa::Capability ("A")});
-
-  _scheduler.assign_jobs_to_workers();
-
-  {
-    auto const assignment (get_current_assignment());
-
-    BOOST_REQUIRE (!assignment.empty());
-
-    BOOST_REQUIRE ( assignment.at (job_0) != std::set<sdpa::worker_id_t>({"worker_2"})
-                 && assignment.at (job_1) != std::set<sdpa::worker_id_t>({"worker_2"})
-                 && assignment.at (job_2) != std::set<sdpa::worker_id_t>({"worker_2"})
-                  );
-  }
-  _scheduler.steal_work();
-
-  {
-    auto const assignment (get_current_assignment());
-
-    BOOST_REQUIRE (!assignment.empty());
-    BOOST_REQUIRE (assignment.count (job_0));
-    BOOST_REQUIRE (assignment.count (job_1));
-    BOOST_REQUIRE (assignment.count (job_2));
-
-    BOOST_REQUIRE (  assignment.at (job_0) == std::set<sdpa::worker_id_t>({"worker_2"})
-                  || assignment.at (job_1) == std::set<sdpa::worker_id_t>({"worker_2"})
-                  || assignment.at (job_2) == std::set<sdpa::worker_id_t>({"worker_2"})
-                  );
-
-    BOOST_REQUIRE (assignment.at (job_0) != assignment.at (job_1));
-    BOOST_REQUIRE (assignment.at (job_0) != assignment.at (job_2));
-    BOOST_REQUIRE (assignment.at (job_1) != assignment.at (job_2));
-  }
-}
-
-BOOST_FIXTURE_TEST_CASE ( stealing_from_worker_does_not_free_it
-                        , fixture_scheduler_and_requirements_and_preferences
-                        )
-{
-  add_worker
-    (_scheduler, "worker_0", {sdpa::Capability ("A")});
-
-  auto const job_0 (add_and_enqueue_job (require ("A")));
-  auto const job_1 (add_and_enqueue_job (require ("A")));
-  auto const job_2 (add_and_enqueue_job (require ("A")));
-
-  {
-    _scheduler.assign_jobs_to_workers();
-    auto const assignment (get_current_assignment());
-
-    BOOST_REQUIRE (!assignment.empty());
-    BOOST_REQUIRE (assignment.count (job_0));
-    BOOST_REQUIRE (assignment.count (job_1));
-    BOOST_REQUIRE (assignment.count (job_2));
-
-    // the worker 0 is submitted one of the assigned jobs
-    std::set<sdpa::job_id_t> const jobs_that_can_be_started {job_0, job_1, job_2};
-    _scheduler.start_pending_jobs
-      (SERVE_JOB_AND_CHECK_IS_ONE_OF (jobs_that_can_be_started));
-  }
-
-  add_worker
-    (_scheduler, "worker_1", {sdpa::Capability ("A")});
-
-  {
-    _scheduler.assign_jobs_to_workers();
-    auto const assignment (get_current_assignment());
-
-    BOOST_REQUIRE (!assignment.empty());
-
-    BOOST_REQUIRE (assignment.count (job_0));
-    BOOST_REQUIRE (assignment.count (job_1));
-    BOOST_REQUIRE (assignment.count (job_2));
-
-    BOOST_REQUIRE (  assignment.at (job_0) == std::set<sdpa::worker_id_t>({"worker_0"})
-                  || assignment.at (job_1) == std::set<sdpa::worker_id_t>({"worker_0"})
-                  || assignment.at (job_2) == std::set<sdpa::worker_id_t>({"worker_0"})
-                  );
-
-    BOOST_REQUIRE ( assignment.at (job_0) != std::set<sdpa::worker_id_t>({"worker_1"})
-                 && assignment.at (job_1) != std::set<sdpa::worker_id_t>({"worker_1"})
-                 && assignment.at (job_2) != std::set<sdpa::worker_id_t>({"worker_1"})
-                  );
-  }
-
-  _scheduler.steal_work();
-
-  {
-    auto const assignment (get_current_assignment());
-    BOOST_REQUIRE (!assignment.empty());
-
-    // the worker 1 is assigned a job that was stolen from the worker 0
-    BOOST_REQUIRE (  assignment.at (job_0) == std::set<sdpa::worker_id_t>({"worker_1"})
-                  || assignment.at (job_1) == std::set<sdpa::worker_id_t>({"worker_1"})
-                  || assignment.at (job_2) == std::set<sdpa::worker_id_t>({"worker_1"})
-                  );
-
-    // only the worker 1 should get a job started, as worker 0 is still reserved
-    // (until the submitted job finishes)
-    std::set<sdpa::job_id_t> const jobs_that_can_be_started {job_0, job_1, job_2};
-    std::set<sdpa::job_id_t> jobs_started;
-    _scheduler.start_pending_jobs
-      ( [&jobs_that_can_be_started, &jobs_started]
-        ( sdpa::daemon::WorkerSet const&
-        , sdpa::daemon::Implementation const&
-        , sdpa::job_id_t const& started_job
-        , std::function<fhg::com::p2p::address_t (sdpa::worker_id_t const&)>
-        )
-        {
-          BOOST_REQUIRE (jobs_that_can_be_started.count (started_job));
-          jobs_started.emplace (started_job);
-        }
-      );
-
-    BOOST_REQUIRE_EQUAL (jobs_started.size(), 1);
-  }
+  // No worker should be idle and in the case when new jobs are added, these
+  // should be assigned to the worker that minimizes the total cost.
+  // In this test case, they are assigned to worker_1, because the transfer
+  // cost is much smaller for this, any time a new job is added,
+  BOOST_REQUIRE_EQUAL (count_assigned_jobs (assignment, name_worker_0), 1);
+  BOOST_REQUIRE_EQUAL
+    (count_assigned_jobs (assignment, name_worker_1), assignment.size() - 1);
 }
 
 struct fixture_add_new_workers
 {
   fixture_add_new_workers()
-    : _scheduler
-       ( std::bind ( &fixture_add_new_workers::requirements_and_preferences
-                   , this
-                   , std::placeholders::_1
-                   )
-       )
-    , _access_allocation_table (_scheduler)
+    : _worker_manager()
+    , _scheduler
+        ( std::make_unique<sdpa::daemon::CoallocationScheduler>
+            ( std::bind ( &fixture_add_new_workers::requirements_and_preferences
+                        , this
+                        , std::placeholders::_1
+                        )
+            , _worker_manager
+            )
+        )
+    , _access_allocation_table
+         (dynamic_cast<sdpa::daemon::CoallocationScheduler*> (_scheduler.get())->strategy_TESTING_ONLY())
   {}
 
-  sdpa::daemon::CoallocationScheduler _scheduler;
+  sdpa::daemon::WorkerManager _worker_manager;
+  std::unique_ptr<sdpa::daemon::Scheduler> _scheduler;
   sdpa::daemon::access_allocation_table_TESTING_ONLY _access_allocation_table;
 
   std::map<sdpa::job_id_t, std::set<sdpa::worker_id_t>> get_current_assignment() const
@@ -1501,7 +1081,7 @@ struct fixture_add_new_workers
   {
     auto const job_id (job_ids());
     _requirements_and_preferences.emplace (job_id, std::move (reqs_and_prefs));
-    _scheduler.submit_job (job_id);
+    _scheduler->submit_job (job_id);
     return job_id;
   }
 
@@ -1527,39 +1107,22 @@ struct fixture_add_new_workers
 
     for (sdpa::worker_id_t const& worker : new_workers)
     {
-      sdpa::capabilities_set_t cpbset;
+      sdpa::Capabilities cpbset;
       for (std::string const& capability_name : cpbnames)
       {
         cpbset.emplace (capability_name);
       }
 
-      add_worker (_scheduler, worker, cpbset);
+      add_worker (_worker_manager, worker, cpbset);
       request_scheduling();
     }
 
     return new_workers;
   }
 
-  void add_new_jobs
-    ( std::vector<sdpa::job_id_t>& a
-    , ::boost::optional<std::string> reqname
-    , unsigned int n
-    )
-  {
-    for (unsigned int i (0); i < n; ++i)
-    {
-      a.emplace_back
-        ( add_and_enqueue_job
-            (reqname ? require (*reqname) : no_requirements_and_preferences())
-        );
-      request_scheduling();
-    }
-  }
-
   void request_scheduling()
   {
-    _scheduler.assign_jobs_to_workers();
-    _scheduler.steal_work();
+    _scheduler->assign_jobs_to_workers();
   }
 
   std::set<sdpa::worker_id_t> get_workers_with_assigned_jobs
@@ -1681,371 +1244,6 @@ struct fixture_add_new_workers
 };
 
 BOOST_FIXTURE_TEST_CASE
-  ( add_new_workers_and_steal_work
-  , fixture_add_new_workers
-  )
-{
-  const unsigned int n (20);
-  const unsigned int k (10);
-  const unsigned int n_capabilities (3);
-
-  fhg::util::testing::unique_random<std::string> gen_capabilities;
-  std::unordered_set<std::string> capabilities;
-  for (unsigned int i (0); i<n_capabilities; i++)
-  {
-    capabilities.emplace (gen_capabilities());
-  }
-
-  const std::vector<sdpa::worker_id_t> initial_workers
-    (add_new_workers (capabilities, n));
-
-  std::vector<sdpa::job_id_t> jobs;
-  add_new_jobs (jobs, ::boost::none, 2*n);
-
-  BOOST_REQUIRE_EQUAL (get_workers_with_assigned_jobs (jobs).size(), n);
-
-  add_new_jobs (jobs, ::boost::none, 2*k);
-
-  auto const old_assignment (get_current_assignment());
-
-  const std::vector<sdpa::worker_id_t> new_workers
-    (add_new_workers (capabilities, k));
-
-  BOOST_REQUIRE_EQUAL (get_workers_with_assigned_jobs (jobs).size(), n + k);
-
-  check_work_stealing (initial_workers, new_workers, old_assignment, jobs.size());
-}
-
-BOOST_FIXTURE_TEST_CASE
-  ( add_new_workers_with_capabilities_and_steal_work_repeatedly
-  , fixture_add_new_workers
-  )
-{
-  std::vector<sdpa::worker_id_t> workers;
-  std::vector<sdpa::job_id_t> jobs;
-
-  const unsigned int n_load_jobs (100);
-  const unsigned int n_calc_jobs (2000);
-  const unsigned int n_reduce_jobs (100);
-
-  const unsigned int n_load_workers (n_load_jobs);
-  const unsigned int n_calc_workers (500);
-  const unsigned int n_reduce_workers (n_reduce_jobs);
-
-  add_new_workers ({"LOAD"}, n_load_workers);
-  add_new_workers ({"REDUCE"}, n_reduce_workers);
-  std::vector<sdpa::worker_id_t> initial_calc_workers
-    (add_new_workers ({"CALC"}, n_calc_workers));
-
-  add_new_jobs (jobs, std::string ("LOAD"), n_load_jobs);
-  add_new_jobs (jobs, std::string ("CALC"), n_calc_jobs);
-  add_new_jobs (jobs, std::string ("REDUCE"), n_reduce_jobs);
-
-  BOOST_REQUIRE_EQUAL ( get_workers_with_assigned_jobs (jobs).size()
-                      , n_load_workers
-                      + n_calc_workers
-                      + n_reduce_workers
-                      );
-
-  {
-    // add a new LOAD worker
-    const std::vector<sdpa::worker_id_t> new_load_workers
-      (add_new_workers ({"LOAD"}, 1));
-
-    // this last added worker shout get nothing as there is no job new generated,
-    // all the other jobs were already assigned and there is nothing to
-    // steal as all the LOAD workers have exactly one job assigned
-    BOOST_REQUIRE_EQUAL
-      (n_jobs_assigned_to_worker (new_load_workers.front(), get_current_assignment()), 0);
-  }
-
-  {
-    // add a new REDUCE worker
-    const std::vector<sdpa::worker_id_t> new_reduce_workers
-      (add_new_workers ({"REDUCE"}, 1));
-
-    // this last added worker shout get nothing as there is no job new generated,
-    // all the other jobs were already assigned and there is nothing to
-    // steal as all the REDUCE workers have exactly one job assigned
-    BOOST_REQUIRE_EQUAL
-      (n_jobs_assigned_to_worker (new_reduce_workers.front(), get_current_assignment()), 0);
-   }
-
-  {
-    auto const old_assignment (get_current_assignment());
-
-    // add new n_calc_workers CALC workers
-    const std::vector<sdpa::worker_id_t> new_calc_workers
-      (add_new_workers ({"CALC"}, n_calc_workers));
-
-    BOOST_REQUIRE_EQUAL (new_calc_workers.size(), n_calc_workers);
-
-    auto const assignment (get_current_assignment());
-
-    // all CALC workers should get a job stolen from one of the  n_calc_workers
-    // workers previously added (no new job was generated)
-    check_work_stealing ( initial_calc_workers
-                        , new_calc_workers
-                        , old_assignment
-                        , n_calc_jobs
-                        );
-
-    initial_calc_workers.insert ( initial_calc_workers.end()
-                                , new_calc_workers.begin()
-                                , new_calc_workers.end()
-                                );
-  }
-
-  {
-    auto const old_assignment (get_current_assignment());
-
-    // add new n_calc_workers CALC workers
-    const std::vector<sdpa::worker_id_t> new_calc_workers
-      (add_new_workers ({"CALC"}, n_calc_workers));
-
-    BOOST_REQUIRE_EQUAL (new_calc_workers.size(), n_calc_workers);
-
-    auto const assignment (get_current_assignment());
-
-    // all CALC workers should get a job stolen from one of the  n_calc_workers
-    // workers previously added (no new job was generated)
-    check_work_stealing ( initial_calc_workers
-                        , new_calc_workers
-                        , old_assignment
-                        , n_calc_jobs
-                        );
-  }
-}
-
-BOOST_FIXTURE_TEST_CASE
-  ( steal_work_after_finishing_assigned_job
-  , fixture_add_new_workers
-  )
-{
-  const unsigned int n_workers (2);
-  constexpr unsigned int n_jobs (n_workers + 1);
-  const unsigned int n_capabilities (3);
-
-  fhg::util::testing::unique_random<std::string> gen_capabilities;
-  std::unordered_set<std::string> capabilities;
-  for (unsigned int i (0); i<n_capabilities; i++)
-  {
-    capabilities.emplace (gen_capabilities());
-  }
-
-  const std::vector<sdpa::worker_id_t> workers
-    (add_new_workers (capabilities, n_workers));
-
-  std::vector<sdpa::job_id_t> jobs;
-  add_new_jobs (jobs, ::boost::none, n_jobs);
-
-  BOOST_REQUIRE_EQUAL (get_workers_with_assigned_jobs (jobs).size(), n_workers);
-
-  auto const old_assignment (get_current_assignment());
-
-  sdpa::worker_id_t worker_with_2_jobs;
-  sdpa::worker_id_t worker_with_1_job;
-
-  for (sdpa::worker_id_t const& worker : workers)
-  {
-    const unsigned int n_assigned_jobs
-      (n_jobs_assigned_to_worker (worker, old_assignment));
-    BOOST_REQUIRE (n_assigned_jobs == 1 || n_assigned_jobs == 2);
-
-    if (n_assigned_jobs == 2)
-    {
-      worker_with_2_jobs = worker;
-    }
-    else
-    {
-      worker_with_1_job = worker;
-    }
-  }
-
-  BOOST_REQUIRE (!worker_with_2_jobs.empty());
-  BOOST_REQUIRE (!worker_with_1_job.empty());
-
-  // the worker with 1 job finishes his job
-  const std::set<sdpa::job_id_t> worker_jobs
-    (get_jobs_assigned_to_worker (worker_with_1_job, old_assignment));
-  BOOST_REQUIRE_EQUAL (worker_jobs.size(), 1);
-
-  _scheduler.start_pending_jobs
-    ( [] ( sdpa::daemon::WorkerSet const&
-         , sdpa::daemon::Implementation const&
-         , sdpa::job_id_t const&
-         , std::function<fhg::com::p2p::address_t (sdpa::worker_id_t const&)>
-         )
-      {}
-    );
-
-  _scheduler.release_reservation (*worker_jobs.begin());
-
-  request_scheduling();
-
-  auto const assignment (get_current_assignment());
-
-  // the worker which just finished the job should steal from the worker with 2 jobs
-  // in the end, all workers should have exactly one job assigned
-  BOOST_REQUIRE_EQUAL (n_jobs_assigned_to_worker (worker_with_2_jobs, assignment), 1);
-  BOOST_REQUIRE_EQUAL (n_jobs_assigned_to_worker (worker_with_1_job, assignment), 1);
-}
-
-BOOST_FIXTURE_TEST_CASE
-  ( cannot_steal_from_a_different_equivalence_class
-  , fixture_add_new_workers
-  )
-{
-  const unsigned int n_workers (2);
-  constexpr unsigned int n_jobs (n_workers + 1);
-
-  const sdpa::worker_id_t worker_0
-    (add_new_workers ({"A", "B"}, 1).at (0));
-
-  const sdpa::worker_id_t worker_1
-    (add_new_workers ({"A", "C"}, 1).at (0));
-
-  std::vector<sdpa::job_id_t> jobs;
-  add_new_jobs (jobs, std::string ("A"), n_jobs);
-
-  BOOST_REQUIRE_EQUAL (get_workers_with_assigned_jobs (jobs).size(), n_workers);
-
-  auto const old_assignment (get_current_assignment());
-
-  const unsigned int n_assigned_jobs_worker_0
-    (n_jobs_assigned_to_worker (worker_0, old_assignment));
-  BOOST_REQUIRE (n_assigned_jobs_worker_0 == 1 || n_assigned_jobs_worker_0 == 2);
-
-  const unsigned int n_assigned_jobs_worker_1
-    (n_jobs_assigned_to_worker (worker_1, old_assignment));
-  BOOST_REQUIRE (n_assigned_jobs_worker_1 == 1 || n_assigned_jobs_worker_1 == 2);
-
-  const sdpa::worker_id_t worker_with_1_job
-    {(n_assigned_jobs_worker_0 == 1) ? worker_0 : worker_1};
-  const sdpa::worker_id_t worker_with_2_jobs
-    {(n_assigned_jobs_worker_0 == 2) ? worker_0 : worker_1};
-
-  const std::set<sdpa::job_id_t> worker_jobs
-    (get_jobs_assigned_to_worker (worker_with_1_job, old_assignment));
-  BOOST_REQUIRE_EQUAL (worker_jobs.size(), 1);
-
-  _scheduler.start_pending_jobs
-    ( [] ( sdpa::daemon::WorkerSet const&
-         , sdpa::daemon::Implementation
-         , sdpa::job_id_t const&
-         , std::function<fhg::com::p2p::address_t (sdpa::worker_id_t const&)>
-         )
-      {}
-    );
-
-  // the worker with 1 job finishes the assigned job
-  BOOST_REQUIRE (!worker_jobs.empty());
-  _scheduler.release_reservation (*worker_jobs.begin());
-
-  request_scheduling();
-
-  auto const assignment (get_current_assignment());
-
-  // the worker with 1 job and which just finished the job should NOT steal from
-  // the worker with 2 jobs, as they are in different equivalence classes
-  BOOST_REQUIRE_EQUAL (n_jobs_assigned_to_worker (worker_with_2_jobs, assignment), 2);
-  BOOST_REQUIRE_EQUAL (n_jobs_assigned_to_worker (worker_with_1_job, assignment), 0);
-}
-
-BOOST_FIXTURE_TEST_CASE
-  ( the_worker_that_is_longer_idle_gets_first_the_job
-  , fixture_add_new_workers
-  )
-{
-  const unsigned int n_workers (3);
-  constexpr unsigned int n_jobs (n_workers + 1);
-
-  const std::vector<sdpa::worker_id_t> workers
-    (add_new_workers ({"A"}, 3));
-
-  std::vector<sdpa::job_id_t> jobs;
-  add_new_jobs (jobs, std::string ("A"), n_jobs);
-
-  BOOST_REQUIRE_EQUAL (get_workers_with_assigned_jobs (jobs).size(), n_workers);
-
-  sdpa::worker_id_t worker_with_2_jobs;
-  auto const assignment (get_current_assignment());
-
-  // only one worker should have 2 jobs assigned, the others just 1
-  for (sdpa::worker_id_t const& worker : workers)
-  {
-    const unsigned int n_worker_jobs
-      (n_jobs_assigned_to_worker (worker, assignment));
-    BOOST_REQUIRE (n_worker_jobs == 1 || n_worker_jobs == 2);
-    if (n_worker_jobs == 2)
-    {
-      // remember the worker with 2 jobs
-      worker_with_2_jobs = worker;
-    }
-  }
-
-  // take the workers with 1 job in reverse order
-  std::vector<sdpa::worker_id_t> workers_with_1_job;
-  std::copy_if ( workers.rbegin()
-               , workers.rend()
-               , back_inserter (workers_with_1_job)
-               , [&worker_with_2_jobs] (sdpa::worker_id_t const& worker)
-                 {
-                   return worker != worker_with_2_jobs;
-                 }
-               );
-
-  BOOST_REQUIRE_EQUAL (workers_with_1_job.size(), 2);
-
-  // The workers having 1 job finish their job successively, after some delay.
-  // The finishing order is inverse to the starting order.
-  const std::chrono::milliseconds delay(20);
-  for (sdpa::worker_id_t const& worker : workers_with_1_job)
-  {
-    const std::set<sdpa::job_id_t> worker_jobs
-      (get_jobs_assigned_to_worker (worker, assignment));
-    BOOST_REQUIRE_EQUAL (worker_jobs.size(), 1);
-
-    _scheduler.start_pending_jobs
-      ( [] ( sdpa::daemon::WorkerSet const&
-           , sdpa::daemon::Implementation const&
-           , sdpa::job_id_t const&
-           , std::function<fhg::com::p2p::address_t (sdpa::worker_id_t const&)>
-           )
-        {}
-      );
-
-    _scheduler.release_reservation (*worker_jobs.begin());
-
-    std::this_thread::sleep_for (delay);
-  }
-
-  {
-    auto const assignment_ (get_current_assignment());
-
-    // One worker has 2 pending jobs, 2 workers are idle, no jobs to assign are left
-    BOOST_REQUIRE_EQUAL (n_jobs_assigned_to_worker (worker_with_2_jobs, assignment_), 2);
-    BOOST_REQUIRE_EQUAL (n_jobs_assigned_to_worker (*workers_with_1_job.begin(), assignment_), 0);
-    BOOST_REQUIRE_EQUAL (n_jobs_assigned_to_worker (*std::next (workers_with_1_job.begin()), assignment_), 0);
-  }
-
-  request_scheduling();
-
-  {
-    auto const assignment_ (get_current_assignment());
-
-    // One of the idle workers should steal the only job to steal from
-    // the worker with 2 pending jobs.
-    BOOST_REQUIRE_EQUAL (n_jobs_assigned_to_worker (worker_with_2_jobs, assignment_), 1);
-    BOOST_REQUIRE_EQUAL
-      ( n_jobs_assigned_to_worker (*workers_with_1_job.begin(), assignment_)
-      + n_jobs_assigned_to_worker (*std::next (workers_with_1_job.begin()), assignment_)
-      , 1
-      );
-  }
-}
-
-BOOST_FIXTURE_TEST_CASE
   (request_arbitrary_number_of_workers, fixture_add_new_workers)
 {
   unsigned int const n_workers (1000);
@@ -2092,8 +1290,7 @@ BOOST_FIXTURE_TEST_CASE
     add_and_enqueue_job (require ("A", n_req_workers));
   }
 
-  _scheduler.assign_jobs_to_workers();
-  _scheduler.steal_work();
+  _scheduler->assign_jobs_to_workers();
 
   auto assignment (get_current_assignment());
 
@@ -2111,7 +1308,7 @@ BOOST_FIXTURE_TEST_CASE
   while (!assignment.empty())
   {
     std::set<sdpa::job_id_t> jobs_started;
-    _scheduler.start_pending_jobs
+    _scheduler->start_pending_jobs
       ( [this, &started_jobs, &jobs_started]
            ( sdpa::daemon::WorkerSet const& assigned_workers
            , sdpa::daemon::Implementation const& implementation
@@ -2141,74 +1338,16 @@ BOOST_FIXTURE_TEST_CASE
       // finish an arbitrary number of running jobs
       for (std::size_t k (0); k < n_finishing_jobs; k++)
       {
-        _scheduler.release_reservation (*running_jobs.begin());
+        _scheduler->release_reservation (*running_jobs.begin());
         running_jobs.erase (running_jobs.begin());
       }
     }
 
-    _scheduler.assign_jobs_to_workers();
-    _scheduler.steal_work();
+    _scheduler->assign_jobs_to_workers();
     assignment = get_current_assignment();
   }
 
   BOOST_REQUIRE_EQUAL (started_jobs, n_jobs);
-}
-
-BOOST_FIXTURE_TEST_CASE
-  ( assign_jobs_respecting_preferences
-  , fixture_scheduler_and_requirements_and_preferences
-  )
-{
-  fhg::util::testing::unique_random<std::string> capability_pool;
-
-  std::string const common_capability (capability_pool());
-
-  Preferences const preferences
-    { capability_pool()
-    , capability_pool()
-    , capability_pool()
-    };
-
-  sdpa::worker_id_t const worker_0 (utils::random_peer_name());
-  auto const first_pref (preferences.begin());
-
-  add_worker ( _scheduler
-             , worker_0
-             , { sdpa::Capability (common_capability)
-               , sdpa::Capability (*first_pref)
-               }
-             );
-
-  sdpa::worker_id_t const worker_1 (utils::random_peer_name());
-  add_worker ( _scheduler
-             , worker_1
-             , { sdpa::Capability (common_capability)
-               , sdpa::Capability (*std::next (first_pref, 1))
-               }
-             );
-
-  sdpa::worker_id_t const worker_2 (utils::random_peer_name());
-  add_worker ( _scheduler
-             , worker_2
-             , { sdpa::Capability (common_capability)
-               , sdpa::Capability (*std::next (first_pref, 2))
-               }
-             );
-
-  auto const job0
-    (add_and_enqueue_job (require (common_capability, preferences)));
-  _scheduler.assign_jobs_to_workers();
-  require_worker_and_implementation (job0, worker_0, *first_pref);
-
-  auto const job1
-    (add_and_enqueue_job (require (common_capability, preferences)));
-  _scheduler.assign_jobs_to_workers();
-  require_worker_and_implementation (job1, worker_1, *std::next (first_pref, 1));
-
-  auto const job2
-    (add_and_enqueue_job (require (common_capability, preferences)));
-  _scheduler.assign_jobs_to_workers();
-  require_worker_and_implementation (job2, worker_2, *std::next (first_pref, 2));
 }
 
 BOOST_FIXTURE_TEST_CASE
@@ -2239,484 +1378,8 @@ BOOST_FIXTURE_TEST_CASE
     );
 
   fhg::util::testing::require_exception
-     ( [this] { _scheduler.assign_jobs_to_workers(); }
+     ( [this] { _scheduler->assign_jobs_to_workers(); }
      ,  std::runtime_error
          ("Coallocation with preferences is forbidden!")
      );
-
-}
-
-BOOST_FIXTURE_TEST_CASE
-  ( check_worker_is_served_the_corresponding_implementation
-  , fixture_scheduler_and_requirements_and_preferences
-  )
-{
-  fhg::util::testing::unique_random<std::string> capability_pool;
-
-  std::string const capability (capability_pool());
-
-  Preferences const preferences
-    { capability_pool()
-    , capability_pool()
-    , capability_pool()
-    };
-
-  auto const first_pref (preferences.begin());
-
-  sdpa::worker_id_t const worker
-    (fhg::util::testing::random_identifier_without_leading_underscore());
-
-  auto const preference_id
-    (fhg::util::testing::random<std::size_t>{} (preferences.size() - 1));
-  auto const preference (*fhg::util::next (first_pref, preference_id));
-
-  add_worker ( _scheduler
-             , worker
-             , { sdpa::Capability (capability)
-               , sdpa::Capability (preference)
-               }
-             );
-
-  auto const job (add_and_enqueue_job (require (capability, preferences)));
-
-  _scheduler.assign_jobs_to_workers();
-
-  require_worker_and_implementation (job, worker, preference);
-
-  _scheduler.start_pending_jobs
-    ( [this]
-      ( sdpa::daemon::WorkerSet const& assigned_workers
-      , sdpa::daemon::Implementation const& implementation
-      , sdpa::job_id_t const& job_
-      , std::function<fhg::com::p2p::address_t (sdpa::worker_id_t const&)>
-      )
-      {
-        BOOST_REQUIRE_EQUAL
-          (_requirements_and_preferences.at (job_).numWorkers(), 1);
-
-        BOOST_REQUIRE_EQUAL (this->workers (job_), assigned_workers);
-        BOOST_REQUIRE_EQUAL (this->implementation (job_), implementation);
-      }
-    );
-}
-
-BOOST_FIXTURE_TEST_CASE
-  ( tasks_preferring_cpus_are_assigned_cpu_workers_first
-  , fixture_add_new_workers
-  )
-{
-  const std::string CPU ("CPU");
-  const std::string GPU ("GPU");
-
-  fhg::util::testing::unique_random<std::string> capability_pool;
-
-  std::string const common_capability (capability_pool());
-
-  auto const num_cpu_workers
-    (fhg::util::testing::random<unsigned int>{} (20, 10));
-
-  std::vector<sdpa::worker_id_t> const cpu_workers
-    (add_new_workers ( {common_capability, CPU}
-                     , num_cpu_workers
-                     )
-    );
-
-  std::set<sdpa::worker_id_t> expected_cpu_workers
-    (cpu_workers.begin(), cpu_workers.end());
-
-  auto const num_cpu_gpu_workers
-    (fhg::util::testing::random<unsigned int>{} (20, 10));
-
-  std::vector<sdpa::worker_id_t> const cpu_gpu_workers
-    (add_new_workers ( {common_capability, CPU, GPU}
-                     , num_cpu_gpu_workers
-                     )
-    );
-
-  std::set<sdpa::worker_id_t> expected_cpu_gpu_workers
-    (cpu_gpu_workers.begin(), cpu_gpu_workers.end());
-
-  std::vector<std::string> targets (num_cpu_workers, CPU);
-  targets.insert (targets.end(), num_cpu_gpu_workers, GPU);
-
-  BOOST_REQUIRE_EQUAL (targets.size(), num_cpu_workers + num_cpu_gpu_workers);
-
-  std::shuffle ( targets.begin()
-               , targets.end()
-               , fhg::util::testing::detail::GLOBAL_random_engine()
-               );
-
-  for (auto const& target : targets)
-  {
-    auto const job
-      (add_and_enqueue_job (require (common_capability, {target})));
-
-    request_scheduling();
-
-    require_worker_and_implementation
-      ( job
-      , target == CPU ? expected_cpu_workers : expected_cpu_gpu_workers
-      , target
-      );
-  }
-
-  BOOST_REQUIRE (expected_cpu_workers.empty());
-  BOOST_REQUIRE (expected_cpu_gpu_workers.empty());
-}
-
-BOOST_FIXTURE_TEST_CASE
-  (random_workers_are_assigned_valid_implementations, fixture_add_new_workers)
-{
-  fhg::util::testing::unique_random<std::string> capability_pool;
-
-  std::string const common_capability (capability_pool());
-
-  Preferences preferences;
-
-  unsigned int total_num_workers (0);
-  auto const num_preferences
-    (fhg::util::testing::random<unsigned int>{} (12, 3));
-
-  std::map<std::string, std::set<sdpa::worker_id_t>> workers_by_preference;
-
-  for (unsigned int i (0); i < num_preferences; ++i)
-  {
-    std::string const preference (capability_pool());
-    preferences.emplace_back (preference);
-
-    auto const num_workers
-      (fhg::util::testing::random<unsigned int>{} (200, 100));
-    total_num_workers += num_workers;
-
-    std::vector<sdpa::worker_id_t> const workers
-      (add_new_workers ( {common_capability, preference}
-                       , num_workers
-                       )
-      );
-
-    workers_by_preference.emplace
-      (preference, std::set<sdpa::worker_id_t> (workers.begin(), workers.end()));
-  }
-
-  auto const num_tasks
-    ( fhg::util::testing::random<unsigned int>{}
-        (3 * total_num_workers - 1, 2 * total_num_workers)
-    );
-
-  for (unsigned int i {0}; i < num_tasks; i++)
-  {
-    auto const task
-      (add_and_enqueue_job (require (common_capability, preferences)));
-
-    request_scheduling();
-
-    auto const assignment (get_current_assignment());
-    BOOST_REQUIRE (assignment.count (task));
-
-    auto const assigned_implementation (*implementation (task));
-    BOOST_REQUIRE (implementation (task));
-    BOOST_REQUIRE
-      ( std::find (preferences.begin(), preferences.end(), assigned_implementation)
-      != preferences.end()
-      );
-
-    auto const assigned_worker (*workers (task).begin());
-
-    BOOST_REQUIRE
-      (workers_by_preference.at (assigned_implementation).count (assigned_worker));
-  }
-}
-
-BOOST_FIXTURE_TEST_CASE
-  ( tasks_without_preferences_are_assigned_to_workers_with_least_capabilities
-  , fixture_scheduler_and_requirements_and_preferences
-  )
-{
-  fhg::util::testing::unique_random<std::string> capability_pool;
-
-  std::string const preference (capability_pool());
-
-  sdpa::worker_id_t const worker_0 (utils::random_peer_name());
-  add_worker (_scheduler
-             , worker_0
-             , {sdpa::Capability (preference)}
-             );
-
-  sdpa::worker_id_t const worker_1 (utils::random_peer_name());
-  add_worker (_scheduler
-             , worker_1
-             , {}
-             );
-
-  auto const job_0
-    ( add_and_enqueue_job
-        ( Requirements_and_preferences
-            ( {}
-            , we::type::schedule_data (1)
-            , null_transfer_cost
-            , computational_cost
-            , 0
-            , {}
-            )
-        )
-    );
-
-  _scheduler.assign_jobs_to_workers();
-
-  require_worker_and_implementation (job_0, worker_1, ::boost::none);
-
-  auto const job_1
-    ( add_and_enqueue_job
-        ( Requirements_and_preferences
-            ( {}
-            , we::type::schedule_data (1)
-            , null_transfer_cost
-            , computational_cost
-            , 0
-            , {preference}
-            )
-        )
-    );
-
-  _scheduler.assign_jobs_to_workers();
-
-  require_worker_and_implementation (job_1, worker_0, preference);
-
-  auto const job_2
-    ( add_and_enqueue_job
-        ( Requirements_and_preferences
-            ( {}
-            , we::type::schedule_data (1)
-            , null_transfer_cost
-            , computational_cost
-            , 0
-            , {preference}
-            )
-        )
-    );
-
-   _scheduler.assign_jobs_to_workers();
-
-   require_worker_and_implementation (job_2, worker_0, preference);
-
-   auto const job_3
-     ( add_and_enqueue_job
-         ( Requirements_and_preferences
-             ( {}
-             , we::type::schedule_data (1)
-             , null_transfer_cost
-             , computational_cost
-             , 0
-             , {}
-             )
-         )
-     );
-
-    _scheduler.assign_jobs_to_workers();
-
-    require_worker_and_implementation (job_3, worker_1, ::boost::none);
-}
-
-BOOST_FIXTURE_TEST_CASE
-  ( no_assignment_to_workers_with_no_capability_among_preferences_is_allowed
-  , fixture_scheduler_and_requirements_and_preferences
-  )
-{
-  fhg::util::testing::unique_random<std::string> capability_pool;
-
-  sdpa::worker_id_t const worker (utils::random_peer_name());
-  add_worker
-    (_scheduler, worker, {sdpa::Capability (capability_pool())});
-
-  auto const job
-    ( add_and_enqueue_job
-        ( Requirements_and_preferences
-            ( {}
-            , we::type::schedule_data (1)
-            , null_transfer_cost
-            , computational_cost
-            , 0
-            , {capability_pool(), capability_pool(), capability_pool()}
-            )
-        )
-    );
-
-  _scheduler.assign_jobs_to_workers();
-
-  auto const assignment (get_current_assignment());
-  BOOST_REQUIRE_EQUAL (assignment.count (job), 0);
-}
-
-BOOST_FIXTURE_TEST_CASE
-  ( stealing_tasks_from_the_same_class
-  , fixture_scheduler_and_requirements_and_preferences
-  )
-{
-  fhg::util::testing::unique_random<std::string> capability_pool;
-
-  std::string const common_capability (capability_pool());
-
-  auto const num_workers (fhg::util::testing::random<std::size_t>{} (100, 10));
-  auto const num_tasks
-    ( fhg::util::testing::random<std::size_t>{} (10, 2)
-    * num_workers
-    );
-
-  std::vector<sdpa::worker_id_t> test_workers;
-
-  for (unsigned int k (0); k < num_workers; ++k)
-  {
-    sdpa::worker_id_t const worker (utils::random_peer_name());
-    test_workers.emplace_back (worker);
-    add_worker ( _scheduler
-               , worker
-               , {sdpa::Capability (common_capability)}
-               );
-  }
-
-  for (unsigned int i {0}; i < num_tasks; ++i)
-  {
-    add_and_enqueue_job (require (common_capability));
-  }
-
-  _scheduler.assign_jobs_to_workers();
-
-  finish_tasks_and_steal_work_when_idle_workers_exist
-    (num_tasks, test_workers);
-}
-
-BOOST_FIXTURE_TEST_CASE
-  ( stealing_tasks_with_preferences
-  , fixture_scheduler_and_requirements_and_preferences
-  )
-{
-  fhg::util::testing::unique_random<std::string> capability_pool;
-
-  std::string const common_capability (capability_pool());
-
-  unsigned int const num_preferences (10);
-  Preferences preferences;
-  std::generate_n ( std::back_inserter (preferences)
-                  , num_preferences
-                  , capability_pool
-                  );
-
-  auto const num_workers (fhg::util::testing::random<std::size_t>{} (100, 10));
-  auto const num_tasks
-     ( fhg::util::testing::random<std::size_t>{} (10, 2)
-     * num_workers
-     );
-
-  std::vector<sdpa::worker_id_t> test_workers;
-
-  for (unsigned int k (0); k < num_workers; ++k)
-  {
-    sdpa::worker_id_t const worker (utils::random_peer_name());
-    test_workers.emplace_back (worker);
-    add_worker ( _scheduler
-               , worker
-               , { sdpa::Capability (common_capability)
-                 , sdpa::Capability
-                     (*fhg::util::next (preferences.begin(), k % preferences.size()))
-                 }
-               );
-  }
-
-  for (unsigned int i {0}; i < num_tasks; ++i)
-  {
-    add_and_enqueue_job (require (common_capability, preferences));
-  }
-
-  _scheduler.assign_jobs_to_workers();
-
-  finish_tasks_and_steal_work_when_idle_workers_exist
-     (num_tasks, test_workers);
-}
-
-BOOST_FIXTURE_TEST_CASE
-  ( worker_finishing_tasks_without_preferences_earlier_steals_work
-  , fixture_scheduler_and_requirements_and_preferences
-  )
-{
-  fhg::util::testing::unique_random<std::string> capability_pool;
-
-  std::string const common_capability (capability_pool());
-
-  auto const num_workers (fhg::util::testing::random<std::size_t>{} (100, 10));
-  auto const num_tasks
-    ( fhg::util::testing::random<std::size_t>{} (10, 2)
-    * num_workers
-    );
-
-  std::vector<sdpa::worker_id_t> test_workers;
-  for (unsigned int k (0); k < num_workers; ++k)
-  {
-    sdpa::worker_id_t const worker (utils::random_peer_name());
-    test_workers.emplace_back (worker);
-    add_worker
-      (_scheduler, worker, {sdpa::Capability (common_capability)});
-  }
-
-  for (unsigned int i {0}; i < num_tasks; ++i)
-  {
-    add_and_enqueue_job (require (common_capability));
-  }
-
-  _scheduler.assign_jobs_to_workers();
-
-  auto const worker_finishing_tasks_earlier
-    (test_workers[fhg::util::testing::random<std::size_t>{} (num_workers - 1)]);
-
-  finish_tasks_assigned_to_worker_and_steal_work
-    (worker_finishing_tasks_earlier, test_workers);
-}
-
-BOOST_FIXTURE_TEST_CASE
-  ( worker_finishing_tasks_with_preferences_earlier_steals_work
-  , fixture_scheduler_and_requirements_and_preferences
-  )
-{
-  fhg::util::testing::unique_random<std::string> capability_pool;
-
-  std::string const common_capability (capability_pool());
-
-  unsigned int const num_preferences (10);
-  Preferences preferences;
-  std::generate_n ( std::back_inserter (preferences)
-                  , num_preferences
-                  , capability_pool
-                  );
-
-  auto const num_workers (fhg::util::testing::random<std::size_t>{} (100, 10));
-  auto const num_tasks
-     ( fhg::util::testing::random<std::size_t>{} (10, 2)
-     * num_workers
-     );
-
-  std::vector<sdpa::worker_id_t> test_workers;
-  for (unsigned int k (0); k < num_workers; ++k)
-  {
-    sdpa::worker_id_t const worker (utils::random_peer_name());
-    test_workers.emplace_back (worker);
-    add_worker ( _scheduler
-               , worker
-               , { sdpa::Capability (common_capability)
-                 , sdpa::Capability
-                     (*fhg::util::next (preferences.begin(), k % preferences.size()))
-                 }
-               );
-  }
-
-  for (unsigned int i {0}; i < num_tasks; ++i)
-  {
-    add_and_enqueue_job (require (common_capability, preferences));
-  }
-
-  _scheduler.assign_jobs_to_workers();
-
-  auto const worker_finishing_tasks_earlier
-    (test_workers[fhg::util::testing::random<std::size_t>{} (num_workers - 1)]);
-
-  finish_tasks_assigned_to_worker_and_steal_work
-    (worker_finishing_tasks_earlier, test_workers);
 }

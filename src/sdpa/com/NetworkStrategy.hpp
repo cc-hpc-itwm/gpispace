@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -49,15 +49,15 @@ namespace sdpa
                       , fhg::com::Certificates const& certificates
                       );
       ~NetworkStrategy();
+      NetworkStrategy (NetworkStrategy const&) = delete;
+      NetworkStrategy (NetworkStrategy&&) = delete;
+      NetworkStrategy& operator= (NetworkStrategy const&) = delete;
+      NetworkStrategy& operator= (NetworkStrategy&&) = delete;
 
       template<typename Event, typename... Args>
         void perform (fhg::com::p2p::address_t const& address, Args&&... args);
 
       ::boost::asio::ip::tcp::endpoint local_endpoint() const;
-
-      //! \todo remove TESTING_ONLY method
-      fhg::com::p2p::address_t connect_to_TESTING_ONLY
-        (fhg::com::host_t const&, fhg::com::port_t const&);
 
     private:
       sdpa::events::Codec _codec;
@@ -71,6 +71,8 @@ namespace sdpa
 
       bool m_shutting_down;
 
+      // there is a TESTING_ONLY class that adds behavior
+    protected:
       fhg::com::peer_t _peer;
     };
   }

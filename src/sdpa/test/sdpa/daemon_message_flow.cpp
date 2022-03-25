@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <sdpa/com/NetworkStrategy.hpp>
+#include <sdpa/test/NetworkStrategy.hpp>
 #include <sdpa/daemon/Agent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 #include <sdpa/events/JobFinishedAckEvent.hpp>
@@ -76,7 +76,7 @@ namespace
 
   private:
     std::promise<sdpa::events::SDPAEvent::Ptr> _event_received;
-    sdpa::com::NetworkStrategy _network;
+    sdpa::test::NetworkStrategy _network;
   };
 }
 

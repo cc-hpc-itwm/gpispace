@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@ namespace sdpa
     private:
       friend class WorkerManager;
 
-      explicit Worker ( capabilities_set_t const&
+      explicit Worker ( Capabilities const&
                       , unsigned long allocated_shared_memory_size
                       , std::string const& hostname
                       );
@@ -57,13 +57,15 @@ namespace sdpa
       // methods related to reservation
       bool isReserved() const;
 
+      boost::optional<job_id_t> get_next_pending_job_to_submit();
+
       // cost
       double cost_assigned_jobs() const;
       double _cost_assigned_jobs;
 
       bool stealing_allowed() const;
 
-      capabilities_set_t _capabilities;
+      Capabilities _capabilities;
       fhg::util::refcounted_set<std::string> capability_names_;
       unsigned long const _allocated_shared_memory_size;
       std::string const _hostname;

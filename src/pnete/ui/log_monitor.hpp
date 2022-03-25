@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -89,6 +89,10 @@ class log_monitor : public QWidget
 public:
   log_monitor();
   ~log_monitor() override;
+  log_monitor (log_monitor const&) = delete;
+  log_monitor (log_monitor&&) = delete;
+  log_monitor& operator= (log_monitor const&) = delete;
+  log_monitor& operator= (log_monitor&&) = delete;
 
 public slots:
   void toggle_follow_logging (bool);

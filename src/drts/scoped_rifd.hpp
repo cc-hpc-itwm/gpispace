@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -26,7 +26,6 @@
 #include <drts/pimpl.hpp>
 
 #include <boost/filesystem/path.hpp>
-#include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/variables_map.hpp>
@@ -93,13 +92,18 @@ namespace gspc
     };
   }
 
-  class GSPC_DLLEXPORT rifds : ::boost::noncopyable
+  class GSPC_DLLEXPORT rifds
   {
   public:
     rifds ( rifd::strategy const&
           , rifd::port const&
           , installation const&
           );
+
+    rifds (rifds const&) = delete;
+    rifds (rifds&&) = delete;
+    rifds& operator= (rifds const&) = delete;
+    rifds& operator= (rifds&&) = delete;
 
     std::vector<std::string> hosts() const;
     std::pair< rifd_entry_points
@@ -166,6 +170,10 @@ namespace gspc
                 , std::ostream& = std::cout
                 );
     ~scoped_rifd(); //! \todo report the failed entry points
+    scoped_rifd (scoped_rifd const&) = delete;
+    scoped_rifd (scoped_rifd&&) = delete;
+    scoped_rifd& operator= (scoped_rifd const&) = delete;
+    scoped_rifd& operator= (scoped_rifd&&) = delete;
     rifd_entry_point entry_point() const;
   };
 
@@ -180,5 +188,9 @@ namespace gspc
                  , std::ostream& = std::cout
                  );
     ~scoped_rifds(); //! \todo report the failed entry points
+    scoped_rifds (scoped_rifds const&) = delete;
+    scoped_rifds (scoped_rifds&&) = delete;
+    scoped_rifds& operator= (scoped_rifds const&) = delete;
+    scoped_rifds& operator= (scoped_rifds&&) = delete;
   };
 }

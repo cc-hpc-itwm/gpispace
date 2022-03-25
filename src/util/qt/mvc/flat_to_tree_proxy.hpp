@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -46,6 +46,10 @@ namespace fhg
                              );
           //! \note Exists for ~unique_ptr<fwd-decl-type>() only.
           ~flat_to_tree_proxy() override;
+          flat_to_tree_proxy (flat_to_tree_proxy const&) = delete;
+          flat_to_tree_proxy (flat_to_tree_proxy&&) = delete;
+          flat_to_tree_proxy& operator= (flat_to_tree_proxy const&) = delete;
+          flat_to_tree_proxy& operator= (flat_to_tree_proxy&&) = delete;
 
           virtual int rowCount (QModelIndex const& = QModelIndex()) const override;
           virtual int columnCount (QModelIndex const& = QModelIndex()) const override;

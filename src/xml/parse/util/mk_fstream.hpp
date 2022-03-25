@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -43,6 +43,11 @@ namespace xml
           = [](std::string const& l, std::string const& r) { return l == r; }
           );
         ~check_no_change_fstream();
+        check_no_change_fstream (check_no_change_fstream const&) = delete;
+        check_no_change_fstream (check_no_change_fstream&&) = delete;
+        check_no_change_fstream& operator= (check_no_change_fstream const&) = delete;
+        check_no_change_fstream& operator= (check_no_change_fstream&&) = delete;
+
         void commit() const;
 
         template<typename T> check_no_change_fstream& operator<< (T const& x)

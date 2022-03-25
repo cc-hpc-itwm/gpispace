@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -25,6 +25,10 @@ namespace libssh2
   {
     context();
     ~context();
+    context (context const&) = delete;
+    context (context&&) = delete;
+    context& operator= (context const&) = delete;
+    context& operator= (context&&) = delete;
 
   private:
     // Some targets link both, this file and Boost.Asio's SSL. This

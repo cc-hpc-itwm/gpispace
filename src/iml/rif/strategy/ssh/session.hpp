@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -40,6 +40,10 @@ namespace libssh2
             );
 
     ~session();
+    session (session const&) = delete;
+    session (session&&) = delete;
+    session& operator= (session const&) = delete;
+    session& operator= (session&&) = delete;
 
     struct execute_return_type
     {

@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -38,6 +38,7 @@
 
 #include <boost/format.hpp>
 
+#include <algorithm>
 #include <list>
 #include <stdexcept>
 #include <unordered_set>
@@ -1006,6 +1007,42 @@ namespace we
       }
 
       return *this;
+    }
+
+    bool net_type::might_use_virtual_memory() const
+    {
+      return std::any_of
+        ( _tmap.begin()
+        , _tmap.end()
+        , [&] (auto const& id_and_transition)
+          {
+            return id_and_transition.second.might_use_virtual_memory();
+          }
+        );
+    }
+
+    bool net_type::might_have_tasks_requiring_multiple_workers() const
+    {
+      return std::any_of
+        ( _tmap.begin()
+        , _tmap.end()
+        , [&] (auto const& id_and_transition)
+          {
+            return id_and_transition.second.might_have_tasks_requiring_multiple_workers();
+          }
+        );
+    }
+
+    bool net_type::might_use_modules_with_multiple_implementations() const
+    {
+      return std::any_of
+        ( _tmap.begin()
+        , _tmap.end()
+        , [&] (auto const& id_and_transition)
+          {
+            return id_and_transition.second.might_use_modules_with_multiple_implementations();
+          }
+        );
     }
 
     // cross_type

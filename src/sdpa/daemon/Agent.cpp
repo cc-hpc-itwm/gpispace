@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,8 +14,17 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+#include <drts/scheduler_types.hpp>
+#include <drts/private/scheduler_types_implementation.hpp>
 #include <sdpa/daemon/Agent.hpp>
+#include <sdpa/daemon/Implementation.hpp>
 #include <sdpa/daemon/Job.hpp>
+#include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
+#include <sdpa/daemon/scheduler/CostAwareWithWorkStealingStrategy.hpp>
+#include <sdpa/daemon/scheduler/GreedyScheduler.hpp>
+#include <sdpa/daemon/scheduler/SingleAllocationScheduler.hpp>
+#include <sdpa/daemon/WorkerSet.hpp>
+#include <sdpa/daemon/WorkerManager.hpp>
 #include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 #include <sdpa/events/SubscribeAckEvent.hpp>
@@ -23,8 +32,10 @@
 #include <sdpa/events/put_token.hpp>
 #include <sdpa/events/workflow_response.hpp>
 #include <sdpa/id_generator.hpp>
+#include <sdpa/types.hpp>
 
 #include <fhg/util/macros.hpp>
+#include <util-generic/cxx17/holds_alternative.hpp>
 #include <util-generic/fallthrough.hpp>
 #include <util-generic/functor_visitor.hpp>
 #include <util-generic/hostname.hpp>
@@ -79,7 +90,42 @@ namespace sdpa
 
         return fhg::com::port_t {0};
       }
-    }
+      auto const choose_scheduler =
+        []
+        ( gspc::scheduler::Type const& scheduler_type
+        , std::function<Requirements_and_preferences (sdpa::job_id_t const&)>
+            requirements_and_preferences
+        , WorkerManager& worker_manager
+        , std::mt19937& random_engine
+        ) -> std::unique_ptr<sdpa::daemon::Scheduler>
+        {
+          using namespace gspc::scheduler;
+          return fhg::util::visit<std::unique_ptr<sdpa::daemon::Scheduler>>
+            ( scheduler_type
+            , [&] (CostAwareWithWorkStealing const& scheduler)
+              {
+                return fhg::util::visit<std::unique_ptr<sdpa::daemon::Scheduler>>
+                  ( scheduler._->constructed_from()
+                  , [&] (CostAwareWithWorkStealing::SingleAllocation)
+                    {
+                      return std::make_unique<SingleAllocationScheduler>
+                        (requirements_and_preferences, worker_manager);
+                    }
+                  , [&] (CostAwareWithWorkStealing::CoallocationWithBackfilling)
+                    {
+                      return std::make_unique<CoallocationScheduler>
+                        (requirements_and_preferences, worker_manager);
+                    }
+                  );
+              }
+            , [&] (GreedyWithWorkStealing const&)
+              {
+                return std::make_unique<GreedyScheduler>
+                  (requirements_and_preferences, worker_manager, random_engine);
+              }
+            );
+        };
+      }
 
     Agent::Agent
         ( std::string name
@@ -93,11 +139,7 @@ namespace sdpa
       , _job_map_mutex()
       , job_map_()
       , _cleanup_job_map_on_dtor_helper (job_map_)
-      , _scheduler ( [this] (job_id_t job_id)
-                     {
-                       return findJob (job_id)->requirements_and_preferences();
-                     }
-                   )
+      , _worker_manager()
       , _cancel_mutex()
       , _scheduling_requested_guard()
       , _scheduling_requested_condition()
@@ -420,6 +462,30 @@ namespace sdpa
       }
     }
 
+    bool Agent::workflow_submission_is_allowed (Job const* pJob)
+    {
+      if (job_map_.size() <= 1)
+      {
+        _scheduler.reset();
+        return true;
+      }
+
+      auto it = std::find_if
+        ( job_map_.begin()
+        , job_map_.end()
+        , [&] (auto const& job) -> bool
+          {
+            return fhg::util::cxx17::holds_alternative<job_source_client>
+                     (job.second->source())
+              && ( to_string (job.second->scheduler_type().get())
+                 != to_string (pJob->scheduler_type().get())
+                 );
+          }
+        );
+
+      return (it == job_map_.end());
+    }
+
     void Agent::handleSubmitJobEvent
       ( fhg::com::p2p::address_t const& source
       , const events::SubmitJobEvent* evt
@@ -446,6 +512,36 @@ namespace sdpa
 
       parent_proxy (this, source).submit_job_ack (job_id);
 
+      std::lock_guard<std::mutex> const _ (_job_map_mutex);
+      if (!workflow_submission_is_allowed (pJob))
+      {
+        std::string error
+          ( "Submission not allowed! Running in parallel multiple workflows "
+            "requiring different scheduler types is not allowed."
+          );
+
+        _log_emitter.emit ( "Error: " + error
+                          , fhg::logging::legacy::category_level_error
+                          );
+
+        job_failed (pJob, error);
+
+        return;
+      }
+
+      if (!_scheduler)
+      {
+        _scheduler = choose_scheduler
+          ( pJob->scheduler_type().get()
+          , [this] (job_id_t job_id)
+            {
+              return findJob (job_id)->requirements_and_preferences();
+            }
+          , _worker_manager
+          , _random_extraction_engine
+          );
+      }
+
       // the jobs submitted by clients are always handled by the workflow engine
       if (workflow_engine_submit (job_id, pJob))
       {
@@ -459,7 +555,9 @@ namespace sdpa
       )
     try
     {
-      _scheduler.add_worker
+      std::lock_guard<std::mutex> const lock_worker_man (_worker_manager._mutex);
+
+      _worker_manager.add_worker
         ( event->name()
         , event->capabilities()
         , event->allocated_shared_memory_size()
@@ -495,21 +593,29 @@ namespace sdpa
           unsubscribe (source);
 
           std::lock_guard<std::mutex> const _ (_cancel_mutex);
-          _scheduler.reschedule_worker_jobs_and_maybe_remove_worker
-            ( source
-            , [this] (job_id_t const& job)
-              {
-                return findJob (job);
-              }
-            , [this] (fhg::com::p2p::address_t const& addr, job_id_t const& job)
-              {
-                return child_proxy ( this
-                                   , addr
-                                   ).cancel_job (job);
-              }
-            );
 
-          request_scheduling();
+          if (_scheduler)
+          {
+            _scheduler->reschedule_worker_jobs_and_maybe_remove_worker
+              ( source
+              , [this] (job_id_t const& job)
+                {
+                  return findJob (job);
+                }
+              , [this] (fhg::com::p2p::address_t const& addr, job_id_t const& job)
+                {
+                  return child_proxy ( this
+                                     , addr
+                                     ).cancel_job (job);
+                }
+              , [this] (Job* job)
+                {
+                  job_failed (job, "Number of retries exceeded!");
+                }
+              );
+
+            request_scheduling();
+          }
 
           break;
         }
@@ -541,7 +647,7 @@ namespace sdpa
       {
         addJob (job_id, std::move (activity), job_source_wfe(), job_handler_worker());
 
-        _scheduler.submit_job (job_id);
+        _scheduler->submit_job (job_id);
         request_scheduling();
       }
     }
@@ -578,7 +684,7 @@ namespace sdpa
 
       pJob->CancelJob();
 
-      if (!_scheduler.cancel_job_and_siblings
+      if (!_scheduler->cancel_job
             ( job_id
             , cancel_already_requested
             , [this, &job_id] (fhg::com::p2p::address_t const& addr)
@@ -589,9 +695,6 @@ namespace sdpa
          )
       {
         job_canceled (pJob);
-
-        _scheduler.release_reservation (job_id);
-        _scheduler.delete_job (job_id);
 
         if (!::boost::get<job_source_client> (&pJob->source()))
         {
@@ -659,10 +762,19 @@ namespace sdpa
       emit_gantt (pJob->id(), pJob->result(), NotificationEvent::STATE_CANCELED);
     }
 
-    void Agent::handle_job_termination (Job* job)
+    void Agent::handle_job_termination
+      ( fhg::com::p2p::address_t const& source
+      , Job* job
+      , terminal_state const& state
+      )
     {
       auto const results
-        (_scheduler.get_aggregated_results_if_all_terminated (job->id()));
+        ( _scheduler->store_individual_result_and_get_final_if_group_finished
+            ( source
+            , job->id()
+            , state
+            )
+        );
 
       if (!results)
       {
@@ -670,10 +782,19 @@ namespace sdpa
       }
 
       //! \note rescheduled: never tell workflow engine or modify state!
-      if ( _scheduler.reschedule_job_if_the_reservation_was_canceled
+      if ( _scheduler->reschedule_job_if_the_reservation_was_canceled
              (job->id(), job->getStatus())
          )
       {
+        if (job->check_and_inc_retry_counter())
+        {
+          _scheduler->submit_job (job->id());
+        }
+        else
+        {
+          job_failed (job, "Number of retries exceeded!");
+        }
+
         request_scheduling();
         return;
       }
@@ -707,7 +828,7 @@ namespace sdpa
         }
       }
 
-      _scheduler.release_reservation (job->id());
+      _scheduler->release_reservation (job->id());
       request_scheduling();
 
       if (::boost::get<job_source_wfe> (&job->source()))
@@ -721,13 +842,11 @@ namespace sdpa
       , events::JobFinishedEvent const* event
       )
     {
-      Job* const job
-        (require_job (event->job_id(), "job_finished for unknown job"));
-
-      _scheduler.store_result
-        (source, job->id(), JobFSM_::s_finished (event->result()));
-
-      handle_job_termination (job);
+      handle_job_termination
+        ( source
+        , require_job (event->job_id(), "job_finished for unknown job")
+        , JobFSM_::s_finished (event->result())
+        );
 
       child_proxy (this, source).job_finished_ack (event->job_id());
     }
@@ -737,13 +856,11 @@ namespace sdpa
       , events::JobFailedEvent const* event
       )
     {
-      Job* const job
-        (require_job (event->job_id(), "job_failed for unknown job"));
-
-      _scheduler.store_result
-        (source, job->id(), JobFSM_::s_failed (event->error_message()));
-
-      handle_job_termination (job);
+      handle_job_termination
+        ( source
+        , require_job (event->job_id(), "job_failed for unknown job")
+        , JobFSM_::s_failed (event->error_message())
+        );
 
       child_proxy (this, source).job_failed_ack (event->job_id());
     }
@@ -753,13 +870,11 @@ namespace sdpa
       , events::CancelJobAckEvent const* event
       )
     {
-      Job* const job
-        (require_job (event->job_id(), "cancel_job_ack for unknown job"));
-
-      _scheduler.store_result
-        (source, job->id(), JobFSM_::s_canceled());
-
-      handle_job_termination (job);
+      handle_job_termination
+        ( source
+        , require_job (event->job_id(), "cancel_job_ack for unknown job")
+        , JobFSM_::s_canceled()
+        );
     }
 
     void Agent::job_finished
@@ -963,7 +1078,7 @@ namespace sdpa
         return;
 
       ptrJob->Dispatch();
-      _scheduler.acknowledge_job_sent_to_worker (pEvent->job_id(), source);
+      _scheduler->acknowledge_job_sent_to_worker (pEvent->job_id(), source);
     }
 
     // respond to a worker that the JobFinishedEvent was received
@@ -1039,7 +1154,7 @@ namespace sdpa
           {
             _put_token_source.emplace (event->put_token_id(), source);
 
-            _scheduler.notify_submitted_or_acknowledged_workers
+            _scheduler->notify_submitted_or_acknowledged_workers
               ( job_id
               , [this, &job_id, &event] (fhg::com::p2p::address_t const& addr)
                 {
@@ -1127,7 +1242,7 @@ namespace sdpa
           {
             _workflow_response_source.emplace (event->workflow_response_id(), source);
 
-            _scheduler.notify_submitted_or_acknowledged_workers
+            _scheduler->notify_submitted_or_acknowledged_workers
               ( job_id
               , [this, &job_id, &event] (fhg::com::p2p::address_t const& addr)
                 {
@@ -1212,17 +1327,19 @@ namespace sdpa
 
         std::lock_guard<std::mutex> const _ (_cancel_mutex);
 
-        _scheduler.assign_jobs_to_workers();
-        _scheduler.steal_work();
-        _scheduler.start_pending_jobs
-          (std::bind ( &Agent::serveJob
-                     , this
-                     , std::placeholders::_1
-                     , std::placeholders::_2
-                     , std::placeholders::_3
-                     , std::placeholders::_4
-                     )
-          );
+        if (_scheduler)
+        {
+          _scheduler->assign_jobs_to_workers();
+          _scheduler->start_pending_jobs
+            (std::bind ( &Agent::serveJob
+                       , this
+                       , std::placeholders::_1
+                       , std::placeholders::_2
+                       , std::placeholders::_3
+                       , std::placeholders::_4
+                       )
+            );
+        }
       }
     }
 

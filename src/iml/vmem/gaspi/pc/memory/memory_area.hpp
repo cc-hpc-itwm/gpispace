@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,8 +17,6 @@
 #pragma once
 
 #include <iml/vmem/dtmmgr.hpp>
-
-#include <boost/noncopyable.hpp>
 
 #include <iml/AllocationHandle.hpp>
 #include <iml/MemoryLocation.hpp>
@@ -46,7 +44,7 @@ namespace gpi
     }
     namespace memory
     {
-      class area_t : ::boost::noncopyable
+      class area_t
       {
       public:
         // WORK HERE:
@@ -54,6 +52,10 @@ namespace gpi
         //    otherwise we endup calling pure virtual functions
         void pre_dtor();
         virtual ~area_t () = default;
+        area_t (area_t const&) = delete;
+        area_t (area_t&&) = delete;
+        area_t& operator= (area_t const&) = delete;
+        area_t& operator= (area_t&&) = delete;
 
         /* public interface the basic implementation is the same
            for all kinds of segments.

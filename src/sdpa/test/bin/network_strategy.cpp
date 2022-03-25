@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <sdpa/com/NetworkStrategy.hpp>
+#include <sdpa/test/NetworkStrategy.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 
 #include <testing/certificates_data.hpp>
@@ -79,7 +79,7 @@ BOOST_DATA_TEST_CASE (test_strategy, certificates_data, certificates)
 {
   wait_for_n_events_strategy counter (1);
 
-  sdpa::com::NetworkStrategy net
+  sdpa::test::NetworkStrategy net
     ( std::bind ( &wait_for_n_events_strategy::perform
                 , &counter
                 , std::placeholders::_1

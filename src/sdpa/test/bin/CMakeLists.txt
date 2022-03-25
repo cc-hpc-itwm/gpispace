@@ -1,5 +1,5 @@
 # This file is part of GPI-Space.
-# Copyright (C) 2021 Fraunhofer ITWM
+# Copyright (C) 2022 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@ fhg_add_test (NAME sdpa_network_strategy
             fhgcom
             test-utilities
             Boost::filesystem
+            PRIVATE GPISpace::SDPATestNetworkStrategy
 )
 
 fhg_add_test (NAME sdpa_job_states

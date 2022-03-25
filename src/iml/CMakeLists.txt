@@ -1,5 +1,5 @@
 # This file is part of GPI-Space.
-# Copyright (C) 2021 Fraunhofer ITWM
+# Copyright (C) 2022 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ find_boost (1.61 REQUIRED COMPONENTS
 # RPC: "found" via ${PROJECT_SOURCE_DIR}/src/
 
 # BeeGFS: "found" via ${PROJECT_SOURCE_DIR}/external/
-find_package (GASPI 1.3.1 REQUIRED)
+find_package (GASPI 1.3.2 REQUIRED)
 
 find_package (Libssh2 REQUIRED)
 find_package (OpenSSL REQUIRED)

@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -16,31 +16,17 @@
 
 #pragma once
 
-#include <util-generic/hostname.hpp>
-#include <util-generic/syscall.hpp>
-
-#include <boost/format.hpp>
-
+#include <string>
 #include <atomic>
 
-namespace sdpa {
+namespace sdpa
+{
   class id_generator
   {
   public:
-    std::string next()
-    {
-      return _prefix + std::to_string (_counter.fetch_add (1));
-    }
+    std::string next();
 
-    id_generator (std::string const& name)
-      : _counter()
-      , _prefix ( ( ::boost::format ("%1%.%2%.%3%.")
-                  % fhg::util::hostname()
-                  % name
-                  % fhg::util::syscall::getpid()
-                  ).str()
-                )
-    {}
+    id_generator (std::string const& name);
 
   private:
     std::atomic<std::size_t> _counter;

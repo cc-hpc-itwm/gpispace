@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,8 +15,6 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
-
-#include <boost/noncopyable.hpp>
 
 #include <iml/MemoryOffset.hpp>
 #include <iml/MemorySize.hpp>
@@ -51,13 +49,17 @@ namespace gpi
     {
       class shm_area_t;
 
-      class manager_t : ::boost::noncopyable
+      class manager_t
       {
       public:
         using area_ptr = area_ptr_t;
 
         manager_t (fhg::iml::vmem::gaspi_context&);
         ~manager_t ();
+        manager_t (manager_t const&) = delete;
+        manager_t (manager_t&&) = delete;
+        manager_t& operator= (manager_t const&) = delete;
+        manager_t& operator= (manager_t&&) = delete;
 
         void clear ();
 

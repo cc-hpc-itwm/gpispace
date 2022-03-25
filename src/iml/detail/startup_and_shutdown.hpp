@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -23,7 +23,6 @@
 #include <iml/rif/protocol.hpp>
 
 #include <boost/filesystem/path.hpp>
-#include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
 
 #include <chrono>
@@ -40,7 +39,7 @@ namespace iml
     };
 
     // \todo Move to RuntimeSystem.cpp.
-    struct RuntimeSystem::ProcessesStorage : ::boost::noncopyable
+    struct RuntimeSystem::ProcessesStorage
     {
       std::mutex _guard;
       std::unordered_map < rif::EntryPoint
@@ -52,6 +51,10 @@ namespace iml
       {}
 
       ~ProcessesStorage();
+      ProcessesStorage (ProcessesStorage const&) = delete;
+      ProcessesStorage (ProcessesStorage&&) = delete;
+      ProcessesStorage& operator= (ProcessesStorage const&) = delete;
+      ProcessesStorage& operator= (ProcessesStorage&&) = delete;
 
       void store (rif::EntryPoint const&, std::string const& name, pid_t);
       ::boost::optional<pid_t> pidof

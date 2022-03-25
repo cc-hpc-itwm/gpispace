@@ -1,5 +1,5 @@
 # This file is part of GPI-Space.
-# Copyright (C) 2021 Fraunhofer ITWM
+# Copyright (C) 2022 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@ if (BUILD_TESTING)
     TYPE STATIC
     NAMESPACE GPISpace
     SOURCES "utils.cpp"
-    LIBRARIES sdpa
+    LIBRARIES sdpa PUBLIC GPISpace::SDPATestNetworkStrategy
   )
 endif()
 
@@ -49,6 +49,14 @@ fhg_add_test (NAME sdpa_Coallocation
 
 fhg_add_test (NAME sdpa_CoallocationScheduler
   SOURCES CoallocationScheduler.cpp
+  USE_BOOST
+  LIBRARIES GPISpace::SDPATestUtilities
+            sdpa
+            test-utilities
+)
+
+fhg_add_test (NAME sdpa_Scheduler
+  SOURCES Scheduler.cpp
   USE_BOOST
   LIBRARIES GPISpace::SDPATestUtilities
             sdpa
@@ -90,8 +98,8 @@ fhg_add_test (NAME sdpa_RestartWorkersDummy
             test-utilities
 )
 
-fhg_add_test (NAME sdpa_Scheduler_no_preferences.performance
-  SOURCES Scheduler_no_preferences.performance.cpp
+fhg_add_test (NAME sdpa_Scheduler_single_allocation_no_preferences.performance
+  SOURCES Scheduler_single_allocation_no_preferences.performance.cpp
   USE_BOOST
   PERFORMANCE_TEST
   RUN_SERIAL
@@ -100,8 +108,28 @@ fhg_add_test (NAME sdpa_Scheduler_no_preferences.performance
             test-utilities
 )
 
-fhg_add_test (NAME sdpa_Scheduler_with_preferences.performance
-  SOURCES Scheduler_with_preferences.performance.cpp
+fhg_add_test (NAME sdpa_Scheduler_single_allocation_with_preferences.performance
+  SOURCES Scheduler_single_allocation_with_preferences.performance.cpp
+  USE_BOOST
+  PERFORMANCE_TEST
+  RUN_SERIAL
+  LIBRARIES GPISpace::SDPATestUtilities
+            sdpa
+            test-utilities
+)
+
+fhg_add_test (NAME sdpa_Scheduler_coallocation_no_preferences.performance
+  SOURCES Scheduler_coallocation_no_preferences.performance.cpp
+  USE_BOOST
+  PERFORMANCE_TEST
+  RUN_SERIAL
+  LIBRARIES GPISpace::SDPATestUtilities
+            sdpa
+            test-utilities
+)
+
+fhg_add_test (NAME sdpa_Scheduler_greedy_no_preferences.performance
+  SOURCES Scheduler_greedy_no_preferences.performance.cpp
   USE_BOOST
   PERFORMANCE_TEST
   RUN_SERIAL

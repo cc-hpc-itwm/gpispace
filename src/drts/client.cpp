@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -48,10 +48,6 @@ namespace gspc
   {}
   PIMPL_DTOR (workflow)
 
-  workflow::workflow (workflow&& other)
-    : _ (std::move (other._))
-  {}
-
   void workflow::set_wait_for_output()
   {
     _->_activity.set_wait_for_output();
@@ -60,6 +56,9 @@ namespace gspc
   {
     return _->_activity.to_string();
   }
+
+  workflow::workflow (workflow&&) = default;
+  workflow& workflow::operator= (workflow&&) = default;
 
   static_assert ( std::is_same<job_id_t, sdpa::job_id_t>::value
                 , "drts::job_id_t != sdpa::job_id_t"

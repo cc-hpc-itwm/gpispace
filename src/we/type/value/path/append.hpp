@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -34,6 +34,10 @@ namespace pnet
         public:
           append (std::list<std::string>&, std::string const&);
           ~append();
+          append (append const&) = delete;
+          append (append&&) = delete;
+          append& operator= (append const&) = delete;
+          append& operator= (append&&) = delete;
           operator std::list<std::string>&() const;
         private:
           std::list<std::string>& _path;

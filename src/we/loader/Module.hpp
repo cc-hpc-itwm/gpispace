@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -33,13 +33,19 @@ namespace we
   {
     struct RequireModuleUnloadsWithoutRest{};
 
-    class Module : public IModule, ::boost::noncopyable
+    class Module : public IModule
     {
     public:
       Module (::boost::filesystem::path const& path);
       Module ( RequireModuleUnloadsWithoutRest
              , ::boost::filesystem::path const& path
              );
+
+      ~Module() override = default;
+      Module (Module const&) = delete;
+      Module (Module&&) = delete;
+      Module& operator= (Module const&) = delete;
+      Module& operator= (Module&&) = delete;
 
       void call ( std::string const& f
                 , drts::worker::context *context

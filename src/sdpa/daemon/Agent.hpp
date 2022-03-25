@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,11 +15,15 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
-
+#include <drts/scheduler_types.hpp>
 #include <sdpa/capability.hpp>
 #include <sdpa/com/NetworkStrategy.hpp>
+#include <sdpa/daemon/Implementation.hpp>
+#include <sdpa/daemon/Job.hpp>
 #include <sdpa/daemon/NotificationEvent.hpp>
-#include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
+#include <sdpa/daemon/scheduler/Scheduler.hpp>
+#include <sdpa/daemon/WorkerManager.hpp>
+#include <sdpa/daemon/WorkerSet.hpp>
 #include <sdpa/events/CancelJobAckEvent.hpp>
 #include <sdpa/events/DeleteJobAckEvent.hpp>
 #include <sdpa/events/DeleteJobEvent.hpp>
@@ -70,7 +74,6 @@
 namespace sdpa {
   namespace daemon {
     class Agent final : public sdpa::events::EventHandler
-                      , ::boost::noncopyable
     {
     public:
       Agent ( std::string name
@@ -80,6 +83,10 @@ namespace sdpa {
             , fhg::com::Certificates const& certificates
             );
       virtual ~Agent() override = default;
+      Agent (Agent const&) = delete;
+      Agent (Agent&&) = delete;
+      Agent& operator= (Agent const&) = delete;
+      Agent& operator= (Agent&&) = delete;
 
       std::string const& name() const;
       ::boost::asio::ip::tcp::endpoint peer_local_endpoint() const;
@@ -100,7 +107,8 @@ namespace sdpa {
         , ::boost::variant<std::exception_ptr, pnet::type::value::value_type>
         );
 
-      void addCapability (capability_t const& cpb);
+      void addCapability (Capability const& cpb);
+      bool workflow_submission_is_allowed (Job const* pJob);
 
     private:
       // parents and subscribers
@@ -204,7 +212,8 @@ namespace sdpa {
       // workflow engine
       bool workflow_engine_submit (job_id_t, Job*);
 
-      void handle_job_termination (Job*);
+      void handle_job_termination
+        (fhg::com::p2p::address_t const&, Job*, terminal_state const&);
 
       void workflow_finished
         (we::layer::id_type const&, we::type::Activity const&);
@@ -281,10 +290,15 @@ namespace sdpa {
       {
         cleanup_job_map_on_dtor_helper (Agent::job_map_t&);
         ~cleanup_job_map_on_dtor_helper();
+        cleanup_job_map_on_dtor_helper (cleanup_job_map_on_dtor_helper const&) = delete;
+        cleanup_job_map_on_dtor_helper (cleanup_job_map_on_dtor_helper&&) = delete;
+        cleanup_job_map_on_dtor_helper& operator= (cleanup_job_map_on_dtor_helper const&) = delete;
+        cleanup_job_map_on_dtor_helper& operator= (cleanup_job_map_on_dtor_helper&&) = delete;
         Agent::job_map_t& _;
       } _cleanup_job_map_on_dtor_helper;
 
-      CoallocationScheduler _scheduler;
+      WorkerManager _worker_manager;
+      std::unique_ptr<Scheduler> _scheduler;
 
       std::mutex _cancel_mutex;
       std::mutex _scheduling_requested_guard;

@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -23,7 +23,6 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/strand.hpp>
 #include <boost/enable_shared_from_this.hpp>
-#include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/system/system_error.hpp>
@@ -67,8 +66,7 @@ namespace fhg
       {}
     };
 
-    class connection_t : private ::boost::noncopyable
-                       , public ::boost::enable_shared_from_this<connection_t>
+    class connection_t : public ::boost::enable_shared_from_this<connection_t>
     {
     public:
       typedef ::boost::shared_ptr<connection_t> ptr_t;
@@ -87,6 +85,10 @@ namespace fhg
         );
 
       ~connection_t ();
+      connection_t (connection_t const&) = delete;
+      connection_t (connection_t&&) = delete;
+      connection_t& operator= (connection_t const&) = delete;
+      connection_t& operator= (connection_t&&) = delete;
 
       ::boost::asio::ip::tcp::socket & socket();
 

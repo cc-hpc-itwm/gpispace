@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -16,7 +16,6 @@
 
 #pragma once
 
-#include <algorithm>
 #include <string>
 #include <set>
 
@@ -29,31 +28,20 @@ namespace sdpa
     Capability() = default;
     explicit Capability (std::string const&);
 
-    std::string name() const { return name_;}
+    std::string name() const;
 
     template <class Archive>
-    void serialize (Archive& ar, unsigned int)
-    {
-      ar & name_;
-      ar & uuid_;
-    }
+      void serialize (Archive&, unsigned int);
 
-    bool operator<(Capability const& b) const
-    {
-      return uuid_ < b.uuid_;
-    }
-
-    bool operator==(Capability const& b) const
-    {
-      return uuid_ == b.uuid_;
-    }
+    bool operator< (Capability const&) const;
+    bool operator== (Capability const&) const;
 
   private:
     std::string name_;
     std::string uuid_;
   };
 
-  typedef Capability capability_t;
-
-  typedef std::set<capability_t> capabilities_set_t;
+  using Capabilities = std::set<Capability>;
 }
+
+#include "capability.ipp"

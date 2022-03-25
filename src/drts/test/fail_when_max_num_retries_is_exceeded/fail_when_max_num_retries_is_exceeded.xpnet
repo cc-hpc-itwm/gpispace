@@ -1,0 +1,66 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2022 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun name="test_fail_when_max_num_retries_is_exceeded">
+  <properties name="fhg">
+    <properties name="drts">
+      <properties name="schedule">
+        <property key="maximum_number_of_retries">"1UL"</property>
+      </properties>
+    </properties>
+  </properties>
+  <in name="start" type="control"/>
+  <in name="host" type="string"/>
+  <in name="port" type="unsigned int"/>
+  <out name="done" type="control"/>
+  <module name="test_fail_when_max_num_retries_is_exceeded"
+          function="done test(host, port)"
+          pass_context="true">
+    <cinclude href="test_callback.hpp"/>
+    <cinclude href="util-rpc/remote_function.hpp"/>
+    <cinclude href="util-rpc/remote_tcp_endpoint.hpp"/>
+    <cinclude href="util-generic/scoped_boost_asio_io_service_with_threads.hpp"/>
+    <cinclude href="chrono"/>
+    <cinclude href="vector"/>
+    <cinclude href="thread"/>
+    <cxx flag="--std=c++11"/>
+    <code><![CDATA[
+
+      fhg::util::scoped_boost_asio_io_service_with_threads io_service (1);
+      fhg::rpc::remote_tcp_endpoint endpoint (io_service, host, port);
+      fhg::rpc::sync_remote_function<protocol::callback> {endpoint}();
+
+      std::this_thread::sleep_for (std::chrono::seconds (2));
+
+      try
+      {
+        _pnetc_context->execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FROM_WITHIN
+          ( []()
+            {
+              while (1) {}
+            }
+          )
+          ;
+      }
+      catch (drts::worker::context::cancelled const&)
+      {
+        return we::type::literal::control();
+      }
+
+      return we::type::literal::control();
+    ]]></code>
+  </module>
+</defun>

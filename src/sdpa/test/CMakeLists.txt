@@ -1,5 +1,5 @@
 # This file is part of GPI-Space.
-# Copyright (C) 2021 Fraunhofer ITWM
+# Copyright (C) 2022 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,6 +13,15 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+if (BUILD_TESTING)
+  gspc_add_library (NAME SDPATestNetworkStrategy
+    TYPE STATIC
+    NAMESPACE GPISpace
+    SOURCES "NetworkStrategy.cpp"
+    LIBRARIES PRIVATE fhgcom
+  )
+endif()
 
 fhg_add_test (NAME drts_should_handle_multiple_workflows_being_submitted_during_lifetime
   SOURCES drts_should_handle_multiple_workflows_being_submitted_during_lifetime.cpp

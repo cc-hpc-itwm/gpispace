@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -124,6 +124,9 @@ namespace we
       TokensOnPorts output() const;
 
       bool wait_for_output() const;
+      bool might_use_virtual_memory() const;
+      bool might_have_tasks_requiring_multiple_workers() const;
+      bool might_use_modules_with_multiple_implementations() const;
 
       void execute
         ( we::loader::loader&

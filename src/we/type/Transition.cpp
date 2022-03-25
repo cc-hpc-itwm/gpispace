@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@
 #include <boost/format.hpp>
 #include <boost/range/adaptor/map.hpp>
 
+#include <algorithm>
 #include <stdexcept>
 #include <string>
 
@@ -407,6 +408,13 @@ namespace we
 
       //! \note exploits internal knowledge of `we::activity_t`
       require_property_expression_has_type_if_present
+        ( {"fhg", "drts", "schedule", "maximum_number_of_retries"}
+        , expr::type::ULong()
+        , inference_context_before_eval()
+        );
+
+      //! \note exploits internal knowledge of `we::activity_t`
+      require_property_expression_has_type_if_present
         ( {"fhg", "drts", "require", "dynamic_requirement"}
         , expr::type::String()
         , inference_context_before_eval()
@@ -569,6 +577,84 @@ namespace we
         );
 
       return *this;
+    }
+
+    bool Transition::might_use_virtual_memory() const
+    {
+      return fhg::util::visit<bool>
+        ( data_
+        , [&] (we::type::net_type const& net)
+          {
+            return net.might_use_virtual_memory();
+          }
+        , [&] (ModuleCall const& module)
+          {
+            return !module.memory_buffers().empty();
+          }
+        , [&] (MultiModuleCall const& multimodule)
+          {
+            return std::any_of
+              ( multimodule.begin()
+              , multimodule.end()
+              , [&] (auto const& preference_and_module)
+                {
+                  return !preference_and_module.second.memory_buffers().empty();
+                }
+              );
+          }
+        , [&] (Expression const&)
+          {
+            return false;
+          }
+        );
+    }
+
+    bool Transition::might_have_tasks_requiring_multiple_workers() const
+    {
+      return fhg::util::visit<bool>
+        ( data_
+        , [&] (we::type::net_type const& net)
+          {
+            return net.might_have_tasks_requiring_multiple_workers();
+          }
+        , [&] (ModuleCall const&)
+          {
+            return !!prop_.get
+              ({"fhg", "drts", "schedule", "num_worker"});
+          }
+        , [&] (MultiModuleCall const&)
+          {
+            return !!prop_.get
+              ({"fhg", "drts", "schedule", "num_worker"});
+          }
+        , [&] (Expression const&)
+          {
+            return false;
+          }
+        );
+    }
+
+    bool Transition::might_use_modules_with_multiple_implementations() const
+    {
+      return fhg::util::visit<bool>
+        ( data_
+        , [&] (we::type::net_type const& net)
+          {
+            return net.might_use_modules_with_multiple_implementations();
+          }
+        , [&] (ModuleCall const&)
+          {
+            return false;
+          }
+        , [&] (MultiModuleCall const&)
+          {
+            return true;
+          }
+        , [&] (Expression const&)
+          {
+            return false;
+          }
+        );
     }
   }
 }

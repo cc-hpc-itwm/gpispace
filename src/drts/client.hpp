@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -26,7 +26,6 @@
 
 #include <we/type/value.hpp>
 
-#include <boost/noncopyable.hpp>
 #include <boost/filesystem/path.hpp>
 
 #include <map>
@@ -35,7 +34,7 @@
 
 namespace gspc
 {
-  class GSPC_DLLEXPORT workflow : ::boost::noncopyable
+  class GSPC_DLLEXPORT workflow
   {
   public:
     workflow (::boost::filesystem::path workflow);
@@ -44,7 +43,11 @@ namespace gspc
 
     std::string to_string() const;
 
+    workflow (workflow const&) = delete;
+    workflow& operator= (workflow const&) = delete;
+
     workflow (workflow&&);
+    workflow& operator= (workflow&&);
 
   private:
     friend class ::gspc::client;
@@ -52,7 +55,7 @@ namespace gspc
     PIMPL (workflow);
   };
 
-  class GSPC_DLLEXPORT client : ::boost::noncopyable
+  class GSPC_DLLEXPORT client
   {
   public:
     //! \note The drts client constructor/destructor is not thread-safe
@@ -60,6 +63,11 @@ namespace gspc
     // they are called concurrently, are extremly unlikely to happen in practice.
     client (scoped_runtime_system const&, Certificates const& = ::boost::none);
     explicit client (information_to_reattach const&, Certificates const& = ::boost::none);
+
+    client (client const&) = delete;
+    client (client&&) = delete;
+    client& operator= (client const&) = delete;
+    client& operator= (client&&) = delete;
 
     job_id_t submit
       ( workflow const&

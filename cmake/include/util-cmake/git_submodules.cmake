@@ -1,7 +1,7 @@
 #! Assuming \c CMAKE_SOURCE_DIR is a git repository, list all git
 
 # This file is part of GPI-Space.
-# Copyright (C) 2021 Fraunhofer ITWM
+# Copyright (C) 2022 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

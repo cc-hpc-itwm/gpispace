@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -25,6 +25,25 @@
 #include <util-generic/testing/random/string.hpp>
 #include <util-generic/testing/random.hpp>
 
+#include <boost/optional/optional_io.hpp>
+#include <boost/test/data/test_case.hpp>
+#include <boost/test/data/monomorphic.hpp>
+
+namespace
+{
+  using F = std::function<::boost::optional<unsigned long> (we::type::Activity)>;
+  std::vector<F> expected_property_values
+  { [] (we::type::Activity activity)
+    {
+      return activity.requirements_and_preferences (nullptr).numWorkers();
+    }
+  , [] (we::type::Activity activity)
+    {
+      return activity.requirements_and_preferences (nullptr).maximum_number_of_retries();
+    }
+  };
+}
+
 BOOST_AUTO_TEST_CASE (get_schedule_data_not_set)
 {
   we::type::Transition const transition
@@ -39,14 +58,22 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_not_set)
   we::type::Activity activity (transition);
 
   BOOST_REQUIRE (activity.requirements_and_preferences (nullptr).numWorkers());
+  BOOST_REQUIRE
+    (!activity.requirements_and_preferences (nullptr).maximum_number_of_retries());
 }
 
-BOOST_AUTO_TEST_CASE (get_schedule_data_constant_string)
+BOOST_DATA_TEST_CASE
+  ( get_schedule_data_constant_string
+  , ::boost::unit_test::data::make ({"num_worker", "maximum_number_of_retries"})
+  ^ ::boost::unit_test::data::xrange (2)
+  , property_name
+  , k
+  )
 {
   unsigned long const value {fhg::util::testing::random<unsigned long>()()};
 
   we::type::property::type properties;
-  properties.set ( {"fhg", "drts", "schedule", "num_worker"}
+  properties.set ( {"fhg", "drts", "schedule", property_name}
                  , std::to_string (value) + "UL"
                  );
 
@@ -61,16 +88,22 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_constant_string)
     );
   we::type::Activity activity (transition);
 
-  BOOST_REQUIRE_EQUAL (activity.requirements_and_preferences (nullptr).numWorkers(), value);
+  BOOST_REQUIRE_EQUAL (expected_property_values[k] (activity), value);
 }
 
-BOOST_AUTO_TEST_CASE (get_schedule_data_expression_simple)
+BOOST_DATA_TEST_CASE
+  ( get_schedule_data_expression_simple
+  , ::boost::unit_test::data::make ({"num_worker", "maximum_number_of_retries"})
+  ^ ::boost::unit_test::data::xrange (2)
+  , property_name
+  , k
+  )
 {
   std::string const port_name (fhg::util::testing::random_identifier());
   auto const value (fhg::util::testing::random<unsigned long>{}());
 
   we::type::property::type properties;
-  properties.set ( {"fhg", "drts", "schedule", "num_worker"}
+  properties.set ( {"fhg", "drts", "schedule", property_name}
                  , "${" + port_name + "}"
                  );
 
@@ -96,7 +129,7 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_expression_simple)
   we::type::Activity activity (transition);
   activity.add_input (port_name, value);
 
-  BOOST_REQUIRE_EQUAL (activity.requirements_and_preferences (nullptr).numWorkers(), value);
+  BOOST_REQUIRE_EQUAL (expected_property_values[k] (activity), value);
 }
 
 struct random_identifier

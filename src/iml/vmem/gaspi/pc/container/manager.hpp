@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -21,8 +21,6 @@
 #include <iml/vmem/gaspi/pc/memory/manager.hpp>
 #include <iml/vmem/gaspi/pc/type/impl_types.hpp>
 
-#include <boost/noncopyable.hpp>
-
 #include <atomic>
 #include <map>
 #include <memory>
@@ -37,7 +35,7 @@ namespace gpi
   {
     namespace container
     {
-      class manager_t : ::boost::noncopyable
+      class manager_t
       {
       public:
         manager_t ( std::string const& p
@@ -46,6 +44,10 @@ namespace gpi
                   );
 
         ~manager_t ();
+        manager_t (manager_t const&) = delete;
+        manager_t (manager_t&&) = delete;
+        manager_t& operator= (manager_t const&) = delete;
+        manager_t& operator= (manager_t&&) = delete;
 
       private:
         void listener_thread_main();

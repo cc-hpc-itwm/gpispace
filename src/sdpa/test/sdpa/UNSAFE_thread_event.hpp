@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -64,7 +64,7 @@ namespace fhg
       //! => 3 gets 1 or 2, 4 blocks
       //!
       template <typename T>
-        class UNSAFE_event : ::boost::noncopyable
+        class UNSAFE_event
       {
         T _event;
         bool _signalled {false};
@@ -91,6 +91,13 @@ namespace fhg
           _signalled = true;
           _condition.notify_one();
         }
+
+        UNSAFE_event() = default;
+        ~UNSAFE_event() = default;
+        UNSAFE_event (UNSAFE_event const&) = delete;
+        UNSAFE_event (UNSAFE_event&&) = delete;
+        UNSAFE_event& operator= (UNSAFE_event const&) = delete;
+        UNSAFE_event& operator= (UNSAFE_event&&) = delete;
       };
     }
   }

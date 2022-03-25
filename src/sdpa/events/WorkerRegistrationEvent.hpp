@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ namespace sdpa
 
       WorkerRegistrationEvent
         ( std::string const& name
-        , capabilities_set_t const& cpbset
+        , Capabilities const& cpbset
         , unsigned long allocated_shared_memory_size
         , std::string const& hostname
         )
@@ -47,7 +47,7 @@ namespace sdpa
       {
         return _name;
       }
-      capabilities_set_t const& capabilities() const
+      Capabilities const& capabilities() const
       {
         return cpbset_;
       }
@@ -70,7 +70,7 @@ namespace sdpa
 
     private:
       std::string _name;
-      capabilities_set_t cpbset_;
+      Capabilities cpbset_;
       unsigned long allocated_shared_memory_size_;
       std::string hostname_;
     };
@@ -88,7 +88,7 @@ namespace sdpa
     {
       LOAD_MGMTEVENT_CONSTRUCT_DATA();
       LOAD_FROM_ARCHIVE (std::string, name);
-      LOAD_FROM_ARCHIVE (capabilities_set_t, cpbset);
+      LOAD_FROM_ARCHIVE (Capabilities, cpbset);
       LOAD_FROM_ARCHIVE (unsigned long, allocated_shared_memory_size);
       LOAD_FROM_ARCHIVE (std::string, hostname);
 

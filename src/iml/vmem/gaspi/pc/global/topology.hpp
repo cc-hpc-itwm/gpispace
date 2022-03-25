@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -33,8 +33,6 @@
 
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 
-#include <boost/noncopyable.hpp>
-
 #include <memory>
 #include <mutex>
 #include <list>
@@ -45,8 +43,7 @@ namespace gpi
   {
     namespace global
     {
-      class topology_t : ::boost::noncopyable
-                       , public itopology_t
+      class topology_t : public itopology_t
       {
       public:
         topology_t ( memory::manager_t& memory_manager
@@ -54,6 +51,11 @@ namespace gpi
                    , std::unique_ptr<fhg::rpc::service_tcp_provider_with_deferred_dispatcher>
                    );
 
+        ~topology_t() override = default;
+        topology_t (topology_t const&) = delete;
+        topology_t (topology_t&&) = delete;
+        topology_t& operator= (topology_t const&) = delete;
+        topology_t& operator= (topology_t&&) = delete;
 
         virtual void alloc ( iml::SegmentHandle segment
                            , iml::AllocationHandle

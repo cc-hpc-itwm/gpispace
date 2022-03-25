@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ namespace sdpa
       }
     }
 
-    Worker::Worker ( capabilities_set_t const& capabilities
+    Worker::Worker ( Capabilities const& capabilities
                    , unsigned long allocated_shared_memory_size
                    , std::string const& hostname
                    )
@@ -50,7 +50,7 @@ namespace sdpa
       , _last_time_idle (now())
       , reserved_ (false)
     {
-      for (capability_t const& capability : capabilities)
+      for (Capability const& capability : capabilities)
       {
         capability_names_.emplace (capability.name());
       }
@@ -133,6 +133,12 @@ namespace sdpa
       return ( (has_pending_jobs() && has_running_jobs())
             || (pending_.size() > 1)
              );
+    }
+
+    boost::optional<job_id_t> Worker::get_next_pending_job_to_submit()
+    {
+      return boost::make_optional<job_id_t>
+        (has_pending_jobs() && !has_running_jobs(), *pending_.cbegin());
     }
   }
 }

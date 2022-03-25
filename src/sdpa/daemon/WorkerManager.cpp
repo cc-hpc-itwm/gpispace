@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 
 #include <fhgcom/address.hpp>
 
+#include <util-generic/functor_visitor.hpp>
 #include <util-generic/make_optional.hpp>
 
 #include <boost/range/adaptor/filtered.hpp>
@@ -65,7 +66,7 @@ namespace sdpa
     }
 
     void WorkerManager::add_worker ( worker_id_t const& workerId
-                                   , capabilities_set_t const& cpbSet
+                                   , Capabilities const& cpbSet
                                    , unsigned long allocated_shared_memory_size
                                    , std::string const& hostname
                                    , fhg::com::p2p::address_t const& address
@@ -91,8 +92,6 @@ namespace sdpa
         ._stealing_allowed_classes.emplace (result.first->second.capability_names_);
 
       _classes_and_worker_ids[equiv_class].emplace (workerId);
-
-      _num_free_workers++;
     }
 
     void WorkerManager::delete_worker (worker_id_t const& workerId)
@@ -122,8 +121,6 @@ namespace sdpa
 
       worker_map_.erase (worker);
       worker_connections_.left.erase (workerId);
-
-      _num_free_workers--;
     }
 
     void WorkerManager::assign_job_to_worker
@@ -168,8 +165,7 @@ namespace sdpa
       equivalence_class.inc_running_jobs (1);
 
       equivalence_class._idle_workers.erase (worker->first);
-
-      _num_free_workers--;
+      equivalence_class._num_free_workers--;
     }
 
     void WorkerManager::acknowledge_job_sent_to_worker ( job_id_t const& job_id
@@ -208,6 +204,7 @@ namespace sdpa
         {
           worker->second.delete_submitted_job (job_id, cost);
           equivalence_class.dec_running_jobs (1);
+          equivalence_class._num_free_workers++;
         }
 
         if ( !worker->second.has_running_jobs()
@@ -216,8 +213,6 @@ namespace sdpa
         {
           equivalence_class._idle_workers.emplace (worker->first);
         }
-
-        _num_free_workers++;
       }
     }
 
@@ -238,46 +233,47 @@ namespace sdpa
     }
 
     WorkerManager::WorkerEquivalenceClass::WorkerEquivalenceClass()
-      : _n_pending_jobs (0)
-      , _n_running_jobs (0)
+      : _num_pending_jobs (0)
+      , _num_running_jobs (0)
+      , _num_free_workers (0)
     {}
 
     void WorkerManager::WorkerEquivalenceClass::inc_pending_jobs (unsigned int k)
     {
-      _n_pending_jobs += k;
+      _num_pending_jobs += k;
     }
 
     void WorkerManager::WorkerEquivalenceClass::dec_pending_jobs (unsigned int k)
     {
-      fhg_assert ( _n_pending_jobs >= k
+      fhg_assert ( _num_pending_jobs >= k
                  , "The number of pending jobs of a group of workers cannot be a negative number"
                  );
 
-      _n_pending_jobs -= k;
+      _num_pending_jobs -= k;
     }
 
     void WorkerManager::WorkerEquivalenceClass::inc_running_jobs (unsigned int k)
     {
-      _n_running_jobs += k;
+      _num_running_jobs += k;
     }
 
     void WorkerManager::WorkerEquivalenceClass::dec_running_jobs (unsigned int k)
     {
-      fhg_assert ( _n_running_jobs >= k
+      fhg_assert ( _num_running_jobs >= k
                  , "The number of running jobs of a group of workers cannot be a negative number"
                  );
 
-      _n_running_jobs -= k;
+      _num_running_jobs -= k;
     }
 
-    unsigned int WorkerManager::WorkerEquivalenceClass::n_pending_jobs() const
+    unsigned int WorkerManager::WorkerEquivalenceClass::num_pending_jobs() const
     {
-      return _n_pending_jobs;
+      return _num_pending_jobs;
     }
 
-    unsigned int WorkerManager::WorkerEquivalenceClass::n_running_jobs() const
+    unsigned int WorkerManager::WorkerEquivalenceClass::num_running_jobs() const
     {
-      return _n_running_jobs;
+      return _num_running_jobs;
     }
 
     void WorkerManager::WorkerEquivalenceClass::add_worker_entry
@@ -288,15 +284,27 @@ namespace sdpa
                        + worker->second.acknowledged_.size()
                        );
       _idle_workers.emplace (worker->first);
+      _num_free_workers++;
     }
 
     void WorkerManager::WorkerEquivalenceClass::remove_worker_entry
       (worker_iterator worker)
     {
       dec_pending_jobs (worker->second.pending_.size());
-      dec_running_jobs ( worker->second.submitted_.size()
-                       + worker->second.acknowledged_.size()
-                       );
+      auto const num_running_jobs
+        ( worker->second.submitted_.size()
+        + worker->second.acknowledged_.size()
+        );
+
+      if (num_running_jobs != 0)
+      {
+        dec_running_jobs (num_running_jobs);
+      }
+      else
+      {
+        _num_free_workers--;
+      }
+
       _idle_workers.erase (worker->first);
     }
 
@@ -325,11 +333,13 @@ namespace sdpa
     }
 
     void WorkerManager::steal_work
-      (std::function<scheduler::Reservation* (job_id_t const&)> reservation)
+      ( CostModel cost_model
+      , std::function<scheduler::Reservation* (job_id_t const&)> reservation
+      )
     {
       for (auto const& weqc : worker_equiv_classes_)
       {
-        if (weqc.second.n_pending_jobs() == 0)
+        if (weqc.second.num_pending_jobs() == 0)
         {
           continue;
         }
@@ -349,20 +359,41 @@ namespace sdpa
           continue;
         }
 
-        std::function<double (job_id_t const& job_id)> const cost
-          { [&reservation] (job_id_t const& job_id)
+        auto const cost
+          ( [&] (job_id_t const& job_id)
             {
-              return reservation (job_id)->cost();
+              return fhg::util::visit<double>
+                ( cost_model
+                , [&] (UsingCosts)
+                  {
+                    return reservation (job_id)->cost();
+                  }
+                , [&] (NotUsingCosts)
+                  {
+                    return 0.0;
+                  }
+                );
             }
-          };
+          );
 
-        std::function<bool (worker_iterator const&, worker_iterator const&)> const
-          comp { [] (worker_iterator const& lhs, worker_iterator const& rhs)
-                 {
-                   return lhs->second.cost_assigned_jobs()
-                     < rhs->second.cost_assigned_jobs();
-                 }
-               };
+        auto const comp
+          ( [&] (worker_iterator const& lhs, worker_iterator const& rhs)
+            {
+              return fhg::util::visit<bool>
+                ( cost_model
+                , [&] (UsingCosts)
+                  {
+                    return lhs->second.cost_assigned_jobs()
+                      < rhs->second.cost_assigned_jobs();
+                  }
+                , [&] (NotUsingCosts)
+                  {
+                    return lhs->second.pending_.size()
+                      < rhs->second.pending_.size();
+                  }
+                );
+            }
+          );
 
         std::priority_queue < worker_iterator
                             , std::vector<worker_iterator>
@@ -387,17 +418,29 @@ namespace sdpa
           worker_iterator const& thief (worker_map_.find (*thieves.begin()));
           Worker& richest_worker (richest->second);
 
-          auto it_job (std::max_element ( richest_worker.pending_.begin()
-                                        , richest_worker.pending_.end()
-                                        , [&reservation] ( job_id_t const& r
-                                                         , job_id_t const& l
-                                                         )
-                                          {
-                                            return reservation (r)->cost()
-                                              < reservation (l)->cost();
-                                          }
-                                        )
+          auto it_job
+            ( fhg::util::visit<decltype (richest_worker.pending_)::iterator>
+                ( cost_model
+                , [&] (UsingCosts)
+                  {
+                    return std::max_element
+                      ( richest_worker.pending_.begin()
+                      , richest_worker.pending_.end()
+                      , [&reservation] ( job_id_t const& r
+                                       , job_id_t const& l
+                                       )
+                        {
+                          return reservation (r)->cost()
+                            < reservation (l)->cost();
+                        }
                       );
+                  }
+                , [&] (NotUsingCosts)
+                  {
+                    return richest_worker.pending_.begin();
+                  }
+                )
+              );
 
           fhg_assert (it_job != richest_worker.pending_.end());
 
@@ -425,8 +468,9 @@ namespace sdpa
                 }
               );
 
-            assign_job_to_worker (*it_job, thief, cost (*it_job), preferences);
-            delete_job_from_worker (*it_job, richest, cost (*it_job));
+            auto const job_cost (cost (*it_job));
+            assign_job_to_worker (*it_job, thief, job_cost, preferences);
+            delete_job_from_worker (*it_job, richest, job_cost);
 
             to_steal_from.pop();
 
@@ -441,9 +485,10 @@ namespace sdpa
       }
     }
 
-    unsigned long WorkerManager::num_free_workers() const
+    unsigned long WorkerManager::num_free_workers
+      (std::set<std::string> const& cls) const
     {
-      return _num_free_workers;
+      return worker_equiv_classes_.at (cls)._num_free_workers;
     }
 
     bool WorkerManager::all_free (std::set<worker_id_t> const& workers) const
@@ -508,6 +553,30 @@ namespace sdpa
       WorkerManager::classes_and_workers() const
     {
       return _classes_and_worker_ids;
+    }
+
+    boost::optional<job_id_t> WorkerManager::get_next_worker_pending_job_to_submit
+      (worker_id_t const& worker_id)
+    {
+      auto const next_pending_job_to_submit
+        (worker_map_.at (worker_id).get_next_pending_job_to_submit());
+
+      if (next_pending_job_to_submit)
+      {
+        submit_job_to_worker (*next_pending_job_to_submit, worker_id);
+      }
+
+      return next_pending_job_to_submit;
+    }
+
+    unsigned long WorkerManager::num_pending_jobs (std::set<std::string> const& cls)
+    {
+      return worker_equiv_classes_.at (cls).num_pending_jobs();
+    }
+
+    unsigned long WorkerManager::num_running_jobs (std::set<std::string> const& cls)
+    {
+      return worker_equiv_classes_.at (cls).num_running_jobs();
     }
   }
 }

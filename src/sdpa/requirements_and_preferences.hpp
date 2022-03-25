@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -21,12 +21,8 @@
 #include <we/type/Transition.hpp>
 
 #include <functional>
-#include <iterator>
 #include <list>
-#include <stdexcept>
 #include <string>
-#include <unordered_set>
-#include <vector>
 
 const std::function<double (std::string const&)>
   null_transfer_cost = [](std::string const&) {return 0.0;};
@@ -45,30 +41,16 @@ public:
       , double estimated_computational_cost
       , unsigned long shared_memory_amount_required
       , Preferences preferences
-      )
-    : _requirements (requirements)
-    , _scheduleData (schedule_data)
-    , _transfer_cost (transfer_cost)
-    , _estimated_computational_cost (estimated_computational_cost)
-    , _shared_memory_amount_required (shared_memory_amount_required)
-  {
-    if ( std::unordered_set<std::string>
-           (std::begin (preferences), std::end (preferences)).size()
-       != preferences.size()
-       )
-    {
-      throw std::runtime_error ("the preferences must be distinct!");
-    }
+      );
 
-    _preferences.swap (preferences);
-  }
+  unsigned long numWorkers() const;
+  ::boost::optional<unsigned long> maximum_number_of_retries() const;
+  std::list<we::type::Requirement> const& requirements() const;
+  std::function<double (std::string const&)> transfer_cost() const;
+  double computational_cost() const;
+  unsigned long shared_memory_amount_required() const;
+  Preferences preferences() const;
 
-  unsigned long numWorkers() const {return _scheduleData.num_worker().get_value_or(1);}
-  std::list<we::type::Requirement> const& requirements() const {return _requirements;}
-  const std::function<double (std::string const&)> transfer_cost() const {return _transfer_cost;}
-  double computational_cost() const {return _estimated_computational_cost;}
-  unsigned long shared_memory_amount_required() const {return _shared_memory_amount_required;}
-  Preferences preferences() const { return _preferences; }
 private:
   std::list<we::type::Requirement> _requirements;
   we::type::schedule_data _scheduleData;

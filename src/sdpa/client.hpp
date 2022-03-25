@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -28,13 +28,10 @@
 
 #include <util-generic/threadsafe_queue.hpp>
 
-#include <boost/noncopyable.hpp>
-#include <boost/optional.hpp>
-#include <boost/system/error_code.hpp>
-
 #include <memory>
 #include <mutex>
 #include <string>
+#include <unordered_map>
 
 namespace sdpa
 {
@@ -45,7 +42,7 @@ namespace sdpa
       std::string error_message;
     };
 
-    class Client : ::boost::noncopyable
+    class Client
     {
     public:
       Client ( fhg::com::host_t const& top_level_agent_host
@@ -54,6 +51,10 @@ namespace sdpa
              , fhg::com::Certificates const& certificates
              );
       ~Client();
+      Client (Client const&) = delete;
+      Client (Client&&) = delete;
+      Client& operator= (Client const&) = delete;
+      Client& operator= (Client&&) = delete;
 
       job_id_t submitJob (we::type::Activity);
       void cancelJob (job_id_t const&);

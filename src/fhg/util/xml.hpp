@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -55,6 +55,10 @@ namespace fhg
       public:
         xmlstream (std::ostream& s);
         ~xmlstream();
+        xmlstream (xmlstream const&) = delete;
+        xmlstream (xmlstream&&) = delete;
+        xmlstream& operator= (xmlstream const&) = delete;
+        xmlstream& operator= (xmlstream&&) = delete;
 
         void open (std::string const& tag);
         void close();

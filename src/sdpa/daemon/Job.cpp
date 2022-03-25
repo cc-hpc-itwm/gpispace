@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,7 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+#include <drts/scheduler_types.hpp>
+#include <drts/private/scheduler_types_implementation.hpp>
+#include <sdpa/daemon/GetSchedulerType.hpp>
 #include <sdpa/daemon/Job.hpp>
+
+#include <util-generic/make_optional.hpp>
 
 namespace sdpa
 {
@@ -31,6 +36,12 @@ namespace sdpa
       , _source (std::move (source))
       , _handler (std::move (handler))
       , _requirements_and_preferences (std::move (requirements_and_preferences))
+      , _scheduler_type
+          ( FHG_UTIL_MAKE_OPTIONAL
+              ( !!::boost::get<job_source_client> (&source)
+              , get_scheduler_type (_activity)
+              )
+          )
       , m_error_message()
       , result_()
     {
@@ -48,6 +59,11 @@ namespace sdpa
     Requirements_and_preferences Job::requirements_and_preferences() const
     {
       return _requirements_and_preferences;
+    }
+
+    boost::optional<gspc::scheduler::Type> const& Job::scheduler_type() const
+    {
+      return _scheduler_type;
     }
 
     std::string Job::error_message () const
@@ -98,6 +114,12 @@ namespace sdpa
     {
       std::lock_guard<std::mutex> const _ (mtx_);
       process_event (e_reschedule());
+    }
+
+    bool Job::check_and_inc_retry_counter()
+    {
+      return !_requirements_and_preferences.maximum_number_of_retries()
+        || _retry_counter++ < _requirements_and_preferences.maximum_number_of_retries().get();
     }
   }
 }

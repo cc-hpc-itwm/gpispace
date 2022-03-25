@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -47,6 +47,10 @@ namespace drts
     public:
       context (context_constructor);
       ~context();
+      context (context const&) = delete;
+      context (context&&) = delete;
+      context& operator= (context const&) = delete;
+      context& operator= (context&&) = delete;
 
       std::string const& worker_name() const;
 

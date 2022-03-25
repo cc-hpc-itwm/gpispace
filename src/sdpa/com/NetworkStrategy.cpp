@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -47,12 +47,6 @@ namespace sdpa
     NetworkStrategy::~NetworkStrategy()
     {
       m_shutting_down = true;
-    }
-
-    fhg::com::p2p::address_t NetworkStrategy::connect_to_TESTING_ONLY
-      (fhg::com::host_t const& host, fhg::com::port_t const& port)
-    {
-      return _peer.connect_to (host, port);
     }
 
     ::boost::asio::ip::tcp::endpoint NetworkStrategy::local_endpoint() const

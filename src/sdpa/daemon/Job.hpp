@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <drts/scheduler_types.hpp>
 #include <sdpa/job_states.hpp>
 #include <sdpa/requirements_and_preferences.hpp>
 #include <sdpa/types.hpp>
@@ -145,8 +146,6 @@ namespace sdpa
       JobFSM_::s_finished last_success;
     };
 
-    using Implementation = ::boost::optional<std::string>;
-
     struct job_source_wfe {};
     struct job_source_client {};
     using job_source = ::boost::variant < job_source_wfe
@@ -175,6 +174,7 @@ namespace sdpa
       job_source const& source() const;
       job_handler const& handler() const { return _handler; }
       Requirements_and_preferences requirements_and_preferences() const;
+      boost::optional<gspc::scheduler::Type> const& scheduler_type() const;
 
       std::string error_message () const;
       we::type::Activity const& result() const;
@@ -188,6 +188,8 @@ namespace sdpa
       void JobFinished (we::type::Activity);
       void Reschedule();
 
+      bool check_and_inc_retry_counter();
+
     private:
       mutable std::mutex mtx_;
       we::type::Activity _activity;
@@ -195,8 +197,10 @@ namespace sdpa
       job_source _source;
       job_handler _handler;
       Requirements_and_preferences _requirements_and_preferences;
+      boost::optional<gspc::scheduler::Type> _scheduler_type;
 
       std::string m_error_message;
       we::type::Activity result_;
+      unsigned int _retry_counter {0};
     };
 }}

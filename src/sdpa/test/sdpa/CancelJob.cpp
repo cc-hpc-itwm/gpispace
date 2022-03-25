@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 #include <util-generic/latch.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/optional.hpp>
+#include <util-generic/testing/random.hpp>
 
 #include <boost/test/data/monomorphic.hpp>
 #include <boost/test/data/test_case.hpp>
@@ -39,6 +40,8 @@
 
 namespace
 {
+  auto const boolean_test_data {::boost::unit_test::data::make ({true, false})};
+
   class fake_drts_worker_notifying_submission_and_cancel final
     : public utils::no_thread::fake_drts_worker_notifying_module_call_submission
   {
@@ -109,13 +112,25 @@ namespace
   };
 }
 
-BOOST_DATA_TEST_CASE (cancel_no_worker, certificates_data, certificates)
+BOOST_DATA_TEST_CASE
+  ( cancel_no_worker
+  , certificates_data * boolean_test_data
+  , certificates
+  , might_have_tasks_requiring_multiple_workers
+  )
 {
   const utils::agent agent (certificates);
 
   utils::client client (agent, certificates);
 
-  const sdpa::job_id_t job_id (client.submit_job (utils::module_call()));
+  const sdpa::job_id_t job_id
+    ( client.submit_job
+        ( utils::module_call
+            ( fhg::util::testing::random_string()
+            , might_have_tasks_requiring_multiple_workers
+            )
+        )
+    );
 
   client.cancel_job (job_id);
 
@@ -123,7 +138,12 @@ BOOST_DATA_TEST_CASE (cancel_no_worker, certificates_data, certificates)
     (client.wait_for_terminal_state (job_id), sdpa::status::CANCELED);
 }
 
-BOOST_DATA_TEST_CASE (cancel_with_agent, certificates_data, certificates)
+BOOST_DATA_TEST_CASE
+  ( cancel_with_agent
+  , certificates_data * boolean_test_data
+  , certificates
+  , might_have_tasks_requiring_multiple_workers
+  )
 {
   const utils::agent agent (certificates);
 
@@ -138,7 +158,14 @@ BOOST_DATA_TEST_CASE (cancel_with_agent, certificates_data, certificates)
 
   utils::client client (agent, certificates);
 
-  const sdpa::job_id_t job_id (client.submit_job (utils::module_call()));
+  const sdpa::job_id_t job_id
+    ( client.submit_job
+        ( utils::module_call
+            ( fhg::util::testing::random_string()
+            , might_have_tasks_requiring_multiple_workers
+            )
+        )
+    );
 
   job_submitted.wait();
 
@@ -154,15 +181,23 @@ BOOST_DATA_TEST_CASE (cancel_with_agent, certificates_data, certificates)
 
 BOOST_DATA_TEST_CASE
   ( call_cancel_twice_agent_without_workers
-  , certificates_data
+  , certificates_data * boolean_test_data
   , certificates
+  , might_have_tasks_requiring_multiple_workers
   )
 {
   const utils::agent agent (certificates);
 
   utils::client client (agent, certificates);
 
-  const sdpa::job_id_t job_id (client.submit_job (utils::module_call()));
+  const sdpa::job_id_t job_id
+    ( client.submit_job
+        ( utils::module_call
+            ( fhg::util::testing::random_string()
+            , might_have_tasks_requiring_multiple_workers
+            )
+        )
+    );
 
   client.cancel_job (job_id);
 
@@ -172,7 +207,12 @@ BOOST_DATA_TEST_CASE
   BOOST_REQUIRE_THROW (client.cancel_job (job_id), std::runtime_error);
 }
 
-BOOST_DATA_TEST_CASE (call_cancel_twice_agent, certificates_data, certificates)
+BOOST_DATA_TEST_CASE
+  ( call_cancel_twice_agent
+  , certificates_data * boolean_test_data
+  , certificates
+  , might_have_tasks_requiring_multiple_workers
+  )
 {
   const utils::agent agent (certificates);
 
@@ -187,7 +227,14 @@ BOOST_DATA_TEST_CASE (call_cancel_twice_agent, certificates_data, certificates)
 
   utils::client client (agent, certificates);
 
-  const sdpa::job_id_t job_id (client.submit_job (utils::module_call()));
+  const sdpa::job_id_t job_id
+    ( client.submit_job
+        ( utils::module_call
+            ( fhg::util::testing::random_string()
+            , might_have_tasks_requiring_multiple_workers
+            )
+        )
+    );
 
   job_submitted.wait();
 
@@ -203,7 +250,12 @@ BOOST_DATA_TEST_CASE (call_cancel_twice_agent, certificates_data, certificates)
   BOOST_REQUIRE (worker.cancellation_was_triggered_by_owners());
 }
 
-BOOST_DATA_TEST_CASE (cancel_pending_jobs, certificates_data, certificates)
+BOOST_DATA_TEST_CASE
+  ( cancel_pending_jobs
+  , certificates_data * boolean_test_data
+  , certificates
+  , might_have_tasks_requiring_multiple_workers
+  )
 {
   const utils::agent agent (certificates);
 
@@ -216,10 +268,25 @@ BOOST_DATA_TEST_CASE (cancel_pending_jobs, certificates_data, certificates)
 
   utils::client client (agent, certificates);
 
-  const sdpa::job_id_t job_id_0 (client.submit_job (utils::module_call()));
+  const sdpa::job_id_t job_id_0
+    ( client.submit_job
+        ( utils::module_call
+            ( fhg::util::testing::random_string()
+            , might_have_tasks_requiring_multiple_workers
+            )
+        )
+    );
+
   job_submitted.wait();
 
-  const sdpa::job_id_t job_id_1 (client.submit_job (utils::module_call()));
+  const sdpa::job_id_t job_id_1
+    ( client.submit_job
+        ( utils::module_call
+            ( fhg::util::testing::random_string()
+            , might_have_tasks_requiring_multiple_workers
+            )
+        )
+    );
 
   client.cancel_job (job_id_1);
 

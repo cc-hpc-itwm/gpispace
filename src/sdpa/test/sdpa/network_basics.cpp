@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -39,9 +39,9 @@
 #include <string>
 #include <utility>
 
-FHG_UTIL_TESTING_RANDOM_SPECIALIZE_SIMPLE (sdpa::capabilities_set_t)
+FHG_UTIL_TESTING_RANDOM_SPECIALIZE_SIMPLE (sdpa::Capabilities)
 {
-  sdpa::capabilities_set_t capabilities;
+  sdpa::Capabilities capabilities;
 
   auto count (fhg::util::testing::random<std::size_t>{} (100, 0));
   while (count --> 0)
@@ -101,7 +101,7 @@ namespace
     perform<sdpa::events::WorkerRegistrationEvent>
       ( addr
       , name()
-      , fhg::util::testing::random<sdpa::capabilities_set_t>{}()
+      , fhg::util::testing::random<sdpa::Capabilities>{}()
       , fhg::util::testing::random<unsigned long>{}()
       , fhg::util::testing::random<std::string>{}()
       );

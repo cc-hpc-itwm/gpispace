@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2021 Fraunhofer ITWM
+// Copyright (C) 2022 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -34,6 +34,8 @@
 #include <chrono>
 #include <functional>
 #include <map>
+#include <memory>
+#include <mutex>
 #include <numeric>
 #include <random>
 #include <set>
@@ -53,9 +55,9 @@ namespace
 
   const double computational_cost = 1.0;
 
-  Requirements_and_preferences require (std::string const& capability)
+  Requirements_and_preferences require (std::string name)
   {
-    return { {we::type::Requirement (capability)}
+    return { {we::type::Requirement (name)}
            , we::type::schedule_data()
            , null_transfer_cost
            , computational_cost
@@ -68,15 +70,20 @@ namespace
 struct fixture_add_new_workers
 {
   fixture_add_new_workers()
-    : _scheduler
-        (std::bind ( &fixture_add_new_workers::requirements_and_preferences
-                   , this
-                   , std::placeholders::_1
-                   )
+    : _worker_manager()
+    , _scheduler
+        ( std::make_unique<sdpa::daemon::CoallocationScheduler>
+            ( std::bind ( &fixture_add_new_workers::requirements_and_preferences
+                        , this
+                        , std::placeholders::_1
+                        )
+            , _worker_manager
+            )
         )
   {}
 
-  sdpa::daemon::CoallocationScheduler _scheduler;
+  sdpa::daemon::WorkerManager _worker_manager;
+  std::unique_ptr<sdpa::daemon::Scheduler> _scheduler;
 
   void add_job ( sdpa::job_id_t const& job_id
                , Requirements_and_preferences const& reqs
@@ -104,7 +111,7 @@ struct fixture_add_new_workers
     while (n --> 0)
     {
       auto const worker (utils::random_peer_name());
-      sdpa::capabilities_set_t cpbset;
+      sdpa::Capabilities cpbset;
       for (std::string const& capability_name : cpbnames)
       {
         cpbset.emplace (capability_name);
@@ -112,22 +119,23 @@ struct fixture_add_new_workers
 
       auto const hostname {random_string()};
 
-      _scheduler.add_worker ( worker
-                            , cpbset
-                            , random_ulong()
-                            , hostname
-                            , fhg::com::p2p::address_t
-                                { fhg::com::host_t {hostname}
-                                , fhg::com::port_t {random_ushort()}
-                                }
-                            );
+      std::lock_guard<std::mutex> lock (_worker_manager._mutex);
+      _worker_manager.add_worker
+        ( worker
+        , cpbset
+        , random_ulong()
+        , hostname
+        , fhg::com::p2p::address_t
+            { fhg::com::host_t {hostname}
+            , fhg::com::port_t {random_ushort()}
+            }
+        );
     }
   }
 
   void request_scheduling()
   {
-    _scheduler.assign_jobs_to_workers();
-    _scheduler.steal_work();
+    _scheduler->assign_jobs_to_workers();
   }
 
 private:
@@ -136,7 +144,9 @@ private:
 };
 
 BOOST_FIXTURE_TEST_CASE
-  (performance_scheduling_tasks_with_no_preferences, fixture_add_new_workers)
+  ( performance_coallocation_scheduler_no_preferences
+  , fixture_add_new_workers
+  )
 {
   using fhg::util::testing::random_integral;
 
@@ -158,13 +168,13 @@ BOOST_FIXTURE_TEST_CASE
       sdpa::job_id_t const task (job_name_pool());
       add_job
         ( task
-        , require (*std::next ( capabilities.begin()
-                              , random_integral<unsigned int>() % 2
-                              )
+        , require ( *std::next ( capabilities.begin()
+                               , random_integral<unsigned int>() % 2
+                               )
                   )
         );
 
-      _scheduler.submit_job (task);
+      _scheduler->submit_job (task);
       request_scheduling();
     }
   };
