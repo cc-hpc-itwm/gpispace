@@ -320,7 +320,7 @@ feature (enabled by default):
 
 | Spack | CMake |
 | - | - |
-| `[+|~]monitor` | `-D GSPC_WITH_MONITOR_APP=[ON|OFF]` |
+| `[+\|~]monitor` | `-D GSPC_WITH_MONITOR_APP=[ON\|OFF]` |
 
 ## Next steps
 
