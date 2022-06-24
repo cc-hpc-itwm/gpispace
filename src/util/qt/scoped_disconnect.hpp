@@ -27,8 +27,8 @@ namespace fhg
       struct scoped_disconnect
       {
         scoped_disconnect
-          ( const QObject* const sender, const char* const signal
-          , const QObject* const receiver, const char* const method
+          ( const QObject* sender, const char* signal
+          , const QObject* receiver, const char* method
           );
         ~scoped_disconnect();
         scoped_disconnect (scoped_disconnect const&) = delete;

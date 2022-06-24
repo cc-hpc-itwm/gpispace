@@ -22,8 +22,8 @@
 #include <we/expr/eval/context.hpp>
 #include <we/loader/loader.hpp>
 #include <we/plugin/Plugins.hpp>
-#include <we/type/eureka.hpp>
 #include <we/type/Transition.hpp>
+#include <we/type/eureka.hpp>
 #include <we/type/value/serialize.hpp>
 #include <we/workflow_response.hpp>
 
@@ -82,6 +82,8 @@ namespace we
 
       Activity (Activity&&) = default;
       Activity& operator= (Activity&&) = default;
+
+      ~Activity() = default;
 
       std::string to_string() const;
 
@@ -149,7 +151,7 @@ namespace we
         ( std::string const& port_name
         , pnet::type::value::value_type const&
         );
-      std::list<we::type::Preference> const preferences_TESTING_ONLY() const;
+      std::list<we::type::Preference> preferences_TESTING_ONLY() const;
 
     private:
       we::type::Transition& mutable_transition();

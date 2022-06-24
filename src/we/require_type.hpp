@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include <we/type/value.hpp>
 #include <we/type/signature.hpp>
+#include <we/type/value.hpp>
 
 namespace pnet
 {

@@ -41,7 +41,7 @@ namespace gpi
       class gaspi_area_t : public area_t
       {
       public:
-        typedef fhg::util::threadsafe_queue<handle_buffer_t> handle_pool_t;
+        using handle_pool_t = fhg::util::threadsafe_queue<handle_buffer_t>;
 
         static area_ptr_t create ( iml::gaspi::SegmentDescription const&
                                  , unsigned long total_size
@@ -62,16 +62,16 @@ namespace gpi
                      , iml::SegmentHandle segment_id
                      );
 
-        virtual global::itopology_t& global_topology() override;
+        global::itopology_t& global_topology() override;
 
-        virtual std::packaged_task<void()> get_send_task
+        std::packaged_task<void()> get_send_task
           ( area_t & src_area
           , iml::MemoryLocation src
           , iml::MemoryLocation dst
           , iml::MemorySize amount
           ) override;
 
-        virtual std::packaged_task<void()> get_recv_task
+        std::packaged_task<void()> get_recv_task
           ( area_t & dst_area
           , iml::MemoryLocation dst
           , iml::MemoryLocation src
@@ -79,7 +79,7 @@ namespace gpi
           ) override;
 
       private:
-        virtual bool is_range_local ( gpi::pc::type::handle::descriptor_t const&
+        bool is_range_local ( gpi::pc::type::handle::descriptor_t const&
                             , iml::MemoryOffset begin
                             , iml::MemorySize   range_size
                             ) const override;
@@ -89,9 +89,9 @@ namespace gpi
                                 , iml::MemorySize per_node_size
                                 ) const;
 
-        virtual void *raw_ptr (iml::MemoryOffset off) override;
+        void *raw_ptr (iml::MemoryOffset off) override;
 
-        virtual iml::MemorySize get_local_size ( iml::MemorySize size
+        iml::MemorySize get_local_size ( iml::MemorySize size
                                              , gpi::pc::type::flags_t flags
                                              ) const override;
 

@@ -21,9 +21,9 @@
 #include <sdpa/daemon/Implementation.hpp>
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/daemon/NotificationEvent.hpp>
-#include <sdpa/daemon/scheduler/Scheduler.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
 #include <sdpa/daemon/WorkerSet.hpp>
+#include <sdpa/daemon/scheduler/Scheduler.hpp>
 #include <sdpa/events/CancelJobAckEvent.hpp>
 #include <sdpa/events/DeleteJobAckEvent.hpp>
 #include <sdpa/events/DeleteJobEvent.hpp>
@@ -82,7 +82,7 @@ namespace sdpa {
             , ::boost::optional<::boost::filesystem::path> const& vmem_socket
             , fhg::com::Certificates const& certificates
             );
-      virtual ~Agent() override = default;
+      ~Agent() override = default;
       Agent (Agent const&) = delete;
       Agent (Agent&&) = delete;
       Agent& operator= (Agent const&) = delete;
@@ -113,7 +113,7 @@ namespace sdpa {
     private:
       // parents and subscribers
       void unsubscribe (fhg::com::p2p::address_t const&);
-      virtual void handleSubscribeEvent (fhg::com::p2p::address_t const& source, const sdpa::events::SubscribeEvent*) override;
+      void handleSubscribeEvent (fhg::com::p2p::address_t const& source, const sdpa::events::SubscribeEvent*) override;
 
       bool isSubscriber (fhg::com::p2p::address_t const&, job_id_t const&);
 
@@ -135,67 +135,67 @@ namespace sdpa {
 
       // event handlers
     private:
-      virtual void handleCancelJobEvent
+      void handleCancelJobEvent
         ( fhg::com::p2p::address_t const&
         , sdpa::events::CancelJobEvent const*
         ) override;
-      virtual void handleDeleteJobEvent
+      void handleDeleteJobEvent
         ( fhg::com::p2p::address_t const&
         , events::DeleteJobEvent const*
         ) override;
-      virtual void handleErrorEvent
+      void handleErrorEvent
         ( fhg::com::p2p::address_t const&
         , const sdpa::events::ErrorEvent*
         ) override;
-      virtual void handleJobFailedAckEvent
+      void handleJobFailedAckEvent
         ( fhg::com::p2p::address_t const&
         , const sdpa::events::JobFailedAckEvent*
         ) override;
-      virtual void handleJobFinishedAckEvent
+      void handleJobFinishedAckEvent
         ( fhg::com::p2p::address_t const&
         , const sdpa::events::JobFinishedAckEvent*
         ) override;
-      virtual void handleSubmitJobAckEvent
+      void handleSubmitJobAckEvent
         ( fhg::com::p2p::address_t const&
         , const sdpa::events::SubmitJobAckEvent*
         ) override;
-      virtual void handleSubmitJobEvent
+      void handleSubmitJobEvent
         ( fhg::com::p2p::address_t const&
         , const sdpa::events::SubmitJobEvent*
         ) override;
-      virtual void handle_worker_registration_response
+      void handle_worker_registration_response
         ( fhg::com::p2p::address_t const&
         , const sdpa::events::worker_registration_response*
         ) override;
-      virtual void handleWorkerRegistrationEvent
+      void handleWorkerRegistrationEvent
         ( fhg::com::p2p::address_t const&
         , const sdpa::events::WorkerRegistrationEvent*
         ) override;
-      virtual void handle_put_token
+      void handle_put_token
         ( fhg::com::p2p::address_t const&
         , const events::put_token*
         ) override;
-      virtual void handle_put_token_response
+      void handle_put_token_response
         ( fhg::com::p2p::address_t const&
         , const events::put_token_response*
         ) override;
-      virtual void handle_workflow_response
+      void handle_workflow_response
         ( fhg::com::p2p::address_t const&
         , const events::workflow_response*
         ) override;
-      virtual void handle_workflow_response_response
+      void handle_workflow_response_response
         ( fhg::com::p2p::address_t const&
         , events::workflow_response_response const*
         ) override;
-      virtual void handleJobFailedEvent
+      void handleJobFailedEvent
         ( fhg::com::p2p::address_t const&
         , events::JobFailedEvent const*
         ) override;
-      virtual void handleJobFinishedEvent
+      void handleJobFinishedEvent
         ( fhg::com::p2p::address_t const&
         , events::JobFinishedEvent const*
         ) override;
-      virtual void handleCancelJobAckEvent
+      void handleCancelJobAckEvent
         ( fhg::com::p2p::address_t const&
         , events::CancelJobAckEvent const*
         ) override;
@@ -281,8 +281,7 @@ namespace sdpa {
       std::unordered_map<std::string, fhg::com::p2p::address_t>
         _workflow_response_source;
 
-      typedef std::unordered_map<sdpa::job_id_t, sdpa::daemon::Job*>
-        job_map_t;
+      using job_map_t = std::unordered_map<sdpa::job_id_t, sdpa::daemon::Job*>;
 
       mutable std::mutex _job_map_mutex;
       job_map_t job_map_;
@@ -304,7 +303,7 @@ namespace sdpa {
       std::mutex _scheduling_requested_guard;
       std::condition_variable _scheduling_requested_condition;
       bool _scheduling_interrupted = false;
-      bool _scheduling_requested;
+      bool _scheduling_requested {false};
       void request_scheduling();
 
       std::mt19937 _random_extraction_engine;

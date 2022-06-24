@@ -93,11 +93,6 @@ namespace expr
             )
           , _value (value)
         {}
-        virtual ~square_root_for_negative_argument() override = default;
-        square_root_for_negative_argument (square_root_for_negative_argument const&) = default;
-        square_root_for_negative_argument (square_root_for_negative_argument&&) = default;
-        square_root_for_negative_argument& operator= (square_root_for_negative_argument const&) = delete;
-        square_root_for_negative_argument& operator= (square_root_for_negative_argument&&) = delete;
 
       private:
         T _value;
@@ -115,11 +110,6 @@ namespace expr
             )
           , _value (value)
         {}
-        virtual ~log_for_nonpositive_argument() override = default;
-        log_for_nonpositive_argument (log_for_nonpositive_argument const&) = default;
-        log_for_nonpositive_argument (log_for_nonpositive_argument&&) = default;
-        log_for_nonpositive_argument& operator= (log_for_nonpositive_argument const&) = delete;
-        log_for_nonpositive_argument& operator= (log_for_nonpositive_argument&&) = delete;
 
       private:
         T _value;

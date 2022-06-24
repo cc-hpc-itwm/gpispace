@@ -26,7 +26,7 @@ namespace fhg
     {
       void do_after_event_loop (std::function<void()> fun)
       {
-        QTimer* timer (new QTimer);
+        auto* timer (new QTimer);
         timer->setSingleShot (true);
         QObject::connect ( timer
                          , &QTimer::timeout

@@ -33,16 +33,17 @@
 #include <we/type/value/peek.hpp>
 
 #include <util-generic/boost/program_options/validators/positive_integral.hpp>
-#include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <util-generic/testing/printer/set.hpp>
 #include <util-generic/read_file.hpp>
 #include <util-generic/temporary_path.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/set.hpp>
 
 #include <util-generic/ndebug.hpp>
 
+#include <boost/test/unit_test.hpp>
+
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
-#include <boost/test/unit_test.hpp>
 #include <boost/range/adaptor/map.hpp>
 
 #include <chrono>

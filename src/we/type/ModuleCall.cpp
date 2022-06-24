@@ -57,9 +57,9 @@ namespace we
                , std::list<std::pair<local::range, global::range>>& zipped
                )
       {
-        std::list<local::range>::iterator local (local_ranges.begin());
+        auto local (local_ranges.begin());
         std::list<local::range>::iterator const local_end (local_ranges.end());
-        std::list<global::range>::iterator global (global_ranges.begin());
+        auto global (global_ranges.begin());
         std::list<global::range>::iterator const global_end (global_ranges.end());
 
         while (local != local_end && global != global_end)

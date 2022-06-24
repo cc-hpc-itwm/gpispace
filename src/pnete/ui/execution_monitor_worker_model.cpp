@@ -41,7 +41,6 @@ namespace fhg
           , _duration (d)
           , _id (id)
           , _name (name)
-          , _state (sdpa::daemon::NotificationEvent::STATE_STARTED)
       {
         state (state_, t);
       }
@@ -95,7 +94,7 @@ namespace fhg
         , _event_queue()
         , _queued_events()
       {
-        QTimer* timer (new QTimer (this));
+        auto* timer (new QTimer (this));
         connect (timer, SIGNAL (timeout()), SLOT (handle_events()));
         timer->start (100);
       }

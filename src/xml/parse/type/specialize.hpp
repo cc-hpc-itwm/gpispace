@@ -17,10 +17,10 @@
 #pragma once
 
 #include <xml/parse/state.fwd.hpp>
-#include <xml/parse/type/struct.hpp>
 #include <xml/parse/type/net.fwd.hpp>
-#include <xml/parse/type_map_type.hpp>
+#include <xml/parse/type/struct.hpp>
 #include <xml/parse/type/with_position_of_definition.hpp>
+#include <xml/parse/type_map_type.hpp>
 #include <xml/parse/util/position.fwd.hpp>
 
 #include <fhg/util/xml.fwd.hpp>
@@ -38,7 +38,7 @@ namespace xml
       struct specialize_type : with_position_of_definition
       {
       public:
-        typedef std::string unique_key_type;
+        using unique_key_type = std::string;
 
         specialize_type ( util::position_type const&
                         , std::string const& name

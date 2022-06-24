@@ -17,8 +17,8 @@
 #include <logging/stream_receiver.hpp>
 
 #include <util-rpc/remote_function.hpp>
-#include <util-rpc/remote_tcp_endpoint.hpp>
 #include <util-rpc/remote_socket_endpoint.hpp>
+#include <util-rpc/remote_tcp_endpoint.hpp>
 
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/functor_visitor.hpp>

@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include <sdpa/events/JobEvent.hpp>
 #include <sdpa/events/EventHandler.hpp>
+#include <sdpa/events/JobEvent.hpp>
 
 namespace sdpa
 {
@@ -26,11 +26,11 @@ namespace sdpa
     class SubmitJobAckEvent : public JobEvent
     {
     public:
-      typedef ::boost::shared_ptr<SubmitJobAckEvent> Ptr;
+      using Ptr = ::boost::shared_ptr<SubmitJobAckEvent>;
 
       using JobEvent::JobEvent;
 
-      virtual void handleBy
+      void handleBy
         (fhg::com::p2p::address_t const& source, EventHandler* handler) override
       {
         handler->handleSubmitJobAckEvent (source, this);

@@ -65,7 +65,8 @@ namespace fhg
     class peer_t
     {
     public:
-      typedef std::function <void (::boost::system::error_code const&)> handler_t;
+      using handler_t =
+        std::function<void (const ::boost::system::error_code&)>;
 
       peer_t ( std::unique_ptr<::boost::asio::io_service>
              , host_t const& host
@@ -136,17 +137,13 @@ namespace fhg
 
       struct connection_data_t
       {
-        connection_data_t ()
-          : send_in_progress (false)
-        {}
-
-        bool send_in_progress;
+        bool send_in_progress {false};
         connection_t::ptr_t connection;
         std::deque<to_send_t> o_queue;
       };
 
-      typedef std::recursive_mutex mutex_type;
-      typedef std::unique_lock<mutex_type> lock_type;
+      using mutex_type = std::recursive_mutex;
+      using lock_type = std::unique_lock<mutex_type>;
 
       void accept_new ();
       void handle_accept (::boost::system::error_code const&);
@@ -166,7 +163,7 @@ namespace fhg
 
       mutex_type mutex_;
 
-      bool stopping_;
+      bool stopping_ {false};
       ::boost::optional<p2p::address_t> my_addr_;
 
       std::unique_ptr<::boost::asio::ssl::context> ctx_;

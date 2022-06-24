@@ -40,11 +40,11 @@ namespace gspc
           , _put_token (std::move (put_token))
         {}
 
-        virtual void before_eval (Context const&) override
+        void before_eval (Context const&) override
         {
           throw std::logic_error ("Tunnel::before_eval");
         }
-        virtual void after_eval (Context const& context) override
+        void after_eval (Context const& context) override
         {
           return _put_token (_place_name, context.value ({_context_key}));
         }

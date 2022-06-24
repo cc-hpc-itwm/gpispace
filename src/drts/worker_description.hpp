@@ -30,7 +30,7 @@ namespace gspc
   {
     worker_description() = delete;
     worker_description (worker_description const&) = delete;
-    worker_description (worker_description&&);
+    worker_description (worker_description&&) noexcept;
     worker_description& operator= (worker_description const&) = delete;
     worker_description& operator= (worker_description&&) = delete;
     ~worker_description();

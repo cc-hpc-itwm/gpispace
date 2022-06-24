@@ -38,9 +38,9 @@ namespace we
 
       bytearray();
       bytearray (std::vector<char> v) : _v (std::move (v)) {}
-      bytearray (const char* const, std::size_t);
+      bytearray (const char*, std::size_t);
       bytearray (std::string const&);
-      std::size_t copy (char* const buf, std::size_t size) const;
+      std::size_t copy (char* buf, std::size_t size) const;
 
       template<typename T>
       explicit bytearray (const T* const x)

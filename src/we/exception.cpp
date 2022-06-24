@@ -16,10 +16,10 @@
 
 #include <we/exception.hpp>
 
+#include <we/signature_of.hpp>
 #include <we/type/signature/show.hpp>
 #include <we/type/value/path/join.hpp>
 #include <we/type/value/show.hpp>
-#include <we/signature_of.hpp>
 
 #include <boost/format.hpp>
 

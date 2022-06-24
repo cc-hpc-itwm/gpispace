@@ -24,10 +24,11 @@
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/optional.hpp>
 
+#include <boost/test/unit_test.hpp>
+
 #include <boost/format.hpp>
 #include <boost/optional.hpp>
 #include <boost/test/data/test_case.hpp>
-#include <boost/test/unit_test.hpp>
 
 #include <sstream>
 #include <string>

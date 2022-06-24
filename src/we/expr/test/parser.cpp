@@ -537,10 +537,10 @@ namespace
 BOOST_AUTO_TEST_CASE (token_add)
 {
   require_evaluating_to ("'a' + 'a'", std::string ("aa"));
-  require_evaluating_to ("\"\" + \"\"", std::string (""));
-  require_evaluating_to ("\"a\" + \"\"", std::string ("a"));
-  require_evaluating_to ("\"a\" + \"a\"", std::string ("aa"));
-  require_evaluating_to ("\"ab\" + \"a\"", std::string ("aba"));
+  require_evaluating_to (R"("" + "")", std::string (""));
+  require_evaluating_to (R"("a" + "")", std::string ("a"));
+  require_evaluating_to (R"("a" + "a")", std::string ("aa"));
+  require_evaluating_to (R"("ab" + "a")", std::string ("aba"));
 
   require_random_integrals_evaluating_to<int>
     (std::bind (&check_binop<int>, "+", &plus<int>, std::placeholders::_1, std::placeholders::_2));

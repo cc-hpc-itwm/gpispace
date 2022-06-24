@@ -57,8 +57,8 @@ namespace gpi
         void safe_unlink (std::string const& path);
 
         std::string m_path;
-        int m_socket;
-        bool m_stopping;
+        int m_socket {-1};
+        bool m_stopping {false};
 
         std::atomic<iml::MemorySize> m_process_counter;
         std::mutex _mutex_processes;

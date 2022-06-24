@@ -23,21 +23,21 @@
 #include <testing/make.hpp>
 #include <testing/parse_command_line.hpp>
 #include <testing/scoped_nodefile_from_environment.hpp>
-#include <testing/source_directory.hpp>
 #include <testing/shared_directory.hpp>
+#include <testing/source_directory.hpp>
 
 #include <util-generic/first_then.hpp>
 #include <util-generic/read_lines.hpp>
-#include <util-generic/testing/random.hpp>
 #include <util-generic/temporary_file.hpp>
 #include <util-generic/temporary_path.hpp>
+#include <util-generic/testing/random.hpp>
 
 #include <we/type/value/boost/test/printer.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
-#include <boost/test/data/test_case.hpp>
 #include <boost/test/data/monomorphic.hpp>
+#include <boost/test/data/test_case.hpp>
 
 #include <chrono>
 #include <set>

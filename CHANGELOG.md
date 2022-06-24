@@ -1,3 +1,22 @@
+# [22.06] - 2022-06-24
+
+## New Example and Documentation for Scheduling with Preferences
+
+The feature `Scheduling with Preferences and Multi-Modules` has been in GPI-Space since quite a while with version 21.12 releasing the first version documenting it.
+This release improves on the existing documentation and enhances it with a standalone example.
+
+## Fixes
+
+- Fixed a -Wstringop-overflow warning in the gspc-monitor with GCC 11.
+- Disabling -Wmaybe-uninitialized warnings in GPI-Space due to compilation problems in the DRTS kernel caused by false positives.
+- Missing includes in the `ostream_redirect` logger tests were causing compilation failures with GCC 12.1.
+- HWLOC with version >= 2.5.0 is injecting the environment variable `ZES_ENABLE_SYSMAN` at runtime causing the `worker_env` test to fail, hence the test has been deactivated if GPI-Space is compiled with one of these HWLOC versions.
+
+## Miscellaneous
+
+- The GPI-Space code base underwent some minor refactoring using clang-tidy to increase the overall code quality.
+- The use of fhg::util::latch within tests was replaced with std::promise for better code maintainability.
+
 # [22.03] - 2022-03-25
 
 ## Multi Scheduler Support

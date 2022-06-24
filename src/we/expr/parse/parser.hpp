@@ -57,15 +57,15 @@ namespace expr
     struct parser
     {
     public:
-      typedef node::type nd_t;
-      typedef std::list<nd_t> nd_stack_t;
+      using nd_t = node::type;
+      using nd_stack_t = std::list<nd_t>;
 
       // iterate through the entries
-      typedef nd_stack_t::const_iterator nd_const_it_t;
-      typedef nd_stack_t::iterator nd_it_t;
+      using nd_const_it_t = nd_stack_t::const_iterator;
+      using nd_it_t = nd_stack_t::iterator;
 
     private:
-      typedef std::stack<token::type> op_stack_t;
+      using op_stack_t = std::stack<token::type>;
       op_stack_t op_stack;
       nd_stack_t nd_stack;
       nd_stack_t tmp_stack;

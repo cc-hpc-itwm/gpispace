@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include <util-generic/ostream/modifier.hpp>
 #include <util-generic/hash/combined_hash.hpp>
+#include <util-generic/ostream/modifier.hpp>
 
 #include <string>
 #include <tuple>
@@ -39,7 +39,7 @@ namespace fhg
       //! parse input
       entry_point (std::string const& input);
 
-      virtual std::ostream& operator() (std::ostream&) const override;
+      std::ostream& operator() (std::ostream&) const override;
 
       bool operator== (entry_point const&) const;
 

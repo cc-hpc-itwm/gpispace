@@ -47,6 +47,12 @@ namespace sdpa
     public:
       virtual ~EventHandler() = default;
 
+      EventHandler() = default;
+      EventHandler (EventHandler const&) = delete;
+      EventHandler& operator= (EventHandler const&) = delete;
+      EventHandler (EventHandler&&) = delete;
+      EventHandler& operator= (EventHandler&&) = delete;
+
 #define HANDLER(Event, Sep)                             \
       virtual void handle ## Sep ## Event               \
         (fhg::com::p2p::address_t const&, const Event*)

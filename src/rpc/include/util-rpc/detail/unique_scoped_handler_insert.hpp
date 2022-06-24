@@ -37,7 +37,7 @@ namespace fhg
           , typename Handlers::mapped_type function
           );
         unique_scoped_handler_insert
-          (unique_scoped_handler_insert<Handlers>&& other);
+          (unique_scoped_handler_insert<Handlers>&& other) noexcept;
         ~unique_scoped_handler_insert();
 
         unique_scoped_handler_insert

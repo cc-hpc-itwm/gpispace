@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include <string>
 #include <atomic>
+#include <string>
 
 namespace sdpa
 {

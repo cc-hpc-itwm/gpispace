@@ -15,15 +15,15 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <sdpa/daemon/Implementation.hpp>
+#include <sdpa/daemon/WorkerSet.hpp>
 #include <sdpa/daemon/scheduler/CostAwareWithWorkStealingStrategy.hpp>
 #include <sdpa/daemon/scheduler/SingleAllocationScheduler.hpp>
-#include <sdpa/daemon/WorkerSet.hpp>
 #include <sdpa/types.hpp>
 
 #include <fhgcom/address.hpp>
 
-#include <boost/range/algorithm.hpp>
 #include <boost/optional.hpp>
+#include <boost/range/algorithm.hpp>
 
 #include <algorithm>
 #include <climits>

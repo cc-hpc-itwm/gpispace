@@ -99,7 +99,7 @@ namespace fhg
           struct transform_nop
             : public util::qt::mvc::transform_functions_model::transform_function
           {
-            virtual QString operator() (QModelIndex index) const override
+            QString operator() (QModelIndex index) const override
             {
               return index.data().toString();
             }
@@ -173,6 +173,11 @@ namespace fhg
               }
             }
           }
+
+          index_tree_item (index_tree_item const&) = delete;
+          index_tree_item& operator= (index_tree_item const&) = delete;
+          index_tree_item (index_tree_item&&) = delete;
+          index_tree_item& operator= (index_tree_item&&) = delete;
 
           bool is_leaf() const
           {
@@ -257,8 +262,9 @@ namespace fhg
 
           index_tree_item* _parent;
 
-          typedef std::pair<QString, QVector<index_tree_item*>> name_and_child_type;
-          typedef QPersistentModelIndex index_type;
+          using name_and_child_type =
+            std::pair<QString, QVector<index_tree_item*>>;
+          using index_type = QPersistentModelIndex;
 
           ::boost::variant<name_and_child_type, index_type> _data;
         };
@@ -530,7 +536,7 @@ namespace fhg
               beginInsertRows (last_parent, leaf_parent_rows, leaf_parent_rows);
             }
 
-            index_tree_item* leaf (new index_tree_item (index, last_item));
+            auto* leaf (new index_tree_item (index, last_item));
 
             if (emit_per_row)
             {

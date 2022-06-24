@@ -27,8 +27,8 @@
 
 BOOST_AUTO_TEST_CASE (basic)
 {
-  typedef expr::eval::context context_t;
-  typedef pnet::type::value::value_type value_type;
+  using context_t = expr::eval::context;
+  using value_type = pnet::type::value::value_type;
 
   using pnet::type::value::read;
 
@@ -94,8 +94,8 @@ BOOST_AUTO_TEST_CASE (basic)
 
 BOOST_AUTO_TEST_CASE (reference)
 {
-  typedef expr::eval::context context_t;
-  typedef pnet::type::value::value_type value_type;
+  using context_t = expr::eval::context;
+  using value_type = pnet::type::value::value_type;
 
   using pnet::type::value::read;
 

@@ -38,7 +38,6 @@
 
 #include <fhg/util/starts_with.hpp>
 #include <util-generic/connectable_to_address_string.hpp>
-#include <util-generic/latch.hpp>
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
@@ -150,7 +149,7 @@ BOOST_AUTO_TEST_CASE (workflow_response_using_secure_communication)
 
   unsigned long const initial_state (0);
 
-  fhg::util::latch workflow_actually_running (1);
+  std::promise<void> workflow_actually_running;
 
   fhg::util::scoped_boost_asio_io_service_with_threads io_service (1);
   fhg::rpc::service_dispatcher service_dispatcher;
@@ -158,7 +157,7 @@ BOOST_AUTO_TEST_CASE (workflow_response_using_secure_communication)
     ( service_dispatcher
     , [&workflow_actually_running]
       {
-        workflow_actually_running.count_down();
+        workflow_actually_running.set_value();
       }
     , fhg::rpc::not_yielding
     );
@@ -176,7 +175,7 @@ BOOST_AUTO_TEST_CASE (workflow_response_using_secure_communication)
         )
     );
 
-  workflow_actually_running.wait();
+  workflow_actually_running.get_future().wait();
 
   unsigned long value (initial_state);
 
@@ -259,7 +258,7 @@ BOOST_AUTO_TEST_CASE (workflow_response_using_secure_communication)
        client.synchronous_workflow_response
          (job_id, "PLACE-NOT-EXISTENT", 12UL);
      }
-    , std::invalid_argument ("put_token (\"PLACE-NOT-EXISTENT\", Struct [value := 12UL, response_id := \"IGNORE_FOR_COMPARISON\"]): place not found")
+    , std::invalid_argument (R"(put_token ("PLACE-NOT-EXISTENT", Struct [value := 12UL, response_id := "IGNORE_FOR_COMPARISON"]): place not found)")
     );
 
   //! \todo specific exception
@@ -269,7 +268,7 @@ BOOST_AUTO_TEST_CASE (workflow_response_using_secure_communication)
        client.synchronous_workflow_response
          (job_id, "state", 12UL);
      }
-    , std::invalid_argument ("put_token (\"state\", Struct [value := 12UL, response_id := \"IGNORE_FOR_COMPARISON\"]): place not marked with attribute put_token=\"true\"")
+    , std::invalid_argument (R"(put_token ("state", Struct [value := 12UL, response_id := "IGNORE_FOR_COMPARISON"]): place not marked with attribute put_token="true")")
     );
 
   client.put_token (job_id, "done", we::type::literal::control());

@@ -22,21 +22,21 @@
 #include <xml/parse/type/mod.hpp>
 #include <xml/parse/type/multi_mod.hpp>
 #include <xml/parse/type/net.fwd.hpp>
-#include <xml/parse/type/port.hpp>
 #include <xml/parse/type/place_map.hpp>
+#include <xml/parse/type/port.hpp>
+#include <xml/parse/type/preferences.hpp>
 #include <xml/parse/type/specialize.hpp>
 #include <xml/parse/type/struct.hpp>
 #include <xml/parse/type/template.fwd.hpp>
 #include <xml/parse/type/transition.fwd.hpp>
-#include <xml/parse/type/preferences.hpp>
-#include <xml/parse/util/mk_fstream.hpp>
-#include <xml/parse/util/unique.hpp>
 #include <xml/parse/type/with_position_of_definition.hpp>
+#include <xml/parse/util/mk_fstream.hpp>
 #include <xml/parse/util/position.fwd.hpp>
+#include <xml/parse/util/unique.hpp>
 
-#include <we/type/property.hpp>
-#include <we/type/Transition.hpp>
 #include <we/type/Port.hpp>
+#include <we/type/Transition.hpp>
+#include <we/type/property.hpp>
 
 #include <boost/optional.hpp>
 
@@ -52,15 +52,16 @@ namespace xml
       struct function_type : with_position_of_definition
       {
       public:
-        typedef std::string unique_key_type;
+        using unique_key_type = std::string;
 
-        typedef fhg::pnet::util::unique<port_type> ports_type;
+        using ports_type = fhg::pnet::util::unique<port_type>;
 
-        typedef ::boost::variant < expression_type
-                               , module_type
-                               , ::boost::recursive_wrapper<net_type>
-                               , multi_module_type
-                               > content_type;
+        using content_type = ::boost::variant
+          < expression_type
+          , module_type
+          , ::boost::recursive_wrapper<net_type>
+          , multi_module_type
+          >;
 
         // ***************************************************************** //
 
@@ -220,9 +221,9 @@ namespace xml
         bool operator== (fun_info_type const& other) const;
       };
 
-      typedef std::unordered_set<fun_info_type> fun_infos_type;
+      using fun_infos_type = std::unordered_set<fun_info_type>;
 
-      typedef std::unordered_map<std::string,fun_infos_type> fun_info_map;
+      using fun_info_map = std::unordered_map<std::string, fun_infos_type>;
 
       void mk_wrapper ( state::type const& state
                       , fun_info_map const& m

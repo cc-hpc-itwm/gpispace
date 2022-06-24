@@ -27,8 +27,8 @@
 #include <testing/source_directory.hpp>
 
 #include <we/type/value.hpp>
-#include <we/type/value/poke.hpp>
 #include <we/type/value/boost/test/printer.hpp>
+#include <we/type/value/poke.hpp>
 
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>

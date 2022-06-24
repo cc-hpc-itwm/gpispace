@@ -16,8 +16,8 @@
 
 #include <xml/parse/type/port.hpp>
 
-#include <xml/parse/state.hpp>
 #include <xml/parse/error.hpp>
+#include <xml/parse/state.hpp>
 #include <xml/parse/type/net.hpp>
 #include <xml/parse/type/place.hpp>
 

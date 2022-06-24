@@ -45,6 +45,14 @@ namespace gspc
   rifd_entry_points::rifd_entry_points (rifd_entry_points const& other)
     : _ (new implementation (*other._))
   {}
+  rifd_entry_points& rifd_entry_points::operator= (rifd_entry_points const& other)
+  {
+    _ = std::make_unique<implementation> (*other._);
+
+    return *this;
+  }
+  rifd_entry_points::rifd_entry_points (rifd_entry_points&&) noexcept = default;
+  rifd_entry_points& rifd_entry_points::operator= (rifd_entry_points&&) noexcept = default;
 
   void rifd_entry_points::write_to_file (::boost::filesystem::path const& path)
   {
@@ -65,7 +73,7 @@ namespace gspc
   rifd_entry_point::rifd_entry_point (implementation* impl)
     : _ (impl)
   {}
-  rifd_entry_point::rifd_entry_point (rifd_entry_point&& other)
+  rifd_entry_point::rifd_entry_point (rifd_entry_point&& other) noexcept
   {
     _ = std::move (other._);
     other._ = nullptr;

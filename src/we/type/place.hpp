@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include <we/type/signature.hpp>
 #include <we/type/property.hpp>
+#include <we/type/signature.hpp>
 
 #include <boost/optional.hpp>
 
@@ -25,7 +25,6 @@
 
 namespace place
 {
-  //! \todo add properties
   struct type
   {
   public:
@@ -48,8 +47,8 @@ namespace place
     type ( std::string const& name
          , pnet::type::signature::signature_type const& signature
          , ::boost::optional<bool> put_token
-         , we::type::property::type const& prop = we::type::property::type ()
-	 )
+         , we::type::property::type const& prop
+         )
       : _name (name)
       , _signature (signature)
       , _put_token (put_token)

@@ -31,8 +31,9 @@
 #include <util-generic/testing/require_exception.hpp>
 #include <util-generic/threadsafe_queue.hpp>
 
-#include <boost/test/data/test_case.hpp>
 #include <boost/test/unit_test.hpp>
+
+#include <boost/test/data/test_case.hpp>
 
 #include <cstddef>
 #include <stdexcept>
@@ -71,7 +72,7 @@ namespace
                 >
       > worker_registration_responses;
 
-    virtual void handle_worker_registration_response
+    void handle_worker_registration_response
       ( fhg::com::p2p::address_t const& source
       , sdpa::events::worker_registration_response const* event
       ) override;

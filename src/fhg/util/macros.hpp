@@ -16,9 +16,9 @@
 
 #pragma once
 
-#include <stdexcept>
-#include <boost/format.hpp>
 #include <boost/current_function.hpp>
+#include <boost/format.hpp>
+#include <stdexcept>
 #define INVALID_ENUM_VALUE(type, value) \
   throw std::out_of_range \
      ((::boost::format \

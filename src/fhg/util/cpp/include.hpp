@@ -33,7 +33,7 @@ namespace fhg
       {
       public:
         include (std::string const&);
-        virtual std::ostream& operator() (std::ostream&) const override;
+        std::ostream& operator() (std::ostream&) const override;
       private:
         std::string const& _fname;
       };

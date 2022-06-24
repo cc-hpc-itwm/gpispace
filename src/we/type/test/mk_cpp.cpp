@@ -15,17 +15,16 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <we/type/signature.hpp>
-#include <we/type/signature/show.hpp>
 #include <we/type/signature/cpp.hpp>
+#include <we/type/signature/show.hpp>
 
 #include <util-generic/print_exception.hpp>
 
-#include <boost/program_options.hpp>
-
-#include <iostream>
 #include <fstream>
+#include <iostream>
+#include <string>
 
-int main (int argc, char** argv)
+int main()
 try
 {
   using pnet::type::signature::structure_type;
@@ -44,95 +43,29 @@ try
   structured_type l (std::make_pair ("line2D", ps));
   structured_type p (std::make_pair ("point2D", f));
 
-  namespace po = ::boost::program_options;
+  std::string const fheader {"sig_struct.hpp"};
+  std::string const fimpl {"sig_op.cpp"};
+  std::string const fheader_op {"sig_op.hpp"};
 
-  po::options_description desc ("Options");
+  std::ofstream {fheader}
+    << "#pragma once\n"
+    << header (p) << std::endl
+    << header (l) << std::endl
+    ;
 
-  std::string fheader;
-  std::string fimpl;
-  std::string fheader_op;
+  std::ofstream {fheader_op}
+    << "#pragma once\n"
+    << "#include \"" << fheader << "\"\n"
+    << header_op (p) << std::endl
+    << header_op (l) << std::endl
+    ;
 
-  desc.add_options()
-    ( "help,h"
-    , "show this help message"
-    )
-    ( "header,H"
-    , po::value<std::string>(&fheader)->default_value (fheader)
-    , "filename for struct definition header"
-    )
-    ( "header-op,O"
-    , po::value<std::string>(&fheader_op)->default_value (fheader_op)
-    , "filename for operations header"
-    )
-    ( "impl,I"
-    , po::value<std::string>(&fimpl)->default_value (fimpl)
-    , "filename for operations implementation"
-    );
-
-  po::variables_map vm;
-  po::store (po::parse_command_line (argc, argv, desc), vm);
-  po::notify (vm);
-
-  if (vm.count ("help"))
-  {
-    std::cout
-      << "Print header and/or implementation for the signatures: " << std::endl
-      << "    " << show (l) << " and " << std::endl
-      << "    " << show (p) << std::endl << std::endl
-      << desc << std::endl
-      ;
-
-    return 1;
-  }
-
-  if (!fheader.empty())
-  {
-    std::ofstream h (fheader.c_str());
-
-    if (!h)
-    {
-      throw std::runtime_error ("Could not open " + fheader);
-    }
-
-    h << header (p) << std::endl;
-    h << header (l) << std::endl;
-  }
-
-  if (!fheader_op.empty())
-  {
-    std::ofstream h (fheader_op.c_str());
-
-    if (!h)
-    {
-      throw std::runtime_error ("Could not open " + fheader_op);
-    }
-
-    h << header_op (p) << std::endl;
-    h << header_op (l) << std::endl;
-  }
-
-  if (!fimpl.empty())
-  {
-    std::ofstream i (fimpl.c_str());
-
-    if (!i)
-    {
-      throw std::runtime_error ("Could not open " + fimpl);
-    }
-
-    if (!fheader.empty())
-    {
-      i << "#include <" << fheader << ">" << std::endl;
-    }
-
-    if (fheader_op.empty())
-    {
-      throw std::invalid_argument ("mk_cpp: -I requires -O");
-    }
-    i << "#include \"" << fheader_op << "\"\n";
-    i << impl (p) << std::endl;
-    i << impl (l) << std::endl;
-  }
+  std::ofstream {fimpl}
+    << "#include <" << fheader << ">" << std::endl
+    << "#include \"" << fheader_op << "\"\n"
+    << impl (p) << std::endl
+    << impl (l) << std::endl
+    ;
 }
 catch (...)
 {

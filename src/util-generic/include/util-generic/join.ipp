@@ -48,7 +48,7 @@ namespace fhg
         , _open (open)
         , _close (close)
       {}
-      virtual std::ostream& operator() (std::ostream& os) const override
+      std::ostream& operator() (std::ostream& os) const override
       {
         os << _open;
 
@@ -91,7 +91,7 @@ namespace fhg
         , _close (close)
         , _max_elements_to_print (max_elements_to_print)
       {}
-      virtual std::ostream& operator() (std::ostream& os) const override
+      std::ostream& operator() (std::ostream& os) const override
       {
         size_type const number_of_elements
           ( !_max_elements_to_print

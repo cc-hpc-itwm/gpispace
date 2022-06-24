@@ -26,8 +26,8 @@
 
 #include <xml/parse/type/dumps.hpp>
 
-#include <we/type/value/name.hpp>
 #include <we/type/Expression.hpp>
+#include <we/type/value/name.hpp>
 #include <we/workflow_response.hpp>
 
 #include <fhg/assert.hpp>

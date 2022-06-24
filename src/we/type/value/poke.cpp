@@ -14,8 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <we/type/value/poke.hpp>
 #include <we/type/value/path/split.hpp>
+#include <we/type/value/poke.hpp>
 
 #include <functional>
 #include <iterator>
@@ -80,7 +80,7 @@ namespace pnet
 
           value_type& deeper (structured_type& m) const
           {
-            structured_type::iterator pos
+            auto pos
               (std::find_if (m.begin(), m.end(), first_is (*_key)));
 
             if (pos == m.end())

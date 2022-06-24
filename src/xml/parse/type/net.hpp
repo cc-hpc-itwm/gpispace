@@ -44,7 +44,7 @@ namespace xml
       {
       public:
         using functions_type = fhg::pnet::util::unique<function_type>;
-        typedef fhg::pnet::util::unique<place_type> places_type;
+        using places_type = fhg::pnet::util::unique<place_type>;
         using specializes_type = fhg::pnet::util::unique<specialize_type>;
         using templates_type = fhg::pnet::util::unique<tmpl_type>;
         using transitions_type = fhg::pnet::util::unique<transition_type>;
@@ -110,7 +110,7 @@ namespace xml
         //! \todo Everything below should be private with accessors.
       public:
         structs_type structs;
-        bool contains_a_module_call;
+        bool contains_a_module_call{};
 
       private:
         we::type::property::type _properties;

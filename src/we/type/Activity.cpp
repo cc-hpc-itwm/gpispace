@@ -17,9 +17,9 @@
 #include <we/type/Activity.hpp>
 
 #include <we/loader/module_call.hpp>
+#include <we/type/Transition.hpp>
 #include <we/type/net.hpp>
 #include <we/type/schedule_data.hpp>
-#include <we/type/Transition.hpp>
 
 #include <fhg/assert.hpp>
 #include <fhg/util/starts_with.hpp>
@@ -626,7 +626,7 @@ namespace we
     }
 
     std::list<we::type::Preference>
-      const Activity::preferences_TESTING_ONLY() const
+      Activity::preferences_TESTING_ONLY() const
     {
       return transition().preferences();
     }
@@ -665,6 +665,7 @@ namespace we
           (net.add_place (place::type ( wrapped_name (p.second)
                                       , p.second.signature()
                                       , ::boost::none
+                                      , we::type::property::type{}
                                       )
                          )
           );
@@ -685,6 +686,7 @@ namespace we
           (net.add_place (place::type ( wrapped_name (p.second)
                                       , p.second.signature()
                                       , ::boost::none
+                                      , we::type::property::type{}
                                       )
                          )
           );

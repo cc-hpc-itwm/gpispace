@@ -19,10 +19,10 @@
 #include <xml/parse/error.hpp>
 #include <xml/parse/state.hpp>
 
-#include <we/type/signature/is_literal.hpp>
-#include <we/type/signature/specialize.hpp>
-#include <we/type/signature/resolve.hpp>
 #include <we/type/signature/dump.hpp>
+#include <we/type/signature/is_literal.hpp>
+#include <we/type/signature/resolve.hpp>
+#include <we/type/signature/specialize.hpp>
 
 #include <fhg/util/xml.hpp>
 
@@ -68,7 +68,7 @@ namespace xml
           , std::string const& key
           )
         {
-          std::unordered_map<std::string, structure_type>::const_iterator
+          auto
             pos (m.find (key));
 
           if (pos != m.end())
@@ -126,26 +126,23 @@ namespace xml
       {
         set_type set;
 
-        for ( type::structs_type::const_iterator pos (structs.begin())
-            ; pos != structs.end()
-            ; ++pos
-            )
+        for (auto const& pos : structs)
           {
-            const set_type::const_iterator old (set.find (pos->name()));
+            const set_type::const_iterator old (set.find (pos.name()));
 
             if (old != set.end())
               {
-                if (old->second.signature() == pos->signature())
+                if (old->second.signature() == pos.signature())
                 {
-                  state.warn (warning::struct_redefined (old->second, *pos));
+                  state.warn (warning::struct_redefined (old->second, pos));
                 }
                 else
                 {
-                  throw error::struct_redefined (old->second, *pos);
+                  throw error::struct_redefined (old->second, pos);
                 }
               }
 
-            set.emplace (pos->name(), *pos);
+            set.emplace (pos.name(), pos);
           }
 
         return set;

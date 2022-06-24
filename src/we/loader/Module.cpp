@@ -36,7 +36,7 @@ namespace we
         ensure_unloads_without_rest_and_load (::boost::filesystem::path path)
       {
         auto const before (fhg::util::currently_loaded_libraries());
-        fhg::util::scoped_dlhandle (path, flags);
+        (void) fhg::util::scoped_dlhandle (path, flags);
         auto const after (fhg::util::currently_loaded_libraries());
 
         if (before != after)

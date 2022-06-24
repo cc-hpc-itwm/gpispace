@@ -37,7 +37,7 @@ namespace fhg
           : _time_point (time_point)
         {}
 
-        virtual std::ostream& operator() (std::ostream& os) const override
+        std::ostream& operator() (std::ostream& os) const override
         {
           std::time_t const tp_c (Clock::to_time_t (_time_point));
 

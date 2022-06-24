@@ -22,12 +22,13 @@
 #include <util-generic/testing/printer/optional.hpp>
 #include <util-generic/testing/random/string.hpp>
 
-#include <boost/format.hpp>
-#include <boost/test/data/test_case.hpp>
 #include <boost/test/unit_test.hpp>
 
-#include <iomanip>
+#include <boost/format.hpp>
+#include <boost/test/data/test_case.hpp>
+
 #include <functional>
+#include <iomanip>
 
 namespace
 {

@@ -21,8 +21,8 @@
 
 #include <we/expr/exception.hpp>
 
-#include <we/type/value/show.hpp>
 #include <we/type/value/function.hpp>
+#include <we/type/value/show.hpp>
 
 #include <boost/format.hpp>
 
@@ -136,10 +136,11 @@ namespace expr
 
                 try
                   {
-                    typedef std::map< pnet::type::value::value_type
-                                    , pnet::type::value::value_type
-                                    > map_type;
-                    map_type& m (::boost::get<map_type> (c0));
+                    using map_type =
+                      std::map< pnet::type::value::value_type
+                              , pnet::type::value::value_type
+                              >;
+                    auto& m (::boost::get<map_type> (c0));
 
                     m[c1] = c2;
 

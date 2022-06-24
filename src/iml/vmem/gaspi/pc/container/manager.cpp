@@ -34,6 +34,7 @@
 #include <cstring>
 #include <functional>
 #include <stdexcept>
+#include <utility>
 
 #include <sys/socket.h>
 #include <sys/stat.h>
@@ -496,8 +497,6 @@ namespace gpi
                            , std::unique_ptr<fhg::rpc::service_tcp_provider_with_deferred_dispatcher> topology_rpc_server
                            )
         : m_path (p)
-        , m_socket (-1)
-        , m_stopping (false)
         , m_process_counter (0)
         , _memory_manager (gaspi_context)
         , _topology ( _memory_manager
@@ -523,6 +522,9 @@ namespace gpi
 
         struct close_socket_on_error
         {
+          close_socket_on_error (int& socket)
+            : _socket {socket}
+          {}
           ~close_socket_on_error()
           {
             if (!_committed)
@@ -530,9 +532,14 @@ namespace gpi
               fhg::util::syscall::close (_socket);
             }
           }
-          bool _committed;
+          close_socket_on_error (close_socket_on_error const&) = delete;
+          close_socket_on_error& operator= (close_socket_on_error const&) = delete;
+          close_socket_on_error (close_socket_on_error&&) = delete;
+          close_socket_on_error& operator= (close_socket_on_error&&) = delete;
+
+          bool _committed {false};
           int& _socket;
-        } close_socket_on_error = {false, m_socket};
+        } close_socket_on_error = {m_socket};
 
         {
           const int on (1);
@@ -558,6 +565,9 @@ namespace gpi
 
         struct delete_socket_file_on_error
         {
+          delete_socket_file_on_error (::boost::filesystem::path path)
+            : _path {std::move (path)}
+          {}
           ~delete_socket_file_on_error()
           {
             if (!_committed)
@@ -565,9 +575,14 @@ namespace gpi
               fhg::util::syscall::unlink (_path.string().c_str());
             }
           }
-          bool _committed;
+          delete_socket_file_on_error (delete_socket_file_on_error const&) = delete;
+          delete_socket_file_on_error& operator= (delete_socket_file_on_error const&) = delete;
+          delete_socket_file_on_error (delete_socket_file_on_error&&) = delete;
+          delete_socket_file_on_error& operator= (delete_socket_file_on_error&&) = delete;
+
+          bool _committed {false};
           ::boost::filesystem::path _path;
-        } delete_socket_file_on_error = {false, m_path};
+        } delete_socket_file_on_error = {m_path};
 
         fhg::util::syscall::chmod (m_path.c_str(), 0700);
 

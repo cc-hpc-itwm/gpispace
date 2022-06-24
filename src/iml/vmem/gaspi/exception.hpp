@@ -16,11 +16,9 @@
 
 #pragma once
 
-#include <stdexcept>
-#include <boost/lexical_cast.hpp>
-
 #include <iml/vmem/gaspi/types.hpp>
 
+#include <stdexcept>
 #include <string>
 
 namespace gpi
@@ -76,16 +74,16 @@ namespace gpi
         : std::runtime_error (ec.name ())
         , value (ec.value())
         , user_message (m)
-        , message ("gaspi::error[" + ::boost::lexical_cast<std::string>(value) + "]: " + ec.name() + ": " + user_message)
+        , message ("gaspi::error[" + std::to_string (value) + "]: " + ec.name() + ": " + user_message)
       {}
 
-      virtual ~gaspi_error () override = default;
+      ~gaspi_error () override = default;
       gaspi_error (gaspi_error const&) = delete;
       gaspi_error (gaspi_error&&) = default;
       gaspi_error& operator= (gaspi_error const&) = delete;
       gaspi_error& operator= (gaspi_error&&) = delete;
 
-      virtual const char * what () const noexcept override
+      const char * what () const noexcept override
       {
         return message.c_str();
       }

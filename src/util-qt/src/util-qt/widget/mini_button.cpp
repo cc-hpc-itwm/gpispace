@@ -30,7 +30,7 @@ namespace fhg
         mini_button::mini_button (QStyle::StandardPixmap icon, QWidget* parent)
           : QToolButton (parent)
         {
-          QAction* action (new QAction (this));
+          auto* action (new QAction (this));
           action->setIcon (style()->standardIcon (icon));
           setDefaultAction (action);
         }

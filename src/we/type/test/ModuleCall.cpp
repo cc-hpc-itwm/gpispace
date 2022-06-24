@@ -17,8 +17,8 @@
 #include <we/type/ModuleCall.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <util-generic/testing/random/string.hpp>
 #include <util-generic/testing/random.hpp>
+#include <util-generic/testing/random/string.hpp>
 
 #include <boost/test/unit_test.hpp>
 

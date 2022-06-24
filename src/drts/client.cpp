@@ -18,15 +18,13 @@
 #include <drts/drts.hpp>
 
 #include <drts/information_to_reattach.hpp>
-#include <drts/private/pimpl.hpp>
 #include <drts/private/information_to_reattach.hpp>
+#include <drts/private/pimpl.hpp>
 
 #include <we/type/Activity.hpp>
 #include <we/type/value.hpp>
 
 #include <sdpa/client.hpp>
-
-#include <we/type/Activity.hpp>
 
 #include <boost/format.hpp>
 
@@ -57,8 +55,8 @@ namespace gspc
     return _->_activity.to_string();
   }
 
-  workflow::workflow (workflow&&) = default;
-  workflow& workflow::operator= (workflow&&) = default;
+  workflow::workflow (workflow&&) noexcept = default;
+  workflow& workflow::operator= (workflow&&) noexcept = default;
 
   static_assert ( std::is_same<job_id_t, sdpa::job_id_t>::value
                 , "drts::job_id_t != sdpa::job_id_t"

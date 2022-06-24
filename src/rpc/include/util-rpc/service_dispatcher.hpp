@@ -73,6 +73,7 @@ namespace fhg
       service_dispatcher (service_dispatcher&&) = delete;
       service_dispatcher& operator= (service_dispatcher const&) = delete;
       service_dispatcher& operator= (service_dispatcher&&) = delete;
+      ~service_dispatcher() = default;
 
     private:
       template<typename> friend struct service_handler;

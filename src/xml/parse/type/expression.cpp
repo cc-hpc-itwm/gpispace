@@ -16,8 +16,8 @@
 
 #include <xml/parse/type/expression.hpp>
 
-#include <util-generic/join.hpp>
 #include <fhg/util/xml.hpp>
+#include <util-generic/join.hpp>
 
 #include <stdexcept>
 

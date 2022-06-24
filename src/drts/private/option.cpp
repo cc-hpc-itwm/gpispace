@@ -15,6 +15,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <drts/private/option.hpp>
+
 #include <drts/drts.hpp>
 #include <drts/scoped_rifd.hpp>
 

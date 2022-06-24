@@ -56,7 +56,7 @@ namespace iml
     SegmentAndAllocation ( Client& client
                          , SegmentDescription description
                          , MemorySize total_size
-                         , char const* const data
+                         , char const* data
                          );
 
     //! Reference this allocation at the given \a offset.
@@ -69,7 +69,7 @@ namespace iml
 
     SegmentAndAllocation() = delete;
     SegmentAndAllocation (SegmentAndAllocation const&) = delete;
-    SegmentAndAllocation (SegmentAndAllocation&&);
+    SegmentAndAllocation (SegmentAndAllocation&&) noexcept;
     SegmentAndAllocation& operator= (SegmentAndAllocation const&) = delete;
     SegmentAndAllocation& operator= (SegmentAndAllocation&&) = delete;
     ~SegmentAndAllocation();

@@ -24,12 +24,11 @@
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/require_maximum_running_time.hpp>
 
-#include <boost/lexical_cast.hpp>
-
 #include <functional>
 #include <list>
 #include <mutex>
 #include <random>
+#include <string>
 #include <thread>
 #include <tuple>
 
@@ -62,7 +61,7 @@ namespace
   {
     std::unique_lock<std::mutex> const _ (generate_id_mutex);
     static unsigned long _cnt (0);
-    return ::boost::lexical_cast<we::layer::id_type> (++_cnt);
+    return std::to_string (++_cnt);
   }
 }
 

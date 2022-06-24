@@ -16,8 +16,8 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <sig_struct.hpp>
 #include <sig_op.hpp>
+#include <sig_struct.hpp>
 
 #include <we/exception.hpp>
 #include <we/type/value.hpp>

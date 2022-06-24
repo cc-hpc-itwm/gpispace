@@ -29,7 +29,7 @@ namespace pnet
     {
       namespace
       {
-        typedef std::unordered_map<std::string,std::string> map_type;
+        using map_type = std::unordered_map<std::string, std::string>;
 
         map_type init_typenames_complete()
         {
@@ -54,7 +54,7 @@ namespace pnet
           return tn;
         }
 
-        const std::string typename_complete (std::string const& tname)
+        std::string typename_complete (std::string const& tname)
         {
           static map_type tn (init_typenames_complete());
 

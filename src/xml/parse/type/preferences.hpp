@@ -18,8 +18,8 @@
 
 #include <fhg/util/xml.fwd.hpp>
 
-#include <string>
 #include <list>
+#include <string>
 #include <unordered_map>
 
 namespace xml
@@ -28,7 +28,7 @@ namespace xml
   {
     namespace type
     {
-      typedef std::string preference_type;
+      using preference_type = std::string;
 
       class preferences_type
       {

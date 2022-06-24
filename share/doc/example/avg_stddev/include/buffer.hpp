@@ -22,28 +22,17 @@ namespace fhg
 {
   namespace buffer
   {
+    //! \todo use std::span
     template<typename T>
     struct type
     {
     private:
-      T* _begin;
-      std::size_t _count;
-      std::size_t _size;
+      T* _begin {nullptr};
+      std::size_t _count {0};
+      std::size_t _size {0};
 
     public:
-      type () : _begin (nullptr), _count (0), _size (0) {}
-      type (const type& other)
-        : _begin (other._begin)
-        , _count (other._count)
-        , _size (other._size)
-      {}
-      type& operator = (const type& other)
-      {
-        _begin = other._begin;
-        _count = other._count;
-        _size = other._size;
-        return *this;
-      }
+      type() = default;
       explicit type (T* begin, const std::size_t size)
         : _begin (begin)
         , _count (size)

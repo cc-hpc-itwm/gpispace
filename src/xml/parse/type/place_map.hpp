@@ -20,8 +20,8 @@
 #include <xml/parse/util/position.fwd.hpp>
 #include <xml/parse/util/unique.hpp>
 
-#include <util-generic/hash/std/tuple.hpp>
 #include <fhg/util/xml.fwd.hpp>
+#include <util-generic/hash/std/tuple.hpp>
 
 #include <we/type/id.hpp> //we::place_id_type
 #include <we/type/property.hpp>
@@ -38,7 +38,7 @@ namespace xml
       struct place_map_type : with_position_of_definition
       {
       public:
-        typedef std::pair<std::string, std::string> unique_key_type;
+        using unique_key_type = std::pair<std::string, std::string>;
 
         place_map_type ( util::position_type const&
                        , std::string const& _place_virtual
@@ -62,9 +62,8 @@ namespace xml
         we::type::property::type _properties;
       };
 
-      typedef std::unordered_map< std::string
-                                , we::place_id_type
-                                > place_map_map_type;
+      using place_map_map_type =
+        std::unordered_map<std::string, we::place_id_type>;
 
       namespace dump
       {

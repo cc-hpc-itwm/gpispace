@@ -23,8 +23,6 @@
 #include <drts/private/option.hpp>
 #include <drts/scoped_rifd.hpp>
 
-#include <drts/private/option.hpp>
-
 #include <testing/hopefully_free_port.hpp>
 #include <testing/make.hpp>
 #include <testing/parse_command_line.hpp>

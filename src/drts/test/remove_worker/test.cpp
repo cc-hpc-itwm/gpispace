@@ -24,12 +24,11 @@
 #include <testing/make.hpp>
 #include <testing/parse_command_line.hpp>
 #include <testing/scoped_nodefile_from_environment.hpp>
-#include <testing/source_directory.hpp>
 #include <testing/shared_directory.hpp>
+#include <testing/source_directory.hpp>
 
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/finally.hpp>
-#include <util-generic/latch.hpp>
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/optional.hpp>
@@ -41,6 +40,8 @@
 #include <boost/program_options.hpp>
 #include <boost/test/data/test_case.hpp>
 #include <boost/thread/scoped_thread.hpp>
+
+#include <future>
 
 BOOST_AUTO_TEST_CASE (remove_worker)
 {
@@ -119,12 +120,12 @@ BOOST_AUTO_TEST_CASE (remove_worker)
 
   ::boost::asio::ip::tcp::acceptor acceptor (io_service, {});
   ::boost::asio::ip::tcp::socket connection (io_service);
-  fhg::util::latch connected (1);
+  std::promise<void> connected;
 
   acceptor.async_accept ( connection
                         , [&connected] (::boost::system::error_code)
                           {
-                            connected.count_down();
+                            connected.set_value();
                           }
                         );
 
@@ -141,7 +142,7 @@ BOOST_AUTO_TEST_CASE (remove_worker)
         )
     );
 
-  connected.wait();
+  connected.get_future().wait();
 
   drts.remove_worker (rifds.entry_points());
 

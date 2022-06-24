@@ -1,0 +1,154 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2022 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun name="preferences_and_multimodules">
+  <in name="num_tasks" type="long" place="num_tasks"/>
+  <out name="implementation" type="string" place="implementation"/>
+  <out name="done" type="control" place="done"/>
+  <!-- The net generates a user supplied number of tasks, which are executed in
+       parallel on a set of workers distributed across multiple hosts. The workers
+       are assumed to be partitioned in different classes, one class per hardware
+       target (e.g. FPGA, GPU, CPU), according to a topology supplied by the user
+       at the distributed runtime system's startup. Specific target task
+       implementations can be executed only by the workers in the corresponding
+       class.
+  -->
+  <net>
+    <place name="num_tasks" type="long"/>
+    <place name="done" type="control"/>
+    <place name="implementation" type="string"/>
+
+    <include-template href="dup.xml"/>
+    <specialize name="dup_task_number" use="dup">
+      <type-map replace="T" with="long"/>
+    </specialize>
+
+    <place name="num_remaining_tasks" type="long"/>
+    <place name="num_tasks_gen" type="long"/>
+    <transition name="dup_num_tasks" inline="true">
+      <use name="dup_task_number"/>
+      <connect-in port="in" place="num_tasks"/>
+      <connect-out port="one" place="num_remaining_tasks"/>
+      <connect-out port="two" place="num_tasks_gen"/>
+    </transition>
+
+    <place name="task_id" type="long"/>
+    <transition name="generate_task_ids" inline="true">
+      <include-function href="sequence.xml"/>
+      <connect-in port="amount" place="num_tasks_gen"/>
+      <connect-out port="out" place="task_id"/>
+    </transition>
+
+    <place name="task_finished" type="bool"/>
+    <transition name="transition_with_multiple_module_implementations">
+      <defun>
+        <in name="task_id" type="long"/>
+        <out name="implementation" type="string"/>
+        <out name="task_finished" type="bool"/>
+        <modules>
+          <!-- The preferences are an ordered list of targets. The user is
+               required to provide a specific implementation of the task
+               corresponding to a transition for each target listed in the
+               section preferences. At runtime, the scheduler uses the order as
+               a hint, trying to respect this when choosing which implementation
+               to run such that the overall performance of the application is
+               maximized.
+          -->
+          <preferences>
+            <target>FPGA</target>
+            <target>GPU</target>
+            <target>CPU</target>
+          </preferences>
+          <!-- In this section a specific task implementation for an FPGA target
+               should be provided.
+          -->
+          <module name="preferences_and_multimodules"
+                  function="task (implementation, task_finished)"
+                  target="FPGA">
+            <!-- specific headers used in the implementation should be specified:
+            <cinclude href="..."/>
+            -->
+            <!-- specific compilation or linking flags should be also specified,
+                 if necessary:
+            <cxx flags="..."/>
+            <ld flags="..."/>
+            -->
+            <code><![CDATA[
+              // specific C++ implementation for an FPGA target should go here
+              implementation = "FPGA";
+              task_finished = true;
+            ]]></code>
+          </module>
+          <!-- In this section a specific task implementation for a GPU target
+               should be provided.
+          -->
+          <module name="preferences_and_multimodules"
+                  function="task (implementation, task_finished)"
+                  target="GPU">
+            <!-- specific headers used in the implementation should be specified:
+            <cinclude href="..."/>
+            -->
+            <!-- specific compilation or linking flags should be also specified,
+                 if necessary:
+            <cxx flags="..."/>
+            <ld flags="..."/>
+            -->
+            <code><![CDATA[
+              // specific C++ implementation for a GPU target should go here
+              implementation = "GPU";
+              task_finished = true;
+            ]]></code>
+          </module>
+          <!-- In this section a specific task implementation for a CPU target
+               should be provided.
+          -->
+          <module name="preferences_and_multimodules"
+                  function="task (implementation, task_finished)"
+                  target="CPU">
+            <!-- specific headers used in the implementation should be specified:
+            <cinclude href="..."/>
+            -->
+            <!-- specific compilation or linking flags should be also specified,
+                 if necessary:
+            <cxx flags="..."/>
+            <ld flags="..."/>
+            -->
+            <code><![CDATA[
+              // specific C++ implementation for a GPU target should go here   
+              implementation = "CPU";
+              task_finished = true;
+            ]]></code>
+          </module>
+        </modules>
+      </defun>
+      <connect-in port="task_id" place="task_id"/>
+      <connect-out port="implementation" place="implementation"/>
+      <connect-out port="task_finished" place="task_finished"/>
+    </transition>
+
+    <include-template href="wait.xml"/>
+    <specialize name="wait_bool" use="wait">
+      <type-map replace="T" with="bool"/>
+    </specialize>
+
+    <transition name="wait">
+      <use name="wait_bool"/>
+      <place-map virtual="wait" real="num_remaining_tasks"/>
+      <connect-in port="trigger" place="task_finished"/>
+      <connect-out port="done" place="done"/>
+    </transition>
+  </net>
+</defun>

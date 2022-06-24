@@ -16,8 +16,8 @@
 
 #include <we/type/Expression.hpp>
 
-#include <we/expr/type/AssignResult.hpp>
 #include <we/exception.hpp>
+#include <we/expr/type/AssignResult.hpp>
 
 #include <util-generic/nest_exceptions.hpp>
 

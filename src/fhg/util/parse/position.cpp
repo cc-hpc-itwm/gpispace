@@ -28,8 +28,7 @@ namespace fhg
     namespace parse
     {
       position::position (std::string const& input)
-        : _k (0)
-        , _pos (input.begin())
+        : _pos (input.begin())
         , _begin (input.begin())
         , _end (input.end())
       {}

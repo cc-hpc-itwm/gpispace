@@ -29,6 +29,11 @@ namespace fhg
         directory (::boost::filesystem::path const&);
         ~directory();
 
+        directory (directory const&) = delete;
+        directory& operator= (directory const&) = delete;
+        directory (directory&&) = delete;
+        directory& operator= (directory&&) = delete;
+
         int fd() const;
       private:
         /*DIR*/void* _;

@@ -32,8 +32,8 @@
 #include <util-generic/wait_and_collect_exceptions.hpp>
 
 #include <util-rpc/remote_function.hpp>
-#include <util-rpc/remote_tcp_endpoint.hpp>
 #include <util-rpc/remote_socket_endpoint.hpp>
+#include <util-rpc/remote_tcp_endpoint.hpp>
 
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/predicate.hpp>
@@ -266,7 +266,7 @@ namespace iml
         {
           std::vector<pid_t> pids;
           std::unordered_map<pid_t, process_iter> to_erase;
-          for ( process_iter it (entry_point_processes->second.begin())
+          for ( auto it (entry_point_processes->second.begin())
               ; it != entry_point_processes->second.end()
               ; ++it
               )

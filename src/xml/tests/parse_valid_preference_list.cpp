@@ -22,16 +22,16 @@
 #include <we/type/Activity.hpp>
 #include <we/type/net.hpp>
 
-#include <util-generic/testing/require_exception.hpp>
 #include <util-generic/testing/printer/list.hpp>
+#include <util-generic/testing/require_exception.hpp>
 
-#include <util-generic/read_file.hpp>
 #include <util-generic/executable_path.hpp>
+#include <util-generic/read_file.hpp>
 
+#include <functional>
+#include <list>
 #include <string>
 #include <unordered_set>
-#include <list>
-#include <functional>
 
 #include <boost/range/adaptors.hpp>
 

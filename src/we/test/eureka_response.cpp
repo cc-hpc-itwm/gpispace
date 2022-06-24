@@ -15,8 +15,9 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <boost/test/unit_test.hpp>
-#include <boost/test/data/test_case.hpp>
+
 #include <boost/optional/optional_io.hpp>
+#include <boost/test/data/test_case.hpp>
 
 #include <we/type/Activity.hpp>
 #include <we/type/Transition.hpp>
@@ -34,7 +35,6 @@
 namespace
 {
   namespace signature = pnet::type::signature;
-  namespace value = pnet::type::value;
 
   we::type::eureka_id_type const eureka_id ("group");
 
@@ -61,6 +61,7 @@ namespace
       (net.add_place (place::type ( "in"
                                   , signature::signature_type ("long")
                                   , true
+                                  , we::type::property::type{}
                                   )
                      )
       )
@@ -106,6 +107,7 @@ namespace
       (net.add_place (place::type ( "id"
                                   , signature::signature_type ("string")
                                   , true
+                                  , we::type::property::type{}
                                   )
                      )
       );

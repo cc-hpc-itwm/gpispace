@@ -18,11 +18,11 @@
 
 #include <we/type/value.hpp>
 
-#include <string>
 #include <list>
+#include <string>
 
-#include <boost/variant/variant_fwd.hpp>
 #include <boost/variant/recursive_wrapper_fwd.hpp>
+#include <boost/variant/variant_fwd.hpp>
 
 namespace we
 {
@@ -30,11 +30,11 @@ namespace we
   {
     namespace property
     {
-      typedef pnet::type::value::value_type value_type;
+      using value_type = pnet::type::value::value_type;
 
       struct type;
 
-      typedef std::list<std::string> path_type;
+      using path_type = std::list<std::string>;
     }
   }
 }

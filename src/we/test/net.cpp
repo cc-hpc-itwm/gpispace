@@ -20,8 +20,8 @@
 #include <we/type/Expression.hpp>
 #include <we/type/MemoryBufferInfo.hpp>
 #include <we/type/ModuleCall.hpp>
-#include <we/type/net.hpp>
 #include <we/type/Transition.hpp>
+#include <we/type/net.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/random.hpp>

@@ -72,9 +72,9 @@ namespace fhg
         {
           mark_task_scope() = delete;
           mark_task_scope (mark_task_scope const&) = delete;
-          mark_task_scope (mark_task_scope&) = delete;
+          mark_task_scope (mark_task_scope&&) = delete;
           mark_task_scope& operator= (mark_task_scope const&) = delete;
-          mark_task_scope& operator= (mark_task_scope&) = delete;
+          mark_task_scope& operator= (mark_task_scope&&) = delete;
           ~mark_task_scope();
 
           mark_task_scope (std::shared_ptr<state>);

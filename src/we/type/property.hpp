@@ -24,8 +24,8 @@
 #include <fhg/util/xml.fwd.hpp>
 
 #include <boost/optional/optional_fwd.hpp>
-#include <boost/serialization/nvp.hpp>
 #include <boost/serialization/map.hpp>
+#include <boost/serialization/nvp.hpp>
 
 #include <iosfwd>
 #include <list>

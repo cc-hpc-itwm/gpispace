@@ -34,11 +34,11 @@ namespace test
   {
     struct generic : public fhg::util::ostream::modifier
     {
-      generic (std::string const& key, char const* const value);
+      generic (std::string const& key, char const* value);
       generic (std::string const& key, std::string const&);
       generic (std::string const& key, ::boost::format const&);
       generic (std::string const& key, ::boost::filesystem::path const&);
-      virtual std::ostream& operator() (std::ostream& os) const override;
+      std::ostream& operator() (std::ostream& os) const override;
 
     private:
       std::string const _key;
@@ -53,7 +53,7 @@ namespace test
 
         return *this;
       }
-      virtual std::ostream& operator() (std::ostream& os) const override;
+      std::ostream& operator() (std::ostream& os) const override;
 
     private:
       std::list<std::unique_ptr<generic>> _options;
@@ -128,6 +128,7 @@ namespace test
     make& operator= (make const&) = delete;
     make (make&&) = delete;
     make& operator= (make&&) = delete;
+    ~make() = default;
 
     std::string const _main;
     fhg::util::temporary_path const _build_directory;

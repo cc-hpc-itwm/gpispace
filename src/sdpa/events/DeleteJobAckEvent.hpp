@@ -25,11 +25,11 @@ namespace sdpa
     class DeleteJobAckEvent : public JobEvent
     {
     public:
-      typedef ::boost::shared_ptr<DeleteJobAckEvent> Ptr;
+      using Ptr = ::boost::shared_ptr<DeleteJobAckEvent>;
 
       using JobEvent::JobEvent;
 
-      virtual void handleBy
+      void handleBy
         (fhg::com::p2p::address_t const&, EventHandler*) override
       {
         throw std::runtime_error

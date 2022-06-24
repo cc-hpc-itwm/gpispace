@@ -209,7 +209,7 @@ namespace fhg
             : QObject (parent)
             , _filter (filter)
           {}
-          virtual bool eventFilter (QObject*, QEvent* event) override
+          bool eventFilter (QObject*, QEvent* event) override
           {
             if (event->type() != EnumValue)
             {

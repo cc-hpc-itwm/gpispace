@@ -33,7 +33,7 @@ namespace fhg
         : _value (f)
         , _modify (std::bind (&first_then::set, this, t))
       {}
-      virtual std::ostream& operator() (std::ostream& os) const override
+      std::ostream& operator() (std::ostream& os) const override
       {
         os << _value;
         _modify();

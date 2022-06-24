@@ -24,12 +24,11 @@
 #include <testing/make.hpp>
 #include <testing/parse_command_line.hpp>
 #include <testing/scoped_nodefile_from_environment.hpp>
-#include <testing/source_directory.hpp>
 #include <testing/shared_directory.hpp>
+#include <testing/source_directory.hpp>
 
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/finally.hpp>
-#include <util-generic/latch.hpp>
 #include <util-generic/read_lines.hpp>
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
@@ -45,6 +44,7 @@
 #include <boost/test/data/test_case.hpp>
 #include <boost/thread/scoped_thread.hpp>
 
+#include <future>
 #include <iostream>
 #include <list>
 #include <string>
@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE (add_worker)
   BOOST_REQUIRE_GT (hosts.size(), 0);
 
   {
-    std::vector<std::string>::const_iterator host (hosts.begin());
+    auto host (hosts.begin());
 
     for (unsigned int i (0); i < n; ++i, ++host)
     {
@@ -181,13 +181,13 @@ BOOST_AUTO_TEST_CASE (add_worker)
 
     for (gspc::scoped_rifds const& rifd : rifds)
     {
-      fhg::util::latch connected (1);
+      std::promise<void> connected;
 
       connections.emplace_back (io_service);
       acceptor.async_accept ( connections.back()
                             , [&connected] (::boost::system::error_code)
                               {
-                                connected.count_down();
+                                connected.set_value();
                               }
                             );
 
@@ -195,7 +195,7 @@ BOOST_AUTO_TEST_CASE (add_worker)
 
       client.put_token (job_id, "trigger", we::type::literal::control());
 
-      connected.wait();
+      connected.get_future().wait();
     }
   }
 

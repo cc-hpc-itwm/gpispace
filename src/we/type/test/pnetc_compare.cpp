@@ -15,6 +15,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <boost/test/unit_test.hpp>
+
 #include <boost/test/data/test_case.hpp>
 
 #include <we/type/signature.hpp>
@@ -60,7 +61,7 @@ namespace pnetc
                , -T {0}
                };
       }
-      std::vector<float> const floats()
+      std::vector<float> floats()
       {
         auto values (special_values<float>());
         values.emplace_back (10.0f);
@@ -68,7 +69,7 @@ namespace pnetc
         values.emplace_back (10.0000001f);
         return values;
       }
-      std::vector<double> const doubles()
+      std::vector<double> doubles()
       {
         return special_values<double>();
       }

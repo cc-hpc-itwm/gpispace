@@ -15,22 +15,20 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <we/type/Transition.hpp>
-#include <we/type/net.hpp>
+
 #include <we/type/Activity.hpp>
+#include <we/type/net.hpp>
 
 #include <xml/parse/parser.hpp>
-
 #include <xml/parse/type/function.hpp>
 
 #include <fhg/project_info.hpp>
 #include <util-generic/print_exception.hpp>
 
-#include <we/type/Activity.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/program_options.hpp>
 
 #include <iostream>
-
-#include <boost/program_options.hpp>
-#include <boost/filesystem.hpp>
 
 namespace
 {
@@ -38,13 +36,12 @@ namespace
   {
   private:
     const std::size_t _max_len;
-    mutable std::size_t _len;
+    mutable std::size_t _len {0};
     std::ostream& _stream;
 
   public:
     wrapping_word_stream (std::ostream& stream, std::size_t max = 75)
       : _max_len (max)
-      , _len (0)
       , _stream (stream)
     {}
 

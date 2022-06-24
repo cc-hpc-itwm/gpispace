@@ -17,13 +17,13 @@
 #include <iml/vmem/gaspi/pc/segment/segment.hpp>
 
 // needs linking with -lrt
+#include <errno.h>
+#include <fcntl.h>
+#include <string.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <string.h>
 
 #include <util-generic/syscall.hpp>
 
@@ -33,6 +33,26 @@ namespace iml
 {
   namespace detail
   {
+    namespace
+    {
+      struct close_on_scope_exit
+      {
+        close_on_scope_exit (int fd)
+          : _fd {fd}
+        {}
+        ~close_on_scope_exit()
+        {
+          fhg::util::syscall::close (_fd);
+        }
+        close_on_scope_exit (close_on_scope_exit const&) = delete;
+        close_on_scope_exit& operator= (close_on_scope_exit const&) = delete;
+        close_on_scope_exit (close_on_scope_exit&&) = delete;
+        close_on_scope_exit& operator= (close_on_scope_exit&&) = delete;
+
+        int _fd;
+      };
+    }
+
       OpenedSharedMemory::~OpenedSharedMemory()
       {
         close ();
@@ -41,8 +61,7 @@ namespace iml
       OpenedSharedMemory::OpenedSharedMemory ( std::string const& name
                                              , iml::MemorySize sz
                                              )
-        : m_ptr (nullptr)
-        , _name (name)
+        : _name (name)
         , _size (sz)
       {
         if (name.empty())
@@ -70,14 +89,7 @@ namespace iml
             );
         }
 
-        struct close_on_scope_exit
-        {
-          ~close_on_scope_exit()
-          {
-            fhg::util::syscall::close (_fd);
-          }
-          int _fd;
-        } _ = {fd};
+        close_on_scope_exit const _ {fd};
 
         try
         {
@@ -128,14 +140,7 @@ namespace iml
             );
         }
 
-        struct close_on_scope_exit
-        {
-          ~close_on_scope_exit()
-          {
-            fhg::util::syscall::close (_fd);
-          }
-          int _fd;
-        } _ = {fd};
+        close_on_scope_exit const _ {fd};
 
         try
         {

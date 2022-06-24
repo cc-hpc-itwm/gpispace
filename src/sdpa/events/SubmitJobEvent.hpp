@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include <sdpa/events/SDPAEvent.hpp>
 #include <sdpa/events/EventHandler.hpp>
+#include <sdpa/events/SDPAEvent.hpp>
 #include <sdpa/types.hpp>
 
 #include <we/type/Activity.hpp>
@@ -30,7 +30,7 @@ namespace sdpa
     class SubmitJobEvent : public SDPAEvent
     {
     public:
-      typedef ::boost::shared_ptr<SubmitJobEvent> Ptr;
+      using Ptr = ::boost::shared_ptr<SubmitJobEvent>;
 
       SubmitJobEvent
         ( ::boost::optional<sdpa::job_id_t> const& a_job_id
@@ -62,7 +62,7 @@ namespace sdpa
         return _workers;
       }
 
-      virtual void handleBy
+      void handleBy
         (fhg::com::p2p::address_t const& source, EventHandler* handler) override
       {
         handler->handleSubmitJobEvent (source, this);

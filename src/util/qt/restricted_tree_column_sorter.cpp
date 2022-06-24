@@ -32,8 +32,6 @@ namespace fhg
           : QObject (parent)
           , _tree (tree)
           , _allowed_columns (allowed_columns)
-          , _last_state (none)
-          , _last_column (-1)
       {
         _tree->header()->setSectionsClickable (true);
         connect

@@ -21,9 +21,9 @@
 
 #include <boost/functional/hash.hpp>
 
+#include <iomanip>
 #include <iostream>
 #include <sstream>
-#include <iomanip>
 
 #include <stdint.h>
 
@@ -271,9 +271,9 @@ namespace bitsetofint
 
   bool operator== (type const& x, type const& y)
   {
-    std::vector<uint64_t>::const_iterator pos_x (x._container.begin());
+    auto pos_x (x._container.begin());
     const std::vector<uint64_t>::const_iterator& end_x (x._container.end());
-    std::vector<uint64_t>::const_iterator pos_y (y._container.begin());
+    auto pos_y (y._container.begin());
     const std::vector<uint64_t>::const_iterator& end_y (y._container.end());
 
     while (pos_x != end_x && pos_y != end_y)

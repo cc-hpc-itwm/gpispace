@@ -35,9 +35,6 @@ namespace expr
   {
     tokenizer::tokenizer (fhg::util::parse::position& _p)
       : _pos (_p)
-      , _token (eof)
-      , _tokval()
-      , _ref()
     {}
 
     pnet::type::value::value_type const& tokenizer::value() const
@@ -59,12 +56,13 @@ namespace expr
 
     namespace
     {
-      typedef ::boost::make_recursive_variant
-              < std::map<char, ::boost::recursive_variant_>
-              , std::function<void (tokenizer&)>
-              >::type node_type;
+      using node_type = ::boost::make_recursive_variant
+                      < std::map<char, ::boost::recursive_variant_>
+                      , std::function<void (tokenizer &)>
+                      >::type
+        ;
 
-      typedef std::map<char, node_type> child_type;
+      using child_type = std::map<char, node_type>;
 
       void put ( std::string::const_iterator pos
                , std::string::const_iterator end

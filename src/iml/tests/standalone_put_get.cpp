@@ -22,9 +22,9 @@
 #include <iml/SegmentAndAllocation.hpp>
 #include <iml/SharedMemoryAllocation.hpp>
 
-#include <boost/program_options.hpp>
 #include <boost/format.hpp>
 #include <boost/optional/optional_io.hpp>
+#include <boost/program_options.hpp>
 
 #include <iml/testing/parse_command_line.hpp>
 #include <iml/testing/set_nodefile_from_environment.hpp>

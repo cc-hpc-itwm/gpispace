@@ -23,9 +23,9 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/utility.hpp>
 
+#include <map>
 #include <string>
 #include <unordered_map>
-#include <map>
 
 namespace we
 {
@@ -54,7 +54,7 @@ namespace we
                 , std::map<std::string, void*> const& memory_buffer
                 ) const;
 
-      virtual void add_function (std::string const&, WrapperFunction) override;
+      void add_function (std::string const&, WrapperFunction) override;
 
     private:
       ::boost::filesystem::path path_;

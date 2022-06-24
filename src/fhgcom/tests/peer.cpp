@@ -14,8 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <fhgcom/peer.hpp>
 #include <fhgcom/channel.hpp>
+#include <fhgcom/peer.hpp>
 #include <fhgcom/peer_info.hpp>
 
 #include <testing/certificates_data.hpp>
@@ -31,10 +31,11 @@
 #include <util-generic/testing/random.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
+#include <boost/test/unit_test.hpp>
+
 // should only need ssl/context.hpp, but that's missing an include
 #include <boost/asio/ssl.hpp>
 #include <boost/test/data/test_case.hpp>
-#include <boost/test/unit_test.hpp>
 #include <boost/version.hpp>
 
 #include <atomic>

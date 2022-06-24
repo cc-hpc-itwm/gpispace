@@ -17,9 +17,8 @@
 #pragma once
 
 #include <sdpa/client.hpp>
-#include <sdpa/test/NetworkStrategy.hpp>
 #include <sdpa/daemon/Agent.hpp>
-#include <sdpa/test/sdpa/UNSAFE_thread_event.hpp>
+#include <sdpa/test/NetworkStrategy.hpp>
 
 #include <fhgcom/peer.hpp>
 
@@ -94,9 +93,9 @@ namespace utils
 
     agent() = delete;
     agent (agent const&) = delete;
-    agent (agent&) = delete;
+    agent (agent&&) = delete;
     agent& operator= (agent const&) = delete;
-    agent& operator= (agent&) = delete;
+    agent& operator= (agent&&) = delete;
     ~agent() = default;
 
     sdpa::daemon::Agent _;
@@ -171,18 +170,22 @@ namespace utils
                          , fhg::com::Certificates const&
                          );
     ~basic_drts_component() override;
+    basic_drts_component (basic_drts_component const&) = delete;
+    basic_drts_component& operator= (basic_drts_component const&) = delete;
+    basic_drts_component (basic_drts_component&&) = delete;
+    basic_drts_component& operator= (basic_drts_component&&) = delete;
 
-    virtual void handle_worker_registration_response
+    void handle_worker_registration_response
       ( fhg::com::p2p::address_t const&
       , sdpa::events::worker_registration_response const*
       ) override;
 
-    virtual void handleWorkerRegistrationEvent
+    void handleWorkerRegistrationEvent
       ( fhg::com::p2p::address_t const&
       , sdpa::events::WorkerRegistrationEvent const*
       ) override;
 
-    virtual void handleErrorEvent
+    void handleErrorEvent
       ( fhg::com::p2p::address_t const&
       , sdpa::events::ErrorEvent const*
       ) override;
@@ -198,6 +201,10 @@ namespace utils
     {
       event_thread_and_worker_join (basic_drts_component&);
       ~event_thread_and_worker_join();
+      event_thread_and_worker_join (event_thread_and_worker_join const&) = delete;
+      event_thread_and_worker_join& operator= (event_thread_and_worker_join const&) = delete;
+      event_thread_and_worker_join (event_thread_and_worker_join&&) = delete;
+      event_thread_and_worker_join& operator= (event_thread_and_worker_join&&) = delete;
 
       basic_drts_component& _component_logic;
     };
@@ -245,11 +252,11 @@ namespace utils
         , fhg::com::Certificates const&
         );
 
-      virtual void handleSubmitJobEvent
+      void handleSubmitJobEvent
         ( fhg::com::p2p::address_t const&
         , sdpa::events::SubmitJobEvent const*
         ) override;
-      virtual void handleJobFinishedAckEvent
+      void handleJobFinishedAckEvent
         ( fhg::com::p2p::address_t const&
         , sdpa::events::JobFinishedAckEvent const*
         ) override;
@@ -294,7 +301,7 @@ namespace utils
         , fhg::com::Certificates const&
         );
 
-      virtual void handleJobFinishedAckEvent
+      void handleJobFinishedAckEvent
         ( fhg::com::p2p::address_t const&
         , sdpa::events::JobFinishedAckEvent const*
         ) override;
@@ -302,7 +309,7 @@ namespace utils
       void finish_and_wait_for_ack (std::string name);
 
     private:
-      fhg::util::thread::UNSAFE_event<std::string> _finished_ack;
+      fhg::util::threadsafe_queue<std::string> _finished_ack;
     };
   }
 
@@ -409,9 +416,9 @@ namespace utils
 
     client() = delete;
     client (client const&) = delete;
-    client (client&) = delete;
+    client (client&&) = delete;
     client& operator= (client const&) = delete;
-    client& operator= (client&) = delete;
+    client& operator= (client&&) = delete;
     ~client() = default;
 
     sdpa::job_id_t submit_job (we::type::Activity);

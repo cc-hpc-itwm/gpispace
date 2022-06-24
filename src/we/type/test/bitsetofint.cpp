@@ -20,8 +20,8 @@
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 
-#include <sstream>
 #include <set>
+#include <sstream>
 
 BOOST_AUTO_TEST_CASE (various_tests)
 {

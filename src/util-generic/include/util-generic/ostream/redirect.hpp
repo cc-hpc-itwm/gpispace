@@ -34,9 +34,14 @@ namespace fhg
                  , std::function<void (std::string const&)> line
                  );
 
-        virtual ~redirect() override;
+        ~redirect() override;
 
-        virtual int_type overflow (int_type c) override;
+        int_type overflow (int_type c) override;
+
+        redirect (redirect const&) = delete;
+        redirect (redirect&&) = delete;
+        redirect& operator= (redirect const&) = delete;
+        redirect& operator= (redirect&&) = delete;
 
       private:
         std::ostream& _os;

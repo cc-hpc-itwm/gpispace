@@ -39,6 +39,7 @@
 
 #include <functional>
 #include <stdexcept>
+#include <string>
 #include <utility>
 
 namespace sdpa
@@ -50,8 +51,7 @@ namespace sdpa
                    , std::unique_ptr<::boost::asio::io_service> peer_io_service
                    , fhg::com::Certificates const& certificates
                    )
-      : _stopping (false)
-      , m_peer ( std::move (peer_io_service)
+      : m_peer ( std::move (peer_io_service)
                , fhg::com::port_t (0)
                , certificates
                , top_level_agent_host
@@ -118,7 +118,7 @@ namespace sdpa
       [[noreturn]] void handle_error_and_unexpected_event
         (sdpa::events::SDPAEvent::Ptr reply)
       {
-        if ( sdpa::events::ErrorEvent* const err
+        if ( auto* const err
            = dynamic_cast<sdpa::events::ErrorEvent*> (reply.get())
            )
         {
@@ -126,7 +126,7 @@ namespace sdpa
             ( "Error: reason := "
             + err->reason()
             + " code := "
-            + ::boost::lexical_cast<std::string>(err->error_code())
+            + std::to_string (err->error_code())
             );
         }
 
@@ -144,7 +144,7 @@ namespace sdpa
       m_peer.send (codec.encode (&event));
 
       const sdpa::events::SDPAEvent::Ptr reply (m_incoming_events.get());
-      if (Expected* const e = dynamic_cast<Expected*> (reply.get()))
+      if (auto* const e = dynamic_cast<Expected*> (reply.get()))
       {
         return std::move (*e);
       }
@@ -159,7 +159,7 @@ namespace sdpa
         (sdpa::events::SubscribeEvent (id));
      sdpa::events::SDPAEvent::Ptr const reply (m_incoming_events.get());
 
-      if ( sdpa::events::JobFinishedEvent* const job_finished
+      if ( auto* const job_finished
          = dynamic_cast<sdpa::events::JobFinishedEvent*> (reply.get())
          )
       {
@@ -171,7 +171,7 @@ namespace sdpa
         _job_results.emplace (id, job_finished->result());
         return sdpa::status::FINISHED;
       }
-      else if ( sdpa::events::JobFailedEvent* const job_failed
+      else if ( auto* const job_failed
               = dynamic_cast<sdpa::events::JobFailedEvent*> (reply.get())
               )
       {
@@ -182,7 +182,7 @@ namespace sdpa
         job_info.error_message = job_failed->error_message();
         return sdpa::status::FAILED;
       }
-      else if ( sdpa::events::CancelJobAckEvent* const cancel_ack
+      else if ( auto* const cancel_ack
               = dynamic_cast<sdpa::events::CancelJobAckEvent*> (reply.get())
               )
       {

@@ -14,8 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <we/require_type.hpp>
 #include <we/exception.hpp>
+#include <we/require_type.hpp>
 
 #include <we/type/value/name_of.hpp>
 #include <we/type/value/path/append.hpp>
@@ -93,9 +93,9 @@ namespace pnet
                                       > const& s
                       ) const
       {
-        type::value::structured_type::const_iterator v_pos (_value.begin());
+        auto v_pos (_value.begin());
         const type::value::structured_type::const_iterator v_end (_value.end());
-        type::signature::structure_type::const_iterator
+        auto
           s_pos (s.second.begin());
         const type::signature::structure_type::const_iterator
           s_end (s.second.end());

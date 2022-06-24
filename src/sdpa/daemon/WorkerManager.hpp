@@ -48,7 +48,7 @@ namespace sdpa
 
     class WorkerManager
     {
-      typedef std::unordered_map<worker_id_t, Worker> worker_map_t;
+      using worker_map_t = std::unordered_map<worker_id_t, Worker>;
       using worker_iterator = worker_map_t::iterator;
 
     private:
@@ -57,7 +57,7 @@ namespace sdpa
         friend class WorkerManager;
 
       public:
-        WorkerEquivalenceClass();
+        WorkerEquivalenceClass() = default;
         WorkerEquivalenceClass (WorkerEquivalenceClass const&) = delete;
         WorkerEquivalenceClass (WorkerEquivalenceClass&&) = delete;
         WorkerEquivalenceClass& operator= (WorkerEquivalenceClass const&) = delete;
@@ -81,9 +81,9 @@ namespace sdpa
           );
 
       private:
-        unsigned int _num_pending_jobs;
-        unsigned int _num_running_jobs;
-        unsigned long _num_free_workers;
+        unsigned int _num_pending_jobs {0};
+        unsigned int _num_running_jobs {0};
+        unsigned long _num_free_workers {0};
         std::unordered_set<worker_id_t> _idle_workers;
         std::set<std::set<std::string>> _stealing_allowed_classes;
       };

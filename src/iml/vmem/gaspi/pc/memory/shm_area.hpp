@@ -33,25 +33,25 @@ namespace gpi
                    , iml::MemorySize size
                    );
 
-        virtual ~shm_area_t () override;
+        ~shm_area_t () override;
         shm_area_t (shm_area_t const&) = delete;
         shm_area_t (shm_area_t&&) = delete;
         shm_area_t& operator= (shm_area_t const&) = delete;
         shm_area_t& operator= (shm_area_t&&) = delete;
 
       protected:
-        virtual bool is_shm_segment() const override;
+        bool is_shm_segment() const override;
 
-        virtual global::itopology_t& global_topology() override;
+        global::itopology_t& global_topology() override;
 
       private:
-        virtual void *raw_ptr (iml::MemoryOffset off) override;
+        void *raw_ptr (iml::MemoryOffset off) override;
 
-        virtual bool is_range_local ( gpi::pc::type::handle::descriptor_t const&
+        bool is_range_local ( gpi::pc::type::handle::descriptor_t const&
                             , iml::MemoryOffset a
                             , iml::MemoryOffset b
                             ) const override;
-        virtual iml::MemorySize get_local_size ( iml::MemorySize size
+        iml::MemorySize get_local_size ( iml::MemorySize size
                                              , gpi::pc::type::flags_t flgs
                                              ) const override;
 
@@ -60,7 +60,7 @@ namespace gpi
                                   , gpi::rank_t
                                   ) const override;
 
-        void *m_ptr;
+        void *m_ptr {nullptr};
         std::string m_path;
         std::size_t _size;
       };

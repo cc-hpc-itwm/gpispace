@@ -35,6 +35,11 @@ namespace fhg
         scoped (std::string, std::ostream& = std::cout);
         ~scoped();
 
+        scoped (scoped const&) = delete;
+        scoped& operator= (scoped const&) = delete;
+        scoped (scoped&&) = delete;
+        scoped& operator= (scoped&&) = delete;
+
       private:
         std::ostream& _os;
         std::string const _description;

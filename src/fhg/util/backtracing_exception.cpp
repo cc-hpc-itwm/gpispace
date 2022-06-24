@@ -17,9 +17,9 @@
 #include <fhg/util/backtracing_exception.hpp>
 
 #ifndef NO_BACKTRACE
-#include <sstream>
 #include <execinfo.h>
 #include <malloc.h>
+#include <sstream>
 #ifndef NO_CXA_DEMANGLE
 #include <cxxabi.h>
 #endif

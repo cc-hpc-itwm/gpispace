@@ -15,8 +15,8 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <xml/parse/type/connect.hpp>
-#include <xml/parse/type/transition.hpp>
 #include <xml/parse/type/net.hpp>
+#include <xml/parse/type/transition.hpp>
 
 #include <fhg/util/xml.hpp>
 

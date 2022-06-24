@@ -17,8 +17,8 @@
 #pragma once
 
 #include <we/type/Requirement.hpp>
-#include <we/type/schedule_data.hpp>
 #include <we/type/Transition.hpp>
+#include <we/type/schedule_data.hpp>
 
 #include <functional>
 #include <list>

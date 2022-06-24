@@ -32,7 +32,7 @@ namespace fhg
         treeview_with_delete (QWidget* parent = nullptr);
 
       protected:
-        virtual void keyPressEvent (QKeyEvent*) override;
+        void keyPressEvent (QKeyEvent*) override;
       };
     }
   }

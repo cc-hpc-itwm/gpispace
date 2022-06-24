@@ -16,10 +16,10 @@
 
 #include <we/expr/parse/action.hpp>
 
+#include <we/expr/exception.hpp>
 #include <we/expr/token/assoc.hpp>
 #include <we/expr/token/prec.hpp>
 #include <we/expr/token/prop.hpp>
-#include <we/expr/exception.hpp>
 
 #include <util-generic/unreachable.hpp>
 

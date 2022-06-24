@@ -16,8 +16,8 @@
 
 #include <sdpa/daemon/Assignment.hpp>
 #include <sdpa/daemon/Implementation.hpp>
-#include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
 #include <sdpa/daemon/WorkerSet.hpp>
+#include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
 #include <sdpa/types.hpp>
 
 #include <fhgcom/address.hpp>
@@ -43,10 +43,11 @@ namespace sdpa
   {
     namespace
     {
-      typedef std::priority_queue < CostsAndMatchingWorkerInfo
-                                  , std::vector<CostsAndMatchingWorkerInfo>
-                                  , Compare
-                                  > base_priority_queue_t;
+      using base_priority_queue_t =
+        std::priority_queue< CostsAndMatchingWorkerInfo
+                           , std::vector<CostsAndMatchingWorkerInfo>
+                           , Compare
+                           >;
 
       class bounded_priority_queue_t : private base_priority_queue_t
       {

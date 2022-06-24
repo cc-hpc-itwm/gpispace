@@ -25,10 +25,10 @@
 
 #include <boost/asio/read.hpp>
 #include <boost/asio/spawn.hpp>
+#include <boost/asio/use_future.hpp>
 #include <boost/asio/write.hpp>
 #include <boost/iostreams/device/array.hpp>
 #include <boost/iostreams/stream.hpp>
-#include <boost/asio/use_future.hpp>
 
 #include <memory>
 
@@ -401,7 +401,6 @@ namespace fhg
                  _dispatcher->dispatch (yield, input, output);
                }
              )
-         , _dispatcher (nullptr)
        {}
 
       template<typename Protocol, typename Traits>

@@ -146,6 +146,11 @@ namespace fhg
           _queue.interrupt();
         }
 
+        interrupt_on_scope_exit (interrupt_on_scope_exit const&) = delete;
+        interrupt_on_scope_exit& operator= (interrupt_on_scope_exit const&) = delete;
+        interrupt_on_scope_exit (interrupt_on_scope_exit&&) = delete;
+        interrupt_on_scope_exit& operator= (interrupt_on_scope_exit&&) = delete;
+
       private:
         interruptible_threadsafe_queue<T>& _queue;
       };
@@ -227,6 +232,11 @@ namespace fhg
         {
           _queue.interrupt();
         }
+
+        interrupt_on_scope_exit (interrupt_on_scope_exit const&) = delete;
+        interrupt_on_scope_exit& operator= (interrupt_on_scope_exit const&) = delete;
+        interrupt_on_scope_exit (interrupt_on_scope_exit&&) = delete;
+        interrupt_on_scope_exit& operator= (interrupt_on_scope_exit&&) = delete;
 
       private:
         interruptible_bounded_threadsafe_queue<T>& _queue;

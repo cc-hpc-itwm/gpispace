@@ -17,14 +17,14 @@
 #include <boost/test/unit_test.hpp>
 
 #include <we/layer.hpp>
-#include <we/type/Activity.hpp>
 #include <we/test/operator_equal.hpp>
+#include <we/type/Activity.hpp>
 #include <we/type/Expression.hpp>
 #include <we/type/ModuleCall.hpp>
-#include <we/type/signature.hpp>
 #include <we/type/Transition.hpp>
-#include <we/type/value/read.hpp>
+#include <we/type/signature.hpp>
 #include <we/type/value/poke.hpp>
+#include <we/type/value/read.hpp>
 #include <we/type/value/show.hpp>
 
 #include <we/test/layer.common.hpp>
@@ -35,7 +35,6 @@
 #include <util-generic/testing/random.hpp>
 #include <util-generic/testing/random/string.hpp>
 
-#include <boost/lexical_cast.hpp>
 #include <boost/preprocessor/punctuation/comma.hpp>
 #include <boost/range/algorithm.hpp>
 #include <boost/test/data/monomorphic.hpp>
@@ -47,6 +46,7 @@
 #include <memory>
 #include <mutex>
 #include <sstream>
+#include <string>
 #include <tuple>
 
 namespace
@@ -95,6 +95,11 @@ namespace
       std::unique_lock<std::mutex> lock (_happened_mutex);              \
       _happened_condition.wait (lock, [this]() { return _happened; });  \
     }                                                                   \
+    expect_ ## NAME (expect_ ## NAME const&) = delete;                  \
+    expect_ ## NAME& operator= (expect_ ## NAME const&) = delete;       \
+    expect_ ## NAME (expect_ ## NAME &&) = delete;                      \
+    expect_ ## NAME& operator= (expect_ ## NAME &&) = delete;           \
+                                                                        \
     void happened()                                                     \
     {                                                                   \
       std::lock_guard<std::mutex> const lock (_happened_mutex);         \
@@ -117,8 +122,7 @@ namespace
 struct daemon
 {
   daemon()
-    : _cnt()
-    , layer ( std::bind (&daemon::submit, this, std::placeholders::_1, std::placeholders::_2)
+    : layer ( std::bind (&daemon::submit, this, std::placeholders::_1, std::placeholders::_2)
             , std::bind (&daemon::cancel, this, std::placeholders::_1)
             , std::bind (&daemon::finished, this, std::placeholders::_1, std::placeholders::_2)
             , std::bind (&daemon::failed, this, std::placeholders::_1, std::placeholders::_2)
@@ -128,9 +132,6 @@ struct daemon
             , std::bind (&daemon::generate_id, this)
             , _random_engine
             )
-    , _in_progress_jobs_rts()
-    , _in_progress_jobs_layer()
-    , _in_progress_replies()
   {}
   ~daemon()
   {
@@ -149,6 +150,10 @@ struct daemon
         }
       );
   }
+  daemon (daemon const&) = delete;
+  daemon& operator= (daemon const&) = delete;
+  daemon (daemon&&) = delete;
+  daemon& operator= (daemon&&) = delete;
 
 #define INC_IN_PROGRESS(COUNTER)                                \
   do                                                            \
@@ -431,20 +436,20 @@ struct daemon
   }
 
   std::mutex _generate_id_mutex;
-  unsigned long _cnt;
+  unsigned long _cnt{};
   we::layer::id_type generate_id()
   {
     std::lock_guard<std::mutex> const _ (_generate_id_mutex);
-    return ::boost::lexical_cast<we::layer::id_type> (++_cnt);
+    return std::to_string (++_cnt);
   }
 
   std::mt19937 _random_engine;
   mutable std::mutex _in_progress_mutex;
   we::layer layer;
   std::condition_variable _in_progress_condition;
-  unsigned long _in_progress_jobs_rts;
-  unsigned long _in_progress_jobs_layer;
-  unsigned long _in_progress_replies;
+  unsigned long _in_progress_jobs_rts{};
+  unsigned long _in_progress_jobs_layer{};
+  unsigned long _in_progress_replies{};
 };
 
 BOOST_TEST_DECORATOR (*::boost::unit_test::timeout (30))
@@ -1110,13 +1115,13 @@ namespace
     we::type::net_type net;
 
     we::place_id_type const place_id_in
-      (net.add_place (place::type ("in", signature::CONTROL, true)));
+      (net.add_place (place::type ("in", signature::CONTROL, true, we::type::property::type{})));
     we::place_id_type const place_id_mid
-      (net.add_place (place::type ("mid", signature::CONTROL, ::boost::none)));
+      (net.add_place (place::type ("mid", signature::CONTROL, ::boost::none, we::type::property::type{})));
     we::place_id_type const place_id_out
-      (net.add_place (place::type ("out", signature::CONTROL, ::boost::none)));
+      (net.add_place (place::type ("out", signature::CONTROL, ::boost::none, we::type::property::type{})));
     we::place_id_type const place_id_request
-      (net.add_place (place::type ("request", request_t, true)));
+      (net.add_place (place::type ("request", request_t, true, we::type::property::type{})));
 
 
     we::type::Transition trans_a
@@ -1294,7 +1299,7 @@ BOOST_FIXTURE_TEST_CASE (workflow_response_works, daemon)
       , workflow_response_id
       , std::make_exception_ptr
           ( std::invalid_argument
-              ( "put_token (\"NONEXISTING_PLACE\", Struct [value := 0L, response_id := \""
+              ( R"(put_token ("NONEXISTING_PLACE", Struct [value := 0L, response_id := ")"
               + workflow_response_id + "\"]): place not found"
               )
           )
@@ -1311,8 +1316,8 @@ BOOST_FIXTURE_TEST_CASE (workflow_response_works, daemon)
       , workflow_response_id
       , std::make_exception_ptr
           ( std::invalid_argument
-              ( "put_token (\"mid\", Struct [value := 0L, response_id := \""
-              + workflow_response_id + "\"]): place not marked with attribute put_token=\"true\""
+              ( R"(put_token ("mid", Struct [value := 0L, response_id := ")"
+              + workflow_response_id + R"("]): place not marked with attribute put_token="true")"
               )
           )
       );
@@ -1439,7 +1444,7 @@ namespace
       (net.add_transition (transition));
 
     we::place_id_type const place_id
-      (net.add_place (place::type (port_name, std::string ("control"), ::boost::none)));
+      (net.add_place (place::type (port_name, std::string ("control"), ::boost::none, we::type::property::type{})));
 
     net.add_connection ( we::edge::PT{}
                        , transition_id
@@ -1504,7 +1509,6 @@ namespace
       : _expected_activities (expected_activities)
       , _received_requirements()
       , _random_extraction_engine()
-      , _cnt (0)
       , _layer ( std::bind
                (&wfe_and_counter_of_submitted_requirements::submit, this, std::placeholders::_2)
                , std::bind (&disallow, "cancel")
@@ -1551,11 +1555,11 @@ namespace
     std::mt19937 _random_extraction_engine;
 
     std::mutex _generate_id_mutex;
-    unsigned long _cnt;
+    unsigned long _cnt {0};
     we::layer::id_type generate_id()
     {
       std::lock_guard<std::mutex> const _ (_generate_id_mutex);
-      return ::boost::lexical_cast<we::layer::id_type> (++_cnt);
+      return std::to_string (++_cnt);
     }
 
   public:
@@ -1643,7 +1647,6 @@ namespace
     wfe_remembering_submitted_preferences()
       : _received_preferences()
       , _random_extraction_engine()
-      , _cnt (0)
       , _layer ( std::bind
                (&wfe_remembering_submitted_preferences::submit, this, std::placeholders::_2)
                , std::bind (&disallow, "cancel")
@@ -1687,11 +1690,11 @@ namespace
     std::mt19937 _random_extraction_engine;
 
     std::mutex _generate_id_mutex;
-    unsigned long _cnt;
+    unsigned long _cnt {0};
     we::layer::id_type generate_id()
     {
       std::lock_guard<std::mutex> const _ (_generate_id_mutex);
-      return ::boost::lexical_cast<we::layer::id_type> (++_cnt);
+      return std::to_string (++_cnt);
     }
 
   public:
@@ -1813,6 +1816,7 @@ namespace
         (net.add_place (place::type ( place_name
                                     , signature::CONTROL
                                     , true
+                                    , we::type::property::type{}
                                     )
                        )
         );

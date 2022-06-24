@@ -87,7 +87,7 @@ namespace gpi
       fhg::iml::vmem::gaspi_context& _gaspi_context;
 
       size_t _per_node_size;
-      void *m_dma;
+      void *m_dma {nullptr};
       fhg::iml::vmem::gaspi_context::reserved_segment_id _segment_id;
       gpi::size_t _max_transfer_size;
 
@@ -95,7 +95,7 @@ namespace gpi
       std::vector<unsigned short> _communication_port_by_rank;
 
       std::mutex _queue_operation_guard;
-      queue_desc_t _current_queue;
+      queue_desc_t _current_queue {0};
 
       //! \note We split (1) the available notification
       //! (_maximum_notification_id) ids into $num_proc parts

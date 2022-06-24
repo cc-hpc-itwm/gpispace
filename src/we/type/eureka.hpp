@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include <string>
 #include <set>
+#include <string>
 
 namespace we
 {

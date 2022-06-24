@@ -78,14 +78,14 @@ namespace fhg
 
           //! \note Assume id() on invalid mapping, which might be wrong, but
           //! is still superior to potentially crashing.
-          virtual QVariant headerData
+          QVariant headerData
             (int section, Qt::Orientation orientation, int role) const override;
-          virtual bool setHeaderData
+          bool setHeaderData
             (int section, Qt::Orientation, QVariant const&, int role) override;
 
           //! \note revert bb00ac8d1251be3e703cc09e5fb2f100f24b398b
-          virtual QMap<int, QVariant> itemData (QModelIndex const&) const override;
-          virtual bool setItemData
+          QMap<int, QVariant> itemData (QModelIndex const&) const override;
+          bool setItemData
             (QModelIndex const&, QMap<int, QVariant> const&) override;
         };
 
@@ -97,14 +97,14 @@ namespace fhg
           id_proxy (QObject* = nullptr);
 
           //! \note No need to mapToSource(), as id (x) = x.
-          virtual QVariant headerData
+          QVariant headerData
             (int section, Qt::Orientation orientation, int role) const override;
-          virtual bool setHeaderData
+          bool setHeaderData
             (int section, Qt::Orientation, QVariant const&, int role) override;
 
           //! \note revert bb00ac8d1251be3e703cc09e5fb2f100f24b398b
-          virtual QMap<int, QVariant> itemData (QModelIndex const&) const override;
-          virtual bool setItemData
+          QMap<int, QVariant> itemData (QModelIndex const&) const override;
+          bool setItemData
             (QModelIndex const&, QMap<int, QVariant> const&) override;
         };
 
@@ -117,14 +117,14 @@ namespace fhg
 
           //! \note Assume id() on invalid mapping, which might be wrong, but
           //! is still superior to potentially crashing.
-          virtual QVariant headerData
+          QVariant headerData
             (int section, Qt::Orientation orientation, int role) const override;
-          virtual bool setHeaderData
+          bool setHeaderData
             (int section, Qt::Orientation, QVariant const&, int role) override;
 
           //! \note revert bb00ac8d1251be3e703cc09e5fb2f100f24b398b
-          virtual QMap<int, QVariant> itemData (QModelIndex const&) const override;
-          virtual bool setItemData
+          QMap<int, QVariant> itemData (QModelIndex const&) const override;
+          bool setItemData
             (QModelIndex const&, QMap<int, QVariant> const&) override;
         };
       }

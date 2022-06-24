@@ -26,11 +26,11 @@ struct A : public ::gspc::we::plugin::Base
     : _put_token (std::move (put_token))
   {}
 
-  virtual void before_eval (::gspc::we::plugin::Context const& context) override
+  void before_eval (::gspc::we::plugin::Context const& context) override
   {
     return after_eval (context);
   }
-  virtual void after_eval (::gspc::we::plugin::Context const& context) override
+  void after_eval (::gspc::we::plugin::Context const& context) override
   {
     return _put_token ("A", context.value ({"A"}));
   }

@@ -29,9 +29,9 @@
 
 #include <util-generic/join.hpp>
 
-#include <set>
-#include <list>
 #include <iostream>
+#include <list>
+#include <set>
 #include <sstream>
 
 namespace pnet
@@ -465,8 +465,8 @@ namespace pnet
           fhg::util::indenter indent;
 
           os << fhg::util::cpp::include ("we/type/value.hpp");
-          os << fhg::util::cpp::include ("we/type/value/to_value.hpp");
           os << fhg::util::cpp::include ("we/type/value/from_value.hpp");
+          os << fhg::util::cpp::include ("we/type/value/to_value.hpp");
           os << fhg::util::cpp::include ("iosfwd");
 
           os << fhg::util::cpp::ns::open (indent, "pnetc");

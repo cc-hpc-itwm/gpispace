@@ -58,7 +58,7 @@ namespace fhg
 
       std::ofstream _stream;
       std::function<void (std::ostream&, message const&)> _formatter;
-      std::size_t _emit_counter;
+      std::size_t _emit_counter {0};
       ::boost::optional<std::size_t> _flush_interval;
       void (file_sink::* _append) (message const&);
 

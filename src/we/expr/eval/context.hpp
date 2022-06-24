@@ -32,17 +32,10 @@ namespace expr
     struct GSPC_DLLEXPORT context
     {
     private:
-      typedef std::unordered_map< std::string
-                                  , pnet::type::value::value_type
-                                  > container_type;
-
-      container_type _container;
-
-      typedef std::unordered_map< std::string
-                                  , const pnet::type::value::value_type*
-                                  > ref_container_type;
-
-      ref_container_type _ref_container;
+      std::unordered_map<std::string, pnet::type::value::value_type>
+        _container;
+      std::unordered_map<std::string, const pnet::type::value::value_type*>
+        _ref_container;
 
       GSPC_DLLEXPORT
         friend std::ostream& operator<< (std::ostream&, context const&);

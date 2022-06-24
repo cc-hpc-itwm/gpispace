@@ -25,11 +25,11 @@ namespace sdpa
     class JobFailedAckEvent : public JobEvent
     {
     public:
-      typedef ::boost::shared_ptr<JobFailedAckEvent> Ptr;
+      using Ptr = ::boost::shared_ptr<JobFailedAckEvent>;
 
       using JobEvent::JobEvent;
 
-      virtual void handleBy
+      void handleBy
         (fhg::com::p2p::address_t const& source, EventHandler* handler) override
       {
         handler->handleJobFailedAckEvent (source, this);

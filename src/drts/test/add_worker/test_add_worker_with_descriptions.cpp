@@ -30,8 +30,8 @@
 #include <testing/make.hpp>
 #include <testing/parse_command_line.hpp>
 #include <testing/scoped_nodefile_from_environment.hpp>
-#include <testing/source_directory.hpp>
 #include <testing/shared_directory.hpp>
+#include <testing/source_directory.hpp>
 
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/read_lines.hpp>
@@ -156,7 +156,7 @@ BOOST_AUTO_TEST_CASE (add_workers_with_different_descriptions)
   BOOST_REQUIRE_GT (hosts.size(), 0);
 
   {
-    std::vector<std::string>::const_iterator host (hosts.begin());
+    auto host (hosts.begin());
 
     for (unsigned int i (0); i < capabilities.size(); ++i, ++host)
     {

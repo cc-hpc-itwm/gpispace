@@ -53,14 +53,14 @@ namespace detail
   public:
     log_table_model (QObject* parent = nullptr);
 
-    virtual int rowCount (QModelIndex const& = QModelIndex()) const override;
-    virtual int columnCount (QModelIndex const& = QModelIndex()) const override;
+    int rowCount (QModelIndex const& = QModelIndex()) const override;
+    int columnCount (QModelIndex const& = QModelIndex()) const override;
 
-    virtual QVariant headerData ( int section
+    QVariant headerData ( int section
                                 , Qt::Orientation orientation
                                 , int role = Qt::DisplayRole
                                 ) const override;
-    virtual QVariant
+    QVariant
       data (QModelIndex const& index, int role = Qt::DisplayRole) const override;
 
     std::vector<fhg::logging::message> data() const;
@@ -72,7 +72,7 @@ namespace detail
 
   private:
     QList<formatted_log_event> _pending_data;
-    bool _clear_on_update;
+    bool _clear_on_update{};
     QMutex _mutex_pending;
 
     QList<formatted_log_event> _data;
@@ -100,8 +100,8 @@ public slots:
   void append_log_event (fhg::logging::message const&);
 
 private:
-  bool _drop_filtered;
-  int _filter_level;
+  bool _drop_filtered {false};
+  int _filter_level {1};
 
   QTableView* _log_table;
   detail::log_table_model* _log_model;

@@ -16,13 +16,13 @@
 
 #include <we/expr/type/Context.hpp>
 
-#include <we/expr/type/AssignResult.hpp>
 #include <we/expr/exception.hpp>
+#include <we/expr/type/AssignResult.hpp>
 
 #include <util-generic/functor_visitor.hpp>
 
-#include <boost/optional.hpp>
 #include <boost/format.hpp>
+#include <boost/optional.hpp>
 
 #include <algorithm>
 #include <exception>

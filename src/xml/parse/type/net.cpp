@@ -51,7 +51,6 @@ namespace xml
         , _templates (std::move (templates))
         , _transitions (std::move (transitions))
         , structs (std::move (structs_))
-        , contains_a_module_call()
         , _properties (std::move (properties))
       {}
 
@@ -110,17 +109,14 @@ namespace xml
                                     , type::type_map_type & inner_map
                                     )
       {
-        for ( type_map_type::iterator inner (inner_map.begin())
-            ; inner != inner_map.end()
-            ; ++inner
-            )
+        for (auto& inner : inner_map)
         {
           const type::type_map_type::const_iterator
-            outer (outer_map.find (inner->second));
+            outer (outer_map.find (inner.second));
 
           if (outer != outer_map.end())
           {
-            inner->second = outer->second;
+            inner.second = outer->second;
           }
         }
       }
@@ -367,9 +363,7 @@ namespace xml
                      , state::type const& state
                      )
       {
-        typedef std::unordered_map< std::string
-                                  , we::place_id_type
-                                  > pid_of_place_type;
+        using pid_of_place_type = std::unordered_map<std::string, we::place_id_type>;
 
         pid_of_place_type pid_of_place;
 

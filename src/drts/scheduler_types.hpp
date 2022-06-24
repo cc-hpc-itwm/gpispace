@@ -31,9 +31,9 @@ namespace gspc
 
       CostAwareWithWorkStealing() = delete;
       CostAwareWithWorkStealing (CostAwareWithWorkStealing const&) = delete;
-      CostAwareWithWorkStealing (CostAwareWithWorkStealing&&);
+      CostAwareWithWorkStealing (CostAwareWithWorkStealing&&) noexcept;
       CostAwareWithWorkStealing& operator= (CostAwareWithWorkStealing const&) = delete;
-      CostAwareWithWorkStealing& operator= (CostAwareWithWorkStealing&&);
+      CostAwareWithWorkStealing& operator= (CostAwareWithWorkStealing&&) noexcept;
 
       CostAwareWithWorkStealing (SingleAllocation);
       CostAwareWithWorkStealing (CoallocationWithBackfilling);
@@ -51,6 +51,7 @@ namespace gspc
       GreedyWithWorkStealing (GreedyWithWorkStealing&&) = default;
       GreedyWithWorkStealing& operator= (GreedyWithWorkStealing const&) = delete;
       GreedyWithWorkStealing& operator= (GreedyWithWorkStealing&&) = default;
+      ~GreedyWithWorkStealing() = default;
     };
 
     using Type = ::boost::variant<GreedyWithWorkStealing, CostAwareWithWorkStealing>;

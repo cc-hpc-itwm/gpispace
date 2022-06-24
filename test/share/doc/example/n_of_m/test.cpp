@@ -43,8 +43,6 @@
 
 BOOST_AUTO_TEST_CASE (share_example_n_of_m)
 {
-  namespace validators = fhg::util::boost::program_options;
-
   ::boost::program_options::options_description options_description;
 
   options_description.add (test::options::shared_directory());

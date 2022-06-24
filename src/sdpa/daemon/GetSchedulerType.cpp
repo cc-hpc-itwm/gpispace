@@ -15,6 +15,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <drts/scheduler_types.hpp>
+
 #include <drts/private/scheduler_types_implementation.hpp>
 
 #include <sdpa/daemon/GetSchedulerType.hpp>

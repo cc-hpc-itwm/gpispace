@@ -32,7 +32,7 @@ namespace sdpa
         , _function (function)
       {}
 
-      virtual void handleBy
+      void handleBy
         (fhg::com::p2p::address_t const&, EventHandler*) override
       {
         _function();

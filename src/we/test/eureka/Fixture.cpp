@@ -54,7 +54,7 @@ namespace gspc
             std::vector<T> generate (unsigned int k, Gen&& gen)
           {
             std::vector<T> xs (k);
-            std::generate (std::begin (xs), std::end (xs), std::move (gen));
+            std::generate (std::begin (xs), std::end (xs), std::forward<Gen> (gen));
             return xs;
           }
         }

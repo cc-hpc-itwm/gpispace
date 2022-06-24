@@ -22,12 +22,12 @@
 #include <we/expr/type/Context.hpp>
 #include <we/expr/type/Type.hpp>
 
-#include <boost/serialization/utility.hpp>
-#include <boost/serialization/split_free.hpp>
 #include <boost/serialization/nvp.hpp>
+#include <boost/serialization/split_free.hpp>
+#include <boost/serialization/utility.hpp>
 
-#include <string>
 #include <iosfwd>
+#include <string>
 
 namespace we
 {
@@ -58,15 +58,15 @@ namespace we
       template <typename Archive>
       void save (Archive& ar, unsigned int) const
       {
-	ar << ::boost::serialization::make_nvp ("expr", _expr);
+        ar << ::boost::serialization::make_nvp ("expr", _expr);
       }
       template <typename Archive>
       void load (Archive& ar, unsigned int)
       {
-	std::string tmp;
-	ar >> ::boost::serialization::make_nvp ("expr", tmp);
-	_ast = expr::parse::parser (tmp);
-	_expr = tmp;
+        std::string tmp;
+        ar >> ::boost::serialization::make_nvp ("expr", tmp);
+        _ast = expr::parse::parser (tmp);
+        _expr = tmp;
       }
       BOOST_SERIALIZATION_SPLIT_MEMBER()
     };

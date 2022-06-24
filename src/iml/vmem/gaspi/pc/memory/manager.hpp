@@ -131,14 +131,11 @@ namespace gpi
                    );
 
       private:
-        typedef std::recursive_mutex mutex_type;
-        typedef std::unique_lock<mutex_type> lock_type;
-        typedef std::unordered_map< iml::SegmentHandle
-                                  , area_ptr
-                                  > area_map_t;
-        typedef std::unordered_map< iml::AllocationHandle
-                                  , iml::SegmentHandle
-                                  > handle_to_segment_t;
+        using mutex_type = std::recursive_mutex;
+        using lock_type = std::unique_lock<mutex_type>;
+        using area_map_t = std::unordered_map<iml::SegmentHandle, area_ptr>;
+        using handle_to_segment_t =
+          std::unordered_map<iml::AllocationHandle, iml::SegmentHandle>;
 
         void add_area (iml::SegmentHandle seg_id, area_ptr area);
         area_ptr get_area (iml::SegmentHandle);
@@ -158,7 +155,7 @@ namespace gpi
         fhg::iml::vmem::gaspi_context& _gaspi_context;
 
         std::mutex _memcpy_task_guard;
-        std::size_t _next_memcpy_id;
+        std::size_t _next_memcpy_id {0};
         fhg::util::interruptible_threadsafe_queue<std::packaged_task<void()>>
           _tasks;
         std::map<std::size_t, std::future<void>> _task_by_id;

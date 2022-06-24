@@ -15,10 +15,10 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <sdpa/daemon/WorkerManager.hpp>
-#include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
-#include <sdpa/daemon/scheduler/Scheduler.hpp>
-#include <sdpa/daemon/scheduler/CostAwareWithWorkStealingStrategy.hpp>
 #include <sdpa/daemon/WorkerSet.hpp>
+#include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
+#include <sdpa/daemon/scheduler/CostAwareWithWorkStealingStrategy.hpp>
+#include <sdpa/daemon/scheduler/Scheduler.hpp>
 #include <sdpa/test/sdpa/utils.hpp>
 #include <sdpa/types.hpp>
 
@@ -172,8 +172,8 @@ namespace sdpa
 
 struct fixture_scheduler_and_requirements_and_preferences
 {
-  typedef std::set<sdpa::worker_id_t> set_workers_t;
-  typedef std::set<sdpa::job_id_t> set_jobs_t;
+  using set_workers_t = std::set<sdpa::worker_id_t>;
+  using set_jobs_t = std::set<sdpa::job_id_t>;
 
   fixture_scheduler_and_requirements_and_preferences()
     : _worker_manager()
@@ -195,21 +195,17 @@ struct fixture_scheduler_and_requirements_and_preferences
   std::unique_ptr<sdpa::daemon::Scheduler> _scheduler;
   sdpa::daemon::access_allocation_table_TESTING_ONLY _access_allocation_table;
 
-  ~fixture_scheduler_and_requirements_and_preferences()
-  {
-  }
-
   std::map<sdpa::job_id_t, std::set<sdpa::worker_id_t>> get_current_assignment() const
   {
     return _access_allocation_table.get_current_assignment();
   }
 
-  sdpa::daemon::WorkerSet const workers (sdpa::job_id_t const& job) const
+  sdpa::daemon::WorkerSet workers (sdpa::job_id_t const& job) const
   {
     return _access_allocation_table.workers (job);
   }
 
-  sdpa::daemon::Implementation const implementation (sdpa::job_id_t const& job) const
+  sdpa::daemon::Implementation implementation (sdpa::job_id_t const& job) const
   {
     return _access_allocation_table.implementation (job);
   }
@@ -1065,12 +1061,12 @@ struct fixture_add_new_workers
     return _access_allocation_table.get_current_assignment();
   }
 
-  sdpa::daemon::WorkerSet const workers (sdpa::job_id_t const& job) const
+  sdpa::daemon::WorkerSet workers (sdpa::job_id_t const& job) const
   {
     return _access_allocation_table.workers (job);
   }
 
-  sdpa::daemon::Implementation const implementation (sdpa::job_id_t const& job) const
+  sdpa::daemon::Implementation implementation (sdpa::job_id_t const& job) const
   {
     return _access_allocation_table.implementation (job);
   }

@@ -16,8 +16,8 @@
 
 #include <xml/parse/util/weparse.hpp>
 
-#include <sstream>
 #include <iostream>
+#include <sstream>
 
 namespace xml
 {

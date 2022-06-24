@@ -14,25 +14,24 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <fstream>
-#include <sstream>
-#include <iostream>
-#include <csignal>
+#include <fhg/util/signal_handler_manager.hpp>
+#include <rif/started_process_promise.hpp>
+#include <sdpa/daemon/Agent.hpp>
+#include <we/layer.hpp>
 
+#include <util-generic/boost/program_options/validators/existing_path.hpp>
+#include <util-generic/boost/program_options/validators/nonempty_string.hpp>
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/getenv.hpp>
 #include <util-generic/print_exception.hpp>
 
-#include <rif/started_process_promise.hpp>
-
+#include <boost/filesystem/path.hpp>
 #include <boost/program_options.hpp>
 
-#include <sdpa/daemon/Agent.hpp>
-#include <we/layer.hpp>
-#include <boost/filesystem/path.hpp>
-#include <util-generic/boost/program_options/validators/existing_path.hpp>
-#include <util-generic/boost/program_options/validators/nonempty_string.hpp>
-#include <fhg/util/signal_handler_manager.hpp>
+#include <csignal>
+#include <fstream>
+#include <iostream>
+#include <sstream>
 
 namespace bfs = ::boost::filesystem;
 namespace po = ::boost::program_options;

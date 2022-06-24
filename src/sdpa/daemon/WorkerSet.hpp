@@ -21,7 +21,7 @@
 #include <set>
 
 namespace sdpa
-{	
+{
   namespace daemon
   {
     using WorkerSet = std::set<worker_id_t>;

@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include <sdpa/events/JobEvent.hpp>
 #include <sdpa/events/EventHandler.hpp>
+#include <sdpa/events/JobEvent.hpp>
 
 #include <we/type/Activity.hpp>
 #include <we/type/net.hpp>
@@ -29,7 +29,7 @@ namespace sdpa
     class JobFinishedEvent : public JobEvent
     {
     public:
-      typedef ::boost::shared_ptr<JobFinishedEvent> Ptr;
+      using Ptr = ::boost::shared_ptr<JobFinishedEvent>;
 
       JobFinishedEvent ( sdpa::job_id_t const& a_job_id
                        , we::type::Activity job_result
@@ -38,7 +38,7 @@ namespace sdpa
         , result_ (std::move (job_result))
       {}
 
-      virtual void handleBy
+      void handleBy
         (fhg::com::p2p::address_t const& source, EventHandler* handler) override
       {
         handler->handleJobFinishedEvent (source, this);

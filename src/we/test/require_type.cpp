@@ -18,8 +18,8 @@
 
 #include <we/require_type.hpp>
 
-#include <we/type/value/poke.hpp>
 #include <we/exception.hpp>
+#include <we/type/value/poke.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 

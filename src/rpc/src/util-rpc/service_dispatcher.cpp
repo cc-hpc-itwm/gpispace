@@ -18,8 +18,8 @@
 
 #include <util-rpc/common.hpp>
 
-#include <boost/iostreams/stream.hpp>
 #include <boost/iostreams/device/array.hpp>
+#include <boost/iostreams/stream.hpp>
 
 #include <stdexcept>
 

@@ -178,11 +178,12 @@ namespace gpi
         virtual global::itopology_t& global_topology() = 0;
 
       private:
-        typedef std::recursive_mutex mutex_type;
-        typedef std::unique_lock<mutex_type> lock_type;
-        typedef std::unordered_map< iml::AllocationHandle
-                                  , gpi::pc::type::handle::descriptor_t
-                                  > handle_descriptor_map_t;
+        using mutex_type = std::recursive_mutex;
+        using lock_type = std::unique_lock<mutex_type>;
+        using handle_descriptor_map_t =
+          std::unordered_map< iml::AllocationHandle
+                            , gpi::pc::type::handle::descriptor_t
+                            >;
 
         void internal_alloc ( gpi::pc::type::handle::descriptor_t&
                             , bool is_creator
@@ -200,7 +201,7 @@ namespace gpi
         handle_descriptor_map_t m_handles;
       };
 
-      typedef std::shared_ptr<area_t> area_ptr_t;
+      using area_ptr_t = std::shared_ptr<area_t>;
     }
   }
 }

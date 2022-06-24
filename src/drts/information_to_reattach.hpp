@@ -33,6 +33,11 @@ namespace gspc
     information_to_reattach (std::string const&);
     std::string to_string () const;
 
+    information_to_reattach (information_to_reattach const&) = delete;
+    information_to_reattach& operator= (information_to_reattach const&) = delete;
+    information_to_reattach (information_to_reattach&&) = default;
+    information_to_reattach& operator= (information_to_reattach&&) = default;
+
   private:
     friend class ::gspc::client;
 

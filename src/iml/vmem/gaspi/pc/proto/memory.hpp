@@ -236,19 +236,18 @@ namespace gpi
           }
         };
 
-        typedef ::boost::variant<
-          memory::alloc_t
-          , memory::alloc_reply_t
-          , memory::free_t
-          , memory::memcpy_t
-          , memory::memcpy_reply_t
-          , memory::wait_t
-          , memory::wait_reply_t
-          , memory::info_t
-          , memory::info_reply_t
-          , memory::get_transfer_costs_t
-          , memory::transfer_costs_t
-          > message_t;
+        using message_t = ::boost::variant< memory::alloc_t
+                                          , memory::alloc_reply_t
+                                          , memory::free_t
+                                          , memory::memcpy_t
+                                          , memory::memcpy_reply_t
+                                          , memory::wait_t
+                                          , memory::wait_reply_t
+                                          , memory::info_t
+                                          , memory::info_reply_t
+                                          , memory::get_transfer_costs_t
+                                          , memory::transfer_costs_t
+                                          >;
       }
     }
   }

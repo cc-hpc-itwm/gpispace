@@ -36,7 +36,7 @@ namespace fhg
       }
     }
 
-    scoped_dlhandle::scoped_dlhandle (scoped_dlhandle&& other)
+    scoped_dlhandle::scoped_dlhandle (scoped_dlhandle&& other) noexcept
       : _ (std::move (other._))
     {
       other._ = nullptr;

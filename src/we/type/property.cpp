@@ -16,9 +16,9 @@
 
 #include <we/type/property.hpp>
 
+#include <we/type/value/dump.hpp>
 #include <we/type/value/peek.hpp>
 #include <we/type/value/poke.hpp>
-#include <we/type/value/dump.hpp>
 
 #include <fhg/util/xml.hpp>
 

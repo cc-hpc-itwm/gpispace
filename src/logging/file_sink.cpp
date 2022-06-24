@@ -41,7 +41,6 @@ namespace fhg
         )
       : _stream()
       , _formatter (std::move (formatter))
-      , _emit_counter (0)
       , _flush_interval (std::move (flush_interval))
       , _append ( !!_flush_interval
                 ? &file_sink::append

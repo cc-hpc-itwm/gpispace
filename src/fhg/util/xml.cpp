@@ -28,8 +28,6 @@ namespace fhg
       {
         tag::tag (std::string const& tag_)
           : _tag (tag_)
-          , _has_content (false)
-          , _has_text_content (false)
         {}
 
         std::string const& tag::string() const { return _tag; }

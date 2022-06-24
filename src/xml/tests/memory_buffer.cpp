@@ -25,9 +25,10 @@
 #include <util-generic/testing/printer/optional.hpp>
 #include <util-generic/testing/random/string.hpp>
 
+#include <boost/test/unit_test.hpp>
+
 #include <boost/format.hpp>
 #include <boost/test/data/test_case.hpp>
-#include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE (name_is_stored)
 {

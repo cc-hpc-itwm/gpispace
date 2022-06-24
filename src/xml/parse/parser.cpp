@@ -52,10 +52,10 @@
 #include <xml/parse/util/validstructfield.hpp>
 #include <xml/parse/warning.hpp>
 
+#include <we/type/Transition.hpp>
 #include <we/type/id.hpp>
 #include <we/type/property.hpp>
 #include <we/type/signature.hpp>
-#include <we/type/Transition.hpp>
 #include <we/type/value.hpp>
 #include <we/type/value/show.hpp>
 

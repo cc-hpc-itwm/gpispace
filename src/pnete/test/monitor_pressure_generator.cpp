@@ -25,8 +25,8 @@
 
 #include <util-generic/print_exception.hpp>
 #include <util-generic/syscall.hpp>
-#include <util-generic/unreachable.hpp>
 #include <util-generic/testing/random.hpp>
+#include <util-generic/unreachable.hpp>
 
 #include <boost/format.hpp>
 #include <boost/optional.hpp>
@@ -48,7 +48,6 @@ struct activity
   activity (std::string const& worker)
     : _id ((::boost::format ("%1%") % ++id_counter).str())
     , _workers()
-    , _state (NotificationEvent::STATE_STARTED)
     , _act ( we::type::Transition ( "activity-" + _id
                                     , we::type::Expression()
                                     , ::boost::none
@@ -99,7 +98,8 @@ struct activity
 
   std::string _id;
   std::list<std::string> _workers;
-  sdpa::daemon::NotificationEvent::state_t _state;
+  sdpa::daemon::NotificationEvent::state_t _state
+    {NotificationEvent::STATE_STARTED};
   we::type::Activity _act;
 };
 

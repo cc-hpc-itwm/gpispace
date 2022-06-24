@@ -23,8 +23,8 @@
 
 #include <fhg/util/xml.fwd.hpp>
 
-#include <string>
 #include <list>
+#include <string>
 
 namespace xml
 {
@@ -33,7 +33,7 @@ namespace xml
     namespace type
     {
       //! \todo Move this into class scope.
-      typedef std::list<std::string> expressions_type;
+      using expressions_type = std::list<std::string>;
 
       struct expression_type : with_position_of_definition
       {

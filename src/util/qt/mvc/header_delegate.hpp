@@ -34,6 +34,12 @@ namespace fhg
         public:
           virtual ~header_delegate() = default;
 
+          header_delegate() = default;
+          header_delegate (header_delegate const&) = delete;
+          header_delegate& operator= (header_delegate const&) = delete;
+          header_delegate (header_delegate&&) = delete;
+          header_delegate& operator= (header_delegate&&) = delete;
+
           virtual void paint
             (QPainter*, QRect const&, section_index const&) = 0;
           virtual QWidget* create_editor

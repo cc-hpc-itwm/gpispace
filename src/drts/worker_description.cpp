@@ -15,6 +15,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <drts/worker_description.hpp>
+
 #include <drts/private/worker_description_implementation.hpp>
 
 #include <fhg/util/num.hpp>
@@ -55,7 +56,7 @@ namespace gspc
             (std::move (input))
         )
   {}
-  worker_description::worker_description (worker_description&&) = default;
+  worker_description::worker_description (worker_description&&) noexcept = default;
   worker_description::~worker_description() = default;
 
   worker_description::worker_description_implementation::worker_description_implementation

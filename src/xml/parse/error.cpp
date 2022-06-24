@@ -17,6 +17,7 @@
 #include <xml/parse/error.hpp>
 
 #include <xml/parse/type/connect.hpp>
+#include <xml/parse/type/eureka.hpp>
 #include <xml/parse/type/function.hpp>
 #include <xml/parse/type/memory_buffer.hpp>
 #include <xml/parse/type/net.hpp>
@@ -24,7 +25,6 @@
 #include <xml/parse/type/place_map.hpp>
 #include <xml/parse/type/port.hpp>
 #include <xml/parse/type/response.hpp>
-#include <xml/parse/type/eureka.hpp>
 #include <xml/parse/type/template.hpp>
 #include <xml/parse/type/transition.hpp>
 

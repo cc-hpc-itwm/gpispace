@@ -42,13 +42,11 @@ namespace sdpa
                    , unsigned long allocated_shared_memory_size
                    , std::string const& hostname
                    )
-      : _cost_assigned_jobs (0)
-      , _capabilities (capabilities)
+      : _capabilities (capabilities)
       , capability_names_()
       , _allocated_shared_memory_size (allocated_shared_memory_size)
       , _hostname (hostname)
       , _last_time_idle (now())
-      , reserved_ (false)
     {
       for (Capability const& capability : capabilities)
       {
@@ -86,7 +84,7 @@ namespace sdpa
     {
       if (submitted_.erase (job_id) == 0)
       {
-	throw std::runtime_error ("acknowledge: job not in submitted queue");
+        throw std::runtime_error ("acknowledge: job not in submitted queue");
       }
       acknowledged_.insert (job_id);
     }

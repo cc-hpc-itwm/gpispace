@@ -20,8 +20,8 @@
 
 #include <boost/format.hpp>
 
-#include <exception>
 #include <cstdlib>
+#include <exception>
 
 namespace fhg
 {
@@ -44,6 +44,11 @@ namespace fhg
           util::syscall::pthread_sigmask
             (SIG_UNBLOCK, &_signals_to_restore, nullptr);
         }
+        scoped_SIGCHLD_block (scoped_SIGCHLD_block const&) = delete;
+        scoped_SIGCHLD_block& operator= (scoped_SIGCHLD_block const&) = delete;
+        scoped_SIGCHLD_block (scoped_SIGCHLD_block&&) = delete;
+        scoped_SIGCHLD_block& operator= (scoped_SIGCHLD_block&&) = delete;
+
         sigset_t _signals_to_restore;
       } const signal_blocker;
 

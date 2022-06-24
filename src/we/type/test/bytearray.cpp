@@ -17,8 +17,8 @@
 #include <boost/test/unit_test.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <util-generic/testing/printer/tuple.hpp>
 #include <util-generic/testing/printer/generic.hpp>
+#include <util-generic/testing/printer/tuple.hpp>
 
 #include <we/type/bytearray.hpp>
 

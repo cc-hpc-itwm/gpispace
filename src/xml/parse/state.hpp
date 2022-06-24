@@ -18,10 +18,10 @@
 
 #include <xml/parse/state.fwd.hpp>
 
-#include <xml/parse/type/require.hpp>
-#include <xml/parse/warning.hpp>
-#include <xml/parse/util/position.hpp>
 #include <xml/parse/rapidxml/types.hpp>
+#include <xml/parse/type/require.hpp>
+#include <xml/parse/util/position.hpp>
+#include <xml/parse/warning.hpp>
 
 #include <we/type/property.hpp>
 
@@ -43,22 +43,18 @@ namespace xml
   {
     namespace state
     {
-      typedef std::vector<std::string> gen_param_type;
+      using gen_param_type = std::vector<std::string>;
 
       struct type
       {
       private:
-        typedef std::list<::boost::filesystem::path> in_progress_type;
-        typedef std::vector<std::string> search_path_type;
-        typedef std::map< const char*
-                        , util::position_type
-                        , std::greater<const char*>
-                        > position_by_pointer_type;
-        typedef std::list<position_by_pointer_type> in_progress_position_type;
+        using in_progress_type = std::list<::boost::filesystem::path>;
+        using search_path_type = std::vector<std::string>;
+        using position_by_pointer_type =
+          std::map<const char*, util::position_type, std::greater<const char*>>;
+        using in_progress_position_type = std::list<position_by_pointer_type>;
 
       public:
-        type();
-
         gen_param_type const& gen_ldflags() const;
         gen_param_type const& gen_cxxflags() const;
         gen_param_type& gen_ldflags();
@@ -239,109 +235,109 @@ namespace xml
           (::boost::filesystem::path const&) const;
 
       private:
-        ::xml::parse::type::requirements_type _requirements;
-        search_path_type _search_path;
-        gen_param_type _gen_ldflags;
-        gen_param_type _gen_cxxflags;
-        in_progress_type _in_progress;
-        mutable in_progress_position_type _in_progress_position;
-        std::set<::boost::filesystem::path> _dependencies;
-        we::type::property::path_type _prop_path;
-        bool _ignore_properties;
-        bool _warning_error;
-        bool _warning_all;
-        bool _warning_overwrite_function_name_as;
-        bool _warning_overwrite_template_name_as;
-        bool _warning_shadow_struct;
-        bool _warning_shadow_function;
-        bool _warning_shadow_template;
-        bool _warning_shadow_specialize;
-        bool _warning_default_construction;
-        bool _warning_unused_field;
-        bool _warning_port_not_connected;
-        bool _warning_unexpected_element;
-        bool _warning_overwrite_function_name_trans;
-        bool _warning_property_overwritten;
-        bool _warning_type_map_duplicate;
-        bool _warning_type_get_duplicate;
-        bool _warning_independent_place;
-        bool _warning_independent_transition;
-        bool _warning_conflicting_port_types;
-        bool _warning_overwrite_file;
-        bool _warning_backup_file;
-        bool _warning_duplicate_external_function;
-        bool _warning_property_unknown;
-        bool _warning_inline_many_output_ports;
-        bool _warning_virtual_place_not_tunneled;
-        bool _warning_duplicate_template_parameter;
-        bool _warning_synthesize_anonymous_function;
-        bool _warning_struct_redefined;
+        ::xml::parse::type::requirements_type _requirements{};
+        search_path_type _search_path{};
+        gen_param_type _gen_ldflags{};
+        gen_param_type _gen_cxxflags{};
+        in_progress_type _in_progress{};
+        mutable in_progress_position_type _in_progress_position{};
+        std::set<::boost::filesystem::path> _dependencies{};
+        we::type::property::path_type _prop_path{};
+        bool _ignore_properties {false};
+        bool _warning_error {false};
+        bool _warning_all {false};
+        bool _warning_overwrite_function_name_as {false};
+        bool _warning_overwrite_template_name_as {false};
+        bool _warning_shadow_struct {true};
+        bool _warning_shadow_function {true};
+        bool _warning_shadow_template {true};
+        bool _warning_shadow_specialize {true};
+        bool _warning_default_construction {true};
+        bool _warning_unused_field {true};
+        bool _warning_port_not_connected {true};
+        bool _warning_unexpected_element {true};
+        bool _warning_overwrite_function_name_trans {false};
+        bool _warning_property_overwritten {true};
+        bool _warning_type_map_duplicate {true};
+        bool _warning_type_get_duplicate {true};
+        bool _warning_independent_place {true};
+        bool _warning_independent_transition {true};
+        bool _warning_conflicting_port_types {true};
+        bool _warning_overwrite_file {true};
+        bool _warning_backup_file {true};
+        bool _warning_duplicate_external_function {true};
+        bool _warning_property_unknown {true};
+        bool _warning_inline_many_output_ports {true};
+        bool _warning_virtual_place_not_tunneled {true};
+        bool _warning_duplicate_template_parameter {true};
+        bool _warning_synthesize_anonymous_function {true};
+        bool _warning_struct_redefined {true};
 
-        std::string _dump_xml_file;
-        std::string _dump_dependencies;
-        std::string _list_dependencies;
-        bool _dump_dependenciesD;
-        std::vector<std::string> _dependencies_target;
-        std::vector<std::string> _dependencies_target_quoted;
-        bool _dependencies_add_phony_targets;
-        bool _no_inline;
-        bool _synthesize_virtual_places;
-        bool _force_overwrite_file;
-        std::string _backup_extension;
-        bool _do_file_backup;
+        std::string _dump_xml_file{};
+        std::string _dump_dependencies{};
+        std::string _list_dependencies{};
+        bool _dump_dependenciesD{};
+        std::vector<std::string> _dependencies_target{};
+        std::vector<std::string> _dependencies_target_quoted{};
+        bool _dependencies_add_phony_targets{};
+        bool _no_inline {false};
+        bool _synthesize_virtual_places {false};
+        bool _force_overwrite_file {false};
+        std::string _backup_extension {"~"};
+        bool _do_file_backup {true};
 
-        std::string _path_to_cpp;
+        std::string _path_to_cpp{};
 
-        std::vector<std::string> _path_prefixes_to_strip;
+        std::vector<std::string> _path_prefixes_to_strip{};
 
-        std::string _option_search_path;
-        std::string _option_gen_ldflags;
-        std::string _option_gen_cxxflags;
-        std::string _option_ignore_properties;
-        std::string _option_Werror;
-        std::string _option_Wall;
-        std::string _option_Woverwrite_function_name_as;
-        std::string _option_Woverwrite_template_name_as;
-        std::string _option_Wshadow_struct;
-        std::string _option_Wshadow_function;
-        std::string _option_Wshadow_template;
-        std::string _option_Wshadow_specialize;
-        std::string _option_Wdefault_construction;
-        std::string _option_Wunused_field;
-        std::string _option_Wport_not_connected;
-        std::string _option_Wunexpected_element;
-        std::string _option_Woverwrite_function_name_trans;
-        std::string _option_Wproperty_overwritten;
-        std::string _option_Wtype_map_duplicate;
-        std::string _option_Wtype_get_duplicate;
-        std::string _option_Windependent_place;
-        std::string _option_Windependent_transition;
-        std::string _option_Wconflicting_port_types;
-        std::string _option_Woverwrite_file;
-        std::string _option_Wbackup_file;
-        std::string _option_Wduplicate_external_function;
-        std::string _option_Wproperty_unknown;
-        std::string _option_Winline_many_output_ports;
-        std::string _option_Wvirtual_place_not_tunneled;
-        std::string _option_Wduplicate_template_parameter;
-        std::string _option_Wsynthesize_anonymous_function;
-        std::string _option_Wstruct_redefined;
+        std::string _option_search_path {"search-path,I"};
+        std::string _option_gen_ldflags {"gen-ldflags"};
+        std::string _option_gen_cxxflags {"gen-cxxflags"};
+        std::string _option_ignore_properties {"ignore-properties"};
+        std::string _option_Werror {"Werror"};
+        std::string _option_Wall {"Wall"};
+        std::string _option_Woverwrite_function_name_as {"Woverwrite-function-name-as"};
+        std::string _option_Woverwrite_template_name_as {"Woverwrite-template-name-as"};
+        std::string _option_Wshadow_struct {"Wshadow-struct"};
+        std::string _option_Wshadow_function {"Wshadow-function"};
+        std::string _option_Wshadow_template {"Wshadow-template"};
+        std::string _option_Wshadow_specialize {"Wshadow-specialize"};
+        std::string _option_Wdefault_construction {"Wdefault-construction"};
+        std::string _option_Wunused_field {"Wunused-field"};
+        std::string _option_Wport_not_connected {"Wport-not-connected"};
+        std::string _option_Wunexpected_element {"Wunexpected-element"};
+        std::string _option_Woverwrite_function_name_trans {"Woverwrite-function-name-trans"};
+        std::string _option_Wproperty_overwritten {"Wproperty-overwritten"};
+        std::string _option_Wtype_map_duplicate {"Wtype-map-duplicate"};
+        std::string _option_Wtype_get_duplicate {"Wtype-get-duplicate"};
+        std::string _option_Windependent_place {"Windependent-place"};
+        std::string _option_Windependent_transition {"Windependent-transition"};
+        std::string _option_Wconflicting_port_types {"Wconflicting-port-types"};
+        std::string _option_Woverwrite_file {"Woverwrite-file"};
+        std::string _option_Wbackup_file {"Wbackup-file"};
+        std::string _option_Wduplicate_external_function {"Wduplicate-external-function"};
+        std::string _option_Wproperty_unknown {"Wproperty-unknown"};
+        std::string _option_Winline_many_output_ports {"Winline_many_output_ports"};
+        std::string _option_Wvirtual_place_not_tunneled {"Wvirtual-place-not-tunneled"};
+        std::string _option_Wduplicate_template_parameter {"Wduplicate-template-parameter"};
+        std::string _option_Wsynthesize_anonymous_function {"Wsynthesize-anonymous-function"};
+        std::string _option_Wstruct_redefined {"Wstruct-redefined"};
 
-        std::string _option_dump_xml_file;
-        std::string _option_dump_dependencies;
-        std::string _option_list_dependencies;
-        std::string _option_dump_dependenciesD;
-        std::string _option_dependencies_target;
-        std::string _option_dependencies_target_quoted;
-        std::string _option_dependencies_add_phony_targets;
-        std::string _option_no_inline;
-        std::string _option_synthesize_virtual_places;
-        std::string _option_force_overwrite_file;
-        std::string _option_backup_extension;
-        std::string _option_do_file_backup;
+        std::string _option_dump_xml_file {"dump-xml-file,d"};
+        std::string _option_dump_dependencies {"dump-dependencies,M"};
+        std::string _option_list_dependencies {"list-dependencies"};
+        std::string _option_dump_dependenciesD {"dump-dependenciesD"};
+        std::string _option_dependencies_target {"dependencies-target"};
+        std::string _option_dependencies_target_quoted {"dependencies-target-quoted"};
+        std::string _option_dependencies_add_phony_targets {"dependencies-add-phony-targets"};
+        std::string _option_no_inline {"no-inline"};
+        std::string _option_synthesize_virtual_places {"synthesize-virtual-places"};
+        std::string _option_force_overwrite_file {"force-overwrite-file"};
+        std::string _option_backup_extension {"backup-extension"};
+        std::string _option_do_file_backup {"do-backup"};
 
-        std::string _option_path_to_cpp;
-        std::string _option_path_prefixes_to_strip;
+        std::string _option_path_to_cpp {"path-to-cpp,g"};
+        std::string _option_path_prefixes_to_strip {"path-prefix-to-strip"};
 
         template<typename W>
         void generic_warn ( W const& w

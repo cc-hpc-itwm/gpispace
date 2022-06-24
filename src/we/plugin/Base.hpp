@@ -57,6 +57,12 @@ namespace gspc
         virtual void after_eval (Context const&) = 0;
 
         virtual ~Base() = default;
+
+        Base() = default;
+        Base (Base const&) = delete;
+        Base& operator= (Base const&) = delete;
+        Base (Base&&) = delete;
+        Base& operator= (Base&&) = delete;
       };
     }
   }

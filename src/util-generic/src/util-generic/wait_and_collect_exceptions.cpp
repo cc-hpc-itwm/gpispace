@@ -15,9 +15,9 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <util-generic/join.hpp>
+#include <util-generic/ostream/modifier.hpp>
 #include <util-generic/print_exception.hpp>
 #include <util-generic/wait_and_collect_exceptions.hpp>
-#include <util-generic/ostream/modifier.hpp>
 
 #include <functional>
 #include <sstream>

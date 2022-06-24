@@ -30,18 +30,24 @@ namespace we
 {
   namespace loader
   {
-    typedef void (*WrapperFunction)( drts::worker::context *
-                                   , expr::eval::context const&
-                                   , expr::eval::context&
-                                   , std::map<std::string, void*> const&
-                                   );
+    using WrapperFunction = void (*)( drts::worker::context*
+                                    , const expr::eval::context&
+                                    , expr::eval::context&
+                                    , const std::map<std::string, void *>&
+                                    );
 
     class GSPC_DLLEXPORT IModule
     {
     public:
-      virtual ~IModule() {}
+      virtual ~IModule() = default;
 
       virtual void add_function (std::string const&, WrapperFunction) = 0;
+
+      IModule() = default;
+      IModule (IModule const&) = delete;
+      IModule& operator= (IModule const&) = delete;
+      IModule (IModule&&) = delete;
+      IModule& operator= (IModule&&) = delete;
     };
   }
 }

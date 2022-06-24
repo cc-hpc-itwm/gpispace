@@ -45,7 +45,7 @@ namespace fhg
                    , Fun&& fun
                    )
     {
-      std::size_t size
+      auto size
         ( fhg::util::suppress_warning::sign_conversion<std::size_t>
             ( std::distance (begin, end)
             , "begin < end"

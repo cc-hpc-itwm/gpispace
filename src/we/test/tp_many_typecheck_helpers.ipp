@@ -160,16 +160,18 @@ namespace
 
   net_with_empty_transition_with_tp_many::net_with_empty_transition_with_tp_many
       (std::string out_type_str)
-    : pid_in (net.add_place (place::type ("in", "list", ::boost::none)))
+    : pid_in (net.add_place (place::type ("in", "list", ::boost::none, we::type::property::type{})))
     , pid_tp_many ( net.add_place ( place::type ( get_tp_many_place_name()
                                                 , name_to_signature (out_type_str)
                                                 , ::boost::none
+                                                , we::type::property::type{}
                                                 )
                                   )
                   )
     , pid_out ( net.add_place ( place::type ( "out"
                                             , name_to_signature (out_type_str)
                                             , ::boost::none
+                                            , we::type::property::type{}
                                             )
                               )
               )

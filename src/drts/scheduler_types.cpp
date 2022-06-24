@@ -47,9 +47,9 @@ namespace gspc
     {}
 
     CostAwareWithWorkStealing::CostAwareWithWorkStealing
-      (CostAwareWithWorkStealing&&) = default;
+      (CostAwareWithWorkStealing&&) noexcept = default;
     CostAwareWithWorkStealing&
-      CostAwareWithWorkStealing::operator= (CostAwareWithWorkStealing&&) = default;
+      CostAwareWithWorkStealing::operator= (CostAwareWithWorkStealing&&) noexcept = default;
     CostAwareWithWorkStealing::~CostAwareWithWorkStealing() = default;
     CostAwareWithWorkStealing::Implementation::~Implementation() = default;
 

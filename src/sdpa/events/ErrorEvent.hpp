@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include <sdpa/events/Serialization.hpp>
 #include <sdpa/events/MgmtEvent.hpp>
+#include <sdpa/events/Serialization.hpp>
 #include <sdpa/types.hpp>
 
 namespace sdpa
@@ -27,7 +27,7 @@ namespace sdpa
     class ErrorEvent : public MgmtEvent
     {
     public:
-      typedef ::boost::shared_ptr<ErrorEvent> Ptr;
+      using Ptr = ::boost::shared_ptr<ErrorEvent>;
 
       enum error_code_t
         {
@@ -60,7 +60,7 @@ namespace sdpa
         return job_id_;
       }
 
-      virtual void handleBy
+      void handleBy
         (fhg::com::p2p::address_t const& source, EventHandler* handler) override
       {
         handler->handleErrorEvent (source, this);

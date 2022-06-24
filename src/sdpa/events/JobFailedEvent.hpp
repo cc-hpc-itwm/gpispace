@@ -25,7 +25,7 @@ namespace sdpa
     class JobFailedEvent : public JobEvent
     {
     public:
-      typedef ::boost::shared_ptr<JobFailedEvent> Ptr;
+      using Ptr = ::boost::shared_ptr<JobFailedEvent>;
 
       JobFailedEvent ( sdpa::job_id_t const& a_job_id
                      , std::string error_message
@@ -34,7 +34,7 @@ namespace sdpa
         , m_error_message (error_message)
       {}
 
-      virtual void handleBy
+      void handleBy
         (fhg::com::p2p::address_t const& source, EventHandler* handler) override
       {
         handler->handleJobFailedEvent (source, this);

@@ -70,7 +70,6 @@ namespace gpi
 
       manager_t::manager_t (fhg::iml::vmem::gaspi_context& gaspi_context)
         : _gaspi_context (gaspi_context)
-        , _next_memcpy_id (0)
         , _interrupt_task_queue (_tasks)
         , _handle_generator (gaspi_context.rank())
       {
@@ -239,7 +238,7 @@ namespace gpi
       manager_t::get_area (iml::SegmentHandle mem_id) const
       {
         lock_type lock (m_mutex);
-        area_map_t::const_iterator area_it (m_areas.find (mem_id));
+        auto area_it (m_areas.find (mem_id));
         if (area_it == m_areas.end())
         {
           throw std::runtime_error ( "no such memory: "
@@ -260,7 +259,7 @@ namespace gpi
       {
         lock_type lock (m_mutex);
 
-        handle_to_segment_t::const_iterator h2s (m_handle_to_segment.find(hdl));
+        auto h2s (m_handle_to_segment.find(hdl));
         if (h2s != m_handle_to_segment.end())
         {
           return get_area (h2s->second);
@@ -399,7 +398,7 @@ namespace gpi
 
       void manager_t::wait (type::memcpy_id_t const& memcpy_id)
       {
-        decltype (_task_by_id)::iterator task_it (_task_by_id.end());
+        auto task_it (_task_by_id.end());
 
         {
           std::unique_lock<std::mutex> const _ (_memcpy_task_guard);
@@ -534,7 +533,7 @@ namespace gpi
       {
           lock_type lock (m_mutex);
 
-          area_map_t::iterator area_it (m_areas.find (seg_id));
+          auto area_it (m_areas.find (seg_id));
           if (area_it == m_areas.end ())
           {
             throw std::runtime_error ( "no such memory: "

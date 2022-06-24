@@ -18,7 +18,6 @@
 
 #include <fhg/assert.hpp>
 #include <util-generic/hostname.hpp>
-#include <util-generic/latch.hpp>
 
 #include <boost/asio/connect.hpp>
 // should only need ssl/context.hpp, but that's missing an include
@@ -62,8 +61,7 @@ namespace fhg
                    , port_t const& port
                    , Certificates const& certificates
                    )
-      : stopping_ (false)
-      , io_service_ (std::move (io_service))
+      : io_service_ (std::move (io_service))
       , strand_ (*io_service_)
       , io_service_work_(*io_service_)
       , acceptor_(*io_service_)
@@ -139,7 +137,7 @@ namespace fhg
     {
       stopping_ = true;
 
-      auto cancels_done (std::make_shared<util::latch> (1));
+      auto cancels_done (std::make_shared<std::promise<void>>());
 
       strand_.dispatch
         ( [this, cancels_done]
@@ -168,11 +166,11 @@ namespace fhg
               handle_error (*backlog_.begin(), error_code);
             }
 
-            cancels_done->count_down();
+            cancels_done->set_value();
           }
         );
 
-      cancels_done->wait();
+      cancels_done->get_future().wait();
 
       io_service_->stop();
     }
@@ -390,10 +388,12 @@ namespace fhg
         // handler directly?
         lock.unlock();
 
+        auto const src {m.header.src};
+
         using namespace ::boost::system;
         completion_handler
           ( { errc::make_error_code (errc::success)
-            , m.header.src
+            , src
             , std::move (m)
             }
           );

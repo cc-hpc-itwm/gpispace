@@ -16,13 +16,13 @@
 
 #include <util-generic/print_exception.hpp>
 
-#include <iostream>
-#include <string>
-#include <stdexcept>
-#include <boost/random/normal_distribution.hpp>
-#include <boost/random/mersenne_twister.hpp>
-#include <boost/random/variate_generator.hpp>
 #include <boost/program_options.hpp>
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/normal_distribution.hpp>
+#include <boost/random/variate_generator.hpp>
+#include <iostream>
+#include <stdexcept>
+#include <string>
 #include <thread>
 
 #include <writer.hpp>
@@ -32,8 +32,8 @@ try
 {
   namespace po = ::boost::program_options;
 
-  typedef ::boost::mt19937 gen_type;
-  typedef ::boost::normal_distribution<> dist_type;
+  using gen_type = ::boost::mt19937;
+  using dist_type = ::boost::normal_distribution<>;
 
   unsigned long seed (31415926);
   unsigned long number (1000);
@@ -100,13 +100,13 @@ try
 
   gen_type gen (seed);
   dist_type dist (mean, sigma);
-  double* buf (new double[elem_per_buf * num_buf]);
+  auto* buf (new double[elem_per_buf * num_buf]);
 
   ::boost::variate_generator<gen_type, dist_type> generator (gen, dist);
 
-  typedef writer<double> writer_type;
-  typedef writer_type::queue_type queue_type;
-  typedef writer_type::buffer_type buffer_type;
+  using writer_type = writer<double>;
+  using queue_type = writer_type::queue_type;
+  using buffer_type = writer_type::buffer_type;
 
   queue_type queue_empty;
   queue_type queue_full;

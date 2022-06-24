@@ -18,8 +18,8 @@
 
 #include <gspc/detail/dllexport.hpp>
 
-#include <logging/tcp_endpoint.hpp>
 #include <logging/socket_endpoint.hpp>
+#include <logging/tcp_endpoint.hpp>
 
 #include <boost/optional.hpp>
 #include <boost/variant.hpp>

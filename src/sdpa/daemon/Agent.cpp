@@ -14,17 +14,17 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <drts/scheduler_types.hpp>
 #include <drts/private/scheduler_types_implementation.hpp>
+#include <drts/scheduler_types.hpp>
 #include <sdpa/daemon/Agent.hpp>
 #include <sdpa/daemon/Implementation.hpp>
 #include <sdpa/daemon/Job.hpp>
+#include <sdpa/daemon/WorkerManager.hpp>
+#include <sdpa/daemon/WorkerSet.hpp>
 #include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
 #include <sdpa/daemon/scheduler/CostAwareWithWorkStealingStrategy.hpp>
 #include <sdpa/daemon/scheduler/GreedyScheduler.hpp>
 #include <sdpa/daemon/scheduler/SingleAllocationScheduler.hpp>
-#include <sdpa/daemon/WorkerSet.hpp>
-#include <sdpa/daemon/WorkerManager.hpp>
 #include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 #include <sdpa/events/SubscribeAckEvent.hpp>
@@ -143,7 +143,6 @@ namespace sdpa
       , _cancel_mutex()
       , _scheduling_requested_guard()
       , _scheduling_requested_condition()
-      , _scheduling_requested (false)
       , _random_extraction_engine (std::random_device()())
       , mtx_subscriber_()
       , _log_emitter()
@@ -243,10 +242,10 @@ namespace sdpa
     }
 
     Job* Agent::addJob ( sdpa::job_id_t const& job_id
-                               , we::type::Activity activity
-                               , job_source source
-                               , job_handler handler
-                               )
+                       , we::type::Activity activity
+                       , job_source source
+                       , job_handler handler
+                       )
     {
       auto requirements_and_preferences
         (activity.requirements_and_preferences (_virtual_memory_api.get()));
@@ -413,9 +412,9 @@ namespace sdpa
     }
 
     void Agent::emit_gantt ( job_id_t const& id
-                                   , we::type::Activity const& activity
-                                   , NotificationEvent::state_t state
-                                   )
+                           , we::type::Activity const& activity
+                           , NotificationEvent::state_t state
+                           )
     {
       _log_emitter.emit_message
         ( { NotificationEvent ({name()}, id, state, activity).encoded()
@@ -631,8 +630,8 @@ namespace sdpa
     }
 
     void Agent::submit ( we::layer::id_type const& job_id
-                               , we::type::Activity activity
-                               )
+                       , we::type::Activity activity
+                       )
     try
     {
       if (activity.handle_by_workflow_engine())

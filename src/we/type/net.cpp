@@ -14,22 +14,22 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <we/type/net.hpp>
 #include <we/type/Activity.hpp>
 #include <we/type/Transition.hpp>
+#include <we/type/net.hpp>
 #include <we/type/value.hpp>
 #include <we/type/value/peek.hpp>
 #include <we/type/value/show.hpp>
-#include <we/type/value/wrap.hpp>
 #include <we/type/value/unwrap.hpp>
+#include <we/type/value/wrap.hpp>
 
 #include <we/require_type.hpp>
 
 #include <fhg/util/next.hpp>
 
+#include <util-generic/functor_visitor.hpp>
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_container.hpp>
-#include <util-generic/functor_visitor.hpp>
 
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/join.hpp>
@@ -127,7 +127,7 @@ namespace we
         ::boost::optional<Expression> const& _condition;
         expr::parse::node::KeyRoots _key_roots;
 
-        typedef std::unordered_map<place_id_type, iterators_type> map_type;
+        using map_type = std::unordered_map<place_id_type, iterators_type>;
 
         map_type _m;
 

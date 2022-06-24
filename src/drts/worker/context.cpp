@@ -87,7 +87,6 @@ namespace drts
         : _worker_name (worker_name)
         , _workers (workers)
         , _module_call_do_cancel ([](){})
-        , _cancelled (false)
         , _logger (logger)
     {}
     std::string const& context::implementation::worker_name() const

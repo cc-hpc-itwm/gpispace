@@ -246,7 +246,7 @@ namespace iml_client
       Align_t _align;
       MemSize_t _mem_size;
       MemSize_t _mem_free;
-      MemSize_t _high_water;
+      MemSize_t _high_water {0};
 
       void delete_free_segment (Offset_t, MemSize_t);
       void insert_free_segment (Offset_t, MemSize_t);

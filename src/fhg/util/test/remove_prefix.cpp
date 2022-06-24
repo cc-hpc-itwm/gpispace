@@ -16,8 +16,8 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <fhg/util/remove_prefix.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
 
 namespace
 {

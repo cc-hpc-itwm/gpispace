@@ -16,33 +16,33 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <we/field.hpp>
 #include <we/type/value.hpp>
+#include <we/type/value/dump.hpp>
 #include <we/type/value/name.hpp>
 #include <we/type/value/name_of.hpp>
 #include <we/type/value/peek.hpp>
 #include <we/type/value/poke.hpp>
 #include <we/type/value/positions.hpp>
 #include <we/type/value/read.hpp>
-#include <we/type/value/show.hpp>
-#include <we/type/value/wrap.hpp>
-#include <we/type/value/unwrap.hpp>
-#include <we/type/value/to_value.hpp>
-#include <we/type/value/dump.hpp>
 #include <we/type/value/serialize.hpp>
-#include <we/field.hpp>
+#include <we/type/value/show.hpp>
+#include <we/type/value/to_value.hpp>
+#include <we/type/value/unwrap.hpp>
+#include <we/type/value/wrap.hpp>
 
 #include <we/type/value/boost/test/printer.hpp>
 #include <we/type/value/path/split.hpp>
 
-#include <fhg/util/parse/error.hpp>
-#include <fhg/util/num.hpp>
 #include <fhg/util/indenter.hpp>
+#include <fhg/util/num.hpp>
+#include <fhg/util/parse/error.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/list.hpp>
+#include <util-generic/testing/printer/map.hpp>
 #include <util-generic/testing/printer/optional.hpp>
 #include <util-generic/testing/printer/set.hpp>
-#include <util-generic/testing/printer/map.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
 #include <fhg/util/xml.hpp>
@@ -323,7 +323,7 @@ BOOST_AUTO_TEST_CASE (peek_ref)
   BOOST_CHECK_NE (peek ("l", m), ::boost::none);
 
   {
-    std::list<value_type>& r
+    auto& r
       (::boost::get<std::list<value_type>> (peek ("l", m).get()));
 
     BOOST_CHECK (r.empty());
@@ -477,7 +477,7 @@ BOOST_AUTO_TEST_CASE (wrap)
 {
   namespace value = pnet::type::value;
 
-  typedef std::map<value::value_type, value::value_type> map_vv_type;
+  using map_vv_type = std::map<value::value_type, value::value_type>;
 
 #define CHECK_EMPTY_LIST(_t...)                        \
   BOOST_CHECK_EQUAL ( std::list<value::value_type>()   \
@@ -1089,9 +1089,9 @@ BOOST_AUTO_TEST_CASE (dump)
 
 namespace
 {
-  typedef std::pair< std::list<std::string>
-                   , pnet::type::value::value_type
-                   > position_type;
+  using position_type = std::pair< std::list<std::string>
+                                 , pnet::type::value::value_type
+                                 >;
 }
 
 FHG_BOOST_TEST_LOG_VALUE_PRINTER (position_type, os, position)

@@ -14,8 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <fhg/util/num.hpp>
 #include <fhg/util/cctype.hpp>
+#include <fhg/util/num.hpp>
 #include <fhg/util/parse/error.hpp>
 
 #include <util-generic/fallthrough.hpp>
@@ -44,8 +44,8 @@ namespace fhg
         {
           switch (c)
           {
-          case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': return I (10 + (c - 'a'));
-          case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': return I (10 + (c - 'A'));
+          case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': return 10 + (c - 'a');
+          case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': return 10 + (c - 'A');
           default: return I (c - '0');
           }
         }

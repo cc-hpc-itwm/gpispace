@@ -90,7 +90,7 @@ namespace fhg
             stream << itemData (index);
           }
 
-          QMimeData* data (new QMimeData);
+          auto* data (new QMimeData);
           data->setData (mime_type(), encoded);
           return data;
         }
@@ -249,7 +249,7 @@ namespace fhg
 
         QToolButton* button_for_action (QAction* action, QWidget* parent)
         {
-          QToolButton* button (new QToolButton (parent));
+          auto* button (new QToolButton (parent));
           button->setDefaultAction (action);
           return button;
         }
@@ -270,17 +270,17 @@ namespace fhg
         , _move_down (new QAction (tr ("down"), this))
       {
         {
-          QHBoxLayout* layout (new QHBoxLayout (this));
+          auto* layout (new QHBoxLayout (this));
           layout->addWidget (_available_view);
           {
-            QVBoxLayout* swapper (new QVBoxLayout);
+            auto* swapper (new QVBoxLayout);
             layout->addLayout (swapper);
             swapper->addWidget (button_for_action (_deselect, this));
             swapper->addWidget (button_for_action (_select, this));
           }
           layout->addWidget (_selected_view);
           {
-            QVBoxLayout* mover (new QVBoxLayout);
+            auto* mover (new QVBoxLayout);
             layout->addLayout (mover);
             mover->addWidget (button_for_action (_move_up, this));
             mover->addWidget (button_for_action (_move_down, this));

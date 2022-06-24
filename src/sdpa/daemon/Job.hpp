@@ -41,6 +41,12 @@ namespace sdpa
     {
       virtual ~JobFSM_() = default;
 
+      JobFSM_() = default;
+      JobFSM_ (JobFSM_ const&) = delete;
+      JobFSM_& operator= (JobFSM_ const&) = delete;
+      JobFSM_ (JobFSM_&&) = delete;
+      JobFSM_& operator= (JobFSM_&&) = delete;
+
       struct s_pending : public ::boost::msm::front::state<>{};
       struct s_running : public ::boost::msm::front::state<>{};
       struct s_finished : public ::boost::msm::front::state<>
@@ -69,7 +75,7 @@ namespace sdpa
       struct e_finished {};
       struct e_reschedule {};
 
-      typedef s_pending initial_state;
+      using initial_state = s_pending;
 
       struct transition_table : ::boost::mpl::vector
         <

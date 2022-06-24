@@ -232,12 +232,6 @@ namespace sdpa
       return ::boost::make_optional (it != worker_connections_.left.end(), it);
     }
 
-    WorkerManager::WorkerEquivalenceClass::WorkerEquivalenceClass()
-      : _num_pending_jobs (0)
-      , _num_running_jobs (0)
-      , _num_free_workers (0)
-    {}
-
     void WorkerManager::WorkerEquivalenceClass::inc_pending_jobs (unsigned int k)
     {
       _num_pending_jobs += k;
@@ -414,7 +408,7 @@ namespace sdpa
 
         while (!(thieves.empty() || to_steal_from.empty()))
         {
-          worker_iterator const richest (to_steal_from.top());
+          auto const richest (to_steal_from.top());
           worker_iterator const& thief (worker_map_.find (*thieves.begin()));
           Worker& richest_worker (richest->second);
 

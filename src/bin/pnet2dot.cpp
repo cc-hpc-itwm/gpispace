@@ -15,17 +15,17 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <we/type/Activity.hpp>
+#include <we/type/Transition.hpp>
 #include <we/type/id.hpp>
 #include <we/type/net.hpp>
 #include <we/type/signature/show.hpp>
-#include <we/type/Transition.hpp>
 #include <we/type/value/show.hpp>
 
 #include <fhg/project_info.hpp>
 #include <fhg/util/cctype.hpp>
 #include <fhg/util/indenter.hpp>
-#include <util-generic/print_exception.hpp>
 #include <fhg/util/starts_with.hpp>
+#include <util-generic/print_exception.hpp>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
@@ -68,7 +68,7 @@ namespace
     static std::string const read_connection ("dashed");
   }
 
-  typedef unsigned long id_type;
+  using id_type = unsigned long;
 
   static const std::string endl ("\\n");
   static const std::string arrow (" -> ");
@@ -146,9 +146,9 @@ namespace
   {
     std::string q;
 
-    for (std::string::const_iterator pos (s.begin()); pos != s.end(); ++pos)
+    for (char pos : s)
     {
-      q += quote (*pos);
+      q += quote (pos);
     }
 
     return lines (';', q);
@@ -199,14 +199,13 @@ namespace
   class options
   {
   public:
-    bool full;
-    std::list<std::function <bool (we::type::Transition const&)>>
-      filter;
-    bool show_token;
-    bool show_signature;
-    bool show_priority;
-    bool show_virtual;
-    bool show_tunnel_connection;
+    bool full {false};
+    std::list<std::function <bool (we::type::Transition const&)>> filter{};
+    bool show_token {true};
+    bool show_signature {true};
+    bool show_priority {false};
+    bool show_virtual {true};
+    bool show_tunnel_connection {true};
 
     bool should_be_expanded (we::type::Transition const& x) const
     {
@@ -220,16 +219,6 @@ namespace
 
       return true;
     }
-
-    options()
-      : full (false)
-      , filter()
-      , show_token (true)
-      , show_signature (true)
-      , show_priority (false)
-      , show_virtual (true)
-      , show_tunnel_connection (true)
-    {}
   };
 
   std::string with_signature ( std::string const& name
@@ -626,10 +615,10 @@ try
   std::string input;
   std::string output;
 
-  typedef std::vector<std::string> vec_type;
+  using Strings = std::vector<std::string>;
 
-  vec_type not_starts_with;
-  vec_type not_ends_with;
+  Strings not_starts_with;
+  Strings not_ends_with;
 
   options options;
 
@@ -668,11 +657,11 @@ try
 
   expand.add_options()
     ( "not-starts-with"
-    , ::boost::program_options::value<vec_type> (&not_starts_with)
+    , ::boost::program_options::value<Strings> (&not_starts_with)
     , "do not expand transitions that start with a certain prefix"
     )
     ( "not-ends-with"
-    , ::boost::program_options::value<vec_type> (&not_ends_with)
+    , ::boost::program_options::value<Strings> (&not_ends_with)
     , "do not expand transitions that end with a certain suffix"
     );
 

@@ -29,30 +29,30 @@
 #include <boost/serialization/vector.hpp>
 
 #include <QApplication>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QDial>
 #include <QDoubleSpinBox>
 #include <QFileDialog>
 #include <QGraphicsRectItem>
 #include <QGraphicsScene>
+#include <QGroupBox>
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QMessageBox>
+#include <QMutexLocker>
+#include <QPushButton>
 #include <QScrollBar>
 #include <QSettings>
-#include <QGroupBox>
-#include <QDial>
-#include <QPushButton>
-#include <QSortFilterProxyModel>
 #include <QSlider>
+#include <QSortFilterProxyModel>
 #include <QSplitter>
-#include <QCheckBox>
-#include <QComboBox>
+#include <QString>
 #include <QTableView>
+#include <QThread>
 #include <QTime>
 #include <QTimer>
-#include <QString>
 #include <QVBoxLayout>
-#include <QMutexLocker>
-#include <QThread>
 
 #include <algorithm>
 #include <exception>
@@ -144,7 +144,6 @@ namespace detail
   log_table_model::log_table_model (QObject* parent)
     : QAbstractTableModel (parent)
     , _pending_data()
-    , _clear_on_update()
     , _mutex_pending (QMutex::Recursive)
     , _data()
     , _mutex_data (QMutex::Recursive)
@@ -309,7 +308,7 @@ namespace detail
     }
 
   protected:
-    virtual bool filterAcceptsRow (int row, QModelIndex const& parent) const override
+    bool filterAcceptsRow (int row, QModelIndex const& parent) const override
     {
       return sourceModel()->data
         (sourceModel()->index (row, 0, parent), Qt::UserRole).toInt()
@@ -324,8 +323,6 @@ namespace detail
 
 log_monitor::log_monitor()
   : QWidget()
-  , _drop_filtered (false)
-  , _filter_level (1)
   , _log_table (new QTableView (this))
   , _log_model (new detail::log_table_model)
   , _log_filter (new detail::log_filter_proxy (this))
@@ -355,12 +352,12 @@ log_monitor::log_monitor()
   _log_table->verticalHeader()->setSectionResizeMode
     (QHeaderView::ResizeToContents);
 
-  QGroupBox* filter_level_box (new QGroupBox (tr ("Filter"), this));
+  auto* filter_level_box (new QGroupBox (tr ("Filter"), this));
 
-  QDial* filter_level_dial (new QDial (this));
+  auto* filter_level_dial (new QDial (this));
   filter_level_dial->setOrientation (Qt::Horizontal);
 
-  QComboBox* filter_level_combobox (new QComboBox (this));
+  auto* filter_level_combobox (new QComboBox (this));
   filter_level_combobox->setToolTip (tr ("Filter events according to level"));
 
   filter_level_dial->setMaximum (4);
@@ -392,7 +389,7 @@ log_monitor::log_monitor()
 
   filter_level_combobox->setCurrentIndex (_filter_level);
 
-  QCheckBox* drop_filtered_box (new QCheckBox (tr ("drop filtered"), this));
+  auto* drop_filtered_box (new QCheckBox (tr ("drop filtered"), this));
   drop_filtered_box->setChecked (_drop_filtered);
   drop_filtered_box->setToolTip
     (tr ("Drop filtered events instead of keeping them"));
@@ -402,16 +399,16 @@ log_monitor::log_monitor()
     );
 
 
-  QGroupBox* control_box (new QGroupBox (tr ("Control"), this));
+  auto* control_box (new QGroupBox (tr ("Control"), this));
 
-  QPushButton* clear_log_button (new QPushButton (tr ("Clear"), this));
+  auto* clear_log_button (new QPushButton (tr ("Clear"), this));
   clear_log_button->setToolTip (tr ("Clear all events"));
   connect
     ( clear_log_button, &QPushButton::clicked
     , _log_model, std::bind (&detail::log_table_model::clear, _log_model)
     );
 
-  QCheckBox* follow_logging_cb (new QCheckBox (tr ("follow"), this));
+  auto* follow_logging_cb (new QCheckBox (tr ("follow"), this));
   follow_logging_cb->setToolTip ( tr ( "Follow the stream of log events and "
                                        "automatically scroll the view"
                                      )
@@ -422,21 +419,21 @@ log_monitor::log_monitor()
   follow_logging_cb->setChecked (true);
 
 
-  QVBoxLayout* log_filter_layout (new QVBoxLayout (filter_level_box));
+  auto* log_filter_layout (new QVBoxLayout (filter_level_box));
   log_filter_layout->addWidget (filter_level_dial);
   log_filter_layout->addWidget (filter_level_combobox);
   log_filter_layout->addWidget (drop_filtered_box);
 
-  QVBoxLayout* control_box_layout (new QVBoxLayout (control_box));
+  auto* control_box_layout (new QVBoxLayout (control_box));
   control_box_layout->addWidget (follow_logging_cb);
   control_box_layout->addWidget (clear_log_button);
 
-  QVBoxLayout* log_sidebar_layout (new QVBoxLayout);
+  auto* log_sidebar_layout (new QVBoxLayout);
   log_sidebar_layout->addWidget (filter_level_box);
   log_sidebar_layout->addStretch();
   log_sidebar_layout->addWidget (control_box);
 
-  QGridLayout* layout (new QGridLayout (this));
+  auto* layout (new QGridLayout (this));
   layout->addWidget (_log_table, 0, 0);
   layout->addLayout (log_sidebar_layout, 0, 1);
 }
@@ -472,7 +469,7 @@ void log_monitor::toggle_follow_logging (bool follow)
 
   _log_table->scrollToBottom();
 
-  QTimer* log_follower (new QTimer (this));
+  auto* log_follower (new QTimer (this));
 
   connect (log_follower, SIGNAL (timeout()), _log_table, SLOT (scrollToBottom()));
   connect (sender(), SIGNAL (toggled (bool)), log_follower, SLOT (stop()));

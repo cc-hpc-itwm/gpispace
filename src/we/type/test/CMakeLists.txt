@@ -55,25 +55,27 @@ fhg_add_test (NAME we_type_pnetc_compare
   LIBRARIES pnet
 )
 
-add_custom_command (
-  OUTPUT sig_struct.hpp sig_op.hpp sig_op.cpp
-  COMMAND "$<TARGET_FILE:mk_cpp.exe>" -H sig_struct.hpp -O sig_op.hpp -I sig_op.cpp
-)
+if (BUILD_TESTING)
+  add_custom_command (
+    OUTPUT sig_struct.hpp sig_op.hpp sig_op.cpp
+    COMMAND "$<TARGET_FILE:mk_cpp.exe>"
+  )
 
-gspc_add_library (NAME sig_op
-  TYPE STATIC
-  SOURCES "${CMAKE_CURRENT_BINARY_DIR}/sig_op.cpp"
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_BINARY_DIR}"
-  LIBRARIES pnet
-            Boost::base
-)
+  gspc_add_library (NAME sig_op
+    TYPE STATIC
+    SOURCES "${CMAKE_CURRENT_BINARY_DIR}/sig_op.cpp"
+    INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_BINARY_DIR}"
+    LIBRARIES pnet
+              Boost::base
+  )
 
-fhg_add_test (NAME we_type_sig
-  SOURCES sig.cpp
-  USE_BOOST
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_BINARY_DIR}"
-  LIBRARIES sig_op pnet
-)
+  fhg_add_test (NAME we_type_sig
+    SOURCES sig.cpp
+    USE_BOOST
+    INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_BINARY_DIR}"
+    LIBRARIES sig_op pnet
+  )
+endif()
 
 fhg_add_test (NAME we_type_get_schedule_data
   SOURCES get_schedule_data.cpp

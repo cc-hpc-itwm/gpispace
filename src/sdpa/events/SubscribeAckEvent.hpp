@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include <sdpa/types.hpp>
 #include <sdpa/events/MgmtEvent.hpp>
+#include <sdpa/types.hpp>
 
 namespace sdpa
 {
@@ -26,7 +26,7 @@ namespace sdpa
     class SubscribeAckEvent : public MgmtEvent
     {
     public:
-      typedef ::boost::shared_ptr<SubscribeAckEvent> Ptr;
+      using Ptr = ::boost::shared_ptr<SubscribeAckEvent>;
 
       SubscribeAckEvent (job_id_t const& job_id)
         : MgmtEvent()
@@ -38,7 +38,7 @@ namespace sdpa
         return _job_id;
       }
 
-      virtual void handleBy
+      void handleBy
         (fhg::com::p2p::address_t const& source, EventHandler* handler) override
       {
         handler->handleSubscribeAckEvent (source, this);

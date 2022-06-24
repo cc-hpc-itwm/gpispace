@@ -45,4 +45,4 @@ namespace we
 }
 
 //! \todo REMOVE! This is deprecated but some clients still use it.
-typedef we::type::literal::control control;
+using control = we::type::literal::control;

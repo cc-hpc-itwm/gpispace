@@ -36,7 +36,7 @@ namespace gpi
       class beegfs_area_t : public area_t
       {
       public:
-        typedef ::boost::filesystem::path path_t;
+        using path_t = ::boost::filesystem::path;
 
         static const int BEEGFS_AREA_VERSION = 0x0001;
 
@@ -52,7 +52,7 @@ namespace gpi
                       , gpi::pc::global::itopology_t & topology
                       );
 
-        virtual ~beegfs_area_t () override;
+        ~beegfs_area_t () override;
         beegfs_area_t (beegfs_area_t const&) = delete;
         beegfs_area_t (beegfs_area_t&&) = delete;
         beegfs_area_t& operator= (beegfs_area_t const&) = delete;
@@ -62,24 +62,24 @@ namespace gpi
         global::itopology_t& global_topology() override;
 
       private:
-        virtual bool is_range_local ( gpi::pc::type::handle::descriptor_t const&
+        bool is_range_local ( gpi::pc::type::handle::descriptor_t const&
                             , iml::MemoryOffset begin
                             , iml::MemorySize   range_size
                             ) const override;
 
-        virtual void *raw_ptr (iml::MemoryOffset off) override;
+        void *raw_ptr (iml::MemoryOffset off) override;
 
-        virtual iml::MemorySize get_local_size ( iml::MemorySize size
+        iml::MemorySize get_local_size ( iml::MemorySize size
                                              , gpi::pc::type::flags_t flags
                                              ) const override;
 
-        virtual iml::MemorySize
+        iml::MemorySize
         read_from_impl ( iml::MemoryOffset off
                        , void *buffer
                        , iml::MemorySize amount
                        ) override;
 
-        virtual iml::MemorySize
+        iml::MemorySize
         write_to_impl ( iml::MemoryOffset off
                       , const void *buffer
                       , iml::MemorySize amount

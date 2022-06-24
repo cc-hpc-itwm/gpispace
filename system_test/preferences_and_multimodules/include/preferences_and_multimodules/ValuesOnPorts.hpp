@@ -14,18 +14,27 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <boost/test/unit_test.hpp>
+#pragma once
 
-#include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <sdpa/test/sdpa/UNSAFE_thread_event.hpp>
+#include <we/type/value.hpp>
 
-BOOST_AUTO_TEST_CASE ( signal_event )
+#include <map>
+#include <string>
+
+namespace preferences_and_multimodules
 {
-  using namespace fhg::util::thread;
-  typedef UNSAFE_event<int> my_event;
+  class ValuesOnPorts
+  {
+  public:
+     using Key = std::string;
+     using Value = pnet::type::value::value_type;
+     using Map = std::multimap<Key, Value>;
 
-  my_event e;
+     ValuesOnPorts (Map map);
 
-  e.notify (41);
-  BOOST_REQUIRE_EQUAL (41, e.wait());
+     Map const& map() const;
+
+  protected:
+     Map _values_on_ports;
+  };
 }

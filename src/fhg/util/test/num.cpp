@@ -16,17 +16,17 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <fhg/util/num.hpp>
 #include <fhg/util/num/show.hpp>
 #include <fhg/util/parse/error.hpp>
 #include <fhg/util/parse/require.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
 
 #include <boost/test/data/monomorphic.hpp>
 #include <boost/test/data/test_case.hpp>
 
-#include <string>
 #include <iostream>
+#include <string>
 
 using fhg::util::parse::position;
 namespace error = fhg::util::parse::error;
@@ -234,7 +234,7 @@ BOOST_AUTO_TEST_CASE (limits)
     const std::string inp ("9223372036854775808L");
     position pos (inp);
 
-    typedef error::value_too_big<unsigned long, long> error_type;
+    using error_type = error::value_too_big<unsigned long, long>;
 
     BOOST_REQUIRE_THROW (read_num (pos), error_type);
   }
@@ -242,7 +242,7 @@ BOOST_AUTO_TEST_CASE (limits)
     const std::string inp ("-9223372036854775808L");
     position pos (inp);
 
-    typedef error::value_too_big<unsigned long, long> error_type;
+    using error_type = error::value_too_big<unsigned long, long>;
 
     BOOST_REQUIRE_THROW (read_num (pos), error_type);
   }
@@ -255,7 +255,7 @@ BOOST_AUTO_TEST_CASE (limits)
     const std::string inp (oss.str());
     position pos (inp);
 
-    typedef error::value_too_big<double, float> error_type;
+    using error_type = error::value_too_big<double, float>;
 
     BOOST_REQUIRE_THROW (read_num (pos), error_type);
   }

@@ -232,8 +232,8 @@ BOOST_AUTO_TEST_CASE (signature_cpp)
 
   CHECK_HEADER_OP
     ("#include <we/type/value.hpp>\n"
-     "#include <we/type/value/to_value.hpp>\n"
      "#include <we/type/value/from_value.hpp>\n"
+     "#include <we/type/value/to_value.hpp>\n"
      "#include <iosfwd>\n"
      "\n"
      "namespace pnetc\n"
@@ -350,8 +350,8 @@ BOOST_AUTO_TEST_CASE (signature_cpp)
 
   CHECK_HEADER_OP
     ("#include <we/type/value.hpp>\n"
-     "#include <we/type/value/to_value.hpp>\n"
      "#include <we/type/value/from_value.hpp>\n"
+     "#include <we/type/value/to_value.hpp>\n"
      "#include <iosfwd>\n"
      "\n"
      "namespace pnetc\n"
@@ -522,8 +522,8 @@ BOOST_AUTO_TEST_CASE (signature_cpp)
 
     CHECK_HEADER_OP
       ("#include <we/type/value.hpp>\n"
-       "#include <we/type/value/to_value.hpp>\n"
        "#include <we/type/value/from_value.hpp>\n"
+       "#include <we/type/value/to_value.hpp>\n"
        "#include <iosfwd>\n"
        "\n"
        "namespace pnetc\n"

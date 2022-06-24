@@ -55,23 +55,23 @@ namespace fhg
 
         void append_event (logging::message const&);
 
-        virtual int rowCount (QModelIndex const& = QModelIndex()) const override;
-        virtual int columnCount (QModelIndex const& = QModelIndex()) const override;
-        virtual QVariant data
+        int rowCount (QModelIndex const& = QModelIndex()) const override;
+        int columnCount (QModelIndex const& = QModelIndex()) const override;
+        QVariant data
           (QModelIndex const&, int role = Qt::DisplayRole) const override;
-        virtual QVariant headerData
+        QVariant headerData
           (int section, Qt::Orientation, int role = Qt::DisplayRole) const override;
-        virtual QModelIndex index
+        QModelIndex index
           (int row, int column, QModelIndex const& = QModelIndex()) const override;
-        virtual QModelIndex parent (QModelIndex const&) const override;
+        QModelIndex parent (QModelIndex const&) const override;
 
         void clear();
-        virtual bool removeRows
+        bool removeRows
           (int row, int count, QModelIndex const& parent = QModelIndex()) override;
 
-        typedef long timestamp_type;
-        typedef long duration_type;
-        typedef sdpa::daemon::NotificationEvent::state_t state_type;
+        using timestamp_type = long;
+        using duration_type = long;
+        using state_type = sdpa::daemon::NotificationEvent::state_t;
 
         struct value_type
         {
@@ -95,15 +95,15 @@ namespace fhg
 
           QString _id;
           QString _name;
-          state_type _state;
+          state_type _state {sdpa::daemon::NotificationEvent::STATE_STARTED};
 
           friend class worker_model;
         };
 
-        typedef ::boost::iterator_range<std::vector<value_type>::const_iterator>
-          subrange_type;
-        typedef std::function<subrange_type (timestamp_type, timestamp_type)>
-          subrange_getter_type;
+        using subrange_type =
+          ::boost::iterator_range<std::vector<value_type>::const_iterator>;
+        using subrange_getter_type =
+          std::function<subrange_type (timestamp_type, timestamp_type)>;
 
       private slots:
         void handle_events();

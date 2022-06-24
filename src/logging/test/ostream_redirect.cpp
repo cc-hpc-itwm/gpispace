@@ -19,9 +19,12 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <array>
 #include <atomic>
+#include <cstdint>
 #include <functional>
 #include <iostream>
+#include <string>
 
 namespace fhg
 {

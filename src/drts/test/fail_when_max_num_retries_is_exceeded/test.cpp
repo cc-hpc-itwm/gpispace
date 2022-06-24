@@ -26,18 +26,18 @@
 #include <testing/make.hpp>
 #include <testing/parse_command_line.hpp>
 #include <testing/scoped_nodefile_from_environment.hpp>
-#include <testing/source_directory.hpp>
 #include <testing/shared_directory.hpp>
+#include <testing/source_directory.hpp>
 
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 #include <util-generic/temporary_file.hpp>
 #include <util-generic/temporary_path.hpp>
 
+#include <util-generic/threadsafe_queue.hpp>
 #include <util-rpc/service_dispatcher.hpp>
 #include <util-rpc/service_handler.hpp>
 #include <util-rpc/service_tcp_provider.hpp>
-#include <util-generic/threadsafe_queue.hpp>
 
 #include <we/type/value/boost/test/printer.hpp>
 
@@ -46,8 +46,8 @@
 #include <boost/test/data/test_case.hpp>
 #include <boost/thread/scoped_thread.hpp>
 
-#include <string>
 #include <stdexcept>
+#include <string>
 
 BOOST_AUTO_TEST_CASE (fail_when_max_num_retries_is_exceeded)
 {

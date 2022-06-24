@@ -27,19 +27,19 @@ namespace xml
   {
     namespace type
     {
-      typedef std::string require_key_type;
+      using require_key_type = std::string;
 
       struct requirements_type
       {
       private:
-        typedef std::unordered_set<require_key_type> set_type;
+        using set_type = std::unordered_set<require_key_type>;
 
       public:
         requirements_type() = default;
 
         void set (require_key_type const& key);
 
-        typedef set_type::const_iterator const_iterator;
+        using const_iterator = set_type::const_iterator;
 
         const_iterator begin () const;
         const_iterator end () const;

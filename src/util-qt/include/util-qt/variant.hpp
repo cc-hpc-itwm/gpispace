@@ -21,8 +21,8 @@
 #include <QtCore/QMetaType>
 #include <QtCore/QVariant>
 
-#include <string>
 #include <stdexcept>
+#include <string>
 
 namespace fhg
 {

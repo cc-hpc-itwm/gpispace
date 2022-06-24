@@ -40,16 +40,12 @@ namespace gpi
     {
       struct header_t
       {
-        header_t ()
-          : length (0)
-        {}
-
         void clear()
         {
           length = 0;
         }
 
-        uint32_t     length;
+        uint32_t     length {0};
       };
 
       struct existing_segments

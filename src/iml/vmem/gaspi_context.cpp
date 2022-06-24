@@ -120,7 +120,7 @@ namespace fhg
                          , &exchange_hostname_and_port_data_raw
                          );
 
-        hostname_and_port_t* exchange_hostname_and_port_data_send
+        auto* exchange_hostname_and_port_data_send
           (static_cast<hostname_and_port_t*> (exchange_hostname_and_port_data_raw));
         hostname_and_port_t* exchange_hostname_and_port_data_receive
           (exchange_hostname_and_port_data_send + 1);

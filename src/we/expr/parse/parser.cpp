@@ -26,13 +26,12 @@
 #include <we/expr/type/infer.hpp>
 #include <we/type/value/function.hpp>
 
-#include <boost/lexical_cast.hpp>
-
 #include <algorithm>
 #include <functional>
 #include <iterator>
 #include <numeric>
 #include <sstream>
+#include <string>
 
 namespace expr
 {
@@ -186,7 +185,7 @@ namespace expr
       {
         throw exception::parse::exception
           ( "left hand of "
-          + ::boost::lexical_cast<std::string> (token)
+          + std::to_string (token)
           + " must be reference name"
           , k
           );
@@ -258,7 +257,7 @@ namespace expr
       case token::_bitset_xor: binary (op_stack.top(), k); break;
       case token::_bitset_tohex:
       case token::_bitset_fromhex:
-      case token::_bitset_count: unary (op_stack.top(), k); break;
+      case token::_bitset_count:
       case token::_stack_empty:
       case token::_stack_top: unary (op_stack.top(), k); break;
       case token::_stack_push: binary (op_stack.top(), k); break;
@@ -353,7 +352,7 @@ namespace expr
                 break;
               default:
                 throw exception::parse::exception
-                  ( ::boost::lexical_cast<std::string> (action)
+                  ( std::to_string (action)
                   , token.pos().eaten()
                   );
               }

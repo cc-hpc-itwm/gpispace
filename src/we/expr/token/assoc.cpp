@@ -43,7 +43,7 @@ namespace expr
         case token::modint: return left;
         case token::_pow:
         case token::_powint:
-        case token::neg: return right;
+        case token::neg:
         case token::define: return right;
 
         default: return left;

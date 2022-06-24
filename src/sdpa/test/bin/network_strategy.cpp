@@ -16,8 +16,8 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <sdpa/test/NetworkStrategy.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
+#include <sdpa/test/NetworkStrategy.hpp>
 
 #include <testing/certificates_data.hpp>
 
@@ -39,8 +39,7 @@ namespace
   struct wait_for_n_events_strategy
   {
     wait_for_n_events_strategy (unsigned int expected)
-      : _counter (0)
-      , _expected (expected)
+      : _expected (expected)
     {}
 
     void perform ( fhg::com::p2p::address_t const&
@@ -70,7 +69,7 @@ namespace
 
     mutable std::mutex _counter_mutex;
     mutable std::condition_variable _expected_count_reached;
-    unsigned int _counter;
+    unsigned int _counter {0};
     unsigned int _expected;
   };
 }

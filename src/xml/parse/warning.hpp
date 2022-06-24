@@ -16,9 +16,9 @@
 
 #pragma once
 
+#include <sstream>
 #include <stdexcept>
 #include <string>
-#include <sstream>
 
 #include <xml/parse/type/function.fwd.hpp>
 #include <xml/parse/type/mod.fwd.hpp>

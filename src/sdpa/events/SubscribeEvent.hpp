@@ -26,7 +26,7 @@ namespace sdpa
     class SubscribeEvent : public MgmtEvent
     {
     public:
-      typedef ::boost::shared_ptr<SubscribeEvent> Ptr;
+      using Ptr = ::boost::shared_ptr<SubscribeEvent>;
 
       SubscribeEvent (job_id_t const& job_id)
         : MgmtEvent()
@@ -38,7 +38,7 @@ namespace sdpa
         return _job_id;
       }
 
-      virtual void handleBy
+      void handleBy
         (fhg::com::p2p::address_t const& source, EventHandler* handler) override
       {
         handler->handleSubscribeEvent (source, this);

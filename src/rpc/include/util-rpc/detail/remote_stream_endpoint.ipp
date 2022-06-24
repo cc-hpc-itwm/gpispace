@@ -26,9 +26,9 @@
 #include <boost/iostreams/device/array.hpp>
 #include <boost/iostreams/stream.hpp>
 #include <boost/range/adaptor/map.hpp>
+#include <boost/thread/locks.hpp>
 #include <boost/thread/reverse_lock.hpp>
 #include <boost/thread/shared_lock_guard.hpp>
-#include <boost/thread/locks.hpp>
 
 #include <algorithm>
 #include <array>

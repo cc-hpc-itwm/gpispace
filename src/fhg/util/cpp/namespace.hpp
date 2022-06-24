@@ -21,8 +21,8 @@
 
 #include <boost/optional.hpp>
 
-#include <string>
 #include <iosfwd>
+#include <string>
 
 namespace fhg
 {
@@ -39,7 +39,7 @@ namespace fhg
                , ::boost::optional<std::string> const& = ::boost::none
                );
           open (fhg::util::indenter&, std::string const&);
-          virtual std::ostream& operator() (std::ostream&) const override;
+          std::ostream& operator() (std::ostream&) const override;
 
         private:
           fhg::util::indenter& _indent;
@@ -50,7 +50,7 @@ namespace fhg
         {
         public:
           close (fhg::util::indenter&);
-          virtual std::ostream& operator() (std::ostream&) const override;
+          std::ostream& operator() (std::ostream&) const override;
 
         private:
           fhg::util::indenter& _indent;

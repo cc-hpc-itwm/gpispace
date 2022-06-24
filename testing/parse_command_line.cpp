@@ -16,8 +16,8 @@
 
 #include <testing/parse_command_line.hpp>
 
-#include <util-generic/boost/program_options/separated_argument_list_parser.hpp>
 #include <drts/private/option.hpp>
+#include <util-generic/boost/program_options/separated_argument_list_parser.hpp>
 
 #include <boost/program_options/parsers.hpp>
 

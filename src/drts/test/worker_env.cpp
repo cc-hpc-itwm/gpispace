@@ -35,13 +35,14 @@
 #include <util-generic/testing/random.hpp>
 #include <util-generic/testing/require_container_is_permutation.hpp>
 
+#include <boost/test/unit_test.hpp>
+
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/variables_map.hpp>
 #include <boost/test/data/test_case.hpp>
 #include <boost/test/framework.hpp>
-#include <boost/test/unit_test.hpp>
 #include <boost/test/unit_test_suite.hpp>
 
 #include <array>

@@ -17,12 +17,12 @@
 #pragma once
 
 #include <xml/parse/type/connect.hpp>
+#include <xml/parse/type/eureka.hpp>
 #include <xml/parse/type/function.hpp>
 #include <xml/parse/type/net.fwd.hpp>
 #include <xml/parse/type/place_map.hpp>
 #include <xml/parse/type/require.hpp>
 #include <xml/parse/type/response.hpp>
-#include <xml/parse/type/eureka.hpp>
 #include <xml/parse/type/struct.hpp>
 #include <xml/parse/type/use.hpp>
 #include <xml/parse/type/with_position_of_definition.hpp>
@@ -41,15 +41,14 @@ namespace xml
       struct transition_type : with_position_of_definition
       {
       public:
-        typedef std::string unique_key_type;
+        using unique_key_type = std::string;
 
-        typedef fhg::pnet::util::unique<connect_type> connections_type;
+        using connections_type = fhg::pnet::util::unique<connect_type>;
         using responses_type = fhg::pnet::util::unique<response_type>;
         using eurekas_type = fhg::pnet::util::unique<eureka_type>;
         using place_maps_type = fhg::pnet::util::unique<place_map_type>;
 
-        typedef ::boost::variant <function_type, use_type>
-          function_or_use_type;
+        using function_or_use_type = ::boost::variant<function_type, use_type>;
 
         transition_type ( util::position_type const&
                         , function_or_use_type const&

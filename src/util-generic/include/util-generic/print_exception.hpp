@@ -42,8 +42,13 @@ namespace fhg
                         , std::string separator
                         );
 
-      virtual ~exception_printer() override = default;
-      virtual std::ostream& operator() (std::ostream&) const override;
+      ~exception_printer() override = default;
+      std::ostream& operator() (std::ostream&) const override;
+
+      exception_printer (exception_printer const&) = delete;
+      exception_printer& operator= (exception_printer const&) = delete;
+      exception_printer (exception_printer&&) = delete;
+      exception_printer& operator= (exception_printer&&) = delete;
 
     private:
       exception_printer ( std::exception_ptr exception

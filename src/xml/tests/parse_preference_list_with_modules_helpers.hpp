@@ -29,7 +29,7 @@ namespace
   constexpr auto const MAX_TARGETS = 64;
   constexpr auto const MAX_MODNAME_LEN = 32;
 
-  std::list<std::string> gen_valid_targets (size_t const max);
+  std::list<std::string> gen_valid_targets (size_t max);
 
   std::string gen_pnet_with_multi_modules
     ( std::list<std::string> const& preference_targets
@@ -47,7 +47,7 @@ namespace
       ( std::list<std::string> const& pref_targets
       , std::list<std::string> const& mod_targets
       , std::string const& mod_name
-      , ::boost::optional<std::string> const add_to_pnet
+      , ::boost::optional<std::string> add_to_pnet
         = ::boost::none
       );
 

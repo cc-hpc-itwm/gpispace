@@ -17,16 +17,15 @@
 #include <iml/vmem/gaspi/pc/memory/beegfs_area.hpp>
 
 #include <cerrno>
-#include <sys/types.h>
-#include <sys/stat.h>
+#include <cstring>
 #include <fcntl.h>
 #include <stdio.h>
-#include <cstring>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include <util-generic/finally.hpp>
 #include <util-generic/hostname.hpp>
 #include <util-generic/print_exception.hpp>
-#include <boost/optional.hpp>
 #include <util-generic/read_file.hpp>
 #include <util-generic/syscall.hpp>
 #include <util-generic/unused.hpp>
@@ -36,9 +35,10 @@
 
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
-#include <boost/system/system_error.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
+#include <boost/optional.hpp>
+#include <boost/system/system_error.hpp>
 
 #include <memory>
 
@@ -119,6 +119,11 @@ namespace gpi
           {
             fhg::util::syscall::ftruncate (_fd, size);
           }
+
+          scoped_file (scoped_file const&) = delete;
+          scoped_file& operator= (scoped_file const&) = delete;
+          scoped_file (scoped_file&&) = delete;
+          scoped_file& operator= (scoped_file&&) = delete;
 
           int _fd;
         };

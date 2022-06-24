@@ -18,9 +18,9 @@
 
 #include <iml/rif/strategy/system_with_blocked_SIGCHLD.hpp>
 
+#include <util-generic/blocked.hpp>
 #include <util-generic/boost/program_options/generic.hpp>
 #include <util-generic/boost/program_options/validators/positive_integral.hpp>
-#include <util-generic/blocked.hpp>
 
 #include <boost/format.hpp>
 

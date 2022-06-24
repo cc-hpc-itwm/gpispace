@@ -32,7 +32,7 @@ void map_produce ( map::user_data_type const& user_data
             << ", id = " << id
             << '\n';
 
-  unsigned long* const mem (static_cast<unsigned long*> (buffer.first));
+  auto* const mem (static_cast<unsigned long*> (buffer.first));
 
   std::fill (mem, mem + buffer.second / sizeof (unsigned long), id);
 }
@@ -59,9 +59,9 @@ void map_process
       );
   }
 
-  unsigned long const* const mem_input
+  auto const* const mem_input
     (static_cast<unsigned long const*> (input.first));
-  unsigned long* const mem_output
+  auto* const mem_output
     (static_cast<unsigned long*> (output.first));
 
   for (unsigned long i (0); i < input.second / sizeof (unsigned long); ++i)
@@ -81,7 +81,7 @@ void map_consume ( map::user_data_type const& user_data
             << ", id = " << id
             << '\n';
 
-  unsigned long const* const mem
+  auto const* const mem
     (static_cast<unsigned long const*> (buffer.first));
 
   for (unsigned long i (0); i < buffer.second / sizeof (unsigned long); ++i)

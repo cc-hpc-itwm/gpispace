@@ -61,7 +61,7 @@ namespace sdpa
         return _value;
       }
 
-      virtual void handleBy
+      void handleBy
         (fhg::com::p2p::address_t const& source, EventHandler* handler) override
       {
         handler->handle_put_token (source, this);
@@ -119,7 +119,7 @@ namespace sdpa
         }
       }
 
-      virtual void handleBy
+      void handleBy
         (fhg::com::p2p::address_t const& source, EventHandler* handler) override
       {
         handler->handle_put_token_response (source, this);

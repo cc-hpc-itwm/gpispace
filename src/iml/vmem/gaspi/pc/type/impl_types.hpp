@@ -31,10 +31,10 @@ namespace gpi
 
     namespace type
     {
-      typedef std::uint64_t process_id_t;
+      using process_id_t = std::uint64_t;
 
       using flags_t = is_global;
-      typedef std::string name_t;
+      using name_t = std::string;
       using memcpy_id_t = std::uint64_t;
     }
   }

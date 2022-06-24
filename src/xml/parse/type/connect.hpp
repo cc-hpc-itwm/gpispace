@@ -21,8 +21,8 @@
 #include <xml/parse/type/with_position_of_definition.hpp>
 #include <xml/parse/util/position.fwd.hpp>
 
-#include <util-generic/hash/std/pair.hpp>
 #include <fhg/util/xml.fwd.hpp>
+#include <util-generic/hash/std/pair.hpp>
 
 #include <we/type/net.hpp>
 #include <we/type/property.hpp>
@@ -42,7 +42,7 @@ namespace xml
       {
       public:
         //! \note          place,       port,        PT||PT_READ
-        typedef std::tuple<std::string, std::string, bool> unique_key_type;
+        using unique_key_type = std::tuple<std::string, std::string, bool>;
 
         connect_type ( util::position_type const&
                      , std::string const& place

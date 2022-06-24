@@ -14,8 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <xml/parse/state.hpp>
 #include <xml/parse/error.hpp>
+#include <xml/parse/state.hpp>
 
 #include <fhg/util/parse/position.hpp>
 #include <fhg/util/parse/require.hpp>
@@ -90,108 +90,6 @@ namespace xml
         throw error::file_not_found ("expand", file);
       }
 
-      type::type()
-        : _search_path()
-        , _gen_ldflags()
-        , _gen_cxxflags()
-        , _in_progress()
-        , _in_progress_position()
-        , _dependencies()
-        , _ignore_properties (false)
-        , _warning_error (false)
-        , _warning_all (false)
-        , _warning_overwrite_function_name_as (false)
-        , _warning_overwrite_template_name_as (false)
-        , _warning_shadow_struct (true)
-        , _warning_shadow_function (true)
-        , _warning_shadow_template (true)
-        , _warning_shadow_specialize (true)
-        , _warning_default_construction (true)
-        , _warning_unused_field (true)
-        , _warning_port_not_connected (true)
-        , _warning_unexpected_element (true)
-        , _warning_overwrite_function_name_trans (false)
-        , _warning_property_overwritten (true)
-        , _warning_type_map_duplicate (true)
-        , _warning_type_get_duplicate (true)
-        , _warning_independent_place (true)
-        , _warning_independent_transition (true)
-        , _warning_conflicting_port_types (true)
-        , _warning_overwrite_file (true)
-        , _warning_backup_file (true)
-        , _warning_duplicate_external_function (true)
-        , _warning_property_unknown (true)
-        , _warning_inline_many_output_ports (true)
-        , _warning_virtual_place_not_tunneled (true)
-        , _warning_duplicate_template_parameter (true)
-        , _warning_synthesize_anonymous_function (true)
-        , _warning_struct_redefined (true)
-
-        , _dump_xml_file ("")
-        , _dump_dependencies ("")
-        , _list_dependencies ("")
-        , _dump_dependenciesD()
-        , _dependencies_target()
-        , _dependencies_target_quoted()
-        , _dependencies_add_phony_targets()
-        , _no_inline (false)
-        , _synthesize_virtual_places (false)
-        , _force_overwrite_file (false)
-        , _backup_extension ("~")
-        , _do_file_backup (true)
-
-        , _path_to_cpp ("")
-
-        , _option_search_path ("search-path,I")
-        , _option_gen_ldflags ("gen-ldflags")
-        , _option_gen_cxxflags ("gen-cxxflags")
-        , _option_ignore_properties ("ignore-properties")
-        , _option_Werror ("Werror")
-        , _option_Wall ("Wall")
-        , _option_Woverwrite_function_name_as ("Woverwrite-function-name-as")
-        , _option_Woverwrite_template_name_as ("Woverwrite-template-name-as")
-        , _option_Wshadow_struct ("Wshadow-struct")
-        , _option_Wshadow_function ("Wshadow-function")
-        , _option_Wshadow_template ("Wshadow-template")
-        , _option_Wshadow_specialize ("Wshadow-specialize")
-        , _option_Wdefault_construction ("Wdefault-construction")
-        , _option_Wunused_field ("Wunused-field")
-        , _option_Wport_not_connected ("Wport-not-connected")
-        , _option_Wunexpected_element ("Wunexpected-element")
-        , _option_Woverwrite_function_name_trans ("Woverwrite-function-name-trans")
-        , _option_Wproperty_overwritten ("Wproperty-overwritten")
-        , _option_Wtype_map_duplicate ("Wtype-map-duplicate")
-        , _option_Wtype_get_duplicate ("Wtype-get-duplicate")
-        , _option_Windependent_place ("Windependent-place")
-        , _option_Windependent_transition ("Windependent-transition")
-        , _option_Wconflicting_port_types ("Wconflicting-port-types")
-        , _option_Woverwrite_file ("Woverwrite-file")
-        , _option_Wbackup_file ("Wbackup-file")
-        , _option_Wduplicate_external_function ("Wduplicate-external-function")
-        , _option_Wproperty_unknown ("Wproperty-unknown")
-        , _option_Winline_many_output_ports ("Winline_many_output_ports")
-        , _option_Wvirtual_place_not_tunneled ("Wvirtual-place-not-tunneled")
-        , _option_Wduplicate_template_parameter ("Wduplicate-template-parameter")
-        , _option_Wsynthesize_anonymous_function ("Wsynthesize-anonymous-function")
-        , _option_Wstruct_redefined ("Wstruct-redefined")
-
-        , _option_dump_xml_file ("dump-xml-file,d")
-        , _option_dump_dependencies ("dump-dependencies,M")
-        , _option_list_dependencies ("list-dependencies")
-        , _option_dump_dependenciesD ("dump-dependenciesD")
-        , _option_dependencies_target ("dependencies-target")
-        , _option_dependencies_target_quoted ("dependencies-target-quoted")
-        , _option_dependencies_add_phony_targets ("dependencies-add-phony-targets")
-        , _option_no_inline ("no-inline")
-        , _option_synthesize_virtual_places ("synthesize-virtual-places")
-        , _option_force_overwrite_file ("force-overwrite-file")
-        , _option_backup_extension ("backup-extension")
-        , _option_do_file_backup ("do-backup")
-
-        , _option_path_to_cpp ("path-to-cpp,g")
-        , _option_path_prefixes_to_strip ("path-prefix-to-strip")
-      {}
-
       gen_param_type const& type::gen_ldflags() const
       {
         return _gen_ldflags;
@@ -233,7 +131,7 @@ namespace xml
                                , we::type::property::value_type const& value
                                )
       {
-        we::type::property::path_type::const_iterator pos (path.begin());
+        auto pos (path.begin());
         we::type::property::path_type::const_iterator const end (path.end());
 
         if (pos != end && *pos == "pnetc")
@@ -312,7 +210,7 @@ namespace xml
 
       void type::set_in_progress_position (const char* p)
       {
-        in_progress_position_type::iterator m
+        auto m
           (_in_progress_position.insert ( _in_progress_position.end()
                                         , position_by_pointer_type()
                                         )
@@ -473,7 +371,7 @@ namespace xml
       void
       type::check_for_include_loop (::boost::filesystem::path const& path) const
       {
-        for ( in_progress_type::const_iterator pos (_in_progress.begin())
+        for ( auto pos (_in_progress.begin())
             ; pos != _in_progress.end()
             ; ++pos
             )
@@ -792,7 +690,7 @@ namespace xml
 
       namespace
       {
-        typedef std::pair<std::string, std::string> pair_type;
+        using pair_type = std::pair<std::string, std::string>;
 
         pair_type mk (std::string const& param)
         {

@@ -174,13 +174,13 @@ namespace gpi
           }
         };
 
-        typedef ::boost::variant< segment::register_t
-                              , segment::register_reply_t
-                              , segment::unregister_t
-                              , segment::add_memory_t
-                              , segment::add_reply_t
-                              , segment::del_memory_t
-                              > message_t;
+        using message_t = ::boost::variant< segment::register_t
+                                          , segment::register_reply_t
+                                          , segment::unregister_t
+                                          , segment::add_memory_t
+                                          , segment::add_reply_t
+                                          , segment::del_memory_t
+                                          >;
       }
     }
   }

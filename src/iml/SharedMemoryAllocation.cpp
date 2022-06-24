@@ -26,10 +26,11 @@ namespace iml
   {}
 
   SharedMemoryAllocation::SharedMemoryAllocation
-      (SharedMemoryAllocation&& other)
-    : _client (other._client)
-    , _handle (other._handle)
-    , _size (other._size)
+      ( SharedMemoryAllocation&& other
+      ) noexcept
+        : _client (other._client)
+        , _handle (other._handle)
+        , _size (other._size)
   {
     other._client = nullptr;
   }

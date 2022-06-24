@@ -16,16 +16,17 @@
 
 #pragma once
 
-#include <list>
-#include <string>
 #include <sdpa/capability.hpp>
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
 
 #include <util-generic/refcounted_set.hpp>
 
-#include <boost/optional.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/optional.hpp>
+
+#include <list>
+#include <string>
 
 namespace sdpa
 {
@@ -61,7 +62,7 @@ namespace sdpa
 
       // cost
       double cost_assigned_jobs() const;
-      double _cost_assigned_jobs;
+      double _cost_assigned_jobs {0};
 
       bool stealing_allowed() const;
 
@@ -75,7 +76,7 @@ namespace sdpa
       std::set<job_id_t> submitted_; //! the queue of jobs assigned to this worker (sent but not acknowledged)
       std::set<job_id_t> acknowledged_; //! the queue of jobs assigned to this worker (successfully submitted)
 
-      bool reserved_;
+      bool reserved_ {false};
     };
   }
 }

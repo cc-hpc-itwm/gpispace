@@ -23,14 +23,14 @@
 #include <drts/scoped_rifd.hpp>
 
 #include <we/type/value.hpp>
-#include <we/type/value/poke.hpp>
 #include <we/type/value/boost/test/printer.hpp>
+#include <we/type/value/poke.hpp>
 
 #include <testing/make.hpp>
 #include <testing/parse_command_line.hpp>
 #include <testing/scoped_nodefile_from_environment.hpp>
-#include <testing/source_directory.hpp>
 #include <testing/shared_directory.hpp>
+#include <testing/source_directory.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/multimap.hpp>

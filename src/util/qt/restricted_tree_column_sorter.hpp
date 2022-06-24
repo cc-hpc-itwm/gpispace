@@ -47,8 +47,8 @@ namespace fhg
 
         QTreeView* _tree;
         QSet<int> _allowed_columns;
-        state _last_state;
-        int _last_column;
+        state _last_state {none};
+        int _last_column {-1};
       };
     }
   }

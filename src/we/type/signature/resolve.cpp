@@ -14,8 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <we/type/signature/resolve.hpp>
 #include <we/type/signature/is_literal.hpp>
+#include <we/type/signature/resolve.hpp>
 #include <we/type/value/path/append.hpp>
 
 #include <we/exception.hpp>

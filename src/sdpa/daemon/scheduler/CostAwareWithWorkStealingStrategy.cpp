@@ -15,6 +15,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <sdpa/daemon/scheduler/CostAwareWithWorkStealingStrategy.hpp>
+
 #include <sdpa/daemon/WorkerManager.hpp>
 #include <sdpa/requirements_and_preferences.hpp>
 #include <we/type/Requirement.hpp>
@@ -75,7 +76,7 @@ namespace sdpa
     {
       std::lock_guard<std::mutex> const _ (mtx_);
       size_t count (0);
-      std::list<job_id_t>::iterator iter (container_.begin());
+      auto iter (container_.begin());
       while (iter != container_.end())
       {
         if (item == *iter)

@@ -49,7 +49,7 @@ namespace iml
       void *ptr ();
       const void *ptr () const;
     private:
-      void *m_ptr;
+      void *m_ptr {nullptr};
       std::string _name;
       std::size_t _size;
     };

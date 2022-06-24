@@ -21,8 +21,8 @@
 #include <stack>
 
 #include <boost/format.hpp>
-#include <boost/make_shared.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/make_shared.hpp>
 
 #include <iml/AllocationHandle.hpp>
 #include <iml/MemoryOffset.hpp>
@@ -96,7 +96,7 @@ namespace gpi
         lock_type lock (m_mutex);
 
 
-        handle_descriptor_map_t::const_iterator hdl_it
+        auto hdl_it
             (m_handles.find (location.allocation));
         if (hdl_it == m_handles.end())
           throw std::runtime_error ("is_local(): no such handle");
@@ -113,7 +113,7 @@ namespace gpi
                            ) const
       {
         lock_type lock (m_mutex);
-        handle_descriptor_map_t::const_iterator
+        auto
             hdl_it (m_handles.find (loc.allocation));
         if (hdl_it == m_handles.end())
           throw std::invalid_argument("check_bounds: no such handle");
@@ -303,7 +303,7 @@ namespace gpi
         area_t::descriptor (iml::AllocationHandle hdl) const
       {
         lock_type lock (m_mutex);
-        handle_descriptor_map_t::const_iterator pos (m_handles.find (hdl));
+        auto pos (m_handles.find (hdl));
         if (pos != m_handles.end())
         {
           return pos->second;

@@ -15,6 +15,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <boost/test/unit_test.hpp>
+
 #include <boost/test/data/test_case.hpp>
 
 #include <we/type/Transition.hpp>
@@ -42,9 +43,9 @@ BOOST_DATA_TEST_CASE ( add_connection_only_allows_a_tp_or_tp_many
   we::transition_id_type const tid (net.add_transition (trans_io));
 
   we::place_id_type const pid_out_list
-    (net.add_place (place::type ("out_list", "list", ::boost::none)));
+    (net.add_place (place::type ("out_list", "list", ::boost::none, we::type::property::type{})));
   we::place_id_type const pid_out_t
-    (net.add_place (place::type ("out", "long", ::boost::none)));
+    (net.add_place (place::type ("out", "long", ::boost::none, we::type::property::type{})));
 
   we::port_id_type const port_out_list
     ( trans_io.add_port

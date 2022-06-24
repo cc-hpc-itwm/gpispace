@@ -40,6 +40,11 @@ namespace fhg
         sections (std::string, std::ostream& = std::cout);
         ~sections();
 
+        sections (sections const&) = delete;
+        sections& operator= (sections const&) = delete;
+        sections (sections&&) = delete;
+        sections& operator= (sections&&) = delete;
+
         void end_section();
         void section (std::string);
 

@@ -64,13 +64,13 @@ namespace drts
         , std::function<void (int)> on_exit
         );
 
-      void log (char const* const category, std::string const& message) const;
+      void log (char const* category, std::string const& message) const;
 
     private:
       std::string _worker_name;
       std::set<std::string> _workers;
       std::function<void()> _module_call_do_cancel;
-      bool _cancelled;
+      bool _cancelled {false};
       fhg::logging::stream_emitter& _logger;
     };
 

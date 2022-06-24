@@ -16,11 +16,11 @@
 
 #pragma once
 
-#include <we/type/net.hpp> // recursive wrapper of transition_t fails otherwise.
 #include <we/type/Activity.hpp>
+#include <we/type/net.hpp> // recursive wrapper of transition_t fails otherwise.
 
-#include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
 
 #include <sstream>
 #include <string>

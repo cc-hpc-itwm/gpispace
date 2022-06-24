@@ -38,8 +38,7 @@ namespace fhg
       struct finally_t
     {
       finally_t (Function&& function)
-        : _valid (true)
-        , _function (std::forward<Function> (function))
+        : _function (std::forward<Function> (function))
       {}
       ~finally_t()
       {
@@ -49,7 +48,7 @@ namespace fhg
         }
       }
 
-      finally_t (finally_t&& other)
+      finally_t (finally_t&& other) noexcept
         : _valid (true)
         , _function (std::move (other._function))
       {
@@ -61,7 +60,7 @@ namespace fhg
       finally_t& operator= (finally_t const&) = delete;
 
     private:
-      bool _valid;
+      bool _valid {true};
       Function _function;
     };
 

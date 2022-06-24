@@ -51,7 +51,6 @@ namespace fhg
     {
       execution_monitor_proxy::execution_monitor_proxy (QAbstractItemModel* model, QObject* parent)
         : util::qt::mvc::id_proxy (parent)
-        , _column_count (1)
       {
         setSourceModel (model);
 
@@ -63,7 +62,7 @@ namespace fhg
                       , QVariant::fromValue (name_column), column_type_role
                       );
 
-        QTimer* timer (new QTimer (this));
+        auto* timer (new QTimer (this));
         connect (timer, SIGNAL (timeout()), SLOT (move_tick()));
         static int fps (30);
         timer->start (1000/fps);
@@ -342,7 +341,7 @@ namespace fhg
         }
         else if (role == column_type_role)
         {
-          const column_type value (util::qt::value<column_type> (variant));
+          const auto value (util::qt::value<column_type> (variant));
           if (_column_types[index] != value)
           {
             switch (_column_types[index])
@@ -485,6 +484,11 @@ namespace fhg
           {
             _rect->setWidth (_rect->width() - _by);
           }
+          temporarily_widen (temporarily_widen const&) = delete;
+          temporarily_widen& operator= (temporarily_widen const&) = delete;
+          temporarily_widen (temporarily_widen&&) = delete;
+          temporarily_widen& operator= (temporarily_widen&&) = delete;
+
           QRectF* _rect;
           qreal _by;
         };
@@ -732,7 +736,7 @@ namespace fhg
       {
         QString to_string (worker_model::state_type state)
         {
-          typedef sdpa::daemon::NotificationEvent event;
+          using event = sdpa::daemon::NotificationEvent;
 
           switch (state)
           {
@@ -886,7 +890,7 @@ namespace fhg
           );
 
 
-        QTimer* timer (new QTimer (this));
+        auto* timer (new QTimer (this));
         connect (timer, SIGNAL (timeout()), SLOT (update_maximum()));
         timer->start();
 
@@ -939,7 +943,7 @@ namespace fhg
       bool execution_monitor_delegate::can_edit_section
         (util::qt::mvc::section_index index) const
       {
-        const execution_monitor_proxy::column_type t
+        const auto t
           ( util::qt::value<execution_monitor_proxy::column_type>
             (index.data (execution_monitor_proxy::column_type_role))
           );
@@ -954,7 +958,7 @@ namespace fhg
       {
         fhg_assert (can_edit_section (index), "only create editors for editable sections");
 
-        const execution_monitor_proxy::column_type column
+        const auto column
           ( util::qt::value<execution_monitor_proxy::column_type>
             (index.data (execution_monitor_proxy::column_type_role)
           ));
@@ -962,7 +966,7 @@ namespace fhg
         {
         case execution_monitor_proxy::name_column:
           {
-            QLineEdit* line_edit (new QLineEdit (_get_filter(), parent));
+            auto* line_edit (new QLineEdit (_get_filter(), parent));
             connect
               (line_edit, &QLineEdit::textChanged, _set_filter);
             return line_edit;
@@ -1126,7 +1130,7 @@ namespace fhg
       QMenu* execution_monitor_delegate::menu_for_section
         (util::qt::mvc::section_index index) const
       {
-        const execution_monitor_proxy::column_type type
+        const auto type
           ( util::qt::value<execution_monitor_proxy::column_type>
             (index.data (execution_monitor_proxy::column_type_role))
           );
@@ -1137,7 +1141,7 @@ namespace fhg
           return nullptr;
         }
 
-        QMenu* menu (new QMenu);
+        auto* menu (new QMenu);
 
         QAction* toggle_column_type
           ( menu->addAction (tr ( type == execution_monitor_proxy::gantt_column

@@ -18,14 +18,14 @@
 
 #include <we/expr/eval/context.hpp>
 #include <we/type/Expression.hpp>
-#include <we/type/id.hpp>
 #include <we/type/ModuleCall.hpp>
-#include <we/type/net.fwd.hpp>
 #include <we/type/Port.hpp>
-#include <we/type/property.hpp>
 #include <we/type/Requirement.hpp>
-#include <we/type/value.hpp>
 #include <we/type/eureka.hpp>
+#include <we/type/id.hpp>
+#include <we/type/net.fwd.hpp>
+#include <we/type/property.hpp>
+#include <we/type/value.hpp>
 
 #include <boost/optional.hpp>
 #include <boost/serialization/list.hpp>
@@ -46,11 +46,13 @@ namespace we
     struct Transition
     {
     private:
-      typedef ::boost::variant< ModuleCall
-                            , MultiModuleCall
-                            , Expression
-                            , ::boost::recursive_wrapper<we::type::net_type>
-                            > data_type;
+      using data_type = ::boost::variant
+                      < ModuleCall
+                      , MultiModuleCall
+                      , Expression
+                      , ::boost::recursive_wrapper<we::type::net_type>
+                      >
+        ;
 
     public:
       using PortByID = std::unordered_map<we::port_id_type, Port>;

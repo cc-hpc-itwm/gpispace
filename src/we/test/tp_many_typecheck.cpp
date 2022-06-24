@@ -26,9 +26,10 @@
 #include <util-generic/testing/require_container_is_permutation.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
+#include <boost/test/unit_test.hpp>
+
 #include <boost/test/data/monomorphic.hpp>
 #include <boost/test/data/test_case.hpp>
-#include <boost/test/unit_test.hpp>
 
 #include <functional>
 #include <list>

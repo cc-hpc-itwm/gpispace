@@ -16,10 +16,10 @@
 
 #include <drts/worker/drts.hpp>
 
+#include <fhg/util/signal_handler_manager.hpp>
 #include <util-generic/boost/program_options/validators/existing_path.hpp>
 #include <util-generic/getenv.hpp>
 #include <util-generic/print_exception.hpp>
-#include <fhg/util/signal_handler_manager.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/program_options.hpp>
@@ -210,28 +210,28 @@ int main (int ac, char **av)
 
     auto const parent_info
       ( [&]() -> std::tuple<fhg::com::host_t, fhg::com::port_t>
-    {
-      ::boost::tokenizer<::boost::char_separator<char>> const tok
-        ( vm.at (option_name::parent).as<std::string>()
-        , ::boost::char_separator<char> ("%")
-        );
+        {
+          ::boost::tokenizer<::boost::char_separator<char>> const tok
+            ( vm.at (option_name::parent).as<std::string>()
+            , ::boost::char_separator<char> ("%")
+            );
 
-      std::vector<std::string> const parts (tok.begin(), tok.end());
+          std::vector<std::string> const parts (tok.begin(), tok.end());
 
-      if (parts.size() != 3)
-      {
-        throw std::invalid_argument
-          ("invalid parent information: has to be of format 'name%host%port'");
-      }
+          if (parts.size() != 3)
+          {
+            throw std::invalid_argument
+              ("invalid parent information: has to be of format 'name%host%port'");
+          }
 
-      unsigned short port;
-      std::istringstream iss (parts.at (2));
-      iss >> port;
+          unsigned short port;
+          std::istringstream iss (parts.at (2));
+          iss >> port;
 
-      return std::make_tuple
-        (fhg::com::host_t (parts[1]), fhg::com::port_t {port});
-    }()
-        );
+          return std::make_tuple
+            (fhg::com::host_t (parts[1]), fhg::com::port_t {port});
+        }()
+      );
 
     if (vm.count (option_name::socket))
     {

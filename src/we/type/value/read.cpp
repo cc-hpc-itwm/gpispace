@@ -16,10 +16,10 @@
 
 #include <we/type/value/read.hpp>
 
+#include <fhg/util/num.hpp>
 #include <fhg/util/parse/error.hpp>
 #include <fhg/util/parse/position.hpp>
 #include <fhg/util/parse/require.hpp>
-#include <fhg/util/num.hpp>
 
 #include <functional>
 

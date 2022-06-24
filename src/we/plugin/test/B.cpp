@@ -32,11 +32,11 @@ namespace gspc
           , _put_token (std::move (put_token))
         {}
 
-        virtual void before_eval (Context const&) override
+        void before_eval (Context const&) override
         {
           _put_token (_, _before++);
         }
-        virtual void after_eval (Context const&) override
+        void after_eval (Context const&) override
         {
           _put_token (_, _after++);
         }

@@ -18,10 +18,9 @@
 
 #include <gspc/detail/dllexport.hpp>
 
-#include <we/type/value.hpp>
-#include <we/type/signature.hpp>
-
 #include <we/expr/token/type.hpp>
+#include <we/type/signature.hpp>
+#include <we/type/value.hpp>
 
 #include <list>
 #include <stdexcept>

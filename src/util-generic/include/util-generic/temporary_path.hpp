@@ -65,6 +65,11 @@ namespace fhg
         return _path;
       }
 
+      temporary_path (temporary_path const&) = delete;
+      temporary_path& operator= (temporary_path const&) = delete;
+      temporary_path (temporary_path&&) = delete;
+      temporary_path& operator= (temporary_path&&) = delete;
+
     private:
       ::boost::filesystem::path _path;
     };

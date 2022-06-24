@@ -31,8 +31,8 @@
 
 #include <sys/un.h>
 
-#include <exception>
 #include <cstdint>
+#include <exception>
 #include <stdexcept>
 #include <string>
 

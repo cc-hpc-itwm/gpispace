@@ -16,11 +16,11 @@
 
 #include <iml/vmem/gaspi/pc/memory/shm_area.hpp>
 
+#include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <fcntl.h>
 
 #include <util-generic/finally.hpp>
 #include <util-generic/print_exception.hpp>
@@ -79,7 +79,7 @@ namespace gpi
           {
             if (open_flags & O_CREAT)
             {
-              detail::unlink (path.c_str ());
+              detail::unlink (path);
             }
 
             throw;
@@ -101,7 +101,6 @@ namespace gpi
                              , iml::MemorySize user_size
                              )
         : area_t (user_size)
-        , m_ptr (nullptr)
         , _size (user_size)
       {
         if (name.empty())

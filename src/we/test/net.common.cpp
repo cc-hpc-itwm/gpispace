@@ -18,8 +18,8 @@
 
 #include <we/type/net.hpp>
 
-#include <util-generic/testing/random.hpp>
 #include <util-generic/print_container.hpp>
+#include <util-generic/testing/random.hpp>
 
 #include <boost/format.hpp>
 

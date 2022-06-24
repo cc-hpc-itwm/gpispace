@@ -22,15 +22,15 @@
 
 #include <testing/certificates_data.hpp>
 
-#include <util-generic/latch.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/optional.hpp>
 #include <util-generic/testing/random.hpp>
 
+#include <boost/test/unit_test.hpp>
+
 #include <boost/test/data/monomorphic.hpp>
 #include <boost/test/data/monomorphic/generators/xrange.hpp>
 #include <boost/test/data/test_case.hpp>
-#include <boost/test/unit_test.hpp>
 
 #include <future>
 #include <memory>
@@ -64,17 +64,17 @@ BOOST_DATA_TEST_CASE
   sdpa::worker_id_t worker_id;
 
   {
-    fhg::util::latch job_submitted (1);
+    std::promise<void> job_submitted;
 
     const utils::fake_drts_worker_waiting_for_finished_ack worker
-      ( [&job_submitted] (std::string) { job_submitted.count_down(); }
+      ( [&job_submitted] (std::string) { job_submitted.set_value(); }
       , agent
       , certificates
       );
 
     worker_id = worker.name();
 
-    job_submitted.wait();
+    job_submitted.get_future().wait();
   }
 
   std::promise<std::string> job_submitted_to_restarted_worker;
@@ -113,15 +113,15 @@ BOOST_DATA_TEST_CASE
 
   for (unsigned long i {0}; i <= maximum_number_of_retries; ++i)
   {
-    fhg::util::latch job_submitted (1);
+    std::promise<void> job_submitted;
 
     const utils::fake_drts_worker_notifying_module_call_submission worker
-      ( [&job_submitted] (std::string) { job_submitted.count_down(); }
+      ( [&job_submitted] (std::string) { job_submitted.set_value(); }
       , agent
       , certificates
       );
 
-    job_submitted.wait();
+    job_submitted.get_future().wait();
   }
 
   sdpa::client::job_info_t job_info;

@@ -19,8 +19,8 @@
 #include <we/exception.hpp>
 #include <we/expr/eval/context.hpp>
 #include <we/expr/parse/parser.hpp>
-#include <we/type/value/function.hpp>
 #include <we/type/value/boost/test/printer.hpp>
+#include <we/type/value/function.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/require_maximum_running_time.hpp>
@@ -28,8 +28,8 @@
 #include <functional>
 #include <limits>
 #include <random>
-#include <string>
 #include <stack>
+#include <string>
 
 BOOST_AUTO_TEST_CASE (performance_parse_once_eval_often)
 {

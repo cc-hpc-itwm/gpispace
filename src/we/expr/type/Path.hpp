@@ -29,11 +29,6 @@ namespace expr
     struct Path
     {
     public:
-      Path (Path const&) = default;
-      Path (Path&&) = default;
-      Path& operator= (Path const&) = default;
-      Path& operator= (Path&&) = default;
-
       using Particle = std::string;
       using Particles = std::list<Particle>;
 

@@ -14,8 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <drts/scheduler_types.hpp>
 #include <drts/private/scheduler_types_implementation.hpp>
+#include <drts/scheduler_types.hpp>
 #include <sdpa/daemon/GetSchedulerType.hpp>
 #include <sdpa/daemon/Job.hpp>
 

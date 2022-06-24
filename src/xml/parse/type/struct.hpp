@@ -17,9 +17,9 @@
 #pragma once
 
 #include <xml/parse/state.fwd.hpp>
-#include <xml/parse/type_map_type.hpp>
 #include <xml/parse/type/function.fwd.hpp>
 #include <xml/parse/type/with_position_of_definition.hpp>
+#include <xml/parse/type_map_type.hpp>
 #include <xml/parse/util/position.fwd.hpp>
 
 #include <fhg/util/xml.fwd.hpp>
@@ -56,7 +56,7 @@ namespace xml
         pnet::type::signature::structured_type _sig;
       };
 
-      typedef std::list<structure_type> structs_type;
+      using structs_type = std::list<structure_type>;
 
       namespace dump
       {
@@ -68,8 +68,8 @@ namespace xml
 
     namespace structure_type_util
     {
-      typedef std::unordered_map<std::string, type::structure_type> set_type;
-      typedef std::unordered_map<std::string, std::string> forbidden_type;
+      using set_type = std::unordered_map<std::string, type::structure_type>;
+      using forbidden_type = std::unordered_map<std::string, std::string>;
 
       set_type make (type::structs_type const& structs, state::type const&);
 

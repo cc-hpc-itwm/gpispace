@@ -17,8 +17,8 @@
 #include <we/type/signature/is_literal.hpp>
 #include <we/type/value/name.hpp>
 
-#include <set>
 #include <iostream>
+#include <set>
 
 namespace pnet
 {

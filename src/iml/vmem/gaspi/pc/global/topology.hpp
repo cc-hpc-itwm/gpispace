@@ -27,15 +27,15 @@
 
 #include <util-rpc/function_description.hpp>
 #include <util-rpc/remote_tcp_endpoint.hpp>
-#include <util-rpc/service_tcp_provider.hpp>
 #include <util-rpc/service_dispatcher.hpp>
 #include <util-rpc/service_handler.hpp>
+#include <util-rpc/service_tcp_provider.hpp>
 
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 
+#include <list>
 #include <memory>
 #include <mutex>
-#include <list>
 
 namespace gpi
 {
@@ -57,20 +57,20 @@ namespace gpi
         topology_t& operator= (topology_t const&) = delete;
         topology_t& operator= (topology_t&&) = delete;
 
-        virtual void alloc ( iml::SegmentHandle segment
+        void alloc ( iml::SegmentHandle segment
                            , iml::AllocationHandle
                            , iml::MemoryOffset
                            , iml::MemorySize size
                            , iml::MemorySize local_size
                            ) override;
 
-        virtual void free (iml::AllocationHandle) override;
+        void free (iml::AllocationHandle) override;
 
-        virtual void add_memory ( iml::SegmentHandle seg_id
+        void add_memory ( iml::SegmentHandle seg_id
                                 , iml::SegmentDescription const& description
                                 , unsigned long total_size
                                 ) override;
-        virtual void del_memory (iml::SegmentHandle seg_id) override;
+        void del_memory (iml::SegmentHandle seg_id) override;
 
       private:
         std::mutex m_global_alloc_mutex;

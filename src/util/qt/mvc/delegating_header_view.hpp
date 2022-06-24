@@ -38,7 +38,7 @@ namespace fhg
         public:
           delegating_header_view (QWidget* parent = nullptr);
 
-          virtual void setModel (QAbstractItemModel*) override;
+          void setModel (QAbstractItemModel*) override;
 
           void delegate_for_section (int, header_delegate*);
           header_delegate* delegate_for_section (int) const;
@@ -50,12 +50,12 @@ namespace fhg
           void close_editor();
 
         protected:
-          virtual void paintSection (QPainter*, QRect const&, int) const override;
-          virtual QSize sizeHint() const override;
-          virtual void keyPressEvent (QKeyEvent*) override;
-          virtual void contextMenuEvent (QContextMenuEvent*) override;
-          virtual void wheelEvent (QWheelEvent*) override;
-          virtual bool event (QEvent*) override;
+          void paintSection (QPainter*, QRect const&, int) const override;
+          QSize sizeHint() const override;
+          void keyPressEvent (QKeyEvent*) override;
+          void contextMenuEvent (QContextMenuEvent*) override;
+          void wheelEvent (QWheelEvent*) override;
+          bool event (QEvent*) override;
 
         private slots:
           void sections_inserted (QModelIndex const&, int, int);
@@ -70,13 +70,12 @@ namespace fhg
           void invalidate_cached_size_hint();
 
           QVector<header_delegate*> _delegates;
-          header_delegate* _delegate;
+          header_delegate* _delegate {nullptr};
           struct _editor_type
           {
             ::boost::optional<int> section;
-            QWidget* widget;
-            widget::mini_button* close_button;
-            _editor_type() : section (::boost::none), widget (nullptr), close_button (nullptr) {}
+            QWidget* widget {nullptr};
+            widget::mini_button* close_button {nullptr};
           } _editor;
 
           friend class header_delegate;

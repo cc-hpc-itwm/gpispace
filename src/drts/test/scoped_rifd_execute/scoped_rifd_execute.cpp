@@ -19,8 +19,8 @@
 #include <drts/drts.hpp>
 #include <drts/scoped_rifd.hpp>
 
-#include <util-generic/boost/program_options/validators/existing_path.hpp>
 #include <util-generic/boost/program_options/validators/existing_directory.hpp>
+#include <util-generic/boost/program_options/validators/existing_path.hpp>
 
 #include <boost/program_options.hpp>
 

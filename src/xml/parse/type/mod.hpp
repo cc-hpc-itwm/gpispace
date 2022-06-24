@@ -16,17 +16,17 @@
 
 #pragma once
 
+#include <xml/parse/type/eureka.hpp>
 #include <xml/parse/type/function.fwd.hpp>
 #include <xml/parse/type/with_position_of_definition.hpp>
-#include <xml/parse/type/eureka.hpp>
 #include <xml/parse/type_map_type.hpp>
 
 #include <xml/parse/util/position.fwd.hpp>
 
 #include <fhg/util/xml.fwd.hpp>
 
-#include <string>
 #include <list>
+#include <string>
 
 #include <boost/optional.hpp>
 
@@ -66,7 +66,7 @@ namespace xml
         ::boost::optional<std::string> const& memory_buffer_return() const;
         std::list<std::string> const& memory_buffer_arg() const;
         ::boost::optional<std::string> const& code() const;
-        const ::boost::optional<util::position_type>
+        ::boost::optional<util::position_type>
           position_of_definition_of_code() const;
         std::list<std::string> const& cincludes() const;
         std::list<std::string> const& ldflags() const;

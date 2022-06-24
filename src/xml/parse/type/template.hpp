@@ -17,8 +17,8 @@
 #pragma once
 
 #include <xml/parse/type/function.hpp>
-#include <xml/parse/type/template.fwd.hpp>
 #include <xml/parse/type/net.fwd.hpp>
+#include <xml/parse/type/template.fwd.hpp>
 #include <xml/parse/type/with_position_of_definition.hpp>
 #include <xml/parse/util/position.fwd.hpp>
 
@@ -38,8 +38,8 @@ namespace xml
       struct tmpl_type : with_position_of_definition
       {
       public:
-        typedef std::string unique_key_type;
-        typedef std::unordered_set<std::string> names_type;
+        using unique_key_type = std::string;
+        using names_type = std::unordered_set<std::string>;
 
         tmpl_type ( util::position_type const&
                   , ::boost::optional<std::string> const& name

@@ -18,8 +18,8 @@
 
 #include <boost/optional.hpp>
 
-#include <vector>
 #include <string>
+#include <vector>
 
 namespace we
 {

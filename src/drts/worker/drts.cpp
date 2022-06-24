@@ -61,7 +61,7 @@ struct wfe_task_t
   };
 
   std::string id;
-  state_t state;
+  state_t state {PENDING};
   we::type::Activity activity;
   ::boost::optional<std::string> const target_impl;
   drts::worker::context context;
@@ -74,7 +74,6 @@ struct wfe_task_t
              , fhg::logging::stream_emitter& logger
              )
     : id (id_)
-    , state (PENDING)
     , activity (activity_)
     , target_impl (target_impl_)
     , context
@@ -114,7 +113,6 @@ DRTSImpl::DRTSImpl
     , fhg::com::Certificates const& certificates
     )
   : _request_stop (request_stop)
-  , m_shutting_down (false)
   , m_my_name (kernel_name)
   , _currently_executed_tasks()
   , m_loader ({library_path.begin(), library_path.end()})
@@ -184,7 +182,7 @@ void DRTSImpl::handleSubmitJobEvent
 
   std::lock_guard<std::mutex> const _lock_job_map_mutex (m_job_map_mutex);
 
-  map_of_jobs_t::iterator job_it (m_jobs.find(*e->job_id()));
+  auto job_it (m_jobs.find(*e->job_id()));
   if (job_it != m_jobs.end())
   {
     send_event_to_parent<sdpa::events::SubmitJobAckEvent> (*e->job_id());
@@ -209,7 +207,7 @@ void DRTSImpl::handleCancelJobEvent
   (fhg::com::p2p::address_t const&, const sdpa::events::CancelJobEvent *e)
 {
   std::lock_guard<std::mutex> const _ (m_job_map_mutex);
-  map_of_jobs_t::iterator job_it (m_jobs.find (e->job_id()));
+  auto job_it (m_jobs.find (e->job_id()));
 
   _log_emitter.emit ( "got cancelation request for job: " + e->job_id()
                     , fhg::logging::legacy::category_level_trace
@@ -235,7 +233,7 @@ void DRTSImpl::handleCancelJobEvent
                       );
     std::lock_guard<std::mutex> const _lock_currently_executed_tasks
       (_currently_executed_tasks_mutex);
-    std::map<std::string, wfe_task_t *>::iterator task_it
+    auto task_it
       (_currently_executed_tasks.find (e->job_id()));
     if (task_it != _currently_executed_tasks.end())
     {
@@ -267,7 +265,7 @@ void DRTSImpl::handleJobFailedAckEvent
   (fhg::com::p2p::address_t const&, const sdpa::events::JobFailedAckEvent *e)
 {
   std::lock_guard<std::mutex> const _ (m_job_map_mutex);
-  map_of_jobs_t::iterator job_it (m_jobs.find (e->job_id()));
+  auto job_it (m_jobs.find (e->job_id()));
 
   if (job_it == m_jobs.end())
   {
@@ -281,7 +279,7 @@ void DRTSImpl::handleJobFinishedAckEvent
   (fhg::com::p2p::address_t const&, const sdpa::events::JobFinishedAckEvent *e)
 {
   std::lock_guard<std::mutex> const _ (m_job_map_mutex);
-  map_of_jobs_t::iterator job_it (m_jobs.find (e->job_id()));
+  auto job_it (m_jobs.find (e->job_id()));
 
   if (job_it == m_jobs.end())
   {

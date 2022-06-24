@@ -14,8 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <iml/SharedMemoryAllocation.hpp>
 #include <iml/Client.hpp>
+#include <iml/SharedMemoryAllocation.hpp>
 
 #include <fhgcom/channel.hpp>
 #include <logging/stream_emitter.hpp>
@@ -81,7 +81,7 @@ public:
   };
 
 private:
-  typedef std::map<std::string, std::shared_ptr<DRTSImpl::Job>> map_of_jobs_t;
+  using map_of_jobs_t = std::map<std::string, std::shared_ptr<DRTSImpl::Job>>;
 
 public:
 
@@ -104,15 +104,15 @@ public:
   DRTSImpl& operator= (DRTSImpl const&) = delete;
   DRTSImpl& operator= (DRTSImpl&&) = delete;
 
-  virtual void handle_worker_registration_response
+  void handle_worker_registration_response
     (fhg::com::p2p::address_t const& source, const sdpa::events::worker_registration_response *e) override;
-  virtual void handleSubmitJobEvent
+  void handleSubmitJobEvent
     (fhg::com::p2p::address_t const& source, const sdpa::events::SubmitJobEvent *e) override;
-  virtual void handleCancelJobEvent
+  void handleCancelJobEvent
     (fhg::com::p2p::address_t const& source, const sdpa::events::CancelJobEvent *e) override;
-  virtual void handleJobFailedAckEvent
+  void handleJobFailedAckEvent
     (fhg::com::p2p::address_t const& source, const sdpa::events::JobFailedAckEvent *e) override;
-  virtual void handleJobFinishedAckEvent
+  void handleJobFinishedAckEvent
     (fhg::com::p2p::address_t const& source, const sdpa::events::JobFinishedAckEvent *e) override;
 
 private:
@@ -126,7 +126,7 @@ private:
 
   std::function<void()> _request_stop;
 
-  bool m_shutting_down;
+  bool m_shutting_down {false};
 
   std::string m_my_name;
 

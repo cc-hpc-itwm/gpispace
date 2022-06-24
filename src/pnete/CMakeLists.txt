@@ -40,6 +40,7 @@ gspc_add_executable (NAME gspc-monitor
 
 target_compile_options (gspc-monitor
   PRIVATE -Wno-deprecated-declarations
+          $<$<CXX_COMPILER_ID:GNU>:-Wno-stringop-overflow>
 )
 
 add_subdirectory (test)

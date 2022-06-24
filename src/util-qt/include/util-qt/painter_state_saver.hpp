@@ -36,6 +36,11 @@ namespace fhg
           _painter->restore();
         }
 
+        painter_state_saver (painter_state_saver const&) = delete;
+        painter_state_saver& operator= (painter_state_saver const&) = delete;
+        painter_state_saver (painter_state_saver&&) = delete;
+        painter_state_saver& operator= (painter_state_saver&&) = delete;
+
       private:
         QPainter* const _painter;
       };

@@ -17,15 +17,15 @@
 #include <we/layer.hpp>
 
 #include <fhg/assert.hpp>
+#include <fhg/util/read_bool.hpp>
+#include <util-generic/functor_visitor.hpp>
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_exception.hpp>
-#include <util-generic/functor_visitor.hpp>
-#include <fhg/util/read_bool.hpp>
 
 #include <boost/range/adaptor/map.hpp>
 
-#include <functional>
 #include <algorithm>
+#include <functional>
 
 namespace we
 {
@@ -79,8 +79,9 @@ namespace we
 
       _nets_to_extract_from.apply
         ( *parent
-        ,  async_remove_queue::RemovalFunction::ToFinish
-             (this, *parent, std::move (result), id)
+        , async_remove_queue::RemovalFunction::ToFinish
+            (this, *parent, std::move (result), id)
+        , &std::rethrow_exception
         );
     }
 
@@ -166,6 +167,7 @@ namespace we
             id_type const parent_id (activity_data._id);
             _running_jobs.terminated (parent_id, child);
           }
+          , &std::rethrow_exception
           );
 
         return;
@@ -271,6 +273,7 @@ namespace we
             }
           }
         }
+      , &std::rethrow_exception
       );
   }
 
@@ -325,6 +328,7 @@ namespace we
                               {
                                 ad._activity->put_token (place_name, value);
                               }
+                            , &std::rethrow_exception
                             );
                         }
                       );
@@ -480,7 +484,7 @@ namespace we
   }
   template<typename Fun>
   layer::async_remove_queue::RemovalFunction::RemovalFunction
-    (Fun&& fun)
+    (Callback, Fun&& fun)
       : _function (std::forward<Fun> (fun))
   {}
   layer::async_remove_queue::RemovalFunction::RemovalFunction
@@ -565,7 +569,7 @@ namespace we
 
       if (pos != _to_be_removed.end())
       {
-        to_be_removed_type::mapped_type::iterator fun_and_do_put_it
+        auto fun_and_do_put_it
           (pos->second.begin());
 
         while (fun_and_do_put_it != pos->second.end())
@@ -612,9 +616,10 @@ namespace we
       }
     }
 
+  template<typename Fun>
     void layer::async_remove_queue::remove_and_apply
       ( id_type id
-      , RemovalFunction fun
+      , Fun&& fun
       )
     {
       std::lock_guard<std::recursive_mutex> const _ (_container_mutex);
@@ -627,7 +632,7 @@ namespace we
       {
         try
         {
-          std::move (fun) (*pos_container->second);
+          std::forward<Fun> (fun) (*pos_container->second);
         }
         catch (...)
         {
@@ -639,7 +644,7 @@ namespace we
       {
         try
         {
-          std::move (fun) (*pos_container_inactive->second);
+          std::forward<Fun> (fun) (*pos_container_inactive->second);
         }
         catch (...)
         {
@@ -649,9 +654,31 @@ namespace we
       }
       else
       {
-        _to_be_removed[id].emplace_back (std::move (fun), &std::rethrow_exception, false);
+        _to_be_removed[id].emplace_back
+          ( RemovalFunction { RemovalFunction::Callback{}
+                            , std::forward<Fun> (fun)
+                            }
+          , &std::rethrow_exception
+          , false
+          );
       }
     }
+
+  template<typename Fun>
+    void layer::async_remove_queue::apply
+      ( id_type id
+      , Fun&& fun
+      , std::function<void (std::exception_ptr)> on_error
+      )
+  {
+    return apply
+      ( id
+      , RemovalFunction { RemovalFunction::Callback{}
+                        , std::forward<Fun> (fun)
+                        }
+      , std::move (on_error)
+      );
+  }
 
     void layer::async_remove_queue::apply
       ( id_type id

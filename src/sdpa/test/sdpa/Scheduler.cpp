@@ -14,14 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+#include <sdpa/daemon/Implementation.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
+#include <sdpa/daemon/WorkerSet.hpp>
 #include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
+#include <sdpa/daemon/scheduler/CostAwareWithWorkStealingStrategy.hpp>
 #include <sdpa/daemon/scheduler/GreedyScheduler.hpp>
 #include <sdpa/daemon/scheduler/Scheduler.hpp>
-#include <sdpa/daemon/scheduler/CostAwareWithWorkStealingStrategy.hpp>
 #include <sdpa/daemon/scheduler/SingleAllocationScheduler.hpp>
-#include <sdpa/daemon/Implementation.hpp>
-#include <sdpa/daemon/WorkerSet.hpp>
 #include <sdpa/test/sdpa/utils.hpp>
 #include <sdpa/types.hpp>
 
@@ -146,8 +146,8 @@ namespace
     return fhg::util::testing::random_integral<unsigned long>();
   }
 
-  typedef std::set<sdpa::worker_id_t> set_workers_t;
-  typedef std::set<sdpa::job_id_t> set_jobs_t;
+  using set_workers_t = std::set<sdpa::worker_id_t>;
+  using set_jobs_t = std::set<sdpa::job_id_t>;
 }
 
 namespace sdpa
@@ -216,21 +216,17 @@ struct fixture_scheduler_and_requirements_and_preferences
   sdpa::daemon::CostAwareWithWorkStealingStrategy& _strategy;
   sdpa::daemon::access_allocation_table_TESTING_ONLY _access_allocation_table;
 
-  ~fixture_scheduler_and_requirements_and_preferences()
-  {
-  }
-
   std::map<sdpa::job_id_t, std::set<sdpa::worker_id_t>> get_current_assignment() const
   {
     return _access_allocation_table.get_current_assignment();
   }
 
-  sdpa::daemon::WorkerSet const workers (sdpa::job_id_t const& job) const
+  sdpa::daemon::WorkerSet workers (sdpa::job_id_t const& job) const
   {
     return _access_allocation_table.workers (job);
   }
 
-  sdpa::daemon::Implementation const implementation (sdpa::job_id_t const& job) const
+  sdpa::daemon::Implementation implementation (sdpa::job_id_t const& job) const
   {
     return _access_allocation_table.implementation (job);
   }
@@ -870,8 +866,7 @@ template <typename Scheduler>
 struct fixture_preassignment_and_load_balancing
 {
   fixture_preassignment_and_load_balancing()
-    : _n_workers (20)
-    , _worker_ids (_n_workers)
+    : _worker_ids (_n_workers)
     , _n_hosts (_n_workers)
     , _host_ids (_n_hosts)
     , _dist (1.0, _n_hosts)
@@ -925,11 +920,7 @@ struct fixture_preassignment_and_load_balancing
 
   }
 
-  ~fixture_preassignment_and_load_balancing()
-  {
-  }
-
-  unsigned int _n_workers;
+  unsigned int _n_workers {20};
   std::vector<sdpa::worker_id_t> _worker_ids;
   unsigned int _n_hosts;
   std::vector<sdpa::worker_id_t> _host_ids;
@@ -1489,12 +1480,12 @@ struct fixture_add_new_workers
     return _access_allocation_table.get_current_assignment();
   }
 
-  sdpa::daemon::WorkerSet const workers (sdpa::job_id_t const& job) const
+  sdpa::daemon::WorkerSet workers (sdpa::job_id_t const& job) const
   {
     return _access_allocation_table.workers (job);
   }
 
-  sdpa::daemon::Implementation const implementation (sdpa::job_id_t const& job) const
+  sdpa::daemon::Implementation implementation (sdpa::job_id_t const& job) const
   {
     return _access_allocation_table.implementation (job);
   }

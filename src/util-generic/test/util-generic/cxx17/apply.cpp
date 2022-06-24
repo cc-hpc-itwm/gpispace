@@ -105,7 +105,7 @@ namespace fhg
         {
           ref_overloaded_operator fun;
           //! \note move doesn't actually do anything but cast
-          apply (std::move (fun), std::tuple<>{});
+          cxx17::apply (std::move (fun), std::tuple<>{});
           BOOST_REQUIRE_EQUAL (fun.ref_counter, 0);
           BOOST_REQUIRE_EQUAL (fun.refref_counter, 1);
         }

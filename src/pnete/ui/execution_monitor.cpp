@@ -16,20 +16,20 @@
 
 #include <pnete/ui/execution_monitor.hpp>
 
-#include <pnete/ui/execution_monitor_worker_model.hpp>
 #include <pnete/ui/execution_monitor_detail.hpp>
+#include <pnete/ui/execution_monitor_worker_model.hpp>
 
 #include <fhg/util/macros.hpp>
 
-#include <util/qt/dual_list_selector.hpp>
+#include <util-qt/variant.hpp>
 #include <util-qt/widget/mini_button.hpp>
+#include <util/qt/dual_list_selector.hpp>
 #include <util/qt/mvc/alphanum_sort_proxy.hpp>
 #include <util/qt/mvc/delegating_header_view.hpp>
 #include <util/qt/mvc/filter_ignoring_branch_nodes_proxy.hpp>
 #include <util/qt/mvc/flat_to_tree_proxy.hpp>
 #include <util/qt/restricted_tree_column_sorter.hpp>
 #include <util/qt/treeview_with_delete.hpp>
-#include <util-qt/variant.hpp>
 
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/shared_ptr.hpp>
@@ -62,7 +62,7 @@ namespace fhg
         struct hostname_of_worker
           : public transform_functions_model::transform_function
         {
-          virtual QString operator() (QModelIndex index) const override
+          QString operator() (QModelIndex index) const override
           {
             auto const worker_name
               (util::qt::value<QString> (index.data (worker_model::name_role)));
@@ -84,7 +84,7 @@ namespace fhg
         struct worker_type_of_worker
           : public transform_functions_model::transform_function
         {
-          virtual QString operator() (QModelIndex index) const override
+          QString operator() (QModelIndex index) const override
           {
             auto const worker_name
               (util::qt::value<QString> (index.data (worker_model::name_role)));
@@ -205,7 +205,7 @@ namespace fhg
 
         QString to_string (worker_model::state_type state)
         {
-          typedef sdpa::daemon::NotificationEvent event;
+          using event = sdpa::daemon::NotificationEvent;
 
           switch (state)
           {
@@ -237,7 +237,7 @@ namespace fhg
 
           QMap<worker_model::state_type, QColor> color_for_state;
 
-          typedef sdpa::daemon::NotificationEvent event;
+          using event = sdpa::daemon::NotificationEvent;
 
 #define INIT(enummed, dflt)                                             \
           color_for_state[event:: STATE_ ## enummed]                    \
@@ -307,9 +307,9 @@ namespace fhg
       execution_monitor::execution_monitor()
         : QSplitter (Qt::Horizontal)
       {
-        util::qt::mvc::transform_functions_model* available_transform_functions
+        auto* available_transform_functions
           (new util::qt::mvc::transform_functions_model);
-        util::qt::mvc::transform_functions_model* transform_functions
+        auto* transform_functions
           (new util::qt::mvc::transform_functions_model);
         add_defaults (available_transform_functions);
         qRegisterMetaTypeStreamOperators
@@ -321,19 +321,19 @@ namespace fhg
         base = new worker_model (this);
         next = base;
 
-        util::qt::mvc::flat_to_tree_proxy* transformed_to_tree
+        auto* transformed_to_tree
           (new util::qt::mvc::flat_to_tree_proxy (next, transform_functions, this));
         next = transformed_to_tree;
 
-        util::qt::mvc::filter_ignoring_branch_nodes_proxy* filtered_by_user
+        auto* filtered_by_user
           (new util::qt::mvc::filter_ignoring_branch_nodes_proxy (next, this));
         next = filtered_by_user;
 
-        execution_monitor_proxy* with_view_meta_information
+        auto* with_view_meta_information
           (new execution_monitor_proxy (next, this));
         next = with_view_meta_information;
 
-        util::qt::mvc::alphanum_sort_proxy* alphanum_sorted
+        auto* alphanum_sorted
           (new util::qt::mvc::alphanum_sort_proxy (next, this));
         next = alphanum_sorted;
 
@@ -341,11 +341,11 @@ namespace fhg
         alphanum_sorted->setDynamicSortFilter (true);
 
 
-        util::qt::treeview_with_delete* tree
+        auto* tree
           (new util::qt::treeview_with_delete (this));
         tree->setModel (next);
 
-        execution_monitor_delegate* delegate
+        auto* delegate
           ( new execution_monitor_delegate
             ( std::bind (set_filter_regexp, filtered_by_user, std::placeholders::_1)
             , std::bind (get_filter_regexp, filtered_by_user)
@@ -355,7 +355,7 @@ namespace fhg
           );
         tree->setItemDelegate (delegate);
 
-        util::qt::mvc::delegating_header_view* header_view
+        auto* header_view
           (new util::qt::mvc::delegating_header_view (tree));
         tree->setHeader (header_view);
 
@@ -370,8 +370,8 @@ namespace fhg
         new util::qt::restricted_tree_column_sorter (tree, QSet<int>() << 0, this);
 
 
-        QAction* add_column (new QAction (tr ("add_column_action"), next));
-        QAction* remove_column (new QAction (tr ("remove_column_action"), next));
+        auto* add_column (new QAction (tr ("add_column_action"), next));
+        auto* remove_column (new QAction (tr ("remove_column_action"), next));
 
         connect
           (add_column, &QAction::triggered, std::bind (&add_columns, 1, next));
@@ -405,13 +405,13 @@ namespace fhg
         add_column->setIcon (QIcon::fromTheme ("list-add"));
         remove_column->setIcon (QIcon::fromTheme ("list-remove"));
 
-        util::qt::widget::mini_button* add_column_button
+        auto* add_column_button
           (new util::qt::widget::mini_button (add_column, this));
-        util::qt::widget::mini_button* remove_column_button
+        auto* remove_column_button
           (new util::qt::widget::mini_button (remove_column, this));
 
 
-        QAction* clear_model (new QAction (tr ("clear_action"), base));
+        auto* clear_model (new QAction (tr ("clear_action"), base));
         clear_model->setIcon (QIcon::fromTheme ("edit-clear"));
 
         connect
@@ -439,11 +439,11 @@ namespace fhg
             }
           );
 
-        util::qt::widget::mini_button* clear_button
+        auto* clear_button
           (new util::qt::widget::mini_button (clear_model, this));
 
 
-        util::qt::dual_list_selector* list_builder
+        auto* list_builder
           ( new util::qt::dual_list_selector ( available_transform_functions
                                              , transform_functions
                                              , this
@@ -452,10 +452,10 @@ namespace fhg
 
 
 
-        QGroupBox* legend_box (new QGroupBox (tr ("Legend"), this));
+        auto* legend_box (new QGroupBox (tr ("Legend"), this));
 
         {
-          QVBoxLayout* legend_box_layout (new QVBoxLayout (legend_box));
+          auto* legend_box_layout (new QVBoxLayout (legend_box));
 
           for ( worker_model::state_type const& state
               : { sdpa::daemon::NotificationEvent::STATE_STARTED
@@ -465,7 +465,7 @@ namespace fhg
                 }
               )
           {
-            QPushButton* label (new QPushButton (to_string (state), this));
+            auto* label (new QPushButton (to_string (state), this));
             style_button (label, delegate->color_for_state (state));
             legend_box_layout->addWidget (label);
 
@@ -485,12 +485,12 @@ namespace fhg
           }
         }
 
-        QScrollArea* sidebar (new QScrollArea (this));
-        QWidget* sidebar_content (new QWidget (sidebar));
+        auto* sidebar (new QScrollArea (this));
+        auto* sidebar_content (new QWidget (sidebar));
         sidebar->setWidget (sidebar_content);
         sidebar->setWidgetResizable (true);
 
-        QVBoxLayout* sidebar_layout (new QVBoxLayout (sidebar_content));
+        auto* sidebar_layout (new QVBoxLayout (sidebar_content));
 
         addWidget (tree);
         addWidget (sidebar);

@@ -89,19 +89,19 @@ namespace fhg
 
         execution_monitor_proxy (QAbstractItemModel* model, QObject* parent = nullptr);
 
-        virtual QVariant headerData
+        QVariant headerData
           (int section, Qt::Orientation, int role = Qt::DisplayRole) const override;
-        virtual bool setHeaderData
+        bool setHeaderData
           (int section, Qt::Orientation, QVariant const&, int role = Qt::EditRole) override;
 
-        virtual void setSourceModel (QAbstractItemModel*) override;
+        void setSourceModel (QAbstractItemModel*) override;
 
-        virtual int columnCount (QModelIndex const& = QModelIndex()) const override;
-        virtual QModelIndex mapToSource (QModelIndex const& proxy) const override;
-        virtual QModelIndex index (int, int, QModelIndex const&) const override;
-        virtual bool insertColumns
+        int columnCount (QModelIndex const& = QModelIndex()) const override;
+        QModelIndex mapToSource (QModelIndex const& proxy) const override;
+        QModelIndex index (int, int, QModelIndex const&) const override;
+        bool insertColumns
           (int column, int count, QModelIndex const& parent = QModelIndex()) override;
-        virtual bool removeColumns
+        bool removeColumns
           (int column, int count, QModelIndex const& parent = QModelIndex()) override;
 
       private slots:
@@ -118,7 +118,7 @@ namespace fhg
         QMap<util::qt::mvc::section_index, column_type> _column_types;
         QSet<util::qt::mvc::section_index> _merge_groups;
 
-        int _column_count;
+        int _column_count {1};
       };
 
       class execution_monitor_delegate : public QStyledItemDelegate
@@ -133,24 +133,24 @@ namespace fhg
                                    , QWidget* parent = nullptr
                                    );
 
-        virtual void paint ( QPainter* painter
+        void paint ( QPainter* painter
                            , QStyleOptionViewItem const& option
                            , QModelIndex const& index
                            ) const override;
 
-        virtual void paint
+        void paint
           (QPainter*, QRect const&, util::qt::mvc::section_index const&) override;
-        virtual QWidget* create_editor ( QRect const&
+        QWidget* create_editor ( QRect const&
                                        , util::qt::mvc::delegating_header_view*
                                        , util::qt::mvc::section_index const&
                                        ) override;
-        virtual void release_editor
+        void release_editor
           (util::qt::mvc::section_index const&, QWidget* editor) override;
-        virtual void update_editor
+        void update_editor
           (util::qt::mvc::section_index, QWidget* editor) override;
-        virtual bool can_edit_section (util::qt::mvc::section_index) const override;
-        virtual QMenu* menu_for_section (util::qt::mvc::section_index) const override;
-        virtual void wheel_event (util::qt::mvc::section_index, QWheelEvent*) override;
+        bool can_edit_section (util::qt::mvc::section_index) const override;
+        QMenu* menu_for_section (util::qt::mvc::section_index) const override;
+        void wheel_event (util::qt::mvc::section_index, QWheelEvent*) override;
 
         QColor color_for_state (worker_model::state_type) const;
 
@@ -161,7 +161,7 @@ namespace fhg
       public slots:
         void color_for_state (worker_model::state_type, QColor);
 
-        virtual bool helpEvent ( QHelpEvent* event
+        bool helpEvent ( QHelpEvent* event
                                , QAbstractItemView* view
                                , QStyleOptionViewItem const& option
                                , QModelIndex const& index

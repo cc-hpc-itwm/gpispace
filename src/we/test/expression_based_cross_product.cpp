@@ -28,7 +28,13 @@ BOOST_AUTO_TEST_CASE (create_and_execute_cross_product)
   we::type::net_type net;
 
   we::place_id_type const pid_vid
-    (net.add_place (place::type ("vid", std::string ("unsigned long"), ::boost::none)));
+    (net.add_place (place::type ( "vid"
+                                , std::string ("unsigned long")
+                                , ::boost::none
+                                , we::type::property::type{}
+                                )
+                   )
+    );
 
   pnet::type::signature::structure_type sig_store_fields;
 
@@ -41,7 +47,13 @@ BOOST_AUTO_TEST_CASE (create_and_execute_cross_product)
     (std::make_pair (std::string ("store"), sig_store_fields));
 
   we::place_id_type const pid_store
-    (net.add_place (place::type ("store", sig_store, ::boost::none)));
+    (net.add_place (place::type ( "store"
+                                , sig_store
+                                , ::boost::none
+                                , we::type::property::type{}
+                                )
+                   )
+    );
 
   we::type::Transition trans_inner
     ( "trans_inner"
@@ -69,7 +81,13 @@ BOOST_AUTO_TEST_CASE (create_and_execute_cross_product)
     (std::make_pair (std::string ("pair"), sig_pair_fields));
 
   we::place_id_type const pid_pair
-    (net.add_place (place::type("pair", sig_pair, ::boost::none)));
+    (net.add_place (place::type ( "pair"
+                                , sig_pair
+                                , ::boost::none
+                                , we::type::property::type{}
+                                )
+                   )
+    );
 
   we::port_id_type const port_id_vid
     ( trans_inner.add_port

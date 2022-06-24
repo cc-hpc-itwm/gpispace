@@ -21,14 +21,14 @@
 
 #include <testing/certificates_data.hpp>
 
-#include <util-generic/latch.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/optional.hpp>
 #include <util-generic/testing/random.hpp>
 
+#include <boost/test/unit_test.hpp>
+
 #include <boost/test/data/monomorphic.hpp>
 #include <boost/test/data/test_case.hpp>
-#include <boost/test/unit_test.hpp>
 
 #include <algorithm>
 #include <functional>
@@ -53,7 +53,7 @@ namespace
         , fhg::com::Certificates const& certificates
         )
       : utils::no_thread::fake_drts_worker_notifying_module_call_submission
-        (announce_job, parent_agent, certificates)
+          (announce_job, parent_agent, certificates)
       , _announce_cancel (announce_cancel)
     {}
 
@@ -147,10 +147,10 @@ BOOST_DATA_TEST_CASE
 {
   const utils::agent agent (certificates);
 
-  fhg::util::latch job_submitted (1);
+  std::promise<void> job_submitted;
   std::promise<std::string> cancel_requested;
   fake_drts_worker_notifying_submission_and_cancel worker
-    ( [&job_submitted] (std::string) { job_submitted.count_down(); }
+    ( [&job_submitted] (std::string) { job_submitted.set_value(); }
     , [&cancel_requested] (std::string j) { cancel_requested.set_value (j); }
     , agent
     , certificates
@@ -167,7 +167,7 @@ BOOST_DATA_TEST_CASE
         )
     );
 
-  job_submitted.wait();
+  job_submitted.get_future().wait();
 
   client.cancel_job (job_id);
 
@@ -216,10 +216,10 @@ BOOST_DATA_TEST_CASE
 {
   const utils::agent agent (certificates);
 
-  fhg::util::latch job_submitted (1);
+  std::promise<void> job_submitted;
   std::promise<std::string> cancel_requested;
   fake_drts_worker_notifying_submission_and_cancel worker
-    ( [&job_submitted] (std::string) { job_submitted.count_down(); }
+    ( [&job_submitted] (std::string) { job_submitted.set_value(); }
     , [&cancel_requested] (std::string j) { cancel_requested.set_value (j); }
     , agent
     , certificates
@@ -236,7 +236,7 @@ BOOST_DATA_TEST_CASE
         )
     );
 
-  job_submitted.wait();
+  job_submitted.get_future().wait();
 
   client.cancel_job (job_id);
 
@@ -259,9 +259,9 @@ BOOST_DATA_TEST_CASE
 {
   const utils::agent agent (certificates);
 
-  fhg::util::latch job_submitted (1);
+  std::promise<void> job_submitted;
   utils::fake_drts_worker_notifying_module_call_submission worker
-    ( [&job_submitted] (std::string) { job_submitted.count_down(); }
+    ( [&job_submitted] (std::string) { job_submitted.set_value(); }
     , agent
     , certificates
     );
@@ -277,7 +277,7 @@ BOOST_DATA_TEST_CASE
         )
     );
 
-  job_submitted.wait();
+  job_submitted.get_future().wait();
 
   const sdpa::job_id_t job_id_1
     ( client.submit_job
@@ -299,19 +299,19 @@ BOOST_DATA_TEST_CASE
 {
   const utils::agent agent (certificates);
 
-  fhg::util::latch job_submitted_0 (1);
+  std::promise<void> job_submitted_0;
   std::promise<std::string> cancel_requested_0;
   fake_drts_worker_notifying_submission_and_cancel worker_0
-    ( [&job_submitted_0] (std::string) { job_submitted_0.count_down(); }
+    ( [&job_submitted_0] (std::string) { job_submitted_0.set_value(); }
     , [&cancel_requested_0] (std::string j) { cancel_requested_0.set_value (j); }
     , agent
     , certificates
     );
 
-  fhg::util::latch job_submitted_1 (1);
+  std::promise<void> job_submitted_1;
   std::promise<std::string> cancel_requested_1;
   fake_drts_worker_notifying_submission_and_cancel worker_1
-     ( [&job_submitted_1] (std::string) { job_submitted_1.count_down(); }
+     ( [&job_submitted_1] (std::string) { job_submitted_1.set_value(); }
      , [&cancel_requested_1] (std::string j) { cancel_requested_1.set_value (j); }
      , agent
      , certificates
@@ -321,8 +321,8 @@ BOOST_DATA_TEST_CASE
   sdpa::job_id_t const job_id
     (client.submit_job (utils::net_with_two_children_requiring_n_workers (2)));
 
-  job_submitted_0.wait();
-  job_submitted_1.wait();
+  job_submitted_0.get_future().wait();
+  job_submitted_1.get_future().wait();
 
   client.cancel_job (job_id);
 

@@ -35,7 +35,7 @@ namespace fhg
             : _print (print_)
             , _x (x)
           {}
-          virtual std::ostream& operator() (std::ostream& os) const override
+          std::ostream& operator() (std::ostream& os) const override
           {
             _print (os, _x); return os;
           }

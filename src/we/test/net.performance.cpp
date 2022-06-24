@@ -18,8 +18,8 @@
 
 #include <we/type/Activity.hpp>
 #include <we/type/Expression.hpp>
-#include <we/type/net.hpp>
 #include <we/type/Transition.hpp>
+#include <we/type/net.hpp>
 #include <we/type/value/boost/test/printer.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>

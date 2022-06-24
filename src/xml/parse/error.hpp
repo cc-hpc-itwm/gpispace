@@ -19,6 +19,7 @@
 #include <string>
 
 #include <xml/parse/type/connect.fwd.hpp>
+#include <xml/parse/type/eureka.fwd.hpp>
 #include <xml/parse/type/function.fwd.hpp>
 #include <xml/parse/type/memory_buffer.fwd.hpp>
 #include <xml/parse/type/mod.fwd.hpp>
@@ -27,7 +28,6 @@
 #include <xml/parse/type/place_map.fwd.hpp>
 #include <xml/parse/type/port.fwd.hpp>
 #include <xml/parse/type/response.fwd.hpp>
-#include <xml/parse/type/eureka.fwd.hpp>
 #include <xml/parse/type/specialize.fwd.hpp>
 #include <xml/parse/type/struct.fwd.hpp>
 #include <xml/parse/type/template.fwd.hpp>
@@ -35,8 +35,8 @@
 #include <xml/parse/util/position.hpp>
 
 #include <we/type/Port.hpp>
-#include <we/type/property.hpp>
 #include <we/type/eureka.hpp>
+#include <we/type/property.hpp>
 
 #include <we/type/signature.hpp>
 #include <we/type/signature/show.hpp>
@@ -628,7 +628,7 @@ namespace xml
         memory_buffer_without_size ( std::string const&
                                    , util::position_type const&
                                    );
-        virtual ~memory_buffer_without_size() noexcept override = default;
+        ~memory_buffer_without_size() noexcept override = default;
         memory_buffer_without_size (memory_buffer_without_size const&) = delete;
         memory_buffer_without_size (memory_buffer_without_size&&) = default;
         memory_buffer_without_size& operator= (memory_buffer_without_size const&) = delete;
@@ -666,11 +666,11 @@ namespace xml
       public:
         memory_buffer_with_same_name_as_port
           (type::memory_buffer_type const&, type::port_type const&);
-        virtual ~memory_buffer_with_same_name_as_port() noexcept override = default;
+        ~memory_buffer_with_same_name_as_port() noexcept override = default;
         memory_buffer_with_same_name_as_port (memory_buffer_with_same_name_as_port const&) = delete;
         memory_buffer_with_same_name_as_port (memory_buffer_with_same_name_as_port&&) = default;
         memory_buffer_with_same_name_as_port& operator= (memory_buffer_with_same_name_as_port const&) = delete;
-        memory_buffer_with_same_name_as_port& operator= (memory_buffer_for_non_module&&) = delete;
+        memory_buffer_with_same_name_as_port& operator= (memory_buffer_with_same_name_as_port&&) = delete;
       };
 
       // ******************************************************************* //

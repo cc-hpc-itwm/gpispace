@@ -27,9 +27,10 @@
 
 #include <fhg/util/next.hpp>
 
+#include <boost/test/unit_test.hpp>
+
 #include <boost/range/combine.hpp>
 #include <boost/test/data/test_case.hpp>
-#include <boost/test/unit_test.hpp>
 
 #include <algorithm>
 #include <cstddef>
@@ -69,7 +70,7 @@ namespace
     Events<sdpa::events::SubmitJobEvent> implementations_submitted;
 
   private:
-    virtual void handleSubmitJobEvent
+    void handleSubmitJobEvent
       ( fhg::com::p2p::address_t const& // source
       , sdpa::events::SubmitJobEvent const* event
       ) override
@@ -149,7 +150,7 @@ namespace
       auto transition
         (transition_with_multiple_implementations (preferences, unique_names));
 
-      auto const place_id (net.add_place ({place_names(), type, {}}));
+      auto const place_id (net.add_place ({place_names(), type, {}, {}}));
       net.put_value
         ( place_id
         , random_string
@@ -282,7 +283,7 @@ namespace
       , _job_submitted (job_submitted)
     {}
 
-    virtual void handleSubmitJobEvent
+    void handleSubmitJobEvent
       ( fhg::com::p2p::address_t const& source
       , const sdpa::events::SubmitJobEvent* event
       ) override
@@ -293,7 +294,7 @@ namespace
       _job_submitted.set_value (event->implementation());
     }
 
-    virtual void handleJobFinishedAckEvent
+    void handleJobFinishedAckEvent
       ( fhg::com::p2p::address_t const&
       , const sdpa::events::JobFinishedAckEvent*
       ) override

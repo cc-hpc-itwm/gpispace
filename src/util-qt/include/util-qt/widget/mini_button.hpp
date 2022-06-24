@@ -37,8 +37,8 @@ namespace fhg
           mini_button (QStyle::StandardPixmap icon, QWidget* parent = nullptr);
           mini_button (QAction*, QWidget* parent = nullptr);
 
-          virtual QSize sizeHint() const override;
-          virtual QSize minimumSizeHint() const override;
+          QSize sizeHint() const override;
+          QSize minimumSizeHint() const override;
         };
       }
     }

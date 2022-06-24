@@ -27,10 +27,10 @@
 #include <util-generic/divru.hpp>
 #include <util-generic/print_exception.hpp>
 
-#include <boost/lexical_cast.hpp>
 #include <boost/make_shared.hpp>
 
 #include <functional>
+#include <string>
 
 namespace gpi
 {
@@ -102,8 +102,8 @@ namespace gpi
         {
           throw std::runtime_error
             ( std::string ("not all communication buffers could be allocated:")
-            + " com-size := " + ::boost::lexical_cast<std::string>(m_com_buffer_size)
-            + " mem-size := " + ::boost::lexical_cast<std::string>(_local_size)
+            + " com-size := " + std::to_string (m_com_buffer_size)
+            + " mem-size := " + std::to_string (_local_size)
             );
         }
       }
@@ -438,7 +438,7 @@ namespace gpi
 
         //! \todo get from user? use for other areas as well? remove?
         fhg::iml::vmem::gaspi_timeout time_left (std::chrono::seconds (30));
-        gaspi_area_t * area = new gaspi_area_t ( topology
+        auto * area = new gaspi_area_t ( topology
                                                , handle_generator
                                                , gaspi_context
                                                , time_left

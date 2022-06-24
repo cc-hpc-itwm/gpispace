@@ -42,7 +42,8 @@ namespace fhg
       }
       template<typename Handlers>
         unique_scoped_handler_insert<Handlers>::unique_scoped_handler_insert
-            (unique_scoped_handler_insert<Handlers>&& other)
+            ( unique_scoped_handler_insert<Handlers>&& other
+            ) noexcept
           : _handlers (std::move (other._handlers))
           , _name (::boost::none)
       {

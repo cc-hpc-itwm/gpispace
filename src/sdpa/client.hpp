@@ -78,7 +78,7 @@ namespace sdpa
 
       void handle_recv (fhg::com::peer_t::Received);
 
-      bool _stopping;
+      bool _stopping {false};
       fhg::com::channel m_peer;
       std::unordered_map<sdpa::job_id_t, we::type::Activity> _job_results;
     };

@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE (memory_get_is_stored_in_function)
 
 namespace
 {
-  std::string const attr_not_modified_in_module_call
+  std::string attr_not_modified_in_module_call
     (::boost::optional<bool> not_modified_in_module_call)
   {
     return not_modified_in_module_call

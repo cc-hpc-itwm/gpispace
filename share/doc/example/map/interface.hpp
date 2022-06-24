@@ -24,10 +24,10 @@
 
 namespace map
 {
-  typedef we::type::bytearray user_data_type;
-  typedef unsigned long size_in_bytes_type;
-  typedef std::pair<void*, size_in_bytes_type> memory_buffer_type;
-  typedef std::pair<void const*, size_in_bytes_type> const_memory_buffer_type;
+  using user_data_type = we::type::bytearray;
+  using size_in_bytes_type = unsigned long;
+  using memory_buffer_type = std::pair<void*, size_in_bytes_type>;
+  using const_memory_buffer_type = std::pair<const void*, size_in_bytes_type>;
 }
 
 extern "C"

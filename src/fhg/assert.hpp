@@ -47,8 +47,8 @@
 #  define fhg_assert(cond, ...)
 
 #elif FHG_ASSERT_EXCEPTION == FHG_ASSERT_MODE
-#  include <stdexcept>
 #  include <boost/format.hpp>
+#  include <stdexcept>
 #  define FHG_ASSERT_STR_(x) #x
 #  define FHG_ASSERT_STR(x) FHG_ASSERT_STR_(x)
 

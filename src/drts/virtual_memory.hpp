@@ -18,8 +18,8 @@
 
 #include <gspc/detail/dllexport.hpp>
 
-#include <drts/pimpl.hpp>
 #include <drts/drts.fwd.hpp>
+#include <drts/pimpl.hpp>
 #include <drts/virtual_memory.fwd.hpp>
 
 #include <we/type/value.hpp>
@@ -28,8 +28,8 @@
 
 #include <boost/filesystem/path.hpp>
 
-#include <string>
 #include <iostream>
+#include <string>
 
 namespace gspc
 {
@@ -57,8 +57,8 @@ namespace gspc
   public:
     std::size_t size() const;
     pnet::type::value::value_type global_memory_range() const;
-    pnet::type::value::value_type global_memory_range ( std::size_t const offset
-                                                      , std::size_t const size
+    pnet::type::value::value_type global_memory_range ( std::size_t offset
+                                                      , std::size_t size
                                                       ) const;
 
     vmem_allocation (vmem_allocation const&) = delete;
@@ -66,5 +66,7 @@ namespace gspc
 
     vmem_allocation (vmem_allocation&&) = default;
     vmem_allocation& operator= (vmem_allocation&&) = delete;
+
+    ~vmem_allocation() = default;
   };
 }

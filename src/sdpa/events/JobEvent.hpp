@@ -16,10 +16,10 @@
 
 #pragma once
 
-#include <string>
-
-#include <sdpa/types.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
+#include <sdpa/types.hpp>
+
+#include <string>
 
 namespace sdpa
 {

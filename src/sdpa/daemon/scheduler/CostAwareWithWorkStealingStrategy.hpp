@@ -16,11 +16,10 @@
 
 #pragma once
 
+#include <sdpa/daemon/WorkerManager.hpp>
 #include <sdpa/daemon/scheduler/Reservation.hpp>
 #include <sdpa/daemon/scheduler/Scheduler.hpp>
-#include <sdpa/daemon/WorkerManager.hpp>
 #include <sdpa/requirements_and_preferences.hpp>
-
 #include <sdpa/types.hpp>
 
 #include <fhgcom/address.hpp>

@@ -115,7 +115,7 @@ namespace fhg
         , fhg::logging::stream_emitter& logger
         )
       {
-        sigcontext* mcontext (static_cast<sigcontext*> (static_cast<void*>
+        auto* mcontext (static_cast<sigcontext*> (static_cast<void*>
                                (&(static_cast<ucontext_t*> (context)->uc_mcontext))
                              ));
 

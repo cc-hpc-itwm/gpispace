@@ -44,7 +44,7 @@ namespace fhg
       template<typename T>
         T* sym (std::string const& name) const;
 
-      scoped_dlhandle (scoped_dlhandle&&);
+      scoped_dlhandle (scoped_dlhandle&&) noexcept;
       scoped_dlhandle (scoped_dlhandle const&) = delete;
       scoped_dlhandle& operator= (scoped_dlhandle const&) = delete;
       scoped_dlhandle& operator= (scoped_dlhandle&&) = delete;

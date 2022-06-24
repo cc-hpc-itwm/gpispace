@@ -37,7 +37,6 @@ namespace sdpa
         )
       : _codec()
       , _event_handler (event_handler)
-      , m_shutting_down (false)
       , _peer (std::move (peer_io_service), host, port, certificates)
     {
       _peer.async_recv

@@ -85,9 +85,7 @@ namespace gpi
                      )
       : _gaspi_context (gaspi_context)
       , _per_node_size (per_node_size)
-      , m_dma (nullptr)
       , _segment_id (gaspi_context)
-      , _current_queue (0)
       , _notification_check_interrupted (false)
       , _interrupt_notification_check
           ([this] { _notification_check_interrupted = true; })

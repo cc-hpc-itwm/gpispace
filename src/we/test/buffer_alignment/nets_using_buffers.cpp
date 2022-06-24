@@ -24,8 +24,6 @@
 #include <boost/align/is_aligned.hpp>
 #include <boost/format.hpp>
 
-#include <string>
-
 #include <algorithm>
 #include <list>
 #include <string>

@@ -28,6 +28,8 @@
 #include <util-generic/print_exception.hpp>
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 #include <util-generic/syscall.hpp>
+#include <util-generic/syscall/process_signal_block.hpp>
+#include <util-generic/syscall/signal_set.hpp>
 
 #include <iml/vmem/gaspi/gpi/gaspi.hpp>
 #include <iml/vmem/gaspi/pc/container/manager.hpp>
@@ -36,10 +38,6 @@
 
 #include <iml/gaspi/NetdevID.hpp>
 #include <iml/vmem/gaspi_context.hpp>
-
-#include <util-generic/syscall.hpp>
-#include <util-generic/syscall/process_signal_block.hpp>
-#include <util-generic/syscall/signal_set.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/filesystem.hpp>

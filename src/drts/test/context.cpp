@@ -151,7 +151,7 @@ BOOST_FIXTURE_TEST_CASE
         context.execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FROM_WITHIN
           ( []()
             {
-              while (1) {}
+              while (true) {}
             }
           , [&cancelled] ()
             {
@@ -337,7 +337,7 @@ BOOST_FIXTURE_TEST_CASE
                      context.execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FROM_WITHIN
                        ( []
                          {
-                           while (1) {}
+                           while (true) {}
                          }
                        );
                    }

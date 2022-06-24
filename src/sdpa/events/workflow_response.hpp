@@ -29,8 +29,8 @@
 #include <boost/optional.hpp>
 
 #include <exception>
-#include <string>
 #include <sstream>
+#include <string>
 
 namespace sdpa
 {
@@ -63,7 +63,7 @@ namespace sdpa
         return _value;
       }
 
-      virtual void handleBy
+      void handleBy
         (fhg::com::p2p::address_t const& source, EventHandler* handler) override
       {
         handler->handle_workflow_response (source, this);
@@ -128,7 +128,7 @@ namespace sdpa
         }
       }
 
-      virtual void handleBy
+      void handleBy
         (fhg::com::p2p::address_t const& source, EventHandler* handler) override
       {
         handler->handle_workflow_response_response (source, this);

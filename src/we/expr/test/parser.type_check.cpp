@@ -15,6 +15,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <boost/test/unit_test.hpp>
+
 #include <boost/test/data/test_case.hpp>
 
 #include <we/exception.hpp>
@@ -24,8 +25,8 @@
 #include <we/type/value/read.hpp>
 #include <we/type/value/show.hpp>
 
-#include <util-generic/ostream/modifier.hpp>
 #include <util-generic/join.hpp>
+#include <util-generic/ostream/modifier.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/random.hpp>
 #include <util-generic/testing/require_exception.hpp>
@@ -34,8 +35,8 @@
 #include <limits>
 #include <random>
 #include <sstream>
-#include <string>
 #include <stack>
+#include <string>
 #include <unordered_map>
 
 namespace expr
@@ -59,7 +60,7 @@ namespace expr
         }
 
         //! prints the ast
-        virtual std::ostream& operator() (std::ostream& os) const override
+        std::ostream& operator() (std::ostream& os) const override
         {
           for (auto const& node : _ast)
           {
@@ -129,7 +130,7 @@ namespace expr
           RandomExpression (Args&&... args)
             : _format (std::forward<Args> (args)...)
         {}
-        virtual std::ostream& operator() (std::ostream& os) const override
+        std::ostream& operator() (std::ostream& os) const override
         {
           return os
             << Expression ( ::boost::format (_format)
@@ -185,7 +186,7 @@ namespace expr
         {
           using Generator = fhg::util::testing::random<std::string>;
 
-          std::string const operator()() const
+          std::string operator()() const
           {
             return _generator
               (Generator::identifier_without_leading_underscore());
@@ -741,10 +742,10 @@ namespace expr
 
     BOOST_AUTO_TEST_CASE (token_add)
     {
-      require_type_to ("\"\" + \"\"", String{});
-      require_type_to ("\"a\" + \"\"", String{});
-      require_type_to ("\"a\" + \"a\"", String{});
-      require_type_to ("\"ab\" + \"a\"", String{});
+      require_type_to (R"("" + "")", String{});
+      require_type_to (R"("a" + "")", String{});
+      require_type_to (R"("a" + "a")", String{});
+      require_type_to (R"("ab" + "a")", String{});
 
       require_type_to ("0 + 0", Int{});
       require_type_to ("0 + 1", Int{});

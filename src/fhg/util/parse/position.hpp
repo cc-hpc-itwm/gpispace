@@ -37,7 +37,7 @@ namespace fhg
         std::string error_message (std::string const&) const;
 
       private:
-        std::size_t _k;
+        std::size_t _k {0};
         std::string::const_iterator _pos;
         const std::string::const_iterator _begin;
         const std::string::const_iterator _end;

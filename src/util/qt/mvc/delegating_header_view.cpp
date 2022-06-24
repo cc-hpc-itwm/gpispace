@@ -16,9 +16,9 @@
 
 #include <util/qt/mvc/delegating_header_view.hpp>
 
+#include <util-qt/painter_state_saver.hpp>
 #include <util-qt/widget/mini_button.hpp>
 #include <util/qt/mvc/header_delegate.hpp>
-#include <util-qt/painter_state_saver.hpp>
 
 #include <QContextMenuEvent>
 #include <QKeyEvent>
@@ -35,7 +35,6 @@ namespace fhg
       {
         delegating_header_view::delegating_header_view (QWidget* parent)
           : QHeaderView (Qt::Horizontal, parent)
-          , _delegate (nullptr)
         {
           connect ( this
                   , SIGNAL (sectionResized (int, int, int))

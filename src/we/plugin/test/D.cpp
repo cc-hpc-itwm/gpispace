@@ -28,11 +28,11 @@ struct D : public gspc::we::plugin::Base
     throw std::runtime_error ("D::D()");
   }
 
-  virtual void before_eval (::gspc::we::plugin::Context const&) override
+  void before_eval (::gspc::we::plugin::Context const&) override
   {
     FHG_UTIL_UNREACHABLE();
   }
-  virtual void after_eval (::gspc::we::plugin::Context const&) override
+  void after_eval (::gspc::we::plugin::Context const&) override
   {
     FHG_UTIL_UNREACHABLE();
   }

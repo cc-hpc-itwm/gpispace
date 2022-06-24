@@ -26,11 +26,11 @@ namespace sdpa
     class CancelJobAckEvent : public JobEvent
     {
     public:
-      typedef ::boost::shared_ptr<CancelJobAckEvent> Ptr;
+      using Ptr = ::boost::shared_ptr<CancelJobAckEvent>;
 
       using JobEvent::JobEvent;
 
-      virtual void handleBy
+      void handleBy
         (fhg::com::p2p::address_t const& source, EventHandler* handler) override
       {
         handler->handleCancelJobAckEvent (source, this);

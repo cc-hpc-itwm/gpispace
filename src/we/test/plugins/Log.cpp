@@ -35,11 +35,11 @@ namespace gspc
             )
         {}
 
-        virtual void before_eval (Context const& context) override
+        void before_eval (Context const& context) override
         {
           _out << "before_eval\n" << context << '\n';
         }
-        virtual void after_eval (Context const& context) override
+        void after_eval (Context const& context) override
         {
           _out << "after_eval\n" << context << '\n';
         }

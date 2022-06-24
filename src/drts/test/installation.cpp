@@ -18,9 +18,9 @@
 
 #include <drts/drts.hpp>
 
+#include <fhg/project_version.hpp>
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/require_exception.hpp>
-#include <fhg/project_version.hpp>
 
 #include <boost/program_options.hpp>
 

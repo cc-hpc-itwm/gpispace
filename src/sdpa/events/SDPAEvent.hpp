@@ -30,7 +30,7 @@ namespace sdpa
     class SDPAEvent
     {
     public:
-      typedef ::boost::shared_ptr<SDPAEvent> Ptr;
+      using Ptr = ::boost::shared_ptr<SDPAEvent>;
 
       virtual ~SDPAEvent() = default;
       SDPAEvent (SDPAEvent const&) = delete;

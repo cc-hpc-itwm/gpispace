@@ -117,6 +117,11 @@ namespace fhg
 
         ~service_stream_provider_with_deferred_start();
 
+        service_stream_provider_with_deferred_start (service_stream_provider_with_deferred_start const&) = delete;
+        service_stream_provider_with_deferred_start& operator= (service_stream_provider_with_deferred_start const&) = delete;
+        service_stream_provider_with_deferred_start (service_stream_provider_with_deferred_start&&) = delete;
+        service_stream_provider_with_deferred_start& operator= (service_stream_provider_with_deferred_start&&) = delete;
+
         //! The endpoint this provider is listening on, either as
         //! specified in the constructor or as automatically assigned.
         //!
@@ -200,7 +205,7 @@ namespace fhg
       private:
         std::mutex _guard;
         std::condition_variable _dispatcher_set;
-        service_dispatcher* _dispatcher;
+        service_dispatcher* _dispatcher {nullptr};
       };
     }
   }

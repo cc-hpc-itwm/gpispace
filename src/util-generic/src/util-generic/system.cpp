@@ -14,8 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <util-generic/system.hpp>
 #include <util-generic/exit_status.hpp>
+#include <util-generic/system.hpp>
 
 #include <boost/format.hpp>
 

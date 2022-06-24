@@ -20,8 +20,8 @@
 
 #include <we/type/value/poke.hpp>
 
-#include <we/type/value/boost/test/printer.hpp>
 #include <we/type/signature/boost/test/printer.hpp>
+#include <we/type/value/boost/test/printer.hpp>
 
 #include <we/signature_of.hpp>
 

@@ -14,8 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <we/type/value/positions.hpp>
 #include <we/type/value/path/append.hpp>
+#include <we/type/value/positions.hpp>
 
 namespace pnet
 {
@@ -25,8 +25,8 @@ namespace pnet
     {
       namespace
       {
-        typedef std::pair<std::list<std::string>, value_type> position_type;
-        typedef std::list<position_type> positions_type;
+        using position_type = std::pair<std::list<std::string>, value_type>;
+        using positions_type = std::list<position_type>;
 
         class visitor_positions : public ::boost::static_visitor<void>
         {

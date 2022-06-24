@@ -18,13 +18,12 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
-#include <boost/noncopyable.hpp>
 
 namespace fhg
 {
   namespace util
   {
-    class temporary_file : ::boost::noncopyable
+    class temporary_file
     {
     public:
       temporary_file (::boost::filesystem::path const& path)
@@ -44,6 +43,11 @@ namespace fhg
       {
         ::boost::filesystem::remove (_path);
       }
+
+      temporary_file (temporary_file const&) = delete;
+      temporary_file& operator= (temporary_file const&) = delete;
+      temporary_file (temporary_file&&) = delete;
+      temporary_file& operator= (temporary_file&&) = delete;
 
       operator ::boost::filesystem::path() const
       {

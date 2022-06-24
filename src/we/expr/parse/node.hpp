@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include <we/expr/token/type.hpp>
 #include <we/expr/token/tokenizer.hpp>
+#include <we/expr/token/type.hpp>
 
 #include <we/type/value.hpp>
 
@@ -40,12 +40,12 @@ namespace expr
       using Key = std::list<std::string>;
       using KeyRoots = std::unordered_set<std::string>;
 
-      typedef ::boost::variant < pnet::type::value::value_type
-                             , Key
-                             , ::boost::recursive_wrapper<unary_t>
-                             , ::boost::recursive_wrapper<binary_t>
-                             , ::boost::recursive_wrapper<ternary_t>
-                             > type;
+      using type = ::boost::variant< pnet::type::value::value_type
+                                   , Key
+                                   , ::boost::recursive_wrapper<unary_t>
+                                   , ::boost::recursive_wrapper<binary_t>
+                                   , ::boost::recursive_wrapper<ternary_t>
+                                   >;
 
       std::ostream & operator << (std::ostream &, type const&);
       pnet::type::value::value_type const& get (type const&);

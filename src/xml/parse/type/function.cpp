@@ -34,9 +34,9 @@
 #include <util-generic/first_then.hpp>
 
 #include <fhg/util/cpp/block.hpp>
-#include <fhg/util/cpp/namespace.hpp>
 #include <fhg/util/cpp/include.hpp>
 #include <fhg/util/cpp/include_guard.hpp>
+#include <fhg/util/cpp/namespace.hpp>
 #include <fhg/util/indenter.hpp>
 #include <fhg/util/starts_with.hpp>
 #include <util-generic/join.hpp>
@@ -44,14 +44,14 @@
 #include <util-generic/ostream/put_time.hpp>
 #include <util-generic/split.hpp>
 
-#include <we/type/ModuleCall.fwd.hpp>
 #include <we/type/Expression.fwd.hpp>
+#include <we/type/ModuleCall.fwd.hpp>
 #include <we/type/net.fwd.hpp>
 
-#include <we/type/signature/cpp.hpp>
-#include <we/type/signature/names.hpp>
-#include <we/type/signature/is_literal.hpp>
 #include <we/type/signature/complete.hpp>
+#include <we/type/signature/cpp.hpp>
+#include <we/type/signature/is_literal.hpp>
+#include <we/type/signature/names.hpp>
 #include <we/type/signature/resolve.hpp>
 
 #include <we/type/value/name.hpp>
@@ -64,9 +64,9 @@
 #include <exception>
 #include <functional>
 #include <iostream>
-#include <string>
 #include <set>
 #include <stdexcept>
+#include <string>
 
 namespace xml
 {
@@ -412,9 +412,8 @@ namespace xml
         fhg::pnet::util::unique<place_map_type> const& _place_map;
         std::unordered_map<we::port_id_type, std::string>& _real_place_names;
 
-        typedef std::unordered_map< std::string
-                                  , we::place_id_type
-                                  > pid_of_place_type;
+        using pid_of_place_type =
+          std::unordered_map<std::string, we::place_id_type>;
 
         we::port_id_type add_port
           (we::type::Transition& transition, we::type::Port const& port) const
@@ -515,7 +514,7 @@ namespace xml
           return _name;
         }
 
-        we::type::Expression condition (void) const
+        we::type::Expression condition() const
         {
           const std::string cond ((fun.conditions() + _conditions).flatten());
 
@@ -890,11 +889,11 @@ namespace xml
         return name == other.name;
       }
 
-      typedef std::unordered_set<fun_info_type> fun_infos_type;
+      using fun_infos_type = std::unordered_set<fun_info_type>;
 
-      typedef std::unordered_map<std::string,fun_infos_type> fun_info_map;
+      using fun_info_map = std::unordered_map<std::string, fun_infos_type>;
 
-      typedef ::boost::filesystem::path path_t;
+      using path_t = ::boost::filesystem::path;
 
       void mk_wrapper ( state::type const& state
                       , fun_info_map const& m
@@ -943,8 +942,6 @@ namespace xml
                        , std::unordered_set<std::string> const& structnames
                        )
       {
-        namespace cpp_util = ::fhg::util::cpp;
-
         const path_t prefix (state.path_to_cpp());
         const path_t file (prefix / "Makefile");
 
@@ -1089,43 +1086,37 @@ namespace xml
           stream                                                 << std::endl;
         }
 
-        for ( fun_info_map::const_iterator mod (m.begin())
-            ; mod != m.end()
-            ; ++mod
-            )
+        for (auto const& mod : m)
           {
             stream << "####"                                       << std::endl;
-            stream << "#### module-functions " << mod->first       << std::endl;
+            stream << "#### module-functions " << mod.first        << std::endl;
             stream << "####"                                       << std::endl;
 
-            const std::string objs ("OBJ_" + mod->first);
-            fun_infos_type const& funs (mod->second);
-            const std::string ldflags ("LDFLAGS_" + mod->first);
+            const std::string objs ("OBJ_" + mod.first);
+            fun_infos_type const& funs (mod.second);
+            const std::string ldflags ("LDFLAGS_" + mod.first);
             const std::string file_module_ldflags ("Makefile." + ldflags);
 
             util::check_no_change_fstream ldflags_module
               (state, prefix / file_module_ldflags);
 
-            for ( fun_infos_type::const_iterator fun (funs.begin())
-                ; fun != funs.end()
-                ; ++fun
-                )
+            for (auto const& fun : funs)
               {
                 stream << "##"                                     << std::endl;
-                stream << "## function " << fun->name              << std::endl;
+                stream << "## function " << fun.name               << std::endl;
                 stream << "##"                                     << std::endl;
 
                 const std::string cxxflags
-                  ("CXXFLAGS_" + mod->first + "_" + fun->name);
+                  ("CXXFLAGS_" + mod.first + "_" + fun.name);
                 const std::string file_function_cxxflags
                   ("Makefile." + cxxflags);
 
                 const std::string obj_fun
-                  (std::string ("pnetc/op/") + mod->first + "/" + fun->name + ".o");
+                  (std::string ("pnetc/op/") + mod.first + "/" + fun.name + ".o");
 
                 stream << objs << " += " << obj_fun << std::endl;
 
-                for (std::string const& flag : fun->ldflags)
+                for (std::string const& flag : fun.ldflags)
                   {
                     ldflags_module << ldflags << " += " << flag << std::endl;
                   }
@@ -1134,7 +1125,7 @@ namespace xml
                   util::check_no_change_fstream cxxflags_function
                     (state, prefix / file_function_cxxflags);
 
-                  for (std::string const& flag : fun->cxxflags)
+                  for (std::string const& flag : fun.cxxflags)
                   {
                     cxxflags_function << cxxflags << " += " << flag << std::endl;
                   }
@@ -1143,9 +1134,9 @@ namespace xml
                 stream << "include " << file_function_cxxflags     << std::endl;
 
                 const std::string dep
-                  (path_op + mod->first + "/" + fun->name + ".d");
+                  (path_op + mod.first + "/" + fun.name + ".d");
                 const std::string cpp
-                  (path_op + mod->first + "/" + fun->name + ".cpp");
+                  (path_op + mod.first + "/" + fun.name + ".cpp");
 
                 stream << "-include " << dep                      << std::endl;
                 stream << obj_fun
@@ -1166,15 +1157,15 @@ namespace xml
               }
 
             stream << "####"                                       << std::endl;
-            stream << "#### module " << mod->first                 << std::endl;
+            stream << "#### module " << mod.first                  << std::endl;
             stream << "####"                                       << std::endl;
 
-            const std::string obj (path_op + mod->first + ".o");
+            const std::string obj (path_op + mod.first + ".o");
 
             stream << objs << " += " << obj << std::endl;
 
-            const std::string obj_cpp (path_op + mod->first + ".cpp");
-            const std::string dep (path_op + mod->first + ".d");
+            const std::string obj_cpp (path_op + mod.first + ".cpp");
+            const std::string dep (path_op + mod.first + ".d");
 
             stream << obj << ": " << obj_cpp << " "
                    << file_global_cxxflags                         << std::endl;
@@ -1193,7 +1184,7 @@ namespace xml
             stream                                                 << std::endl;
             stream << "include " << file_module_ldflags            << std::endl;
             stream                                                 << std::endl;
-            stream << "pnetc/op/lib" << mod->first << ".so"
+            stream << "pnetc/op/lib" << mod.first << ".so"
                    << ": $(" << objs << ")"
                    << " $(TYPE_OBJS) "
                    << file_global_ldflags
@@ -1245,26 +1236,20 @@ namespace xml
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
 
-        for ( fun_info_map::const_iterator mod (m.begin())
-            ; mod != m.end()
-            ; ++mod
-            )
+        for (auto const& mod : m)
           {
-            stream << "$(LIB_DESTDIR)/lib" << mod->first << ".so"
-                   << ": pnetc/op/lib" << mod->first << ".so"
+            stream << "$(LIB_DESTDIR)/lib" << mod.first << ".so"
+                   << ": pnetc/op/lib" << mod.first << ".so"
                    << " $(LIB_DESTDIR)"                            << std::endl;
             stream << "\t@$(CP) -v $< $@"                          << std::endl;
           }
 
         stream                                                     << std::endl;
 
-        for ( fun_info_map::const_iterator mod (m.begin())
-            ; mod != m.end()
-            ; ++mod
-            )
+        for (auto const& mod : m)
           {
             stream << "MODULES_INSTALL += $(LIB_DESTDIR)/lib"
-                   << mod->first << ".so"
+                   << mod.first << ".so"
                    << std::endl;
           }
 
@@ -1300,23 +1285,17 @@ namespace xml
         stream                                                     << std::endl;
         stream << "objclean:"                                      << std::endl;
 
-        for ( fun_info_map::const_iterator mod (m.begin())
-            ; mod != m.end()
-            ; ++mod
-            )
+        for (auto const& mod : m)
           {
-            stream << "\t-$(RM) $(OBJ_" << mod->first << ")"        << std::endl;
+            stream << "\t-$(RM) $(OBJ_" << mod.first << ")"        << std::endl;
           }
 
         stream                                                     << std::endl;
         stream << "objcleandep: $(MODULES)"                        << std::endl;
 
-        for ( fun_info_map::const_iterator mod (m.begin())
-            ; mod != m.end()
-            ; ++mod
-            )
+        for (auto const& mod : m)
           {
-            stream << "\t-$(RM) $(OBJ_" << mod->first << ")"       << std::endl;
+            stream << "\t-$(RM) $(OBJ_" << mod.first << ")"        << std::endl;
           }
 
         stream                                                     << std::endl;
@@ -1327,10 +1306,8 @@ namespace xml
         stream                                                     << std::endl;
       }
 
-      typedef std::unordered_map<std::string, module_type>
-        mc_by_function_type;
-      typedef std::unordered_map<std::string, mc_by_function_type>
-        mcs_type;
+      using mc_by_function_type = std::unordered_map<std::string, module_type>;
+      using mcs_type = std::unordered_map<std::string, mc_by_function_type>;
 
       bool find_module_calls ( state::type const&
                              , function_type&
@@ -1397,7 +1374,7 @@ namespace xml
           return n.contains_a_module_call;
         }
 
-        typedef std::unordered_set<std::string> types_type;
+        using types_type = std::unordered_set<std::string>;
 
         struct port_with_type
         {
@@ -1413,7 +1390,7 @@ namespace xml
 
         };
 
-        typedef std::list<port_with_type> ports_with_type_type;
+        using ports_with_type_type = std::list<port_with_type>;
 
         namespace
         {
@@ -1441,7 +1418,7 @@ namespace xml
               _inc[value::MAP()].insert ("we/type/value.hpp");
             }
 
-            virtual std::ostream& operator() (std::ostream& os) const override
+            std::ostream& operator() (std::ostream& os) const override
             {
               if (!pnet::type::signature::is_literal (_tname))
               {
@@ -1449,9 +1426,7 @@ namespace xml
               }
               else
               {
-                std::unordered_map< std::string
-                                  , std::set<std::string>
-                                  >::const_iterator
+                auto
                   pos (_inc.find (_tname));
 
                 if (pos != _inc.end())
@@ -1481,7 +1456,7 @@ namespace xml
           mk_type (std::string const& type)
             : _type (type)
           {}
-          virtual std::ostream& operator() (std::ostream& os) const override
+          std::ostream& operator() (std::ostream& os) const override
           {
             if (pnet::type::signature::is_literal (_type))
             {
@@ -1511,7 +1486,7 @@ namespace xml
             , _modif (modif)
             , _amper (amper)
           {}
-          virtual std::ostream& operator() (std::ostream& os) const override
+          std::ostream& operator() (std::ostream& os) const override
           {
             os << _indent << _modif;
 
@@ -1541,8 +1516,6 @@ namespace xml
 
         std::string mk_value (port_with_type const& port)
         {
-          namespace cpp_util = ::fhg::util::cpp;
-
           std::ostringstream os;
 
           if (pnet::type::signature::is_literal (port.type))
@@ -2009,8 +1982,8 @@ namespace xml
                     std::list<std::string> const
                       rs (fhg::util::split<std::string, std::string> (r, '\n'));
 
-                    std::list<std::string>::const_iterator pos_l (ls.begin());
-                    std::list<std::string>::const_iterator pos_r (rs.begin());
+                    auto pos_l (ls.begin());
+                    auto pos_r (rs.begin());
 
                     while (pos_l != ls.end() && pos_r != rs.end())
                     {

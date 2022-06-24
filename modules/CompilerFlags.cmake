@@ -57,6 +57,8 @@ add_cxx_compiler_flag_if_supported (-fpic)
 add_cxx_compiler_flag_if_supported (-fcolor-diagnostics)
 add_cxx_compiler_flag_if_supported (-ftemplate-depth=1024)
 
+add_cxx_compiler_flag_if_supported (-Wno-maybe-uninitialized)
+
 # Modern Debian has changed the default from `--no-as-needed` to
 # `--as-needed`, which leads to shared objects being filtered if the
 # linker can't prove it being used. This check fails when symbols are

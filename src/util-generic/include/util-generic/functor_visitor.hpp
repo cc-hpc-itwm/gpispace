@@ -25,6 +25,11 @@ namespace fhg
 {
   namespace util
   {
+    namespace detail
+    {
+      struct Visit{}; // prevent from ctor that accepts plain forwarding ref
+    }
+
     template<typename Ret, typename... Functors>
       struct functor_visitor;
 
@@ -36,9 +41,9 @@ namespace fhg
       using functor_visitor<Ret, Tail...>::operator();
 
       template<typename Head_, typename... Tail_>
-        functor_visitor (Head_&& head, Tail_&&... tail)
+        functor_visitor (detail::Visit v, Head_&& head, Tail_&&... tail)
           : std::remove_reference<Head>::type (std::forward<Head_> (head))
-          , functor_visitor<Ret, Tail...> (std::forward<Tail_> (tail)...)
+          , functor_visitor<Ret, Tail...> (v, std::forward<Tail_> (tail)...)
       {}
     };
 
@@ -49,7 +54,7 @@ namespace fhg
       using std::remove_reference<Head>::type::operator();
 
       template<typename Head_>
-        functor_visitor (Head_&& head)
+        functor_visitor (detail::Visit, Head_&& head)
           : std::remove_reference<Head>::type (std::forward<Head_> (head))
       {}
     };
@@ -60,7 +65,7 @@ namespace fhg
     template<typename Ret, typename... Functors>
       functor_visitor<Ret, Functors...> make_visitor (Functors&&... lambdas)
     {
-      return {std::forward<Functors> (lambdas)...};
+      return {detail::Visit{}, std::forward<Functors> (lambdas)...};
     }
 
     template<typename Ret, typename Variant, typename Visitor>

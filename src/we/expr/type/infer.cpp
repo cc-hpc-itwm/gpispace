@@ -655,7 +655,6 @@ namespace expr
             return function (Boolean{}, Boolean{}, Boolean{});
 
           case token::_bitset_insert:
-            return function (Bitset{}, ULong{}, Bitset{});
           case token::_bitset_delete:
             return function (Bitset{}, ULong{}, Bitset{});
           case token::_bitset_is_element:

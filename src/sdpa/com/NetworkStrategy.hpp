@@ -69,7 +69,7 @@ namespace sdpa
 
       EventHandler _event_handler;
 
-      bool m_shutting_down;
+      bool m_shutting_down {false};
 
       // there is a TESTING_ONLY class that adds behavior
     protected:

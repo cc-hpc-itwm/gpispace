@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include <sdpa/events/MgmtEvent.hpp>
 #include <sdpa/capability.hpp>
+#include <sdpa/events/MgmtEvent.hpp>
 
 #include <boost/optional.hpp>
 
@@ -28,7 +28,7 @@ namespace sdpa
     class WorkerRegistrationEvent : public MgmtEvent
     {
     public:
-      typedef ::boost::shared_ptr<WorkerRegistrationEvent> Ptr;
+      using Ptr = ::boost::shared_ptr<WorkerRegistrationEvent>;
 
       WorkerRegistrationEvent
         ( std::string const& name
@@ -62,7 +62,7 @@ namespace sdpa
         return allocated_shared_memory_size_;
       }
 
-      virtual void handleBy
+      void handleBy
         (fhg::com::p2p::address_t const& source, EventHandler* handler) override
       {
         handler->handleWorkerRegistrationEvent (source, this);

@@ -22,8 +22,8 @@
 
 #include <fhg/util/parse/position.hpp>
 
-#include <string>
 #include <list>
+#include <string>
 
 namespace expr
 {
@@ -55,9 +55,9 @@ namespace expr
 
     private:
       fhg::util::parse::position& _pos;
-      token::type _token;
-      pnet::type::value::value_type _tokval;
-      std::list<std::string> _ref;
+      token::type _token {eof};
+      pnet::type::value::value_type _tokval{};
+      std::list<std::string> _ref{};
 
       void skip_comment (std::size_t);
     };

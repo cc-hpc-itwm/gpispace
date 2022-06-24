@@ -21,18 +21,19 @@
 
 #include <we/type/Activity.hpp>
 #include <we/type/ModuleCall.hpp>
+#include <we/type/Transition.hpp>
 #include <we/type/net.hpp>
 #include <we/type/place.hpp>
-#include <we/type/Transition.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/optional.hpp>
 #include <util-generic/testing/random.hpp>
 
+#include <boost/test/unit_test.hpp>
+
 #include <boost/optional.hpp>
 #include <boost/test/data/monomorphic.hpp>
 #include <boost/test/data/test_case.hpp>
-#include <boost/test/unit_test.hpp>
 
 #include <future>
 #include <list>
@@ -94,6 +95,7 @@ we::type::Activity net_with_n_children (unsigned int n)
       (net.add_place (place::type ( port_name + std::to_string (k)
                                   , std::string ("string")
                                   , ::boost::none
+                                  , we::type::property::type{}
                                   )
                      )
       );

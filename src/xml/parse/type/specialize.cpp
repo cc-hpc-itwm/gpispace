@@ -98,24 +98,18 @@ namespace xml
           s.attr ("name", sp.name());
           s.attr ("use", sp.use);
 
-          for ( type_map_type::const_iterator tm (sp.type_map.begin())
-              ; tm != sp.type_map.end()
-              ; ++tm
-              )
+          for (auto const& tm : sp.type_map)
           {
             s.open ("type-map");
-            s.attr ("replace", tm->first);
-            s.attr ("with", tm->second);
+            s.attr ("replace", tm.first);
+            s.attr ("with", tm.second);
             s.close ();
           }
 
-          for ( type_get_type::const_iterator tg (sp.type_get.begin())
-              ; tg != sp.type_get.end()
-              ; ++tg
-              )
+          for (auto const& tg : sp.type_get)
           {
             s.open ("type-get");
-            s.attr ("name", *tg);
+            s.attr ("name", tg);
             s.close ();
           }
 

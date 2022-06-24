@@ -22,12 +22,12 @@
 #include <we/type/property.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <util-generic/testing/random/string.hpp>
 #include <util-generic/testing/random.hpp>
+#include <util-generic/testing/random/string.hpp>
 
 #include <boost/optional/optional_io.hpp>
-#include <boost/test/data/test_case.hpp>
 #include <boost/test/data/monomorphic.hpp>
+#include <boost/test/data/test_case.hpp>
 
 namespace
 {

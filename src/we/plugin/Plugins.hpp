@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include <we/plugin/Plugin.hpp>
 #include <we/plugin/ID.hpp>
+#include <we/plugin/Plugin.hpp>
 
 #include <boost/filesystem/path.hpp>
 

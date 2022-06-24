@@ -138,7 +138,7 @@ namespace gspc
       ( vmem::segment_description
       , unsigned long size
       , std::string const& name
-      , char const* const data
+      , char const* data
       ) const;
 
     //! \note \a name is ignored and exists for API stability only.

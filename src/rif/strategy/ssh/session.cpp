@@ -100,6 +100,11 @@ namespace libssh2
         detail::wrapped::channel_free (_);
       }
 
+      channel_wrapper (channel_wrapper const&) = delete;
+      channel_wrapper& operator= (channel_wrapper const&) = delete;
+      channel_wrapper (channel_wrapper&&) = delete;
+      channel_wrapper& operator= (channel_wrapper&&) = delete;
+
       _LIBSSH2_CHANNEL* _;
     };
 

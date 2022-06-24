@@ -34,7 +34,7 @@ namespace fhg
           filter_ignoring_branch_nodes_proxy (QAbstractItemModel*, QObject* = nullptr);
 
         protected:
-          virtual bool filterAcceptsRow (int, QModelIndex const& parent) const override;
+          bool filterAcceptsRow (int, QModelIndex const& parent) const override;
         };
       }
     }

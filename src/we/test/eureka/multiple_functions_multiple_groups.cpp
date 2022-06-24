@@ -16,8 +16,8 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <we/type/value/boost/test/printer.hpp>
 #include <we/test/eureka/Fixture.hpp>
+#include <we/type/value/boost/test/printer.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/multimap.hpp>

@@ -38,7 +38,6 @@
 
 #include <fhg/util/starts_with.hpp>
 #include <util-generic/connectable_to_address_string.hpp>
-#include <util-generic/latch.hpp>
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
@@ -146,8 +145,7 @@ BOOST_AUTO_TEST_CASE (response_fails_if_workflow_fails_after_requesting)
 
   unsigned long const initial_state (0);
 
-  fhg::util::latch workflow_actually_running (1);
-  fhg::util::latch workflow_shall_fail (1);
+  std::promise<void> workflow_actually_running;
 
   fhg::util::scoped_boost_asio_io_service_with_threads io_service (1);
   fhg::rpc::service_dispatcher service_dispatcher;
@@ -155,7 +153,7 @@ BOOST_AUTO_TEST_CASE (response_fails_if_workflow_fails_after_requesting)
     ( service_dispatcher
     , [&workflow_actually_running]
       {
-        workflow_actually_running.count_down();
+        workflow_actually_running.set_value();
       }
     , fhg::rpc::not_yielding
     );
@@ -173,7 +171,7 @@ BOOST_AUTO_TEST_CASE (response_fails_if_workflow_fails_after_requesting)
         )
     );
 
-  workflow_actually_running.wait();
+  workflow_actually_running.get_future().wait();
 
   fhg::util::testing::require_exception
     ([&client, &job_id]()

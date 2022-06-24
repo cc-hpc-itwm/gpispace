@@ -17,19 +17,19 @@
 #pragma once
 
 #include <buffer.hpp>
+#include <errno.h>
 #include <queue.hpp>
+#include <sstream>
 #include <stdexcept>
 #include <stdio.h>
-#include <errno.h>
 #include <string.h>
-#include <sstream>
 
 template<typename T>
 class writer
 {
 public:
-  typedef fhg::buffer::type<T> buffer_type;
-  typedef fhg::thread::queue<buffer_type> queue_type;
+  using buffer_type = fhg::buffer::type<T>;
+  using queue_type = fhg::thread::queue<buffer_type>;
 
 private:
   queue_type& _queue_empty;

@@ -15,13 +15,14 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <boost/test/unit_test.hpp>
+
 #include <boost/test/data/test_case.hpp>
 
 #include <we/type/Transition.hpp>
 #include <we/type/net.hpp>
 
-#include <util-generic/testing/require_exception.hpp>
 #include <util-generic/testing/printer/list.hpp>
+#include <util-generic/testing/require_exception.hpp>
 #include <util-generic/testing/require_serialized_to_id.hpp>
 #include <util-generic/unreachable.hpp>
 

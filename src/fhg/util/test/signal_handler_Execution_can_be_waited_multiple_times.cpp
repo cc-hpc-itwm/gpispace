@@ -17,8 +17,8 @@
 #include <fhg/util/signal_handler_manager.hpp>
 
 #include <util-generic/print_exception.hpp>
-#include <util-generic/latch.hpp>
 
+#include <future>
 #include <iostream>
 #include <thread>
 
@@ -29,11 +29,11 @@ try
 
   fhg::util::Execution execution (manager);
 
-  fhg::util::latch thread_running (1);
+  std::promise<void> thread_running;
 
-  std::thread thread ([&] { thread_running.count_down(); execution.wait(); });
+  std::thread thread ([&] { thread_running.set_value(); execution.wait(); });
 
-  thread_running.wait();
+  thread_running.get_future().wait();
 
   execution.stop();
 

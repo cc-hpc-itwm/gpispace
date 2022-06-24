@@ -37,7 +37,6 @@ namespace gpi
           : m_handle (hdl)
           , m_data (ptr)
           , m_size (sz)
-          , m_used (0)
         {}
 
         inline void *data ()        { return m_data; }
@@ -50,7 +49,7 @@ namespace gpi
         iml::AllocationHandle  m_handle;
         void                    *m_data;
         std::size_t                   m_size;
-        std::size_t                   m_used;
+        std::size_t                   m_used {0};
       };
     }
   }

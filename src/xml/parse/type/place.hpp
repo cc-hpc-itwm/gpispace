@@ -17,9 +17,9 @@
 #pragma once
 
 #include <xml/parse/state.fwd.hpp>
-#include <xml/parse/type_map_type.hpp>
 #include <xml/parse/type/net.fwd.hpp>
 #include <xml/parse/type/with_position_of_definition.hpp>
+#include <xml/parse/type_map_type.hpp>
 #include <xml/parse/util/position.fwd.hpp>
 
 #include <fhg/util/xml.fwd.hpp>
@@ -27,8 +27,8 @@
 #include <we/type/property.hpp>
 #include <we/type/signature.hpp>
 
-#include <string>
 #include <list>
+#include <string>
 
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
@@ -42,9 +42,9 @@ namespace xml
       struct place_type : with_position_of_definition
       {
       public:
-        typedef std::string unique_key_type;
+        using unique_key_type = std::string;
 
-        typedef std::string token_type;
+        using token_type = std::string;
 
         place_type ( util::position_type const&
                    , std::string const& name
@@ -71,8 +71,8 @@ namespace xml
                                , state::type const&
                                ) const;
 
-        ::boost::optional<bool> const& get_is_virtual (void) const;
-        bool is_virtual (void) const;
+        ::boost::optional<bool> const& get_is_virtual() const;
+        bool is_virtual() const;
         ::boost::optional<bool> const& put_token() const
         {
           return _put_token;

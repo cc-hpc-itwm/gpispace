@@ -69,9 +69,10 @@ namespace fhg
     class connection_t : public ::boost::enable_shared_from_this<connection_t>
     {
     public:
-      typedef ::boost::shared_ptr<connection_t> ptr_t;
+      using ptr_t = ::boost::shared_ptr<connection_t>;
 
-      typedef std::function <void (::boost::system::error_code const&)> completion_handler_t;
+      using completion_handler_t =
+        std::function<void (const ::boost::system::error_code&)>;
 
       explicit
       connection_t

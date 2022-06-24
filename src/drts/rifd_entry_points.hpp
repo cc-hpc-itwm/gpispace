@@ -18,8 +18,8 @@
 
 #include <gspc/detail/dllexport.hpp>
 
-#include <drts/rifd_entry_points.fwd.hpp>
 #include <drts/pimpl.hpp>
+#include <drts/rifd_entry_points.fwd.hpp>
 
 #include <boost/filesystem/path.hpp>
 
@@ -31,6 +31,9 @@ namespace gspc
     rifd_entry_points (::boost::filesystem::path const&);
 
     rifd_entry_points (rifd_entry_points const&);
+    rifd_entry_points& operator= (rifd_entry_points const&);
+    rifd_entry_points (rifd_entry_points&&) noexcept;
+    rifd_entry_points& operator= (rifd_entry_points&&) noexcept;
 
     void write_to_file (::boost::filesystem::path const&);
 
@@ -51,7 +54,7 @@ namespace gspc
 
   public:
     rifd_entry_point (implementation*);
-    rifd_entry_point (rifd_entry_point&&);
+    rifd_entry_point (rifd_entry_point&&) noexcept;
 
     std::string const& hostname() const;
 

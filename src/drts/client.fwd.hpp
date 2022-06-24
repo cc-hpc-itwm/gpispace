@@ -22,5 +22,5 @@ namespace gspc
 {
   class client;
 
-  typedef std::string job_id_t;
+  using job_id_t = std::string;
 }

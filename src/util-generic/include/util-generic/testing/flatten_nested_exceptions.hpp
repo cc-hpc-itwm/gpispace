@@ -53,7 +53,7 @@ namespace fhg
                     flattened_exception (std::string const& what)
                       : _what (what)
                     {}
-                    virtual const char* what() const noexcept override
+                    const char* what() const noexcept override
                     {
                       return _what.c_str();
                     }

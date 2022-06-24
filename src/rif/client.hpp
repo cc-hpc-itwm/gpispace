@@ -19,8 +19,8 @@
 #include <rif/entry_point.hpp>
 #include <rif/protocol.hpp>
 
-#include <util-rpc/remote_tcp_endpoint.hpp>
 #include <util-rpc/remote_function.hpp>
+#include <util-rpc/remote_tcp_endpoint.hpp>
 
 namespace fhg
 {

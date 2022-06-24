@@ -16,8 +16,8 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <we/test/buffer_alignment/nets_using_buffers.hpp>
 #include <we/test/buffer_alignment/net_description.hpp>
+#include <we/test/buffer_alignment/nets_using_buffers.hpp>
 
 #include <drts/client.hpp>
 #include <drts/drts.hpp>

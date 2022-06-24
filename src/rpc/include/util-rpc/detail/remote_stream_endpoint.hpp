@@ -133,14 +133,19 @@ namespace fhg
             );
         ~remote_stream_endpoint() override;
 
+        remote_stream_endpoint (remote_stream_endpoint const&) = delete;
+        remote_stream_endpoint& operator= (remote_stream_endpoint const&) = delete;
+        remote_stream_endpoint (remote_stream_endpoint&&) = delete;
+        remote_stream_endpoint& operator= (remote_stream_endpoint&&) = delete;
+
         //! \note Neither \a set_value nor \a set_exception are
         //! allowed to be blocking.
-        virtual void send_and_receive
+        void send_and_receive
           ( std::vector<char> buffer
           , std::function<void (::boost::archive::binary_iarchive&)> set_value
           , std::function<void (std::exception_ptr)> set_exception
           ) override;
-        virtual ::boost::asio::io_service& io_service() override
+        ::boost::asio::io_service& io_service() override
         {
           return _io_service;
         }

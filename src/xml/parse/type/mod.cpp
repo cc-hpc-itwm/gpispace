@@ -113,7 +113,7 @@ namespace xml
       {
         return _code;
       }
-      const ::boost::optional<util::position_type>
+      ::boost::optional<util::position_type>
         module_type::position_of_definition_of_code() const
       {
         return _position_of_definition_of_code;

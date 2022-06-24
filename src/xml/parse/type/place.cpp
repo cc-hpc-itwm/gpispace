@@ -117,11 +117,11 @@ namespace xml
                           );
       }
 
-      ::boost::optional<bool> const& place_type::get_is_virtual (void) const
+      ::boost::optional<bool> const& place_type::get_is_virtual() const
       {
         return _is_virtual;
       }
-      bool place_type::is_virtual (void) const
+      bool place_type::is_virtual() const
       {
         return _is_virtual.get_value_or (false);
       }

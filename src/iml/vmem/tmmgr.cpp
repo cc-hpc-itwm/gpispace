@@ -59,7 +59,6 @@ namespace iml_client
       : _align (Align)
       , _mem_size (alignDown (MemSize, _align))
       , _mem_free (_mem_size)
-      , _high_water (0)
     {
       insert_free_segment (0, _mem_size);
     }

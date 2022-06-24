@@ -19,8 +19,8 @@
 #include <fhg/util/xml.fwd.hpp>
 
 #include <iostream>
-#include <string>
 #include <stack>
+#include <string>
 
 #include <boost/optional.hpp>
 
@@ -45,8 +45,8 @@ namespace fhg
 
         private:
           const std::string _tag;
-          bool _has_content;
-          bool _has_text_content;
+          bool _has_content {false};
+          bool _has_text_content {false};
         };
       }
 

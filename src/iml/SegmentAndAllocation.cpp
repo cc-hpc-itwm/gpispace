@@ -65,11 +65,13 @@ namespace iml
     }
   }
 
-  SegmentAndAllocation::SegmentAndAllocation (SegmentAndAllocation&& other)
-    : _client (other._client)
-    , _size (std::move (other._size))
-    , _segment (std::move (other._segment))
-    , _allocation (std::move (other._allocation))
+  SegmentAndAllocation::SegmentAndAllocation
+    ( SegmentAndAllocation&& other
+    ) noexcept
+      : _client (other._client)
+      , _size (std::move (other._size))
+      , _segment (std::move (other._segment))
+      , _allocation (std::move (other._allocation))
   {
     other._segment.reset();
     other._allocation.reset();

@@ -33,6 +33,12 @@ namespace gpi
       public:
         virtual ~itopology_t () = default;
 
+        itopology_t() = default;
+        itopology_t (itopology_t const&) = delete;
+        itopology_t& operator= (itopology_t const&) = delete;
+        itopology_t (itopology_t&&) = delete;
+        itopology_t& operator= (itopology_t&&) = delete;
+
         // initiate a global alloc
         virtual void alloc ( iml::SegmentHandle segment
                            , iml::AllocationHandle

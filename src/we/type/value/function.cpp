@@ -215,8 +215,8 @@ namespace pnet
                 throw expr::exception::eval::log_for_nonpositive_argument<T> (x);
               }
               return std::log (x);
-            case expr::token::_floor: return x;
-            case expr::token::_ceil: return x;
+            case expr::token::_floor:
+            case expr::token::_ceil:
             case expr::token::_round: return x;
             case expr::token::_toint: return static_cast<int> (x);
             case expr::token::_tolong: return static_cast<long> (x);
@@ -237,8 +237,8 @@ namespace pnet
             case expr::token::_cos: return std::cos (x);
             case expr::token::_sqrt: return std::sqrt (x);
             case expr::token::_log: return std::log (x);
-            case expr::token::_floor: return x;
-            case expr::token::_ceil: return x;
+            case expr::token::_floor:
+            case expr::token::_ceil:
             case expr::token::_round: return x;
             case expr::token::_toint: return static_cast<int> (x);
             case expr::token::_tolong: return static_cast<long> (x);

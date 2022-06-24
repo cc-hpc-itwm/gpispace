@@ -19,8 +19,8 @@
 #include <we/layer.hpp>
 #include <we/type/Activity.hpp>
 #include <we/type/ModuleCall.hpp>
-#include <we/type/signature.hpp>
 #include <we/type/Transition.hpp>
+#include <we/type/signature.hpp>
 #include <we/type/value/read.hpp>
 #include <we/type/value/wrap.hpp>
 
@@ -84,9 +84,9 @@ namespace
     we::type::net_type net;
 
     we::place_id_type const place_id_in
-      (net.add_place (place::type ("in", signature::CONTROL, true)));
+      (net.add_place (place::type ("in", signature::CONTROL, true, we::type::property::type{})));
     we::place_id_type const place_id_out
-      (net.add_place (place::type ("out", signature::CONTROL, ::boost::none)));
+      (net.add_place (place::type ("out", signature::CONTROL, ::boost::none, we::type::property::type{})));
 
     for (std::size_t i (0); i < token_count; ++i)
     {

@@ -22,6 +22,7 @@
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/testing/printer/generic.hpp>
 #include <util-generic/testing/random.hpp>
+#include <util-generic/threadsafe_queue.hpp>
 
 #include <boost/asio/io_service.hpp>
 
@@ -32,6 +33,7 @@
 #include <iterator>
 #include <list>
 #include <stdexcept>
+#include <string>
 #include <unordered_map>
 
 void ::boost::test_tools::tt_detail::print_log_value<sdpa::Capability>
@@ -182,7 +184,7 @@ namespace utils
   {
     we::type::property::type props;
     props.set ( {"fhg", "drts", "schedule", "num_worker"}
-              , ::boost::lexical_cast<std::string> (count) + "UL"
+              , std::to_string (count) + "UL"
               );
     we::type::Transition transition
       ( fhg::util::testing::random_string()
@@ -215,7 +217,12 @@ namespace utils
 
     auto const place_id_in
       ( net.add_place
-          (place::type (port_name, std::string ("string"), ::boost::none))
+          (place::type ( port_name
+                       , std::string ("string")
+                       , ::boost::none
+                       , we::type::property::type{}
+                       )
+          )
       );
 
     net.put_value
@@ -287,7 +294,12 @@ namespace utils
 
     auto const place_id_in
       ( net.add_place
-          (place::type (port_name, std::string ("string"), ::boost::none))
+          (place::type ( port_name
+                       , std::string ("string")
+                       , ::boost::none
+                       , we::type::property::type{}
+                       )
+          )
       );
 
     net.put_value
@@ -378,11 +390,21 @@ namespace utils
 
     auto const place_id_in_0
       ( net.add_place
-          (place::type (port_name + "1", std::string ("string"), ::boost::none))
+          (place::type ( port_name + "1"
+                       , std::string ("string")
+                       , ::boost::none
+                       , we::type::property::type{}
+                       )
+          )
       );
     auto const place_id_in_1
       ( net.add_place
-          (place::type (port_name + "2", std::string ("string"), ::boost::none))
+          (place::type ( port_name + "2"
+                       , std::string ("string")
+                       , ::boost::none
+                       , we::type::property::type{}
+                       )
+          )
       );
 
     net.put_value
@@ -771,7 +793,7 @@ namespace utils
       , sdpa::events::JobFinishedAckEvent const* e
       )
     {
-      _finished_ack.notify (e->job_id());
+      _finished_ack.put (e->job_id());
       delete_job (e->job_id());
     }
 
@@ -783,7 +805,7 @@ namespace utils
       _network.perform<sdpa::events::JobFinishedEvent>
         (job._owner, job._id, job._activity);
 
-      BOOST_REQUIRE_EQUAL (_finished_ack.wait(), job._id);
+      BOOST_REQUIRE_EQUAL (_finished_ack.get(), job._id);
     }
   }
 

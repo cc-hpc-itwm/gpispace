@@ -16,11 +16,10 @@
 
 #pragma once
 
-#include <sdpa/types.hpp>
 #include <sdpa/capability.hpp>
 #include <sdpa/daemon/Implementation.hpp>
-#include <sdpa/daemon/scheduler/Reservation.hpp>
 #include <sdpa/daemon/WorkerSet.hpp>
+#include <sdpa/daemon/scheduler/Reservation.hpp>
 #include <sdpa/types.hpp>
 
 #include <fhgcom/address.hpp>
@@ -38,6 +37,12 @@ namespace sdpa
     {
     public:
       virtual ~Scheduler() = default;
+
+      Scheduler() = default;
+      Scheduler (Scheduler const&) = delete;
+      Scheduler& operator= (Scheduler const&) = delete;
+      Scheduler (Scheduler&&) = delete;
+      Scheduler& operator= (Scheduler&&) = delete;
 
       virtual ::boost::optional<job_result_type>
         store_individual_result_and_get_final_if_group_finished
@@ -64,7 +69,7 @@ namespace sdpa
         , std::function<void (Job* job)>
         ) = 0;
       virtual bool reschedule_job_if_the_reservation_was_canceled
-        (job_id_t const& job, status::code const) = 0;
+        (job_id_t const& job, status::code) = 0;
       virtual void start_pending_jobs
         (std::function<void ( WorkerSet const&
                             , Implementation const&

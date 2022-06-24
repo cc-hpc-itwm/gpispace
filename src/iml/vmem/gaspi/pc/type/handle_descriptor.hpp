@@ -36,19 +36,11 @@ namespace gpi
       {
         struct descriptor_t
         {
-          iml::AllocationHandle id;
-          iml::MemoryOffset offset;
-          iml::MemorySize size;
-          iml::MemorySize local_size;
-          gpi::pc::type::flags_t flags;
-
-          descriptor_t ()
-            : id()
-            , offset (0)
-            , size (0)
-            , local_size (0)
-            , flags (is_global::no)
-          {}
+          iml::AllocationHandle id{};
+          iml::MemoryOffset offset {0};
+          iml::MemorySize size {0};
+          iml::MemorySize local_size {0};
+          gpi::pc::type::flags_t flags {is_global::no};
 
         private:
           friend class ::boost::serialization::access;

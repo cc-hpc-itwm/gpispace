@@ -18,8 +18,8 @@
 
 #include <we/type/Activity.hpp>
 
-#include <we/type/place.hpp>
 #include <we/type/net.hpp>
+#include <we/type/place.hpp>
 
 namespace we
 {

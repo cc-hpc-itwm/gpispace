@@ -15,12 +15,13 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <drts/drts.hpp>
+
+#include <drts/drts_iml.hpp>
 #include <drts/private/drts_impl.hpp>
 #include <drts/private/option.hpp>
 #include <drts/private/pimpl.hpp>
 #include <drts/private/rifd_entry_points_impl.hpp>
 #include <drts/private/startup_and_shutdown.hpp>
-#include <drts/drts_iml.hpp>
 
 #include <we/type/Activity.hpp>
 #include <we/type/value.hpp>

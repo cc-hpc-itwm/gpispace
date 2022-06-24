@@ -24,13 +24,14 @@
 #include <util-generic/testing/require_exception.hpp>
 #include <util-generic/warning.hpp>
 
+#include <boost/test/unit_test.hpp>
+
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/format.hpp>
 #include <boost/mpl/list.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/test/data/test_case.hpp>
-#include <boost/test/unit_test.hpp>
 
 #include <string>
 #include <vector>
@@ -173,7 +174,7 @@ BOOST_AUTO_TEST_CASE (setting_result_writes_something_ending_with_sentinel_value
   fhg::util::syscall::pipe (pipefd, O_NONBLOCK);
 
   argument_builder arguments
-    {"./application.exe", std::to_string (pipefd[1]).c_str()};
+    {"./application.exe", std::to_string (pipefd[1])};
 
   int argc (arguments.argc());
   char** argv (arguments.argv());
@@ -192,7 +193,7 @@ BOOST_AUTO_TEST_CASE (setting_exception_writes_something_ending_with_sentinel_va
   fhg::util::syscall::pipe (pipefd, O_NONBLOCK);
 
   argument_builder arguments
-    {"./application.exe", std::to_string (pipefd[1]).c_str()};
+    {"./application.exe", std::to_string (pipefd[1])};
 
   int argc (arguments.argc());
   char** argv (arguments.argv());
@@ -224,7 +225,7 @@ BOOST_DATA_TEST_CASE
   fhg::util::syscall::pipe (pipefd, O_NONBLOCK);
 
   argument_builder arguments
-    {"./application.exe", std::to_string (pipefd[1]).c_str()};
+    {"./application.exe", std::to_string (pipefd[1])};
 
   int argc (arguments.argc());
   char** argv (arguments.argv());
@@ -261,7 +262,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE
   fhg::util::syscall::pipe (pipefd, O_NONBLOCK);
 
   argument_builder arguments
-    {"./application.exe", std::to_string (pipefd[1]).c_str()};
+    {"./application.exe", std::to_string (pipefd[1])};
 
   int argc (arguments.argc());
   char** argv (arguments.argv());

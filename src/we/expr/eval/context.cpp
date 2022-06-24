@@ -18,8 +18,8 @@
 
 #include <we/exception.hpp>
 
-#include <we/type/value/poke.hpp>
 #include <we/type/value/peek.hpp>
+#include <we/type/value/poke.hpp>
 #include <we/type/value/show.hpp>
 
 #include <util-generic/join.hpp>
@@ -46,10 +46,10 @@ namespace expr
         throw std::runtime_error ("context::bind_and_discard_ref []");
       }
 
-      std::list<std::string>::const_iterator key_pos (key_vec.begin());
+      auto key_pos (key_vec.begin());
       std::string const& key (*key_pos); ++key_pos;
 
-      const ref_container_type::const_iterator pos (_ref_container.find (key));
+      auto const pos (_ref_container.find (key));
 
       if (pos != _ref_container.end())
       {
@@ -72,11 +72,11 @@ namespace expr
         throw std::runtime_error ("context::value []");
       }
 
-      std::list<std::string>::const_iterator key_pos (key_vec.begin());
+      auto key_pos (key_vec.begin());
       std::string const& key (*key_pos); ++key_pos;
 
       {
-        const ref_container_type::const_iterator pos (_ref_container.find (key));
+        auto const pos (_ref_container.find (key));
 
         if (pos != _ref_container.end())
         {
@@ -91,7 +91,7 @@ namespace expr
       }
 
       {
-        const container_type::const_iterator pos (_container.find (key));
+        auto const pos (_container.find (key));
 
         if (pos != _container.end())
         {

@@ -58,7 +58,7 @@ namespace gpi
           }
         };
 
-        typedef error_t message_t;
+        using message_t = error_t;
       }
     }
   }

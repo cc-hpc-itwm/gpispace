@@ -18,6 +18,7 @@
 
 #include <util-generic/finally.hpp>
 
+#include <we/eureka_response.hpp>
 #include <we/plugin/Plugins.hpp>
 #include <we/type/Activity.hpp>
 #include <we/type/id.hpp>
@@ -25,7 +26,6 @@
 #include <we/type/schedule_data.hpp>
 #include <we/type/value.hpp>
 #include <we/workflow_response.hpp>
-#include <we/eureka_response.hpp>
 
 #include <sdpa/types.hpp>
 
@@ -37,12 +37,12 @@
 
 #include <condition_variable>
 #include <functional>
+#include <list>
 #include <mutex>
 #include <random>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
-#include <list>
-#include <string>
 #include <utility>
 
 namespace we
@@ -50,7 +50,7 @@ namespace we
     class layer
     {
     public:
-      typedef sdpa::job_id_t id_type;
+      using id_type = sdpa::job_id_t;
 
       layer ( // submit: external activities from submitted net -> child jobs
               std::function<void (id_type, type::Activity)> rts_submit
@@ -157,8 +157,10 @@ namespace we
         {
           void operator() (activity_data_type&) &&;
 
+          struct Callback{};
+
           template<typename Fun>
-            RemovalFunction (Fun&&);
+            RemovalFunction (Callback, Fun&&);
 
           struct ToFinish
           {
@@ -176,6 +178,7 @@ namespace we
           RemovalFunction (RemovalFunction&&) = default;
           RemovalFunction& operator= (RemovalFunction const&) = delete;
           RemovalFunction& operator= (RemovalFunction&&) = delete;
+          ~RemovalFunction() = default;
 
           ::boost::variant
             < std::function<void (activity_data_type&)>
@@ -186,14 +189,21 @@ namespace we
         activity_data_type get();
         void put (activity_data_type, bool was_active);
 
-        void remove_and_apply
-          ( id_type
-          , RemovalFunction
-          );
+        template<typename Fun>
+          void remove_and_apply
+            ( id_type
+            , Fun&&
+            );
+        template<typename Fun>
+          void apply
+            ( id_type
+            , Fun&&
+            , std::function<void (std::exception_ptr)>
+            );
         void apply
           ( id_type
           , RemovalFunction
-          , std::function<void (std::exception_ptr)> = &std::rethrow_exception
+          , std::function<void (std::exception_ptr)>
           );
 
         void forget (id_type, std::string reason);
@@ -204,10 +214,11 @@ namespace we
       private:
         struct list_with_id_lookup
         {
-          typedef std::unordered_map< id_type
-                                    , std::list<activity_data_type>::iterator
-                                    > position_in_container_type;
-          typedef position_in_container_type::iterator iterator;
+          using position_in_container_type =
+            std::unordered_map< id_type
+                              , std::list<activity_data_type>::iterator
+                              >;
+          using iterator = position_in_container_type::iterator;
 
           activity_data_type get_front();
           void push_back (activity_data_type);
@@ -227,14 +238,14 @@ namespace we
         bool _interrupted = false;
         std::condition_variable_any _condition_not_empty_or_interrupted;
 
-        typedef std::unordered_map
-          < id_type
-          , std::list<std::tuple< RemovalFunction
-                                , std::function<void (std::exception_ptr)>
-                                , bool
-                                >
-                     >
-          > to_be_removed_type;
+        using to_be_removed_type =
+          std::unordered_map< id_type
+                            , std::list<std::tuple< RemovalFunction
+                                                  , std::function<void (std::exception_ptr)>
+                                                  , bool
+                                                  >
+                                       >
+                            >;
         to_be_removed_type _to_be_removed;
       } _nets_to_extract_from;
 
@@ -266,11 +277,11 @@ namespace we
 
       private:
         mutable std::mutex _relation_mutex;
-        typedef ::boost::bimaps::bimap
+        using relation_type = ::boost::bimaps::bimap
           < ::boost::bimaps::unordered_multiset_of<id_type>
           , ::boost::bimaps::unordered_set_of<id_type>
           , ::boost::bimaps::set_of_relation<>
-          > relation_type;
+          >;
         relation_type _relation;
 
         using eureka_parent_id_type =

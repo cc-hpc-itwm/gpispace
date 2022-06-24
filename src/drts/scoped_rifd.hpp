@@ -56,6 +56,11 @@ namespace gspc
     {
       strategy (::boost::program_options::variables_map const&);
 
+      strategy (strategy const&) = delete;
+      strategy& operator= (strategy const&) = delete;
+      strategy (strategy&&) = default;
+      strategy& operator= (strategy&&) = default;
+
     private:
       friend class ::gspc::rifds;
 
@@ -67,6 +72,11 @@ namespace gspc
       hostnames (::boost::program_options::variables_map const&);
       hostnames (std::vector<std::string> const&);
 
+      hostnames (hostnames const&) = delete;
+      hostnames& operator= (hostnames const&) = delete;
+      hostnames (hostnames&&) = default;
+      hostnames& operator= (hostnames&&) = default;
+
     private:
       friend class ::gspc::rifds;
 
@@ -76,6 +86,11 @@ namespace gspc
     {
       hostname (std::string const&);
 
+      hostname (hostname const&) = delete;
+      hostname& operator= (hostname const&) = delete;
+      hostname (hostname&&) = default;
+      hostname& operator= (hostname&&) = default;
+
     private:
       friend class ::gspc::scoped_rifd;
 
@@ -84,6 +99,11 @@ namespace gspc
     struct GSPC_DLLEXPORT port
     {
       port (::boost::program_options::variables_map const&);
+
+      port (port const&) = delete;
+      port& operator= (port const&) = delete;
+      port (port&&) = default;
+      port& operator= (port&&) = default;
 
     private:
       friend class ::gspc::rifds;

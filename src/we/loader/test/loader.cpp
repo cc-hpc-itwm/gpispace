@@ -18,8 +18,8 @@
 
 #include <we/loader/test/order/stack.hpp>
 
-#include <we/loader/loader.hpp>
 #include <we/loader/exceptions.hpp>
+#include <we/loader/loader.hpp>
 
 #include <we/type/value/boost/test/printer.hpp>
 
@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE (bracket_not_found_nonempty_search_path)
 
   fhg::util::testing::require_exception
     ( [&loader] { loader["name"]; }
-    , we::loader::module_not_found ("libname.so", "\"<p>\":\"<q>\"")
+    , we::loader::module_not_found ("libname.so", R"("<p>":"<q>")")
     );
 }
 

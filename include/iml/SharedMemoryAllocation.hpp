@@ -57,7 +57,7 @@ namespace iml
 
     SharedMemoryAllocation() = delete;
     SharedMemoryAllocation (SharedMemoryAllocation const&) = delete;
-    SharedMemoryAllocation (SharedMemoryAllocation&&);
+    SharedMemoryAllocation (SharedMemoryAllocation&&) noexcept;
     SharedMemoryAllocation& operator= (SharedMemoryAllocation const&) = delete;
     SharedMemoryAllocation& operator= (SharedMemoryAllocation&&) = delete;
     ~SharedMemoryAllocation();

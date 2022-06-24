@@ -15,6 +15,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <boost/test/unit_test.hpp>
+
 #include <boost/test/data/test_case.hpp>
 
 #include <we/expr/parse/node.hpp>

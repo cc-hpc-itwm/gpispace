@@ -23,12 +23,12 @@
 #include <testing/make.hpp>
 #include <testing/parse_command_line.hpp>
 #include <testing/scoped_nodefile_from_environment.hpp>
-#include <testing/source_directory.hpp>
 #include <testing/shared_directory.hpp>
+#include <testing/source_directory.hpp>
 
 #include <we/type/value.hpp>
-#include <we/type/value/poke.hpp>
 #include <we/type/value/boost/test/printer.hpp>
+#include <we/type/value/poke.hpp>
 
 #include <util-generic/read_file.hpp>
 #include <util-generic/temporary_file.hpp>

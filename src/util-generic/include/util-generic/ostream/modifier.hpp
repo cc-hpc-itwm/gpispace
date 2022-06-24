@@ -31,11 +31,10 @@ namespace fhg
         virtual std::ostream& operator() (std::ostream&) const = 0;
         virtual ~modifier() = default;
         modifier() = default;
-        //! \note explicitly define, as definition of implicit copy
-        //! constructor for 'modifier' is deprecated because it has a
-        //! user-declared destructor [-Werror,-Wdeprecated]
         modifier (modifier const&) = default;
+        modifier (modifier&&) = default;
         modifier& operator= (modifier const&) = default;
+        modifier& operator= (modifier&&) = default;
 
         std::string string() const;
       };

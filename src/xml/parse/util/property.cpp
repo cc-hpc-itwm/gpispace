@@ -72,9 +72,8 @@ namespace xml
                   , we::type::property::type const& y
                   )
         {
-          typedef std::pair< std::list<std::string>
-                           , pnet::type::value::value_type
-                           > path_and_value_type;
+          using path_and_value_type =
+            std::pair<std::list<std::string>, pnet::type::value::value_type>;
 
           for ( path_and_value_type const& path_and_value
               : pnet::type::value::positions (y.value())

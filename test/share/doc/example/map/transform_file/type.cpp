@@ -35,7 +35,7 @@ namespace transform_file
 
     std::vector<char> data (s.begin(), s.begin() + size_header);
 
-    unsigned long* sizes
+    auto* sizes
       (static_cast<unsigned long*> (static_cast<void*> (data.data())));
 
     unsigned long const size_input {sizes[INPUT]};
@@ -62,7 +62,7 @@ namespace transform_file
 
     std::vector<char> data (size_header + size_input + size_output);
 
-    unsigned long* sizes
+    auto* sizes
       (static_cast<unsigned long*> (static_cast<void*> (data.data())));
 
     sizes[INPUT] = size_input;

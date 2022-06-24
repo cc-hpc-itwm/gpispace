@@ -15,8 +15,8 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <sdpa/daemon/WorkerManager.hpp>
-#include <sdpa/daemon/scheduler/Scheduler.hpp>
 #include <sdpa/daemon/scheduler/GreedyScheduler.hpp>
+#include <sdpa/daemon/scheduler/Scheduler.hpp>
 #include <sdpa/test/sdpa/utils.hpp>
 #include <sdpa/types.hpp>
 

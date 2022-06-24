@@ -54,6 +54,7 @@ namespace fhg
       promise (promise<T>&&) = delete;
       promise& operator= (promise<T> const&) = delete;
       promise& operator= (promise<T>&&) = delete;
+      ~promise() = default;
 
     private:
       friend struct future<T>;
@@ -74,9 +75,10 @@ namespace fhg
       T get (::boost::asio::yield_context);
 
       future (future<T> const&) = delete;
-      future (future<T>&&) = default;
+      future (future<T>&&) noexcept = default;
       future& operator= (future<T> const&) = delete;
       future& operator= (future<T>&&) = delete;
+      ~future() = default;
 
     private:
       friend struct promise<T>;

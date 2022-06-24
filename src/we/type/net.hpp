@@ -18,15 +18,15 @@
 
 #include <we/type/net.fwd.hpp>
 
+#include <we/eureka_response.hpp>
 #include <we/plugin/Plugins.hpp>
 #include <we/type/Activity.fwd.hpp>
+#include <we/type/Transition.hpp>
 #include <we/type/id.hpp>
 #include <we/type/place.hpp>
-#include <we/type/Transition.hpp>
 #include <we/type/value.hpp>
 #include <we/type/value/serialize.hpp>
 #include <we/workflow_response.hpp>
-#include <we/eureka_response.hpp>
 
 #include <boost/bimap/bimap.hpp>
 #include <boost/bimap/unordered_multiset_of.hpp>
@@ -72,33 +72,33 @@ namespace we
     public:
       using adj_tp_type
         = std::unordered_multimap<place_id_type, transition_id_type>;
-      typedef boost::bimaps::bimap
+      using adj_pt_type = boost::bimaps::bimap
         < ::boost::bimaps::unordered_multiset_of<place_id_type, std::hash<place_id_type>>
         , ::boost::bimaps::unordered_multiset_of<transition_id_type, std::hash<transition_id_type>>
         , ::boost::bimaps::set_of_relation<>
-        > adj_pt_type;
-      typedef std::unordered_map
+        >;
+      using port_to_place_type = std::unordered_map
         < transition_id_type
         , std::unordered_map< port_id_type
                             , std::pair<place_id_type, we::type::property::type>
                             >
-        > port_to_place_type;
-      typedef std::unordered_map
+        >;
+      using port_to_response_type = std::unordered_map
         < transition_id_type
         , std::unordered_map< port_id_type
                             , std::pair<std::string, we::type::property::type>
                             >
-        > port_to_response_type;
-      typedef std::unordered_map
+        >;
+      using port_to_eureka_type = std::unordered_map
         < transition_id_type
         , port_id_type
-        > port_to_eureka_type;
-      typedef std::unordered_map
+        >;
+      using place_to_port_type = std::unordered_map
         < transition_id_type
         , std::unordered_map< place_id_type
                             , std::pair<port_id_type, we::type::property::type>
                             >
-        > place_to_port_type;
+        >;
       using token_by_id_type =
         std::unordered_map<token_id_type, pnet::type::value::value_type>;
 
@@ -190,17 +190,17 @@ namespace we
       port_to_response_type _port_to_response;
       place_to_port_type _place_to_port;
 
-      typedef std::unordered_map< place_id_type
-                                , token_by_id_type
-                                > token_by_place_id_type;
+      using token_by_place_id_type =
+        std::unordered_map<place_id_type, token_by_id_type>;
 
       token_id_type _token_id;
       token_by_place_id_type _token_by_place_id;
 
-      typedef std::map< we::priority_type
-                      , std::unordered_set<we::transition_id_type>
-                      , std::greater<we::priority_type>
-                      > enabled_type;
+      using enabled_type =
+        std::map< we::priority_type
+                , std::unordered_set<we::transition_id_type>
+                , std::greater<>
+                >;
 
       enabled_type _enabled;
 
@@ -209,7 +209,7 @@ namespace we
         , std::unordered_map<place_id_type, std::pair<token_id_type, bool>>
         > _enabled_choice;
 
-      typedef std::pair<place_id_type, token_id_type> to_be_updated_type;
+      using to_be_updated_type = std::pair<place_id_type, token_id_type>;
 
       void update_enabled (transition_id_type);
       void update_enabled_put_token
@@ -230,7 +230,7 @@ namespace we
         , gspc::we::plugin::PutToken
         );
 
-      typedef std::pair<place_id_type, token_id_type> token_to_be_deleted_type;
+      using token_to_be_deleted_type = std::pair<place_id_type, token_id_type>;
 
       std::forward_list<token_to_be_deleted_type> do_extract
         ( transition_id_type

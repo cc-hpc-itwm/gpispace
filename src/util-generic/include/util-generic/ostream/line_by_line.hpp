@@ -30,9 +30,14 @@ namespace fhg
       {
       public:
         line_by_line (std::function<void (std::string const&)> const& callback);
-        virtual ~line_by_line() override;
+        ~line_by_line() override;
 
-        virtual int_type overflow (int_type i) override;
+        int_type overflow (int_type i) override;
+
+        line_by_line (line_by_line const&) = delete;
+        line_by_line (line_by_line&&) = delete;
+        line_by_line& operator= (line_by_line const&) = delete;
+        line_by_line& operator= (line_by_line&&) = delete;
 
       private:
         std::string _buffer;

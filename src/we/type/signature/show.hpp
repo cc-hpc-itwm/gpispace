@@ -34,7 +34,7 @@ namespace pnet
       {
       public:
         show (signature_type const&);
-        virtual std::ostream& operator() (std::ostream&) const override;
+        std::ostream& operator() (std::ostream&) const override;
       private:
         signature_type const& _signature;
       };

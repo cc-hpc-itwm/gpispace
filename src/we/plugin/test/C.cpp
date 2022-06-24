@@ -35,11 +35,11 @@ namespace gspc
             );
         }
 
-        virtual void before_eval (Context const&) override
+        void before_eval (Context const&) override
         {
           throw std::runtime_error ("C::before_eval()");
         }
-        virtual void after_eval (Context const&) override
+        void after_eval (Context const&) override
         {
           throw std::runtime_error ("C::after_eval()");
         }

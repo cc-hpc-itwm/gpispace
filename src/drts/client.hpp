@@ -46,8 +46,8 @@ namespace gspc
     workflow (workflow const&) = delete;
     workflow& operator= (workflow const&) = delete;
 
-    workflow (workflow&&);
-    workflow& operator= (workflow&&);
+    workflow (workflow&&) noexcept;
+    workflow& operator= (workflow&&) noexcept;
 
   private:
     friend class ::gspc::client;
