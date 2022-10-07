@@ -33,11 +33,12 @@ gspc_add_library (NAME sdpa
           daemon/scheduler/Reservation.cpp
           events/Codec.cpp
           events/EventHandler.cpp
-  LIBRARIES PUBLIC pnet
+  LIBRARIES PRIVATE GPISpace::header-only
+            PUBLIC pnet
             PUBLIC fhgcom
             PUBLIC fhg-util
             PUBLIC gspc::logging
-            PUBLIC IML::Client
+            PUBLIC $<$<BOOL:${GSPC_WITH_IML}>:IML::Client>
             PUBLIC Util::Generic
             PRIVATE scheduler-types
             PUBLIC Boost::thread

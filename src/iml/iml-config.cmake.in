@@ -1,0 +1,378 @@
+###############################################################################
+# CMake minimum required version verification
+###############################################################################
+
+if (CMAKE_MINIMUM_REQUIRED_VERSION VERSION_LESS @CMAKE_MINIMUM_REQUIRED_VERSION@)
+  set (${CMAKE_FIND_PACKAGE_NAME}_FOUND false)
+  set (${CMAKE_FIND_PACKAGE_NAME}_NOT_FOUND_MESSAGE
+    "The minimum required CMake version of the including project is too low! \
+    Projects using ${CMAKE_FIND_PACKAGE_NAME} are required to set CMake version \
+    @CMAKE_MINIMUM_REQUIRED_VERSION@ or above as their minimum required version! \
+    A line of code such as \
+    \
+      cmake_minimum_required(VERSION @CMAKE_MINIMUM_REQUIRED_VERSION@)'\
+    \
+    is required to be added at the top of the including project's root CMakeLists.txt."
+  )
+  return ()
+endif ()
+
+###############################################################################
+# Inclusion guard
+###############################################################################
+
+# TODO: Is this still required? Also present in util-generic-config.cmake
+if (${CMAKE_FIND_PACKAGE_NAME}_FOUND)
+  return ()
+endif ()
+
+@PACKAGE_INIT@
+
+###############################################################################
+# Includes
+###############################################################################
+
+include (CMakeFindDependencyMacro)
+include (GNUInstallDirs)
+
+###############################################################################
+# Library paths
+###############################################################################
+
+set_and_check (IML_HOME "@PACKAGE__origin@")
+get_filename_component (IML_HOME "${IML_HOME}" REALPATH)
+
+###############################################################################
+# Dependencies
+###############################################################################
+
+find_dependency (util-cmake)
+find_dependency (util-generic)
+find_dependency (Boost 1.61
+  COMPONENTS
+    filesystem
+    program_options
+    serialization
+)
+
+###############################################################################
+# Targets
+###############################################################################
+
+add_library (IML::Client SHARED IMPORTED)
+target_include_directories (IML::Client
+  INTERFACE "${IML_HOME}/${CMAKE_INSTALL_INCLUDEDIR}"
+)
+target_link_libraries (IML::Client
+  INTERFACE
+    Boost::filesystem
+    Boost::program_options
+    Boost::serialization
+)
+target_link_directories (IML::Client
+  INTERFACE "${IML_HOME}/libexec/iml"
+)
+set_target_properties (IML::Client
+  PROPERTIES
+    IMPORTED_LOCATION "${IML_HOME}/lib/libIML-Client.so"
+)
+target_compile_features (IML::Client
+  INTERFACE "@_project_cxx_std@"
+)
+
+check_required_components (IML)
+
+###############################################################################
+# Deployment Helpers
+###############################################################################
+
+# There are multiple ways to deploy an application that is using
+# IML. Not all strategies are available depending on the IML
+# configuration flags.
+#
+# - Require there to be an IML installation that exists at the same
+#   position as when the application was configured, i.e. don't
+#   explicitly deploy IML within the application at all.
+#
+# - "LocationIndependent": Bundle IML into the application installation,
+#   but require all dependencies of IML itself to still be available
+#   where they have been at IML configure time.
+#
+# - "LocationAndHostIndependent": Bundle IML into the application
+#   installation so that all dependencies of IML are included as well,
+#   creating a fully location and host(*) independent application
+#   installation directory.
+#
+# The application's targets need to point to the IML libraries
+# depending on deployment strategy, so calls to
+# `IML_deploy_$strategy_add_rpath()` are required for all targets
+# using IML.
+#
+# In addition to the dependency properties, IML can also be deployed
+# in separate components, to reduce the IML deployment size. If no
+# component is given, all are deployed. Most applications only need to
+# bundle the "runtime" component.
+#
+# - "runtime": The libraries and binaries to run and interface with IML.
+#
+# - "bootstrap_exe": Separate binaries to bootstrap IML. These are not
+#   required if the application is bootstrapping IML via API calls.
+#
+# - "devel": All headers, libraries and metadata, i.e. the full
+#   installation. This is only required if the user of the
+#   application calling this function needs to use the IML API, not if
+#   the application itself is using it!
+#
+# *) Host independence is non-trivial and may still require the same
+#    distribution used on the host building the application/IML.
+
+# Deploy IML as part of an application doing a location and host
+# independent bundle, i.e. a single directory containing all
+# dependencies in \a DESTINATION within the calling application's
+# CMAKE_INSTALL_PREFIX.
+#
+# \note For targets to use the bundled IML it is required to call
+# `IML_deploy_LocationAndHostIndependentBundle_add_rpath()` for every
+# target using it.
+# \note This function requires the IML installation itself to be a
+# location and host independent bundle.
+function (IML_deploy_LocationAndHostIndependentBundle)
+  if (@INSTALL_DO_NOT_BUNDLE@)
+    message (FATAL_ERROR "The IML installation '${IML_HOME}' is not \
+location and host independent and can't be bundled.")
+  endif()
+
+  set (options)
+  set (one_value_options DESTINATION)
+  set (multi_value_options COMPONENTS)
+  set (required_options DESTINATION)
+  _IML_parse_arguments (_arg "${options}" "${one_value_options}" "${multi_value_options}" "${required_options}" ${ARGN})
+
+  _IML_deploy_destination_set()
+  _IML_deploy_components_default()
+  _IML_deploy_make_executables_and_files_lists()
+  _IML_deploy_make_bundled_libraries_list()
+  _IML_deploy_do_installs()
+endfunction()
+
+# Set RPATH of \a TARGET which is installed to \a INSTALL_DIRECTORY to
+# include the bundled IML.
+#
+# The \a INSTALL_DIRECTORY shall be the *relative* path of the target
+# in the installation, i.e. if installing the target Blorb to
+# "lib/libBlorb.so", TARGET shall be "Blorb" and INSTALL_DIRECTORY
+# shall be "lib".
+#
+# \note Any target using an IML with a
+# IML_deploy_LocationAndHostIndependentBundle()-created IML deployment
+# (rather than pointing to an external one) needs to set up RPATH to
+# point into that bundle.
+function (IML_deploy_LocationAndHostIndependentBundle_add_rpath)
+  set (options)
+  set (one_value_options TARGET INSTALL_DIRECTORY)
+  set (multi_value_options)
+  set (required_options TARGET INSTALL_DIRECTORY)
+  _IML_parse_arguments (_arg "${options}" "${one_value_options}" "${multi_value_options}" "${required_options}" ${ARGN})
+
+  _IML_deploy_destination_get ("LocationAndHostIndependentBundle_add_rpath"
+    "LocationAndHostIndependentBundle")
+
+  string (REGEX REPLACE "[^/]+" ".." _rpath_mid "${_arg_INSTALL_DIRECTORY}")
+  set (_rpath_prefix "\$ORIGIN/${_rpath_mid}/${_iml_bundle_destination}")
+
+  _IML_deploy_add_rpath (${_arg_TARGET} ${_rpath_prefix} true)
+endfunction()
+
+# Deploy IML as part of an application that is relocatable but not
+# host independent, allowing to remove the IML installation used to
+# build the application after installing. The IML installation will be
+# bundled to the given \a DESTINATION within the application's
+# CMAKE_INSTALL_PREFIX.
+#
+# \note For targets to use the bundled IML it is required to call
+# `IML_deploy_LocationIndependentBundle_add_rpath()` for every
+# target using it.
+function (IML_deploy_LocationIndependentBundle)
+  set (options)
+  set (one_value_options DESTINATION)
+  set (multi_value_options COMPONENTS)
+  set (required_options DESTINATION)
+  _IML_parse_arguments (_arg "${options}" "${one_value_options}" "${multi_value_options}" "${required_options}" ${ARGN})
+
+  _IML_deploy_destination_set()
+  _IML_deploy_components_default()
+  _IML_deploy_make_executables_and_files_lists()
+
+  if (NOT @INSTALL_DO_NOT_BUNDLE@)
+    _IML_deploy_make_bundled_libraries_list()
+  endif()
+
+  _IML_deploy_do_installs()
+endfunction()
+
+# Set RPATH of \a TARGET which is installed to \a INSTALL_DIRECTORY to
+# include the bundled IML.
+#
+# The \a INSTALL_DIRECTORY shall be the *relative* path of the target
+# in the installation, i.e. if installing the target Blorb to
+# "lib/libBlorb.so", TARGET shall be "Blorb" and INSTALL_DIRECTORY
+# shall be "lib".
+#
+# \note Any target using an IML with a
+# IML_deploy_LocationIndependentBundle()-created IML installation (rather
+# than pointing to an external one) needs to set up RPATH to point
+# into that bundle.
+function (IML_deploy_LocationIndependentBundle_add_rpath)
+  set (options)
+  set (one_value_options TARGET INSTALL_DIRECTORY)
+  set (multi_value_options)
+  set (required_options TARGET INSTALL_DIRECTORY)
+  _IML_parse_arguments (_arg "${options}" "${one_value_options}" "${multi_value_options}" "${required_options}" ${ARGN})
+
+  _IML_deploy_destination_get ("LocationIndependentBundle_add_rpath"
+    "LocationIndependentBundle")
+
+  string (REGEX REPLACE "[^/]+" ".." _rpath_mid "${_arg_INSTALL_DIRECTORY}")
+  set (_rpath_prefix "\$ORIGIN/${_rpath_mid}/${_iml_bundle_destination}")
+
+  _IML_deploy_add_rpath (${_arg_TARGET} ${_rpath_prefix} false)
+endfunction()
+
+################################################################################
+
+macro (_IML_parse_arguments _prefix _options _one_value_options _multi_value_options _required_options)
+  cmake_parse_arguments ("${_prefix}" "${_options}" "${_one_value_options}" "${_multi_value_options}" ${ARGN})
+
+  foreach (required ${_required_options})
+    if (NOT ${_prefix}_${required})
+      message (FATAL_ERROR "required argument ${required} missing")
+    endif()
+  endforeach()
+
+  if (${_prefix}_UNPARSED_ARGUMENTS)
+    list (LENGTH ${_prefix}_UNPARSED_ARGUMENTS _unparsed_length)
+    if (NOT _unparsed_length EQUAL 0)
+      message (FATAL_ERROR "unknown arguments: ${${_prefix}_UNPARSED_ARGUMENTS}")
+    endif()
+  endif()
+endmacro()
+
+macro (_IML_deploy_make_executables_and_files_lists)
+  # \todo Configure these lists in. Use configure-time components as
+  # well to allow for partial installation already, and to have that
+  # definition only once.
+  set (_executables)
+  set (_files)
+  foreach (_component ${_arg_COMPONENTS})
+    if ("${_component}" STREQUAL "runtime")
+      list (APPEND _executables
+        "lib/libIML-Client.so"
+        "libexec/iml/iml-gpi-server"
+        "libexec/iml/iml-rifd"
+        "libexec/iml/libIMLPrivate-Installation.so"
+      )
+    elseif ("${_component}" STREQUAL "bootstrap_exe")
+      list (APPEND _executables
+        "bin/iml-bootstrap-rifd"
+        "bin/iml-teardown-rifd"
+        "lib/libIML-Client.so"
+        "libexec/iml/libIMLPrivate-Installation.so"
+      )
+    elseif ("${_component}" STREQUAL "devel")
+      list (APPEND _files @iml_devel_files_in_installation@)
+      list (APPEND _executables
+        "lib/libIML-Client.so"
+        "libexec/iml/libIMLPrivate-Installation.so"
+      )
+    else()
+      message (FATAL_ERROR "unknown IML component ${_component}")
+    endif()
+  endforeach()
+  list (REMOVE_DUPLICATES _executables)
+  list (REMOVE_DUPLICATES _files)
+endmacro()
+
+macro (_IML_deploy_make_bundled_libraries_list)
+  set (_bundled_libraries)
+  foreach (_executable ${_executables})
+    get_filename_component (_name "${_executable}" NAME)
+
+    string (REGEX REPLACE "^lib(.*)\\.so$" "\\1" _name "${_name}")
+
+    file (READ "${IML_HOME}/libexec/bundle/info/${_name}" _info)
+    string (REGEX REPLACE ";" "\\\\;" _info "${_info}")
+    string (REGEX REPLACE "\n" ";" _info "${_info}")
+    foreach (_bundled ${_info})
+      list (APPEND _bundled_libraries "${IML_HOME}/${_bundled}")
+    endforeach()
+
+    if ("devel" IN_LIST _arg_COMPONENTS)
+      list (APPEND _files "libexec/bundle/info/${_name}")
+    endif()
+  endforeach()
+  list (REMOVE_DUPLICATES _bundled_libraries)
+endmacro()
+
+define_property (GLOBAL PROPERTY IML_deploy_destination
+  BRIEF_DOCS "Path of bundled IML"
+  FULL_DOCS "The path specified as DESTINATION in an IML_deploy_*() call."
+)
+
+macro (_IML_deploy_destination_set)
+  get_property (_had_bundle_before GLOBAL PROPERTY IML_deploy_destination SET)
+  if (_had_bundle_before)
+    message (FATAL_ERROR "It is not supported to call IML_deploy_*() twice.")
+  endif()
+  set_property (GLOBAL PROPERTY IML_deploy_destination "${ARG_DESTINATION}")
+endmacro()
+
+macro (_IML_deploy_destination_get _caller _prereq)
+  get_property (_had_bundle_before GLOBAL PROPERTY IML_deploy_destination SET)
+  if (NOT _had_bundle_before)
+    message (FATAL_ERROR "IML_deploy_${_prereq}() needs to be called before \
+using IML_deploy_${_caller}()."
+    )
+  endif()
+  get_property (_iml_bundle_destination GLOBAL PROPERTY IML_deploy_destination)
+endmacro()
+
+macro (_IML_deploy_components_default)
+  if (NOT _arg_COMPONENTS)
+    set (_arg_COMPONENTS)
+    list (APPEND _arg_COMPONENTS "runtime")
+    list (APPEND _arg_COMPONENTS "bootstrap_exe")
+    list (APPEND _arg_COMPONENTS "devel")
+  endif()
+endmacro()
+
+macro (_IML_deploy_do_installs)
+  foreach (_file ${_files})
+    get_filename_component (_directory "${_file}" DIRECTORY)
+    install (FILES "${IML_HOME}/${_file}"
+      DESTINATION "${_arg_DESTINATION}/${_directory}"
+    )
+  endforeach()
+
+  foreach (_executable ${_executables})
+    get_filename_component (_directory "${_executable}" DIRECTORY)
+    install (PROGRAMS "${IML_HOME}/${_executable}"
+      DESTINATION "${_arg_DESTINATION}/${_directory}"
+    )
+  endforeach()
+
+  install (PROGRAMS ${_bundled_libraries}
+    DESTINATION "${_arg_DESTINATION}/libexec/bundle/lib"
+  )
+endmacro()
+
+macro (_IML_deploy_add_rpath _target _rpath_prefix _with_bundle_lib)
+  get_property (_rpath TARGET ${_target} PROPERTY INSTALL_RPATH)
+
+  list (APPEND _rpath "${_rpath_prefix}/lib")
+  if (_with_bundle_lib)
+    list (APPEND _rpath "${_rpath_prefix}/libexec/bundle/lib")
+  endif()
+  list (APPEND _rpath "${_rpath_prefix}/libexec/iml")
+
+  set_property (TARGET ${_target} PROPERTY INSTALL_RPATH ${_rpath})
+endmacro()

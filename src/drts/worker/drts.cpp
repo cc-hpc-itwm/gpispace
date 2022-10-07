@@ -141,7 +141,12 @@ DRTSImpl::DRTSImpl
   send_event_to_parent<sdpa::events::WorkerRegistrationEvent>
     ( m_my_name
     , capabilities
-    , (_shared_memory != nullptr) ? _shared_memory->size() : 0
+    ,
+    #if GSPC_WITH_IML
+      (_shared_memory != nullptr) ? _shared_memory->size() : 0
+    #else
+      0
+    #endif
     , fhg::util::hostname()
     );
 

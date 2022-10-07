@@ -51,6 +51,11 @@ list (APPEND CMAKE_MODULE_PATH "$ENV{CMAKE_MODULE_PATH}")
 option (GSPC_WITH_MONITOR_APP "Enable the 'gspc-monitor' execution and logging \
 monitor application (also known as 'gantt')" ON)
 
+option (GSPC_WITH_IML
+  "Enable IML support."
+  ON
+)
+
 include (GNUInstallDirs)
 
 set (GSPC_SHARE_INSTALL_DIR "${CMAKE_INSTALL_DATAROOTDIR}/GPISpace")
@@ -67,6 +72,10 @@ set (UTIL_RPC_BUILD_TESTING OFF CACHE BOOL "Build util-rpc tests")
 if (GSPC_WITH_MONITOR_APP)
   set (UTIL_QT_INSTALL ON)
   set (UTIL_QT_BUILD_TESTING OFF CACHE BOOL "Build util-qt tests")
+endif()
+if (GSPC_WITH_IML)
+  set (IML_INSTALL ON)
+  set (IML_BUILD_TESTING ON CACHE BOOL "Build iml tests")
 endif()
 
 add_subdirectory (cmake)
@@ -98,21 +107,23 @@ if (BUILD_TESTING)
     CACHE STRING "strategy parameters to use for starting scoped rif daemons"
   )
 
-  set (IML_TESTING_RIF_STRATEGY ${TESTING_RIF_STRATEGY}
-    CACHE STRING
-    "FORCE-set by GPI-Space, modify TESTING_RIF_STRATEGY instead."
-    FORCE
-  )
-  set (IML_TESTING_RIF_STRATEGY_PARAMETERS ${TESTING_RIF_STRATEGY_PARAMETERS}
-    CACHE STRING
-    "FORCE-set by GPI-Space, modify TESTING_RIF_STRATEGY_PARAMETERS instead."
-    FORCE
-  )
-  # Might not be a BeeGFS directory, but IML will check that.
-  set (IML_TESTING_BEEGFS_DIRECTORY ${SHARED_DIRECTORY_FOR_TESTS}
-    CACHE PATH
-    "(Shared) directory to use for BeeGFS tests."
-  )
+  if (GSPC_WITH_IML)
+    set (IML_TESTING_RIF_STRATEGY ${TESTING_RIF_STRATEGY}
+      CACHE STRING
+      "FORCE-set by GPI-Space, modify TESTING_RIF_STRATEGY instead."
+      FORCE
+    )
+    set (IML_TESTING_RIF_STRATEGY_PARAMETERS ${TESTING_RIF_STRATEGY_PARAMETERS}
+      CACHE STRING
+      "FORCE-set by GPI-Space, modify TESTING_RIF_STRATEGY_PARAMETERS instead."
+      FORCE
+    )
+    # Might not be a BeeGFS directory, but IML will check that.
+    set (IML_TESTING_BEEGFS_DIRECTORY ${SHARED_DIRECTORY_FOR_TESTS}
+      CACHE PATH
+      "(Shared) directory to use for BeeGFS tests."
+    )
+  endif()
 endif()
 
 set (Boost_NO_SYSTEM_PATHS ON)
@@ -163,7 +174,6 @@ if (Boost_VERSION VERSION_GREATER ${_boost_maximum_version})
   message (FATAL_ERROR "${PROJECT_NAME} requires Boost to be in version range >= ${_boost_minimum_version} and <= ${_boost_maximum_version} (got ${Boost_VERSION}).")
 endif()
 
-find_package (GASPI 1.3.2 REQUIRED)
 find_package (HWLOC REQUIRED)
 find_package (LibRT REQUIRED)
 if (GSPC_WITH_MONITOR_APP)
@@ -225,6 +235,7 @@ add_test (NAME installed_headers_are_selfcontained
   COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/test/installed_headers_are_selfcontained.sh"
           "${CMAKE_INSTALL_PREFIX}"
           "${CMAKE_CXX_COMPILER}"
+          "-DGSPC_WITH_IML=$<BOOL:${GSPC_WITH_IML}>"
 )
 set_property (TEST installed_headers_are_selfcontained
   APPEND PROPERTY LABELS "requires_installation"
@@ -291,8 +302,9 @@ install (FILES "${CMAKE_CURRENT_BINARY_DIR}/GPISpaceConfig.cmake"
   DESTINATION "${GSPC_CONFIG_INSTALL_DIR}"
 )
 
-install (FILES
-  "include/gspc/detail/dllexport.hpp"
-  "include/gspc/detail/dllexport.ipp"
-  DESTINATION include/gspc/detail
+install (
+  DIRECTORY
+    "${PROJECT_SOURCE_DIR}/include/"
+  DESTINATION
+    "${CMAKE_INSTALL_INCLUDEDIR}"
 )

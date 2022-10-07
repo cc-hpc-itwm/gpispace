@@ -64,6 +64,7 @@ namespace gspc
       constexpr char const* const worker_env_set_variable
         {"worker-env-set-variable"};
 
+      #if GSPC_WITH_IML
       constexpr char const* const virtual_memory_socket
         {"virtual-memory-socket"};
       constexpr char const* const virtual_memory_port
@@ -73,14 +74,15 @@ namespace gspc
       constexpr char const* const virtual_memory_netdev_id
         {"virtual-memory-netdev-id"};
 
+      constexpr char const* const remote_iml_vmem_socket
+        {"remote-iml-vmem-socket"};
+      #endif
+
       constexpr char const* const rif_entry_points_file {"rif-entry-points-file"};
       constexpr char const* const rif_port {"rif-port"};
       constexpr char const* const rif_strategy {"rif-strategy"};
       constexpr char const* const rif_strategy_parameters
         {"rif-strategy-parameters"};
-
-      constexpr char const* const remote_iml_vmem_socket
-        {"remote-iml-vmem-socket"};
     }
 
     namespace validators
@@ -331,6 +333,7 @@ namespace gspc
       return drts;
     }
 
+    #if GSPC_WITH_IML
     ::boost::program_options::options_description virtual_memory()
     {
       ::boost::program_options::options_description vmem ("Virtual memory");
@@ -362,6 +365,7 @@ namespace gspc
 
       return vmem;
     }
+    #endif
   }
 
   namespace
@@ -568,6 +572,7 @@ namespace gspc
   ACCESS_PATH (application_search_path, validators::existing_directory)
   ACCESS_POSITIVE_INTEGRAL (agent_port, unsigned short)
 
+  #if GSPC_WITH_IML
   ACCESS_PATH ( remote_iml_vmem_socket
               , validators::existing_path
               )
@@ -586,6 +591,7 @@ namespace gspc
     (virtual_memory_netdev_id, iml::gaspi::NetdevID, iml::gaspi::NetdevID)
   REQUIRE
     (virtual_memory_netdev_id, iml::gaspi::NetdevID, iml::gaspi::NetdevID)
+  #endif
 
   ACCESS_PATH (rif_entry_points_file, validators::nonempty_file)
   ACCESS_POSITIVE_INTEGRAL (rif_port, unsigned short)

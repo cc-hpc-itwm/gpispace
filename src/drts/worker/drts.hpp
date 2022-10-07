@@ -14,8 +14,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <iml/Client.hpp>
-#include <iml/SharedMemoryAllocation.hpp>
+#pragma once
+
+#include <gspc/iml/Client.hpp>
+#include <gspc/iml/SharedMemoryAllocation.hpp>
 
 #include <fhgcom/channel.hpp>
 #include <logging/stream_emitter.hpp>

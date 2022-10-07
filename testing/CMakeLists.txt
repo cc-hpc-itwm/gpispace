@@ -97,5 +97,8 @@ if (BUILD_TESTING)
               Boost::filesystem
               Util::Generic
               Util::RPC
+    COMPILE_DEFINITIONS
+      PUBLIC
+        GSPC_WITH_IML=$<BOOL:${GSPC_WITH_IML}>
   )
 endif()

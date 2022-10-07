@@ -57,6 +57,7 @@ set_and_check (GSPC_XPNET_XSD "${GSPC_HOME}/share/GPISpace/xml/xsd/pnet.xsd")
 set_and_check (GSPC_GIT_SUBMODULES_FILE "${GSPC_HOME}/git.submodules")
 
 set (GSPC_WITH_MONITOR_APP "@GSPC_WITH_MONITOR_APP@")
+set (GSPC_WITH_IML "@GSPC_WITH_IML@")
 
 # \todo remove, done by GPISpaceConfigVersion.cmake now
 set_and_check (GSPC_VERSION_FILE "${GSPC_HOME}/version")
@@ -180,11 +181,10 @@ find_dependency (util-rpc REQUIRED)
 # Dependency: IML
 ###############################################################################
 
-find_dependency (IML
-  @PROJECT_VERSION@ EXACT
-  REQUIRED
-  CONFIG HINTS "${GSPC_HOME}"
-)
+if (GSPC_WITH_IML)
+  set (iml_ROOT "${GSPC_HOME}")
+  find_dependency (iml REQUIRED)
+endif()
 
 ###############################################################################
 # Git submodule check
@@ -338,12 +338,16 @@ target_link_libraries (GPISpace::workflow_development
   INTERFACE GPISpace::header-only
             GPISpacePrivate::we-dev
             GPISpacePrivate::drts-context
-            IML::Client
+            $<$<BOOL:${GSPC_WITH_IML}>:IML::Client>
             Boost::filesystem
             Boost::iostreams
             Boost::serialization
             Boost::system
             Boost::thread
+)
+target_compile_definitions (GPISpace::workflow_development
+  INTERFACE
+    GSPC_WITH_IML=$<BOOL:${GSPC_WITH_IML}>
 )
 
 add_library (GPISpace::execution INTERFACE IMPORTED)
@@ -351,7 +355,7 @@ target_link_libraries (GPISpace::execution
   INTERFACE GPISpace::header-only
             GPISpacePrivate::gspc
             GPISpacePrivate::we-dev
-            IML::Client
+            $<$<BOOL:${GSPC_WITH_IML}>:IML::Client>
             GPISpacePrivate::drts-context
             Boost::coroutine
             Boost::date_time
@@ -359,6 +363,10 @@ target_link_libraries (GPISpace::execution
             Boost::program_options
             Boost::serialization
             Boost::thread
+)
+target_compile_definitions (GPISpace::execution
+  INTERFACE
+    GSPC_WITH_IML=$<BOOL:${GSPC_WITH_IML}>
 )
 
 add_executable (GPISpace::pnetc IMPORTED)
@@ -429,8 +437,11 @@ location and host independent and can't be bundled.")
 
   set (options)
   set (one_value_options DESTINATION)
-  set (multi_value_options COMPONENTS IML_COMPONENTS)
+  set (multi_value_options COMPONENTS)
   set (required_options DESTINATION)
+  if (@GSPC_WITH_IML@)
+    list (APPEND multi_value_options IML_COMPONENTS)
+  endif()
   _GPISpace_parse_arguments (ARG "${options}" "${one_value_options}" "${multi_value_options}" "${required_options}" ${ARGN})
 
   _GPISpace_deploy_destination_set()
@@ -440,13 +451,17 @@ location and host independent and can't be bundled.")
     _GPISpace_deploy_make_bundled_libraries_list()
     _GPISpace_deploy_do_installs_individual()
 
-    IML_deploy_LocationAndHostIndependentBundle (DESTINATION ${ARG_DESTINATION}
-      COMPONENTS ${ARG_IML_COMPONENTS}
-    )
+    if (@GSPC_WITH_IML@)
+      IML_deploy_LocationAndHostIndependentBundle (DESTINATION ${ARG_DESTINATION}
+        COMPONENTS ${ARG_IML_COMPONENTS}
+      )
+    endif()
   else()
     _GPISpace_deploy_do_installs_whole()
 
-    IML_deploy_LocationAndHostIndependentBundle (DESTINATION ${ARG_DESTINATION})
+    if (@GSPC_WITH_IML@)
+      IML_deploy_LocationAndHostIndependentBundle (DESTINATION ${ARG_DESTINATION})
+    endif()
   endif()
 endfunction()
 
@@ -479,9 +494,11 @@ function (GPISpace_deploy_LocationAndHostIndependentBundle_add_rpath)
 
   set_property (TARGET ${_arg_TARGET} PROPERTY INSTALL_RPATH ${_rpath})
 
-  IML_deploy_LocationAndHostIndependentBundle_add_rpath (TARGET "${_arg_TARGET}"
-    INSTALL_DIRECTORY "${_arg_INSTALL_DIRECTORY}"
-  )
+  if (@GSPC_WITH_IML@)
+    IML_deploy_LocationAndHostIndependentBundle_add_rpath (TARGET "${_arg_TARGET}"
+      INSTALL_DIRECTORY "${_arg_INSTALL_DIRECTORY}"
+    )
+  endif()
 endfunction()
 
 function (bundle_GPISpace)
@@ -494,8 +511,11 @@ endfunction()
 function (GPISpace_deploy_LocationIndependentBundle)
   set (options)
   set (one_value_options DESTINATION)
-  set (multi_value_options COMPONENTS IML_COMPONENTS)
+  set (multi_value_options COMPONENTS)
   set (required_options DESTINATION)
+  if (@GSPC_WITH_IML@)
+    list (APPEND multi_value_options IML_COMPONENTS)
+  endif()
   _GPISpace_parse_arguments (ARG "${options}" "${one_value_options}" "${multi_value_options}" "${required_options}" ${ARGN})
 
   _GPISpace_deploy_destination_set()
@@ -507,13 +527,17 @@ function (GPISpace_deploy_LocationIndependentBundle)
     endif()
     _GPISpace_deploy_do_installs_individual()
 
-    IML_deploy_LocationIndependentBundle (DESTINATION ${ARG_DESTINATION}
-      COMPONENTS ${ARG_IML_COMPONENTS}
-    )
+    if (@GSPC_WITH_IML@)
+      IML_deploy_LocationIndependentBundle (DESTINATION ${ARG_DESTINATION}
+        COMPONENTS ${ARG_IML_COMPONENTS}
+      )
+    endif()
   else()
     _GPISpace_deploy_do_installs_whole()
 
-    IML_deploy_LocationIndependentBundle (DESTINATION ${ARG_DESTINATION})
+    if (@GSPC_WITH_IML@)
+      IML_deploy_LocationIndependentBundle (DESTINATION ${ARG_DESTINATION})
+    endif()
   endif()
 endfunction()
 
@@ -548,9 +572,11 @@ function (GPISpace_deploy_LocationIndependentBundle_add_rpath)
 
   set_property (TARGET ${_arg_TARGET} PROPERTY INSTALL_RPATH ${_rpath})
 
-  IML_deploy_LocationIndependentBundle_add_rpath (TARGET "${_arg_TARGET}"
-    INSTALL_DIRECTORY "${_arg_INSTALL_DIRECTORY}"
-  )
+  if (@GSPC_WITH_IML@)
+    IML_deploy_LocationIndependentBundle_add_rpath (TARGET "${_arg_TARGET}"
+      INSTALL_DIRECTORY "${_arg_INSTALL_DIRECTORY}"
+    )
+  endif()
 endfunction()
 
 macro (_GPISpace_deploy_destination_set)
@@ -579,22 +605,25 @@ macro (_GPISpace_deploy_make_parts_list)
       list (APPEND _parts "bin/gspc-bootstrap-rifd"
                           "bin/gspc-rifd"
                           "bin/gspc-teardown-rifd"
-                          "bin/iml-bootstrap-rifd"
-                          "bin/iml-teardown-rifd"
                           "lib/libGPISpace-APIGuard.so"
-                          "lib/libIML-Client.so"
                           "lib/libdrts-context.so"
                           "lib/libgspc.so"
                           "lib/libwe-dev.so"
                           "libexec/gspc/agent"
                           "libexec/gspc/drts-kernel"
                           "libexec/gspc/gspc-logging-demultiplexer.exe"
-                          "libexec/iml/iml-gpi-server"
-                          "libexec/iml/iml-rifd"
-                          "libexec/iml/libIMLPrivate-Installation.so"
       )
-      list (APPEND ARG_IML_COMPONENTS "runtime")
-      list (APPEND ARG_IML_COMPONENTS "bootstrap_exe")
+      if (@GSPC_WITH_IML@)
+        list (APPEND _parts "bin/iml-bootstrap-rifd"
+                            "bin/iml-teardown-rifd"
+                            "lib/libIML-Client.so"
+                            "libexec/iml/iml-gpi-server"
+                            "libexec/iml/iml-rifd"
+                            "libexec/iml/libIMLPrivate-Installation.so"
+        )
+        list (APPEND ARG_IML_COMPONENTS "runtime")
+        list (APPEND ARG_IML_COMPONENTS "bootstrap_exe")
+      endif()
     elseif ("${_component}" STREQUAL "monitoring")
       if (@GSPC_WITH_MONITOR_APP@)
         list (APPEND _parts "bin/gspc-monitor")

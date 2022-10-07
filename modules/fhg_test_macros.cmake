@@ -28,7 +28,6 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/include/drts/client.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/drts.fwd.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/drts.hpp"
-  "${CMAKE_INSTALL_PREFIX}/include/drts/drts_iml.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/information_to_reattach.fwd.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/information_to_reattach.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/pimpl.hpp"
@@ -36,9 +35,7 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/include/drts/rifd_entry_points.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/scoped_rifd.fwd.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/scoped_rifd.hpp"
-  "${CMAKE_INSTALL_PREFIX}/include/drts/stream.fwd.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/stream.hpp"
-  "${CMAKE_INSTALL_PREFIX}/include/drts/virtual_memory.fwd.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/virtual_memory.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/worker/context.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/worker/context_fwd.hpp"
@@ -123,53 +120,60 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/${GSPC_SHARE_INSTALL_DIR}/xml/xsd/pnet.rnc"
   "${CMAKE_INSTALL_PREFIX}/${GSPC_SHARE_INSTALL_DIR}/xml/xsd/pnet.xsd"
   "${CMAKE_INSTALL_PREFIX}/${GSPC_SHARE_INSTALL_DIR}/xml/xsd/schemas.xml"
-
-  # \todo Assert IML API here? These are duplicated from IML's
-  # iml_files_in_installation variable, but that's defined after this
-  # file is included. It could be contained in a `find_package (IML)`,
-  # but that currently doesn't exist. Alternatively one could probably
-  # abuse some fake target and property and a generator expression?
-  "${CMAKE_INSTALL_PREFIX}/bin/iml-bootstrap-rifd"
-  "${CMAKE_INSTALL_PREFIX}/bin/iml-teardown-rifd"
-  "${CMAKE_INSTALL_PREFIX}/include/iml/AllocationHandle.hpp"
-  "${CMAKE_INSTALL_PREFIX}/include/iml/AllocationHandle.ipp"
-  "${CMAKE_INSTALL_PREFIX}/include/iml/Client.hpp"
-  "${CMAKE_INSTALL_PREFIX}/include/iml/MemcpyID.hpp"
-  "${CMAKE_INSTALL_PREFIX}/include/iml/MemoryLocation.hpp"
-  "${CMAKE_INSTALL_PREFIX}/include/iml/MemoryLocation.ipp"
-  "${CMAKE_INSTALL_PREFIX}/include/iml/MemoryOffset.hpp"
-  "${CMAKE_INSTALL_PREFIX}/include/iml/MemoryRegion.hpp"
-  "${CMAKE_INSTALL_PREFIX}/include/iml/MemoryRegion.ipp"
-  "${CMAKE_INSTALL_PREFIX}/include/iml/MemorySize.hpp"
-  "${CMAKE_INSTALL_PREFIX}/include/iml/Rifs.hpp"
-  "${CMAKE_INSTALL_PREFIX}/include/iml/RuntimeSystem.hpp"
-  "${CMAKE_INSTALL_PREFIX}/include/iml/SegmentAndAllocation.hpp"
-  "${CMAKE_INSTALL_PREFIX}/include/iml/SegmentDescription.hpp"
-  "${CMAKE_INSTALL_PREFIX}/include/iml/SegmentHandle.hpp"
-  "${CMAKE_INSTALL_PREFIX}/include/iml/SegmentHandle.ipp"
-  "${CMAKE_INSTALL_PREFIX}/include/iml/SharedMemoryAllocation.hpp"
-  "${CMAKE_INSTALL_PREFIX}/include/iml/SharedMemoryAllocationHandle.hpp"
-  "${CMAKE_INSTALL_PREFIX}/include/iml/SharedMemoryAllocationHandle.ipp"
-  "${CMAKE_INSTALL_PREFIX}/include/iml/beegfs/SegmentDescription.hpp"
-  "${CMAKE_INSTALL_PREFIX}/include/iml/beegfs/SegmentDescription.ipp"
-  "${CMAKE_INSTALL_PREFIX}/include/iml/detail/dllexport.hpp"
-  "${CMAKE_INSTALL_PREFIX}/include/iml/detail/dllexport.ipp"
-  "${CMAKE_INSTALL_PREFIX}/include/iml/gaspi/NetdevID.hpp"
-  "${CMAKE_INSTALL_PREFIX}/include/iml/gaspi/NetdevID.ipp"
-  "${CMAKE_INSTALL_PREFIX}/include/iml/gaspi/SegmentDescription.hpp"
-  "${CMAKE_INSTALL_PREFIX}/include/iml/gaspi/SegmentDescription.ipp"
-  "${CMAKE_INSTALL_PREFIX}/include/iml/rif/EntryPoint.hpp"
-  "${CMAKE_INSTALL_PREFIX}/include/iml/rif/EntryPoint.ipp"
-  "${CMAKE_INSTALL_PREFIX}/include/iml/rif/EntryPoints.hpp"
-  "${CMAKE_INSTALL_PREFIX}/include/iml/rif/bootstrap.hpp"
-  "${CMAKE_INSTALL_PREFIX}/include/iml/rif/strategies.hpp"
-  "${CMAKE_INSTALL_PREFIX}/include/iml/rif/teardown.hpp"
-  "${CMAKE_INSTALL_PREFIX}/lib/libIML-Client.so"
-  "${CMAKE_INSTALL_PREFIX}/libexec/iml/iml-gpi-server"
-  "${CMAKE_INSTALL_PREFIX}/libexec/iml/iml-rifd"
-  # Intentionally omitted: libIMLPrivate-InstallationSentinel.so:
-  # location depends on implementation detail.
 )
+
+# \todo Assert IML API here? These are duplicated from IML's
+# iml_files_in_installation variable, but that's defined after this
+# file is included. It could be contained in a `find_package (IML)`,
+# but that currently doesn't exist. Alternatively one could probably
+# abuse some fake target and property and a generator expression?
+if (GSPC_WITH_IML)
+  list (APPEND FILES_REQUIRED_IN_INSTALLATION
+    "${CMAKE_INSTALL_PREFIX}/include/drts/drts_iml.hpp"
+    "${CMAKE_INSTALL_PREFIX}/include/drts/stream.fwd.hpp"
+    "${CMAKE_INSTALL_PREFIX}/include/drts/virtual_memory.fwd.hpp"
+    "${CMAKE_INSTALL_PREFIX}/bin/iml-bootstrap-rifd"
+    "${CMAKE_INSTALL_PREFIX}/bin/iml-teardown-rifd"
+    "${CMAKE_INSTALL_PREFIX}/include/iml/AllocationHandle.hpp"
+    "${CMAKE_INSTALL_PREFIX}/include/iml/AllocationHandle.ipp"
+    "${CMAKE_INSTALL_PREFIX}/include/iml/Client.hpp"
+    "${CMAKE_INSTALL_PREFIX}/include/iml/MemcpyID.hpp"
+    "${CMAKE_INSTALL_PREFIX}/include/iml/MemoryLocation.hpp"
+    "${CMAKE_INSTALL_PREFIX}/include/iml/MemoryLocation.ipp"
+    "${CMAKE_INSTALL_PREFIX}/include/iml/MemoryOffset.hpp"
+    "${CMAKE_INSTALL_PREFIX}/include/iml/MemoryRegion.hpp"
+    "${CMAKE_INSTALL_PREFIX}/include/iml/MemoryRegion.ipp"
+    "${CMAKE_INSTALL_PREFIX}/include/iml/MemorySize.hpp"
+    "${CMAKE_INSTALL_PREFIX}/include/iml/Rifs.hpp"
+    "${CMAKE_INSTALL_PREFIX}/include/iml/RuntimeSystem.hpp"
+    "${CMAKE_INSTALL_PREFIX}/include/iml/SegmentAndAllocation.hpp"
+    "${CMAKE_INSTALL_PREFIX}/include/iml/SegmentDescription.hpp"
+    "${CMAKE_INSTALL_PREFIX}/include/iml/SegmentHandle.hpp"
+    "${CMAKE_INSTALL_PREFIX}/include/iml/SegmentHandle.ipp"
+    "${CMAKE_INSTALL_PREFIX}/include/iml/SharedMemoryAllocation.hpp"
+    "${CMAKE_INSTALL_PREFIX}/include/iml/SharedMemoryAllocationHandle.hpp"
+    "${CMAKE_INSTALL_PREFIX}/include/iml/SharedMemoryAllocationHandle.ipp"
+    "${CMAKE_INSTALL_PREFIX}/include/iml/beegfs/SegmentDescription.hpp"
+    "${CMAKE_INSTALL_PREFIX}/include/iml/beegfs/SegmentDescription.ipp"
+    "${CMAKE_INSTALL_PREFIX}/include/iml/detail/dllexport.hpp"
+    "${CMAKE_INSTALL_PREFIX}/include/iml/detail/dllexport.ipp"
+    "${CMAKE_INSTALL_PREFIX}/include/iml/gaspi/NetdevID.hpp"
+    "${CMAKE_INSTALL_PREFIX}/include/iml/gaspi/NetdevID.ipp"
+    "${CMAKE_INSTALL_PREFIX}/include/iml/gaspi/SegmentDescription.hpp"
+    "${CMAKE_INSTALL_PREFIX}/include/iml/gaspi/SegmentDescription.ipp"
+    "${CMAKE_INSTALL_PREFIX}/include/iml/rif/EntryPoint.hpp"
+    "${CMAKE_INSTALL_PREFIX}/include/iml/rif/EntryPoint.ipp"
+    "${CMAKE_INSTALL_PREFIX}/include/iml/rif/EntryPoints.hpp"
+    "${CMAKE_INSTALL_PREFIX}/include/iml/rif/bootstrap.hpp"
+    "${CMAKE_INSTALL_PREFIX}/include/iml/rif/strategies.hpp"
+    "${CMAKE_INSTALL_PREFIX}/include/iml/rif/teardown.hpp"
+    "${CMAKE_INSTALL_PREFIX}/lib/libIML-Client.so"
+    "${CMAKE_INSTALL_PREFIX}/libexec/iml/iml-gpi-server"
+    "${CMAKE_INSTALL_PREFIX}/libexec/iml/iml-rifd"
+    # Intentionally omitted: libIMLPrivate-InstallationSentinel.so:
+    # location depends on implementation detail.
+  )
+endif()
 
 set (TEST_VMEM_PORT_COUNTER 10820 CACHE INTERNAL "counter for vmem-port")
 set (TEST_VMEM_PORTS_PER_TEST 100)

@@ -117,12 +117,14 @@ endif()
 add_subdirectory (client_implementation_with_ostream_logger)
 add_subdirectory (scoped_rifd_execute)
 
-fhg_add_test (NAME iml_to_pnet_value_wrappers
-  SOURCES "iml_to_pnet_value_wrappers.cpp"
-  USE_BOOST
-  LIBRARIES gspc
-            Util::Generic
-            # \todo Is this fine? There is no public API to generate
-            # random handles... Remove randomness?
-            IMLPrivate::Testing
-)
+if (GSPC_WITH_IML)
+  fhg_add_test (NAME iml_to_pnet_value_wrappers
+    SOURCES "iml_to_pnet_value_wrappers.cpp"
+    USE_BOOST
+    LIBRARIES gspc
+              Util::Generic
+              # \todo Is this fine? There is no public API to generate
+              # random handles... Remove randomness?
+              IMLPrivate::Testing
+  )
+endif()

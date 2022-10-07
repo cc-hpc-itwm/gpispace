@@ -23,15 +23,19 @@
 #include <drts/information_to_reattach.fwd.hpp>
 #include <drts/pimpl.hpp>
 #include <drts/rifd_entry_points.hpp>
-#include <drts/stream.hpp>
-#include <drts/virtual_memory.hpp>
 #include <drts/worker_description.hpp>
 
 #include <logging/endpoint.hpp>
 
 #include <we/type/value.hpp>
 
-#include <iml/MemorySize.hpp>
+#if GSPC_WITH_IML
+  #include <drts/stream.hpp>
+  #include <drts/virtual_memory.hpp>
+#else
+  #include <gspc/iml/macros.hpp>
+#endif
+#include <gspc/iml/MemorySize.hpp>
 
 #include <boost/filesystem/path.hpp>
 #include <boost/optional.hpp>
@@ -127,6 +131,7 @@ namespace gspc
                       >
       remove_worker (rifd_entry_points const&);
 
+    #if GSPC_WITH_IML
     //! \note \a name is ignored and exists for API stability only.
     vmem_allocation alloc
       ( vmem::segment_description
@@ -147,6 +152,11 @@ namespace gspc
                          , iml::MemorySize
                          , std::function<void (pnet::type::value::value_type const&)> on_slot_filled
                          ) const;
+    #else
+      GSPC_WITHOUT_IML_API_ERROR (alloc)
+      GSPC_WITHOUT_IML_API_ERROR (alloc_and_fill)
+      GSPC_WITHOUT_IML_API_ERROR (create_stream)
+    #endif
 
     fhg::logging::endpoint top_level_log_demultiplexer() const;
 

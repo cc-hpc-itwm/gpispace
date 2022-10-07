@@ -19,15 +19,14 @@
 #include <iml/MemorySize.hpp>
 #include <iml/testing/random/AllocationHandle.hpp>
 #include <iml/testing/random/SegmentHandle.hpp>
+#include <iml/testing/beegfs_directory.hpp>
 #include <iml/vmem/gaspi/pc/memory/handle_generator.hpp>
 #include <iml/vmem/gaspi/pc/segment/segment.hpp>
-#include <iml/vmem/gaspi/tests/dummy_topology.hpp>
+#include <iml/vmem/gaspi/dummy_topology.hpp>
 
 #include <util-generic/syscall.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/random.hpp>
-
-#include <iml/testing/beegfs_directory.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>

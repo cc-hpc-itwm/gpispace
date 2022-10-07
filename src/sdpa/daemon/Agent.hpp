@@ -42,7 +42,7 @@
 #include <sdpa/requirements_and_preferences.hpp>
 #include <sdpa/types.hpp>
 
-#include <iml/Client.hpp>
+#include <gspc/iml/Client.hpp>
 
 #include <logging/stream_emitter.hpp>
 

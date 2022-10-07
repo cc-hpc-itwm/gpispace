@@ -20,12 +20,13 @@ set -euo pipefail
 
 install_prefix=${1:?missing argument 1: install_prefix}
 cxx_compiler=${2:?missing argument 2: cxx_compiler}
-num_parallel_procs=${3:-10}
+cxx_args=("${3}")
+num_parallel_procs=${4:-10}
 
-cxx_args=()
 cxx_args+=("-x" "c++")
 cxx_args+=("-o" "/dev/null")
 cxx_args+=("-c")
+cxx_args+=("-E")
 cxx_args+=("--std=c++14")
 cxx_args+=("-I" "${install_prefix}/include")
 cxx_args+=("-I" "${install_prefix}/external/boost/include")

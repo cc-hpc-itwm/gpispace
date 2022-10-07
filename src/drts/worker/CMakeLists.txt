@@ -22,11 +22,12 @@ gspc_add_executable (NAME drts-kernel
   SOURCES "drts-kernel.cpp"
           "drts.cpp"
   LIBRARIES GPISpace::APIGuard
+            GPISpace::header-only
             fhg-util
             fhgcom
             sdpa
             we-dev
-            IML::Client
+            $<$<BOOL:${GSPC_WITH_IML}>:IML::Client>
             rif-started_process_promise
             Util::Generic
             Boost::filesystem

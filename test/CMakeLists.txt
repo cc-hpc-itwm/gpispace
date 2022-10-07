@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-add_subdirectory (many_ranges_in_memory_transfer)
+if (GSPC_WITH_IML)
+  add_subdirectory (many_ranges_in_memory_transfer)
+endif()
 add_subdirectory (parallel_reduce)
 add_subdirectory (share)

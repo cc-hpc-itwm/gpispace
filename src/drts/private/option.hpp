@@ -22,7 +22,7 @@
 #include <boost/optional.hpp>
 #include <boost/program_options.hpp>
 
-#include <iml/gaspi/NetdevID.hpp>
+#include <gspc/iml/gaspi/NetdevID.hpp>
 
 namespace gspc
 {
@@ -74,6 +74,7 @@ namespace gspc
   //! \todo Let this be a `map<string, string>` for UX?
   ACCESS (worker_env_set_variable, std::vector<std::string>);
 
+  #if GSPC_WITH_IML
   GET (remote_iml_vmem_socket, ::boost::filesystem::path);
   REQUIRE (remote_iml_vmem_socket, ::boost::filesystem::path);
 
@@ -81,6 +82,7 @@ namespace gspc
   ACCESS (virtual_memory_port, unsigned short);
   ACCESS (virtual_memory_startup_timeout, unsigned long);
   ACCESS (virtual_memory_netdev_id, iml::gaspi::NetdevID);
+  #endif
 
   ACCESS (rif_entry_points_file, ::boost::filesystem::path);
   ACCESS (rif_port, unsigned short);

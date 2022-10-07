@@ -16,6 +16,16 @@
 
 #pragma once
 
+#if !GSPC_WITH_IML
+
+#include <gspc/iml/macros.hpp>
+
+static_assert ( gspc::WithIML_v<>
+              , GSPC_WITHOUT_IML_ERROR_MESSAGE
+              );
+
+#else
+
 #include <gspc/detail/dllexport.hpp>
 
 #include <drts/drts.fwd.hpp>
@@ -70,3 +80,5 @@ namespace gspc
     ~vmem_allocation() = default;
   };
 }
+
+#endif

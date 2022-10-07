@@ -187,17 +187,23 @@ int main (int ac, char **av)
     fhg::util::Execution execution (signal_handlers);
 
     std::unique_ptr<iml::Client> const virtual_memory_api
-      ( vm.count (option_name::virtual_memory_socket)
+      (
+      #if GSPC_WITH_IML
+        vm.count (option_name::virtual_memory_socket)
       ? std::make_unique<iml::Client>
           ( static_cast<::boost::filesystem::path>
               ( vm.at (option_name::virtual_memory_socket)
               .as<fhg::util::boost::program_options::existing_path>()
               )
           )
-      : nullptr
+      :
+      #endif
+        nullptr
       );
     std::unique_ptr<iml::SharedMemoryAllocation> const shared_memory
-      ( ( virtual_memory_api
+      (
+      #if GSPC_WITH_IML
+        ( virtual_memory_api
         && vm.count (option_name::shared_memory_size)
         && vm.at (option_name::shared_memory_size).as<unsigned long>() > 0
         )
@@ -205,7 +211,9 @@ int main (int ac, char **av)
         ( *virtual_memory_api
         , vm.at (option_name::shared_memory_size).as<unsigned long>()
         )
-      : nullptr
+      :
+      #endif
+        nullptr
       );
 
     auto const parent_info

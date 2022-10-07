@@ -79,7 +79,7 @@ and subsection "Optional Components" below.
     required for compatibility.
 * [hwloc](https://www.open-mpi.org/projects/hwloc/) (>= 1.10)
 * [Qt5](https://www.qt.io/) (>= 5.9)
-  * Only required if GPI-Space is built with `-DGSPC_WITH_MONITOR_APP=ON`.
+  * Only required if GPI-Space is built with `-D GSPC_WITH_MONITOR_APP=ON`.
 * [chrpath](https://tracker.debian.org/pkg/chrpath) (>= 0.13)
 * [Boost](https://boost.org) (>= 1.61, <= 1.63)
   * When using OpenSSL >= 1.1, Boost >= 1.62 is required.
@@ -89,6 +89,7 @@ and subsection "Optional Components" below.
   * Among others, Ubuntu 20.04 ships with libgcrypt as backend as well
     as OpenSSH 8.2, thus needs a custom installation of libssh2.
 * [GPI-2](http://www.gpi-site.com) (1.3.3)
+  * Only required if GPI-Space is built with `-D GSPC_WITH_IML=ON`.
 
 > ---
 > **WARNING:**
@@ -321,6 +322,15 @@ feature (enabled by default):
 | Spack | CMake |
 | - | - |
 | `[+\|~]monitor` | `-D GSPC_WITH_MONITOR_APP=[ON\|OFF]` |
+
+### IML
+
+The Independent Memory Layer (`IML`) is an abstraction layer for easy distributed memory management, allowing applications to cache data, or to prepare and extract data independent of GPI-Space across runs.
+The following options can be used to enable or disable this feature (enabled by default):
+
+| Spack | CMake |
+| - | - |
+| `[+\|~]iml` | `-D GSPC_WITH_IML=[ON\|OFF]` |
 
 ## Next steps
 

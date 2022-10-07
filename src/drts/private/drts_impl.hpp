@@ -19,9 +19,9 @@
 #include <drts/drts.hpp>
 #include <drts/private/startup_and_shutdown.hpp>
 
-#include <iml/Client.hpp>
-#include <iml/Rifs.hpp>
-#include <iml/RuntimeSystem.hpp>
+#include <gspc/iml/Client.hpp>
+#include <gspc/iml/Rifs.hpp>
+#include <gspc/iml/RuntimeSystem.hpp>
 
 #include <logging/stream_emitter.hpp>
 
@@ -40,6 +40,7 @@
 
 namespace gspc
 {
+  #if GSPC_WITH_IML
   struct iml_runtime_system
   {
     std::unique_ptr<iml::Rifs> rifds;
@@ -54,6 +55,9 @@ namespace gspc
     iml_runtime_system& operator= (iml_runtime_system&&) = default;
     ~iml_runtime_system() = default;
   };
+  #else
+  struct iml_runtime_system {};
+  #endif
 
   struct scoped_runtime_system::implementation
   {

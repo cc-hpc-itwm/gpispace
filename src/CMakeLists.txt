@@ -14,7 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-add_subdirectory (iml)
+if (GSPC_WITH_IML)
+  add_subdirectory (iml)
+endif()
 
 gspc_add_library (NAME fhgcom
   TYPE STATIC
@@ -177,7 +179,7 @@ gspc_add_library (NAME pnet
             GPISpace::APIGuard
             fhg-util
             drts-context
-            IML::Client
+            $<$<BOOL:${GSPC_WITH_IML}>:IML::Client>
             Util::Generic
             Boost::date_time
             Boost::program_options
@@ -185,7 +187,9 @@ gspc_add_library (NAME pnet
             Util::RPC
             ${CMAKE_DL_LIBS}
             rapidxml
-  COMPILE_DEFINITIONS -DHAS_STD_ALIGN=$<BOOL:${HAS_STD_ALIGN}>
+  COMPILE_DEFINITIONS
+    -DHAS_STD_ALIGN=$<BOOL:${HAS_STD_ALIGN}>
+    -DGSPC_WITH_IML=$<BOOL:${GSPC_WITH_IML}>
 )
 
 add_subdirectory (xml/tests)

@@ -28,10 +28,11 @@
 
 #include <fhg/assert.hpp>
 
-#include <iml/Client.hpp>
-#include <iml/MemoryOffset.hpp>
-#include <iml/MemorySize.hpp>
-#include <iml/SharedMemoryAllocation.hpp>
+#include <gspc/iml/Client.hpp>
+#include <gspc/iml/macros.hpp>
+#include <gspc/iml/MemoryOffset.hpp>
+#include <gspc/iml/MemorySize.hpp>
+#include <gspc/iml/SharedMemoryAllocation.hpp>
 
 #include <boost/format.hpp>
 
@@ -42,6 +43,7 @@
 
 namespace we
 {
+  #if GSPC_WITH_IML
   namespace
   {
     class buffer
@@ -152,10 +154,7 @@ namespace we
           );
       }
     }
-  }
 
-  namespace
-  {
     // https://github.com/boostorg/align/issues/13 prevents from using
     // ::boost::align::alignment
     void* _align ( std::size_t alignment
@@ -197,19 +196,22 @@ namespace we
       return result != nullptr;
     }
   }
+  #endif
 
   namespace loader
   {
     expr::eval::context module_call
       ( we::loader::loader& loader
-      , iml::Client /*const*/* virtual_memory_api
-      , iml::SharedMemoryAllocation /*const*/* shared_memory
+      , iml::Client /*const*/* IF_GSPC_WITH_IML (virtual_memory_api)
+      , iml::SharedMemoryAllocation /*const*/* IF_GSPC_WITH_IML (shared_memory)
       , drts::worker::context* context
       , expr::eval::context const& input
       , we::type::ModuleCall const& module_call
       )
     {
       std::map<std::string, void*> pointers;
+
+      #if GSPC_WITH_IML
       std::unordered_map<std::string, buffer> memory_buffer;
 
       if (!module_call.memory_buffers().empty())
@@ -306,6 +308,7 @@ namespace we
       std::list<std::pair<local::range, global::range>> const
         puts_evaluated_before_call
           (module_call.puts_evaluated_before_call (input));
+      #endif
 
       expr::eval::context out (input);
 
@@ -337,12 +340,14 @@ namespace we
         }
       }
 
+      #if GSPC_WITH_IML
       transfer ( put_global_data, virtual_memory_api, shared_memory
                , memory_buffer, puts_evaluated_before_call
                );
       transfer ( put_global_data, virtual_memory_api, shared_memory
                , memory_buffer, module_call.puts_evaluated_after_call (out)
                );
+      #endif
 
       return out;
     }

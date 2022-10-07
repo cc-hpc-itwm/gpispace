@@ -24,8 +24,9 @@
 #include <fhg/assert.hpp>
 #include <fhg/util/starts_with.hpp>
 
-#include <iml/Client.hpp>
-#include <iml/SharedMemoryAllocation.hpp>
+#include <gspc/iml/Client.hpp>
+#include <gspc/iml/macros.hpp>
+#include <gspc/iml/SharedMemoryAllocation.hpp>
 
 #include <drts/worker/context.hpp>
 
@@ -518,6 +519,7 @@ namespace we
       }
     }
 
+    #if GSPC_WITH_IML
     namespace
     {
       std::list<iml::MemoryRegion> define_memory_regions
@@ -535,9 +537,10 @@ namespace we
         return regions;
       }
     }
+    #endif
 
     Requirements_and_preferences Activity::requirements_and_preferences
-      (iml::Client* virtual_memory_api)
+      (iml::Client* IF_GSPC_WITH_IML (virtual_memory_api))
     {
       auto const context (evaluation_context());
 
@@ -603,6 +606,7 @@ namespace we
               return null_transfer_cost;
             }
 
+            #if GSPC_WITH_IML
             if (!virtual_memory_api)
             {
               throw std::logic_error
@@ -616,6 +620,9 @@ namespace we
                    {
                      return costs.at (host);
                    };
+            #else
+            return null_transfer_cost;
+            #endif
           }()
         , computational_cost
         , !transition().module_call()

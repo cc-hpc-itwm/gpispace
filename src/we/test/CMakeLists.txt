@@ -114,7 +114,9 @@ fhg_add_test (NAME we_eureka_response
   LIBRARIES pnet
 )
 
-add_subdirectory (buffer_alignment)
+if (GSPC_WITH_IML)
+  add_subdirectory (buffer_alignment)
+endif()
 add_subdirectory (eureka)
 add_subdirectory (input_is_copied_to_output_in_module_calls)
 add_subdirectory (put_many)

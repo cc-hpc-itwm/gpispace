@@ -16,7 +16,6 @@
 
 #include <drts/drts.hpp>
 
-#include <drts/drts_iml.hpp>
 #include <drts/private/drts_impl.hpp>
 #include <drts/private/option.hpp>
 #include <drts/private/pimpl.hpp>
@@ -27,8 +26,11 @@
 #include <we/type/value.hpp>
 #include <we/type/value/poke.hpp>
 
-#include <iml/Client.hpp>
-#include <iml/RuntimeSystem.hpp>
+#if GSPC_WITH_IML
+  #include <drts/drts_iml.hpp>
+#endif
+#include <gspc/iml/Client.hpp>
+#include <gspc/iml/RuntimeSystem.hpp>
 
 #include <sdpa/client.hpp>
 
@@ -360,14 +362,24 @@ namespace gspc
     , Certificates const& certificates
     )
       : _virtual_memory_socket
-        ( get_virtual_memory_socket (vm)
+        (
+        #if GSPC_WITH_IML
+          get_virtual_memory_socket (vm)
         ? get_virtual_memory_socket (vm)
         : get_remote_iml_vmem_socket (vm)
+        #else
+          boost::none
+        #endif
         )
-      , _iml_rts ( FHG_UTIL_MAKE_OPTIONAL
+      , _iml_rts (
+                   #if GSPC_WITH_IML
+                   FHG_UTIL_MAKE_OPTIONAL
                      ( !!get_virtual_memory_socket (vm)
                      , iml_runtime_system {vm, info_output}
                      )
+                   #else
+                   boost::none
+                   #endif
                  )
       , _started_runtime_system
           ( get_agent_port (vm)
@@ -394,9 +406,13 @@ namespace gspc
           )
       , _logger()
       , _virtual_memory_api
-        ( _virtual_memory_socket
+        (
+        #if GSPC_WITH_IML
+           _virtual_memory_socket
         ? std::make_unique<iml::Client> (*_virtual_memory_socket)
-        : nullptr
+        :
+        #endif
+         nullptr
         )
   {
     if (get_log_directory (vm))
@@ -409,6 +425,7 @@ namespace gspc
       throw std::invalid_argument
         ("--log-level given but currently not supported");
     }
+    #if GSPC_WITH_IML
     if (get_virtual_memory_socket (vm) && get_remote_iml_vmem_socket (vm))
     {
       throw std::invalid_argument
@@ -416,6 +433,7 @@ namespace gspc
           "given at the same time"
         );
     }
+    #endif
   }
 
   std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
@@ -447,6 +465,7 @@ namespace gspc
       .remove_worker (rifd_entry_points._->_entry_points);
   }
 
+  #if GSPC_WITH_IML
   vmem_allocation scoped_runtime_system::alloc
     ( vmem::segment_description segment_description
     , unsigned long size
@@ -480,6 +499,7 @@ namespace gspc
       , std::move (on_slot_filled)
       );
   }
+  #endif
 
   std::unordered_map< rifd_entry_point
                     , std::list<std::exception_ptr>
@@ -561,6 +581,7 @@ namespace gspc
     return _->_started_runtime_system._logging_rif_info->sink_endpoint;
   }
 
+  #if GSPC_WITH_IML
   namespace
   {
     std::unique_ptr<iml::Rifs> make_iml_scoped_rifds
@@ -598,4 +619,5 @@ namespace gspc
     : rifds (make_iml_scoped_rifds (vm))
     , rts (make_iml_rts (vm, info_output, *rifds))
   {}
+  #endif
 }

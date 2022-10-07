@@ -34,6 +34,8 @@
 #include <sdpa/id_generator.hpp>
 #include <sdpa/types.hpp>
 
+#include <gspc/iml/macros.hpp>
+
 #include <fhg/util/macros.hpp>
 #include <util-generic/cxx17/holds_alternative.hpp>
 #include <util-generic/fallthrough.hpp>
@@ -131,7 +133,7 @@ namespace sdpa
         ( std::string name
         , std::string url
         , std::unique_ptr<::boost::asio::io_service> peer_io_service
-        , ::boost::optional<::boost::filesystem::path> const& vmem_socket
+        , ::boost::optional<::boost::filesystem::path> const& IF_GSPC_WITH_IML (vmem_socket)
         , fhg::com::Certificates const& certificates
         )
       : _name (name)
@@ -179,13 +181,19 @@ namespace sdpa
             }
           )
       , _virtual_memory_api
-        ( vmem_socket
+        (
+        #if GSPC_WITH_IML
+           vmem_socket
         ? std::make_unique<iml::Client> (*vmem_socket)
         : nullptr
+        #else
+        nullptr
+        #endif
         )
       , _event_handler_thread (&Agent::handle_events, this)
       , _interrupt_event_queue (_event_queue)
-    {}
+    {
+    }
 
     Agent::cleanup_job_map_on_dtor_helper::cleanup_job_map_on_dtor_helper
         (job_map_t& m)
