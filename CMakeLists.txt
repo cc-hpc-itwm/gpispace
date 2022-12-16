@@ -84,8 +84,6 @@ include (util-cmake/add_macros)
 include (util-cmake/beautify_find_boost)
 include (util-cmake/require_compiler_version)
 
-include (${PROJECT_SOURCE_DIR}/meta/submodules.cmake OPTIONAL)
-
 include (CTest)
 
 if (BUILD_TESTING)

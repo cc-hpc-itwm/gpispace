@@ -18,9 +18,8 @@
 
 #include <iml/rif/strategy/ssh/detail.hpp>
 
-#include <fhg/util/next.hpp>
-
 #include <util-generic/nest_exceptions.hpp>
+#include <util-generic/next.hpp>
 
 struct _LIBSSH2_CHANNEL;
 

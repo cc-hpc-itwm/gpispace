@@ -36,8 +36,12 @@ namespace iml
     struct IML_DLLEXPORT NetdevID
     {
       //! Depending on \a option either choose automatically ("auto"),
-      //! device 0 ("0") or device 1 ("1").
+      //! device 0 ("0"), device 1 ("1"), ... .
       NetdevID (std::string const& option = "auto");
+
+      //! Convert the option string to a device ID.
+      //! The option string can be either "auto" or any integer >= -1.
+      static int from_string(std::string const& option);
 
       //! Convert the current choice in the same way that the \c option
       //! constructor overload expects it.

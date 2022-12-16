@@ -122,7 +122,7 @@ namespace iml
       , ::boost::program_options::value<option::type_netdev_id>()
         ->default_value({})
       , "propose a network device ID to use ('auto' for automatic detection"
-        ", or '0' or '1' to select a specific device)"
+        ", or '<device-id> (e.g. '0', '1', ...) to select a specific device)"
       );
 
     return options;

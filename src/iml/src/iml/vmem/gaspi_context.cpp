@@ -83,7 +83,7 @@ namespace fhg
         gaspi_config_t config;
         FAIL_ON_NON_ZERO (gaspi_config_get, &config);
         config.sn_port = gaspi_sn_port;
-        config.netdev_id = netdev_id.value;
+        config.dev_config.params.ib.netdev_id = netdev_id.value;
         FAIL_ON_NON_ZERO (gaspi_config_set, config);
 
         FAIL_ON_NON_ZERO (gaspi_proc_init, time_left());

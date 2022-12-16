@@ -18,9 +18,8 @@
 
 #include <iml/rif/started_process_promise.hpp>
 
-#include <fhg/util/next.hpp>
-
 #include <util-generic/exit_status.hpp>
+#include <util-generic/next.hpp>
 #include <util-generic/serialization/exception.hpp>
 #include <util-generic/syscall.hpp>
 #include <util-generic/temporary_file.hpp>

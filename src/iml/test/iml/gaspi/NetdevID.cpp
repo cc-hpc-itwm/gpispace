@@ -31,6 +31,7 @@
 
 #include <sstream>
 #include <string>
+#include <tuple>
 #include <unordered_set>
 
 namespace iml
@@ -45,11 +46,20 @@ namespace iml
       std::string invalid_string_representation()
       {
         std::string result;
+        bool regenerate = true;
         do
         {
           result = fhg::util::testing::random<std::string>{}();
+          try
+          {
+            std::ignore = NetdevID::from_string (result);
+          }
+          catch (...)
+          {
+            regenerate = false;
+          }
         }
-        while (valid_string_representations.count (result));
+        while (regenerate);
         return result;
       }
     }
@@ -79,20 +89,12 @@ namespace iml
       BOOST_REQUIRE_EQUAL (NetdevID {"1"}.value, 1);
     }
 
-    BOOST_AUTO_TEST_CASE (string_ctor_refuses_2)
-    {
-      fhg::util::testing::require_exception
-        ( [] { NetdevID {"2"}; }
-        , ::boost::program_options::invalid_option_value
-            ("Expected 'auto' or '0' or '1', got '2'")
-        );
-    }
     BOOST_AUTO_TEST_CASE (string_ctor_refuses_empty)
     {
       fhg::util::testing::require_exception
         ( [] { NetdevID {""}; }
         , ::boost::program_options::invalid_option_value
-            ("Expected 'auto' or '0' or '1', got ''")
+            ("Expected 'auto' or '<device-id> (e.g. '0', '1', ...), got ''")
         );
     }
     BOOST_AUTO_TEST_CASE (string_ctor_refuses_random_noise)
@@ -101,7 +103,7 @@ namespace iml
       fhg::util::testing::require_exception
         ( [&] { NetdevID {noise}; }
         , ::boost::program_options::invalid_option_value
-            ("Expected 'auto' or '0' or '1', got '" + noise + "'")
+            ("Expected 'auto' or '<device-id> (e.g. '0', '1', ...), got '" + noise + "'")
         );
     }
 
@@ -141,7 +143,7 @@ namespace iml
               (result, {noise}, static_cast<NetdevID*> (nullptr), int{});
           }
         , ::boost::program_options::invalid_option_value
-            ("Expected 'auto' or '0' or '1', got '" + noise + "'")
+            ("Expected 'auto' or '<device-id> (e.g. '0', '1', ...), got '" + noise + "'")
         );
     }
 
@@ -155,7 +157,7 @@ namespace iml
     {
       gaspi_config_t config;
       BOOST_REQUIRE_EQUAL (gaspi_config_get (&config), GASPI_SUCCESS);
-      BOOST_REQUIRE_EQUAL (config.netdev_id, NetdevID{}.value);
+      BOOST_REQUIRE_EQUAL (config.dev_config.params.ib.netdev_id, NetdevID{}.value);
     }
 
     BOOST_DATA_TEST_CASE
@@ -163,16 +165,8 @@ namespace iml
     {
       gaspi_config_t config;
       BOOST_REQUIRE_EQUAL (gaspi_config_get (&config), GASPI_SUCCESS);
-      config.netdev_id = NetdevID {input}.value;
+      config.dev_config.params.ib.netdev_id = NetdevID {input}.value;
       BOOST_REQUIRE_EQUAL (gaspi_config_set (config), GASPI_SUCCESS);
-    }
-
-    BOOST_AUTO_TEST_CASE (gaspi_hardcoded_limit_of_two_didnt_change)
-    {
-      gaspi_config_t config;
-      BOOST_REQUIRE_EQUAL (gaspi_config_get (&config), GASPI_SUCCESS);
-      config.netdev_id = 3;
-      BOOST_REQUIRE_EQUAL (gaspi_config_set (config), GASPI_ERR_CONFIG);
     }
   }
 }

@@ -88,7 +88,7 @@ and subsection "Optional Components" below.
     is compatible.
   * Among others, Ubuntu 20.04 ships with libgcrypt as backend as well
     as OpenSSH 8.2, thus needs a custom installation of libssh2.
-* [GPI-2](http://www.gpi-site.com) (1.3.3)
+* [GPI-2](http://www.gpi-site.com) (>= 1.5.0)
   * Only required if GPI-Space is built with `-D GSPC_WITH_IML=ON`.
 
 > ---
@@ -150,7 +150,7 @@ below or installing GPI-2 will fail.
 ```bash
 GPI2_ROOT=<gpi2-install-prefix>
 #with_ethernet=--with-ethernet ## remove '#' if no Infiniband
-gpi2_version=1.3.3
+gpi2_version=1.5.1
 
 export PKG_CONFIG_PATH="${GPI2_ROOT}/lib64/pkgconfig"${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
 
@@ -159,16 +159,20 @@ wget "https://github.com/cc-hpc-itwm/GPI-2/archive/v${gpi2_version}.tar.gz" \
 tar xf "GPI-2-${gpi2_version}.tar.gz"
 cd "GPI-2-${gpi2_version}"
 
-grep "^CC\s*=\s*gcc$" . -lR | xargs sed -i'' -e '/^CC\s*=\s*gcc$/d'
-./install.sh -p "${GPI2_ROOT}" \
-  --with-fortran=false         \
-  ${with_ethernet:-}
+./autogen.sh
+./configure
+  --prefix="${GPI2_ROOT}"
+  --without-fortran
+  ${with-ethernet:-}
+make -j $(nproc)
+make install
 ```
 
 #### libssh2
 
 > ---
 > **WARNING:**
+>
 > * libssh2 1.7 is not compatible with **OpenSSL >= 1.1**.
 > * libssh2 <= 1.8 is incompatible with the new default SSH-key format in **OpenSSH >= 7.8**.
 >

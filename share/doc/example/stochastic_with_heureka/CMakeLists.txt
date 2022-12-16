@@ -45,13 +45,7 @@ include ("deployment/${SWH_DEPLOYMENT_STRATEGY}.cmake")
 
 include (CTest)
 
-find_package (GPISpace REQUIRED
-  COMPONENTS
-    # No need to check submodule versions as the SWH source directory
-    # is no git repository and it doesn't use copies of submodules
-    # shared with GPI-Space.
-    DO_NOT_CHECK_GIT_SUBMODULES
-)
+find_package (GPISpace REQUIRED)
 _swh_deployment_gpispace()
 
 find_package (Boost 1.61 REQUIRED

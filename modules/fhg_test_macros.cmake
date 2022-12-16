@@ -81,7 +81,6 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/libexec/gspc/drts-kernel"
   #! \note This does not include bundled libraries!
   "${CMAKE_INSTALL_PREFIX}/version"
-  "${CMAKE_INSTALL_PREFIX}/git.submodules"
   "${CMAKE_INSTALL_PREFIX}/${GSPC_SHARE_INSTALL_DIR}/README.md"
   "${CMAKE_INSTALL_PREFIX}/${GSPC_SHARE_INSTALL_DIR}/man/man5/xpnet.5"
   "${CMAKE_INSTALL_PREFIX}/${GSPC_SHARE_INSTALL_DIR}/xml/lib/4.xml"

@@ -185,7 +185,7 @@ find_package (Boost 1.61 REQUIRED
     thread
 )
 # BeeGFS: "found" via ${PROJECT_SOURCE_DIR}/external/
-find_package (GASPI 1.3.2 REQUIRED)
+find_package (GASPI 1.5 REQUIRED)
 find_package (Libssh2 REQUIRED)
 find_package (OpenSSL REQUIRED)
 

@@ -22,10 +22,7 @@ project (aggregate_sum
 set (CMAKE_CXX_STANDARD 14)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package (GPISpace REQUIRED
-  COMPONENTS
-    DO_NOT_CHECK_GIT_SUBMODULES
-)
+find_package (GPISpace REQUIRED)
 find_package (util-generic REQUIRED)
 find_package (util-cmake REQUIRED)
 find_package (Boost 1.61.0 REQUIRED

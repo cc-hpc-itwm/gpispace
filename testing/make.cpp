@@ -87,12 +87,11 @@ namespace test
       // The second flag is required specifically for boost 1.62.0 where both
       // flags occur due to a typo. This is fixed in later versions.
       command
-#if BOOST_VERSION <= 106100 // 1.61.0
-        << "CXXFLAGS=\"-Wall -Wextra -Werror\""
-#elif BOOST_VERSION == 106200 // 1.62.0
-        << "CXXFLAGS=\"-Wall -Wextra -Werror -DBOOST_COROUTINES_NO_DEPRECATION_WARNING -DBOOST_COROUTINE_NO_DEPRECATION_WARNING\""
+        << "CXXFLAGS=\"-Wall -Wextra -Werror"
+#if BOOST_VERSION == 106200 // 1.62.0
+        << " -DBOOST_COROUTINES_NO_DEPRECATION_WARNING -DBOOST_COROUTINE_NO_DEPRECATION_WARNING"
 #else // >=1.63.0
-        << "CXXFLAGS=\"-Wall -Wextra -Werror -DBOOST_COROUTINES_NO_DEPRECATION_WARNING"
+        << " -DBOOST_COROUTINES_NO_DEPRECATION_WARNING"
 #endif
         << " -DGSPC_WITH_IML=" << GSPC_WITH_IML << "\""
         << " CXX=\"" << cmake_cxx_compiler << "\""

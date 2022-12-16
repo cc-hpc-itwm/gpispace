@@ -1,3 +1,34 @@
+# [22.12] - 2022-12-16
+
+## GPI-2 Minimum Version Upgrade
+
+The `IML` has been updated to support `GPI-2` version `1.5.0` and newer.
+This change makes `GPI-2` version `1.5.0` the new minimum supported version.
+
+> ---
+> **NOTE:**
+>
+> This change is not backwards compatible!
+> Any older versions will no longer be supported (i.e. `1.3.x`, `1.4.x`).
+>
+> ---
+
+## Fixes
+
+- GPI-Space builds and installations will no longer contain the `git.submodules` file.
+  This means that GPI-Space applications no longer need to set the `DO_NOT_CHECK_GIT_SUBMODULES` or
+  `ALLOW_DIFFERENT_GIT_SUBMODULES` components in their `find_package (GPISpace)` calls.
+- Remove the Hardcoded Device-ID Limitation in IML's NetdevID Wrapper.
+  > ---
+  > **NOTE:**
+  >
+  > `GPI-2` still has a limitation which will trigger an error if the `gaspi_config_t` is set to an
+  > invalid value.
+  >
+  > ---
+- Fixes the broken GSPC_WITH_IML CXXFLAG for Boost Versions <1.63.0.
+  Previously the GSPC_WITH_IML CXXFLAG was not appended when GPI-Space was compiled with Boost versions 1.62.0 or smaller.
+
 # [22.09] - 2022-10-07
 
 ## Optional Components: IML

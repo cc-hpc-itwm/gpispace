@@ -21,18 +21,41 @@
 #include <boost/any.hpp>
 #include <boost/program_options/errors.hpp>
 
+#include <stdexcept>
+
 namespace iml
 {
   namespace gaspi
   {
     NetdevID::NetdevID (std::string const& option)
-      : value (option == "0" ? 0 : option == "1" ? 1 : -1)
+      : value (-1)
     {
-      if (option != "auto" && value != 0 && value != 1)
+      // rewrap exception for backwards-compatibility
+      try
+      {
+        value = NetdevID::from_string (option);
+      }
+      catch (...)
       {
         throw ::boost::program_options::invalid_option_value
-          ("Expected 'auto' or '0' or '1', got '" + option + "'");
+            ("Expected 'auto' or '<device-id> (e.g. '0', '1', ...), got '" + option + "'");
       }
+    }
+
+    int NetdevID::from_string(std::string const& option)
+    {
+      int value = -1;
+
+      if (option != "auto")
+      {
+        value = std::stoi (option);
+        if (value < -1)
+        {
+          throw std::invalid_argument ("Invalid Device ID");
+        }
+      }
+
+      return value;
     }
 
     std::string NetdevID::to_string() const

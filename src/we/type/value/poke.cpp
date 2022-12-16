@@ -17,8 +17,11 @@
 #include <we/type/value/path/split.hpp>
 #include <we/type/value/poke.hpp>
 
-#include <functional>
+#include <algorithm>
 #include <iterator>
+#include <list>
+#include <string>
+#include <utility>
 
 namespace pnet
 {
@@ -28,7 +31,7 @@ namespace pnet
     {
       namespace
       {
-        struct first_is : public std::unary_function<std::string const&, bool>
+        struct first_is
         {
           first_is (std::string const& what)
             : _what (what)
