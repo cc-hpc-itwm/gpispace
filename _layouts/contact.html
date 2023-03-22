@@ -10,7 +10,7 @@ layout: default
 
   <div class="contact-grid-container">
 
-    {% for contact in site.contacts %}
+    {% for contact in site.data.contacts %}
     <div class="contact-grid-item">
       {% if contact.avatar %}
         {% assign avatar = contact.avatar %}

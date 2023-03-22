@@ -32,8 +32,21 @@
       </label>
 
       <div class="trigger">
-        {% for page in site.urls %}
-        <a class="page-link" href="{{ page.url | relative_url }}">{{ page.text }}</a>
+        {% for page in site.data.menus %}
+        <div class="dropdown">
+          {% if page.submenus %}
+          <button class="page-link">
+            {{ page.text }} <i class="fa fa-caret-down"></i>
+          </button>
+          <div class="dropdown-content">
+            {% for sub in page.submenus %}
+            <a href="{{ sub.url | relative_url }}">{{ sub.text }}</a>
+            {% endfor %}
+          </div>
+          {% else %}
+          <button class="page-link" onclick="window.location.href='{{ page.url | relative_url }}';">{{ page.text }}</button>
+          {% endif %}
+        </div>
         {% endfor %}
       </div>
 

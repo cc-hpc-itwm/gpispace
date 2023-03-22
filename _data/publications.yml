@@ -1,0 +1,130 @@
+- title: Integration-by-parts reductions of Feynman integrals using Singular and GPI-Space
+  authors:
+    - Dominik Bendle
+    - Janko Böhm
+    - Wolfram Decker
+    - Alessandro Georgoudis
+    - Franz-Josef Pfreundt
+    - Mirko Rahn
+    - Pascal Wasser
+    - Yang Zhang
+  url: https://doi.org/10.1007/JHEP02(2020)079
+  journal: In Journal of High Energy Physics
+  volume: 2020
+  pages: 79
+  year: 2020
+
+- title: Towards Massively Parallel Computations in Algebraic Geometry
+  authors:
+    - Janko Böhm
+    - Wolfram Decker
+    - Anne Frühbis-Krüger
+    - Franz-Josef Pfreundt
+    - Mirko Rahn
+    - Lukas Ristau
+  url: https://doi.org/10.1007/s10208-020-09464-x
+  journal: In Foundations of Computational Mathematics
+  volume: 21
+  pages: 768-806
+  year: 2021
+
+- title: pfd-parallel, a Singular/GPI-Space package for massively parallel multivariate partial fractioning
+  authors:
+    - Dominik Bendle
+    - Janko Böhm
+    - Murray Heymann
+    - Rourou Ma
+    - Mirko Rahn
+    - Pascal Wasser
+    - Lukas Ristau
+    - Marcel Wittmann
+    - Yang Zhang
+  url: https://doi.org/10.48550/arXiv.2104.06866
+  journal: In arXiv e-prints
+  pages: arXiv:2104.06866
+  year: 2021
+
+- title: Massively Parallel Computations in Algebraic Geometry
+  authors:
+    - Janko Böhm
+    - Anne Frühbis-Krüger
+  url: https://doi.org/10.1145/3452143.3465510
+  book:
+    title: In Proceedings of the 2021 on International Symposium on Symbolic and Algebraic Computation
+    publisher: Association for Computing Machinery
+  pages: 11-14
+  year: 2021
+
+- title: Module Intersection for the Integration-by-Parts Reduction of Multi-Loop Feynman Integrals
+  authors:
+    - Dominik Bendle
+    - Janko Böhm
+    - Wolfram Decker
+    - Alessandro Georgoudis
+    - Franz-Josef Pfreundt
+    - Mirko Rahn
+    - Yang Zhang
+  url: https://doi.org/10.48550/arXiv.2010.06895
+  journal: In arXiv e-prints
+  pages: arXiv:2010.06895
+  year: 2020
+
+- title: Massively parallel computations in algebraic geometry - not a contradiction
+  authors:
+    - Janko Böhm
+    - Anne Frühbis-Krüger
+    - Mirko Rahn
+  url: https://doi.org/10.48550/arXiv.1811.06092
+  journal: In arXiv e-prints
+  pages: arXiv:1811.06092
+  year: 2018
+
+- title: "Fed-DART and FACT: A solution for Federated Learning in a production environment"
+  authors:
+    - Nico Weber
+    - Patrick Holzer
+    - Tania Jacob
+    - Enislay Ramentol
+  url: https://doi.org/10.48550/arXiv.2205.11267
+  journal: CoRR
+  volume: abs/2205.11267
+  year: 2022
+
+- title: Visualizing 1011 particles from cosmological simulations
+  authors:
+    - Klaus Dolag
+    - Martin Reinecke
+    - Nicolay Hammer
+    - Ferdinand Jamitzky
+    - Luigi Lapichino
+    - Helmut Satzger
+    - Martin Kühn
+    - Mirko Rahn
+  url: https://publica.fraunhofer.de/items/7455e62f-693d-4e40-bf11-a819ac46dc1e
+  journal: inSiDE
+  year: 2015
+
+- title: MapReduce in GPI-Space
+  authors:
+    - Tiberiu Rotaru
+    - Mirko Rahn
+    - Franz-Josef Pfreundt
+  url: https://doi.org/10.1007/978-3-642-54420-0_5
+  book:
+    title: "Euro-Par 2013: Parallel Processing Workshops"
+    publisher: Springer Berlin Heidelberg
+  pages: 43-52
+  year: 2014
+
+- title: FRTM - A Productive Framework for Reverse Time Migration
+  authors:
+    - Daniel Grünewald
+    - Norman Ettrich
+    - Mirko Rahn
+    - Franz-Josef Pfreundt
+  url: https://doi.org/10.3997/2214-4609.20141914
+  book:
+    title: EAGE Workshop on High Performance Computing for Upstream
+    publisher: EAGE Publications BV
+  pages: cp-426
+  year: 2014

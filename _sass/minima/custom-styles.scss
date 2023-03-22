@@ -149,3 +149,81 @@ ul.downloads {
     }
   }
 }
+
+.site-nav {
+  .dropdown {
+    float: left;
+    overflow: hidden;
+  }
+
+  .dropdown .page-link {
+    float: none;
+    display: block;
+    text-align: center;
+    min-width: 120px;
+    font-size: $base-font-size;
+    border: none;
+    outline: none;
+    background-color: inherit;
+    font-family: inherit;
+    padding: 12px 16px;
+    margin: 0;
+  }
+
+  a:hover, .page-link:hover, .dropdown:hover .page-link {
+    background-color: #ddd;
+  }
+
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 120px;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+  }
+
+  .dropdown-content a {
+    float: none;
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+  }
+
+  .dropdown-content a:hover {
+    background-color: #ddd;
+  }
+
+  .dropdown:hover .dropdown-content {
+    display: block;
+  }
+}
+
+.pub-container {
+  padding: 0.01em 16px;
+}
+
+.pub-ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.pub-large {
+  font-size: 18px;
+}
+
+.pub-wide {
+  letter-spacing: 4px;
+}
+
+.pub-ul li {
+  padding: 8px 16px;
+  border-bottom: 1px solid #ddd;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}

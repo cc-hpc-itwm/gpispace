@@ -1,0 +1,32 @@
+# menus entry:
+#   required:
+#     text
+#     url or submenus
+#
+# only one submenu level is supported
+
+- text: Home
+  url: /
+
+- text: Research
+  submenus:
+    - text: Features
+      url: /features
+    - text: Applications
+      url: /applications
+    - text: Publications
+      url: /publications
+
+- text: Documentation
+  submenus:
+    - text: Installation
+      url: /installation
+    - text: How to Use
+      url: /how-to-use
+
+- text: About
+  submenus:
+    - text: Contributing
+      url: /contributing
+    - text: Contact
+      url: /contact
