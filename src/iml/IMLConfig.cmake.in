@@ -5,7 +5,7 @@
 # - function IML_deploy_LocationIndependentBundle
 # - function IML_deploy_LocationIndependentBundle_add_rpath
 
-cmake_minimum_required (VERSION 3.15 FATAL_ERROR)
+cmake_minimum_required (VERSION 3.16)
 
 @PACKAGE_INIT@
 

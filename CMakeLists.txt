@@ -1,29 +1,6 @@
-# This file is part of GPI-Space.
-# Copyright (C) 2022 Fraunhofer ITWM
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program. If not, see <https://www.gnu.org/licenses/>.
-
-cmake_minimum_required (VERSION 3.15 FATAL_ERROR)
+cmake_minimum_required (VERSION 3.16)
 include (${CMAKE_CURRENT_SOURCE_DIR}/project-info.cmake)
 project (gspc VERSION ${GSPC_VERSION} LANGUAGES CXX)
-
-# CMake automatically trims leading zeros in versions. Since GPI-Space
-# versions are dates, revert that.
-if (PROJECT_VERSION_MINOR LESS 10)
-  set (PROJECT_VERSION_MINOR "0${PROJECT_VERSION_MINOR}")
-endif()
-set (PROJECT_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
 
 # Sane default build type with optimizations enabled.
 if (NOT CMAKE_BUILD_TYPE)
@@ -292,7 +269,7 @@ configure_package_config_file (GPISpaceConfig.cmake.in GPISpaceConfig.cmake
     GSPC_HOME
 )
 write_basic_package_version_file (GPISpaceConfigVersion.cmake
-  COMPATIBILITY ExactVersion
+  COMPATIBILITY SameMinorVersion
 )
 
 install (FILES "${CMAKE_CURRENT_BINARY_DIR}/GPISpaceConfig.cmake"

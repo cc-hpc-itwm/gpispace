@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+cmake_version="${1}"
+
+wget -q \
+     "https://github.com/Kitware/CMake/releases/download/v${cmake_version}/cmake-${cmake_version}.tar.gz" \
+     -O "cmake-${cmake_version}.tar.gz"
+tar -xzf "cmake-${cmake_version}.tar.gz"
+cd "cmake-${cmake_version}"
+./bootstrap --parallel=$(nproc) \
+            --prefix=/opt/cmake \
+            -- -D CMAKE_BUILD_TYPE=Release
+make -j $(nproc) install
+

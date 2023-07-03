@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+boost_version="${1}"
+
+wget -q \
+     "https://downloads.sourceforge.net/project/boost/boost/${boost_version}/boost_${boost_version//./_}.tar.gz" \
+     -O "boost_${boost_version//./_}.tar.gz"
+tar -xzf "boost_${boost_version//./_}.tar.gz"
+cd "boost_${boost_version//./_}"
+./bootstrap.sh --prefix="${BOOST_ROOT}"
+./b2 \
+  cflags="-fPIC -fno-gnu-unique" \
+  cxxflags="-fPIC -fno-gnu-unique" \
+  link=static \
+  variant=release \
+  --without-mpi \
+  --without-python \
+  install \
+  -j $(nproc)
+

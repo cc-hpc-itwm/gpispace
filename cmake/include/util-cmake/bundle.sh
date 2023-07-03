@@ -1,24 +1,24 @@
 #!/bin/bash
 
-# This file is part of GPI-Space.
-# Copyright (C) 2022 Fraunhofer ITWM
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program. If not, see <https://www.gnu.org/licenses/>.
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 
 #! This script is not intended to be used stand-alone but is used by
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 #! `add_macros.cmake` to find dynamic libraries to bundle into a
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 #! location and host independent bundle for deployment.
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 
 set -euo pipefail
 

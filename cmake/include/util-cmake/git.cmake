@@ -1,31 +1,58 @@
 #! Determine the Git revision for the repository in \a directory and
 
-# This file is part of GPI-Space.
-# Copyright (C) 2022 Fraunhofer ITWM
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program. If not, see <https://www.gnu.org/licenses/>.
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 #! write it to \a output_variable.
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 #!
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 #! For the ability to tarball a repository without changing the
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 #! invocation of this function, the file `${directory}/revision` is
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 #! checked. If it exists it shall contain the 40 character
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 #! revision. This file is trusted and no further check will happen.
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 #!
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 #! \note Automatically searches for `Git` if not using the
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 #! override. Not finding `Git` or \a directory not being a git
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 #! work dir is an error.
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 function (determine_git_revision directory output_variable_name)
   set (revision_file "${directory}/revision")
   if (EXISTS "${revision_file}")

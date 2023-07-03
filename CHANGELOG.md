@@ -1,3 +1,21 @@
+# [23.06] - 2023-07-03
+
+## CMake Minimum Version Upgrade
+
+The minimum required version of CMake was bumped from `3.15` to `3.16`.
+Starting with this version, CMake supports zero padded version numbers (e.g. 23.06) allowing the removal of some buggy CMake code from GPI-Space.
+
+## Fixes
+
+- Changed the copyright notice in source files to the more compact SPDX standard.
+- Removed the deprecated use of `std::unary_function`.
+
+## Miscellaneous
+
+- Removed the install instructions for GPI-Space dependencies.
+  Dependencies can directly be installed through the Spack package manager instead.
+  The removed instructions are still available through old versions of GPI-Space on the website.
+
 # [22.12] - 2022-12-16
 
 ## GPI-2 Minimum Version Upgrade

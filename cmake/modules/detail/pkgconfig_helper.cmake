@@ -1,45 +1,124 @@
 #! This script is not intended to be used stand-alone but is used by
 
-# This file is part of GPI-Space.
-# Copyright (C) 2022 Fraunhofer ITWM
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program. If not, see <https://www.gnu.org/licenses/>.
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 #! find modules that rely on pkg-config to do the actual finding.
 
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+
 #! A find module using this wrapper should
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 #!
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 #! - Avoid running if the target already exists to avoid duplicate
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 #!   work.
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 #!
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 #! - Call `_pkgconfig_find_library_module()` with the name used to find
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 #!   by pkg-config as well as the intended CMake target's namespace and
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 #!   name.
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 #!
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 #! - Optionally search additional requirements that aren't provided by
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 #!   pkg-config, e.g. tool binaries that come extra with a library.
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 #!
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 #! - Call `_pkgconfig_find_library_module_finalize()`, optionally with
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 #!   a list of additional variables to require being set.
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 #!
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 #! - Optionally, if `${${CMAKE_FIND_PACKAGE_NAME}_FOUND}`, provide
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 #!   additional variables, compile flags or alike, and `return()`
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 #!   otherwise.
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 #!
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 #! Since there are some quirks in how dependencies are resolved, a
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 #! module author is advised to read implementation comments in this
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 #! file.
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 
 find_package (PkgConfig REQUIRED)
 
@@ -202,9 +281,25 @@ macro (_resolve_dependency _name _target_name _search_path _want_relocatable)
 endmacro()
 
 #! Using pkg-config, find \a _pkgname, adding a library
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 #! `_libnamespace::_libname`. Guaranteed to use the prefix
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 #! _PC_${CMAKE_FIND_PACKAGE_NAME} for pkgconfig variables, for use by
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 #! the caller.
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 macro (_pkgconfig_find_library_module _pkgname _libnamespace _libname)
   set (_pc_search_extra_args)
   if (${CMAKE_FIND_PACKAGE_NAME}_FIND_REQUIRED)
@@ -288,7 +383,15 @@ macro (_pkgconfig_find_library_module_handle_success _pkgname _libnamespace _lib
 endmacro()
 
 #! Finalize a previous `_pkgconfig_find_library_module` call, with \a
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 #! ARGN being additional variables to require to be set.
+
+# Copyright (C) 2023 Fraunhofer ITWM
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 macro (_pkgconfig_find_library_module_finalize)
   # FindPkgConfig's `_pkgconfig_unset()` doesn't actually unset but
   # set the value to empty, so the variable is defined and
