@@ -1,8 +1,8 @@
 ---
 layout: versioned_page
 title: Installation
-version: 22.12
-permalink: /v22.12/installation
+version: 23.06
+permalink: /v23.06/installation
 ---
 
 GPI-Space targets x86-64 Linux systems. Other architectures are not
