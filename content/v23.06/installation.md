@@ -225,7 +225,7 @@ feature (enabled by default):
 
 | Spack | CMake |
 | - | - |
-| `[+\|~]monitor` | `-D GSPC_WITH_MONITOR_APP=[ON\|OFF]` |
+| `[+|~]monitor` | `-D GSPC_WITH_MONITOR_APP=[ON|OFF]` |
 
 ### IML
 
@@ -234,7 +234,7 @@ The following options can be used to enable or disable this feature (enabled by 
 
 | Spack | CMake |
 | - | - |
-| `[+\|~]iml` | `-D GSPC_WITH_IML=[ON\|OFF]` |
+| `[+|~]iml` | `-D GSPC_WITH_IML=[ON|OFF]` |
 
 ## Next steps
 
