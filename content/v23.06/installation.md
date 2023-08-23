@@ -191,7 +191,12 @@ self-test example as follows:
 # and SWH_INSTALL_DIR:
 #   export SWH_INSTALL_DIR=<a-shared-directory-visible-on-all-nodes>
 
-"<gpispace-install-prefix>/share/GPISpace/doc/example/stochastic_with_heureka/selftest"
+# for GPI-Space installations using Spack
+spack load gpi-space
+$(spack location -i gpi-space)/share/GPISpace/doc/example/stochastic_with_heureka/selftest
+
+# for manual GPI-Space installations:
+#   <gpispace-install-prefix>/share/GPISpace/doc/example/stochastic_with_heureka/selftest
 ```
 
 If GPI-Space has been built with testing enabled, then `ctest` can be
