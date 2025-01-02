@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <we/type/value/dump.hpp>
@@ -6,8 +6,8 @@
 
 #include <fhg/util/xml.hpp>
 
-#include <boost/format.hpp>
-
+#include <FMT/we/type/value/show.hpp>
+#include <fmt/core.h>
 #include <sstream>
 
 namespace pnet
@@ -58,19 +58,18 @@ namespace pnet
             if (!_parent)
             {
               throw std::runtime_error
-                ( ( ::boost::format ("cannot dump the plain value '%1%'")
-                  % show (value)
-                  ).str()
-                );
+                { fmt::format ("cannot dump the plain value '{}'", show (value))
+                };
             }
             if (_depth < 2)
             {
               throw std::runtime_error
-                ( (::boost::format ("cannot dump the single level property"
-                                 " with key '%1%' and value '%2%'"
-                                 ) % *_parent % show (value)
-                  ).str()
-                );
+                { fmt::format ( "cannot dump the single level property"
+                                " with key '{}' and value '{}'"
+                              , *_parent
+                              , show (value)
+                              )
+                };
             }
 
             _os.open ("property");

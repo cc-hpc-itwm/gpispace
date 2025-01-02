@@ -1,0 +1,150 @@
+<!-- Copyright (C) 2025 Fraunhofer ITWM        -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+
+<defun name="reduce_after_process">
+
+  <in name="N" type="unsigned long" place="N"/>
+  <in name="path" type="string" place="path"/>
+
+  <out name="sum" type="unsigned long" place="sum"/>
+
+  <net>
+    <place name="N" type="unsigned long"/>
+    <place name="next" type="unsigned long">
+      <token><value>0UL</value></token>
+    </place>
+    <place name="path" type="string"/>
+    <place name="sum" type="unsigned long"/>
+
+    <place name="task" type="unsigned long"/>
+    <place name="task_result" type="unsigned long"/>
+
+    <place name="generate_done" type="unsigned long"/>
+
+    <transition name="generate_step">
+      <defun>
+        <inout name="next" type="unsigned long"/>
+        <in name="N" type="unsigned long"/>
+        <out name="i" type="unsigned long"/>
+        <expression>
+          ${i} := ${next};
+          ${next} := ${next} + 1UL;
+        </expression>
+        <condition>
+          ${next} :lt: ${N}
+        </condition>
+      </defun>
+      <connect-read port="N" place="N"/>
+      <connect-inout port="next" place="next"/>
+      <connect-out port="i" place="task"/>
+    </transition>
+
+    <transition name="generate_done">
+      <defun>
+        <inout name="next" type="unsigned long"/>
+        <inout name="N" type="unsigned long"/>
+        <expression>
+          ${next} := 0UL;
+        </expression>
+        <condition>
+          ! (${next} :lt: ${N})
+        </condition>
+      </defun>
+      <connect-inout port="next" place="next"/>
+      <connect-in port="N" place="N"/>
+      <connect-out port="N" place="generate_done"/>
+    </transition>
+
+    <transition name="process">
+      <defun>
+        <in name="task" type="unsigned long"/>
+        <in name="path" type="string"/>
+        <out name="result" type="unsigned long"/>
+        <module name="reduce_after_process"
+                function="result process (path, task)"
+        >
+          <cxx flag="--std=c++17"/>
+          <ld flag="-lstdc++fs"/>
+          <cinclude href="filesystem"/>
+          <cinclude href="fstream"/>
+          <cinclude href="string"/>
+          <code><![CDATA[
+            auto const root {std::filesystem::path {path}};
+
+            // check the reductions have not been started
+            if (std::filesystem::exists (root / "reduce"))
+            {
+              throw std::runtime_error
+                {"process: reductions have been started already."};
+            }
+
+            // leave a pebble in the filesystem
+            std::ofstream {root / std::to_string (task)};
+
+            return task;
+          ]]>
+          </code>
+        </module>
+      </defun>
+      <connect-read port="path" place="path"/>
+      <connect-in port="task" place="task"/>
+      <connect-out port="result" place="task_result"/>
+    </transition>
+
+    <transition name="start_reduction">
+      <defun>
+        <in name="path" type="string"/>
+        <in name="N" type="unsigned long"/>
+        <in name="number_of_unfinished_tasks" type="unsigned long"/>
+        <out name="sum" type="unsigned long"/>
+        <module name="reduce_after_process"
+                function="sum start_reduction (path, N)"
+        >
+          <cxx flag="--std=c++17"/>
+          <ld flag="-lstdc++fs"/>
+          <cinclude href="filesystem"/>
+          <cinclude href="fstream"/>
+          <cinclude href="string"/>
+          <code><![CDATA[
+            auto const root {std::filesystem::path {path}};
+
+            // leave a pebble in the filesystem
+            std::ofstream {root / "reduce"};
+
+            // check all the pebbles are there
+            for (auto i {0UL}; i != N; ++i)
+            {
+              if (!std::filesystem::exists (root / std::to_string (i)))
+              {
+                throw std::runtime_error
+                  {"start_reduction: Not all pebbles found."};
+              }
+            }
+
+            return 0UL;
+          ]]></code>
+        </module>
+        <condition>
+          ${number_of_unfinished_tasks} :eq: 0UL
+        </condition>
+      </defun>
+      <connect-read port="path" place="path"/>
+      <connect-in port="N" place="generate_done"/>
+      <connect-out port="sum" place="sum"/>
+      <connect-number-of-tokens port="number_of_unfinished_tasks" place="task"/>
+    </transition>
+
+    <transition name="reduce">
+      <defun>
+        <in name="value" type="unsigned long"/>
+        <inout name="sum" type="unsigned long"/>
+        <expression>
+          ${sum} := ${sum} + ${value}
+        </expression>
+      </defun>
+      <connect-in port="value" place="task_result"/>
+      <connect-inout port="sum" place="sum"/>
+    </transition>
+
+  </net>
+</defun>

@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -10,7 +10,7 @@
 #include <util-generic/testing/printer/multimap.hpp>
 #include <util-generic/testing/require_container_is_permutation.hpp>
 
-#include <boost/format.hpp>
+#include <fmt/core.h>
 
 #include <string>
 
@@ -21,11 +21,11 @@ BOOST_FIXTURE_TEST_CASE
 {
   auto const worker_per_node (random.between (1, 100));
 
-  auto const topology (str ( ::boost::format ("%1%:%2%")
-                           % (random.bit() ? "A" : "B")
-                           % worker_per_node
-                           )
-                      );
+  auto const topology { fmt::format ("{}:{}"
+                                    , random.bit() ? "A" : "B"
+                                    , worker_per_node
+                                    )
+                      };
 
   WE_TEST_EUREKA_PARSE_COMMAND_LINE_COMPILE_PNET_BOOT_AND_SUBMIT
     (multi_mod, topology);

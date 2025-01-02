@@ -1,12 +1,13 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <util-generic/callable_signature.hpp>
-#include <util-generic/cxx17/apply.hpp>
 #include <util-generic/serialization/std/tuple.hpp>
 
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
+
+#include <tuple>
 
 namespace fhg
 {
@@ -67,7 +68,7 @@ namespace fhg
                         , Yielding
                         )
       {
-        R result ( util::cxx17::apply
+        R result ( std::apply
                      (fun, arguments<Args...> (input, yield, Yielding{}))
                  );
         output << false;
@@ -87,7 +88,7 @@ namespace fhg
                         , Yielding
                         )
       {
-        util::cxx17::apply (fun, arguments<Args...> (input, yield, Yielding{}));
+        std::apply (fun, arguments<Args...> (input, yield, Yielding{}));
         output << false;
       }
     };

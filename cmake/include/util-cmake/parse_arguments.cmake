@@ -1,4 +1,4 @@
-# Copyright (C) 2023 Fraunhofer ITWM
+# Copyright (C) 2025 Fraunhofer ITWM
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 include_guard()
@@ -166,8 +166,6 @@ endmacro()
 ###############################################################################
 
 set (_include_dir ${CMAKE_CURRENT_LIST_DIR})
-
-include (${_include_dir}/colors.cmake)
 
 ###############################################################################
 # Private
@@ -353,11 +351,9 @@ function (util_cmake_parse_arguments
   endforeach()
 
   # assemble usage string
-  util_cmake_color_string (${_internal}_usage bold_blue "[[ USAGE ]]\n\n")
-  util_cmake_color_string (_header bold_white "Required Arguments:")
-  string (APPEND ${_internal}_usage "${_header}\n${_required_args}\n")
-  util_cmake_color_string (_header bold_white "Optional Arguments:")
-  string (APPEND ${_internal}_usage "${_header}\n${_optional_args}\n")
+  string (APPEND ${_internal}_usage "[[ USAGE ]]\n\n")
+  string (APPEND ${_internal}_usage "Required Arguments:\n${_required_args}\n")
+  string (APPEND ${_internal}_usage "Optional Arguments:\n${_optional_args}\n")
 
   # parse arguments
   cmake_parse_arguments (${_prefix}

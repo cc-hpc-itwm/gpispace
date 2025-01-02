@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <pnete/ui/execution_monitor_detail.hpp>
@@ -14,7 +14,6 @@
 
 #include <fhg/assert.hpp>
 #include <fhg/util/backtracing_exception.hpp>
-#include <fhg/util/macros.hpp>
 
 #include <QCheckBox>
 #include <QHBoxLayout>
@@ -733,7 +732,7 @@ namespace fhg
           case event::STATE_CANCELED: return "canceled";
           }
 
-          INVALID_ENUM_VALUE (worker_model::state_type, state);
+          throw std::logic_error {"invalid enum value"};
         }
 
         bool maybe_show_tooltip
@@ -967,7 +966,7 @@ namespace fhg
           throw std::runtime_error ("can't create editor for non-editable section");
         }
 
-        INVALID_ENUM_VALUE (execution_monitor_proxy::column_type, column);
+        throw std::logic_error {"invalid enum value"};
       }
 
       void execution_monitor_delegate::release_editor

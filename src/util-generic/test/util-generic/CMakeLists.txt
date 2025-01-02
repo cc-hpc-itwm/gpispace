@@ -25,7 +25,7 @@ function (util_generic_unit_test _path)
     add_unit_test (NAME "${_name}"
       SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/${_path}.cpp" ${ARG_SOURCES}
       USE_BOOST
-      LIBRARIES Util::Generic ${ARG_LIBRARIES}
+      LIBRARIES Util::Generic ${ARG_LIBRARIES} PRIVATE fmt
       ${ARG_UNPARSED_ARGUMENTS}
     )
   else()
@@ -209,7 +209,7 @@ if (BUILD_TESTING)
 endif()
 
 util_generic_unit_test (system
-  LIBRARIES Boost::filesystem
+  LIBRARIES Boost::filesystem PRIVATE fmt
   DEPENDS system_command.exe
   ARGS "$<TARGET_FILE:system_command.exe>"
 )

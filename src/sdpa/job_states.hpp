@@ -1,11 +1,10 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
 
-#include <fhg/util/macros.hpp>
-
 #include <string>
+#include <stdexcept>
 
 namespace sdpa
 {
@@ -47,7 +46,7 @@ namespace sdpa
         return "SDPA::Canceling";
       }
 
-      INVALID_ENUM_VALUE (status::code, code);
+      throw std::logic_error {"invalid enum value"};
     }
   }
 }

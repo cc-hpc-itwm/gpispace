@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <we/type/Activity.hpp>
@@ -15,13 +15,12 @@
 #include <util-generic/print_exception.hpp>
 
 #include <boost/lexical_cast.hpp>
-#include <boost/optional.hpp>
 #include <boost/program_options.hpp>
-#include <boost/range/adaptor/map.hpp>
 
 #include <fstream>
 #include <functional>
 #include <iostream>
+#include <optional>
 #include <sstream>
 
 namespace
@@ -47,6 +46,7 @@ namespace
     static std::string const node ("white");
     static std::string const put_token ("lightblue");
     static std::string const tp_many ("black:invis:black");
+    static std::string const number_of_tokens ("orange");
   }
 
   namespace style
@@ -230,8 +230,8 @@ namespace
     , id_type&
     , options const&
     , fhg::util::indenter&
-    , ::boost::optional<we::type::TokensOnPorts> input
-    , ::boost::optional<we::type::TokensOnPorts> output
+    , std::optional<we::type::TokensOnPorts> input
+    , std::optional<we::type::TokensOnPorts> output
     );
 
   class visit_transition : public ::boost::static_visitor<std::string>
@@ -293,18 +293,23 @@ namespace
 
       s << _indent << "subgraph cluster_net_" << id_net << " {";
 
-      for (auto const& ip : net.places())
+      for (auto const& [place_id, place] : net.places())
       {
-        we::place_id_type const& place_id (ip.first);
-        place::type const& place (ip.second);
+        auto const number_of_tokens_place_id
+          {net.number_of_tokens_place (place_id)};
+
+        if (number_of_tokens_place_id)
+        {
+          s << _indent << "subgraph cluster_place_" << place_id << " {"
+            << keyval ("style", "invis")
+            ;
+        }
 
         std::ostringstream token;
 
         if (opts.show_token)
         {
-          for ( pnet::type::value::value_type const& t
-              : net.get_token (place_id) | ::boost::adaptors::map_values
-              )
+          for (auto const& [_ignore, t] : net.get_token (place_id))
           {
             token << endl << pnet::type::value::show (t);
           }
@@ -326,8 +331,25 @@ namespace
              , with_signature (place.name(), place.signature(), opts)
              + quote (token.str())
              + virt.str()
-             , place.is_marked_for_put_token() ? color::put_token : color::node
+             , place.is_marked_for_put_token() ? color::put_token
+               : place.name()[0] == '#' ? color::number_of_tokens
+               : color::node
              );
+
+        if (number_of_tokens_place_id)
+        {
+          s << fhg::util::deeper (_indent)
+            << name ( id_net
+                    , "place_" + ::boost::lexical_cast<std::string> (place_id)
+                    )
+            << arrow
+            << name ( id_net
+                    , "place_" + ::boost::lexical_cast<std::string> (*number_of_tokens_place_id)
+                    )
+            << association()
+            << "}"
+            ;
+        }
       }
 
       for (auto const& it : net.transitions())
@@ -337,7 +359,7 @@ namespace
         const id_type id_trans (++id);
 
         ++_indent;
-        s << to_dot (trans, id, opts, _indent, ::boost::none, ::boost::none);
+        s << to_dot (trans, id, opts, _indent, std::nullopt, std::nullopt);
         --_indent;
 
         if (net.port_to_place().find (trans_id) != net.port_to_place().end())
@@ -350,7 +372,7 @@ namespace
                       )
               << arrow
               << name ( id_net
-                      , "place_" + ::boost::lexical_cast<std::string> (port_to_place.second.first)
+                      , "place_" + ::boost::lexical_cast<std::string> (port_to_place.second._place_id)
                       );
           }
         }
@@ -366,7 +388,7 @@ namespace
                       )
               << arrow
               << name ( id_net
-                      , "place_" + ::boost::lexical_cast<std::string> (port_to_place.second.first)
+                      , "place_" + ::boost::lexical_cast<std::string> (port_to_place.second._place_id)
                       )
               << brackets (keyval ("color", color::tp_many));
           }
@@ -382,7 +404,7 @@ namespace
                       )
               << arrow
               << name ( id_trans
-                      , "port_" + ::boost::lexical_cast<std::string> (place_to_port.second.first)
+                      , "port_" + ::boost::lexical_cast<std::string> (place_to_port.second._port_id)
                       )
               << (  net.place_to_transition_read().find
                     ( we::type::net_type::adj_pt_type::value_type
@@ -393,7 +415,7 @@ namespace
                  : ""
                  );
 
-            if (place_to_port.second.second.get ({"pnetc", "tunnel"}))
+            if (place_to_port.second._property.get ({"pnetc", "tunnel"}))
             {
               s << association();
             }
@@ -413,8 +435,8 @@ namespace
     , id_type& id
     , options const& opts
     , fhg::util::indenter& indent
-    , ::boost::optional<we::type::TokensOnPorts> input
-    , ::boost::optional<we::type::TokensOnPorts> output
+    , std::optional<we::type::TokensOnPorts> input
+    , std::optional<we::type::TokensOnPorts> output
     )
   {
     std::ostringstream s;
@@ -465,9 +487,9 @@ namespace
       {
         for (auto const& vp : *input)
         {
-          if (vp.second == p.first)
+          if (vp._port_id == p.first)
           {
-            token << endl << pnet::type::value::show (vp.first);
+            token << endl << pnet::type::value::show (vp._token);
           }
         }
       }
@@ -487,9 +509,9 @@ namespace
       {
         for (auto const& vp : *output)
         {
-          if (vp.second == p.first)
+          if (vp._port_id == p.first)
           {
-            token << endl << pnet::type::value::show (vp.first);
+            token << endl << pnet::type::value::show (vp._token);
           }
         }
       }

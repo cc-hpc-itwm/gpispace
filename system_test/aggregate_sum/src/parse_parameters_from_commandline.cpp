@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <aggregate_sum/parse_parameters_from_commandline.hpp>
@@ -11,25 +11,24 @@
 namespace aggregate_sum
 {
   Parameters parse_parameters_from_commandline
-    (ParametersDescription const& driver_opts,
-     ParametersDescription const& workflow_opts,
-     int argc,
-     char** argv
+    ( ParametersDescription const& driver_opts
+    , ParametersDescription const& workflow_opts
+    , int argc
+    , char** argv
     )
   {
-    namespace po = boost::program_options;
-
     ParametersDescription options;
-    options.add_options()("help", "this message");
+    options.add_options() ("help", "this message");
     options.add (driver_opts);
     options.add (workflow_opts);
 
     Parameters parameters;
-    po::store ( po::command_line_parser (argc, argv)
-              . options (options)
-              . run()
-              , parameters
-              );
+    ::boost::program_options::store
+        ( ::boost::program_options::command_line_parser (argc, argv)
+          . options (options)
+          . run()
+        , parameters
+        );
 
     if (parameters.count ("help"))
     {

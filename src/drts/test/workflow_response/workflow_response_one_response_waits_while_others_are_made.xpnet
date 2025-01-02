@@ -1,4 +1,4 @@
-<!-- Copyright (C) 2023 Fraunhofer ITWM        -->
+<!-- Copyright (C) 2025 Fraunhofer ITWM        -->
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 
 <defun name="workflow_response">
@@ -42,7 +42,7 @@
           <cinclude href="chrono"/>
           <cinclude href="random"/>
           <cinclude href="thread"/>
-          <cxx flag="--std=c++11"/>
+          <cxx flag="--std=c++17"/>
           <code><![CDATA[
             // This is the random duration which the test spins on
             // get_and_update_state_trigger.

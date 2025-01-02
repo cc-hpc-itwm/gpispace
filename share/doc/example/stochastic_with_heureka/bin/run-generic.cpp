@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <bin/run.hpp>
@@ -6,11 +6,12 @@
 
 #include <we/type/value/read.hpp>
 
-#include <boost/filesystem.hpp>
-#include <boost/format.hpp>
 #include <boost/program_options.hpp>
 
 #include <exception>
+#include <filesystem>
+#include <fmt/core.h>
+#include <fmt/std.h>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -23,21 +24,29 @@ namespace
     constexpr char const* const user_data ("user-data");
   }
 
-  struct existing_path : public ::boost::filesystem::path
+  struct existing_path
   {
-    existing_path (std::string const& option)
-      : ::boost::filesystem::path (::boost::filesystem::canonical (option))
+    existing_path (std::filesystem::path const& path)
+      : _path {std::filesystem::canonical (path)}
     {
-      if (!::boost::filesystem::exists (*this))
+      if (!std::filesystem::exists (_path))
       {
         throw ::boost::program_options::invalid_option_value
-          ((::boost::format ("%1% does not exist.") % *this).str());
+          {fmt::format ("{} does not exist.", _path)};
       }
     }
 
-    existing_path (::boost::filesystem::path const& path)
-      : existing_path (path.string())
+    existing_path (std::string const& option)
+      : existing_path {std::filesystem::path {option}}
     {}
+
+    operator std::filesystem::path() const
+    {
+      return _path;
+    }
+
+  private:
+    std::filesystem::path _path;
   };
 
   void validate ( ::boost::any& v
@@ -75,7 +84,7 @@ try
             return options;
           }()
         , [] ( ::boost::program_options::variables_map const& vm
-             , ::boost::filesystem::path
+             , std::filesystem::path
              )
           {
             return vm[option_name::implementation].as<existing_path>();

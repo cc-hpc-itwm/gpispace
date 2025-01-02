@@ -1,13 +1,14 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
 
 #include <gspc/detail/dllexport.hpp>
 
-#include <boost/optional.hpp>
+#include <boost/optional.hpp> // deprecated
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -37,6 +38,15 @@ namespace gspc
     //!        instance, e.g.  with "base_port = 9876" and
     //!        "num_per_node = 4" the used ports are {9876, 9877,
     //!        9878, 9879}
+    worker_description ( std::vector<std::string> capabilities
+                       , std::size_t num_per_node
+                       , std::size_t max_nodes
+                       , std::size_t shm_size
+                       , std::optional<std::size_t> socket
+                       , std::optional<unsigned short> base_port
+                       );
+
+    [[deprecated ("use std::optional when creating a worker description")]]
     worker_description ( std::vector<std::string> capabilities
                        , std::size_t num_per_node
                        , std::size_t max_nodes

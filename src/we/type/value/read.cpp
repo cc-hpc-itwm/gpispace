@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <we/type/value/read.hpp>
@@ -7,6 +7,7 @@
 #include <fhg/util/parse/error.hpp>
 #include <fhg/util/parse/position.hpp>
 #include <fhg/util/parse/require.hpp>
+#include <util-generic/functor_visitor.hpp>
 
 #include <functional>
 
@@ -211,7 +212,13 @@ namespace pnet
           }
 
         default:
-          return fhg::util::read_num (pos);
+          return fhg::util::visit
+            ( fhg::util::read_num (pos)
+            , [] (auto const& n)
+              {
+                return value_type {n};
+              }
+            );
         }
       }
 

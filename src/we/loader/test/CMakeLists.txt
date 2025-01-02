@@ -30,6 +30,7 @@ fhg_add_test (NAME we_loader_module-needs_api_guard
   USE_BOOST
   LIBRARIES GPISpace::header-only
             Util::Generic
+            PRIVATE fmt
   DEPENDS empty_not_linked_with_pnet
 )
 

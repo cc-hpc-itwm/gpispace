@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -32,20 +32,6 @@ namespace iml
 {
   class Client;
   class SharedMemoryAllocation;
-}
-
-//! is: Activity.fwd.hpp
-namespace we
-{
-  namespace type
-  {
-    class Activity;
-
-    using TokenOnPort = std::pair< pnet::type::value::value_type
-                                 , we::port_id_type
-                                 >;
-    using TokensOnPorts = std::vector<TokenOnPort>;
-  }
 }
 
 namespace we

@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <xml/parse/type/memory_transfer.hpp>
@@ -11,9 +11,10 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <boost/format.hpp>
 #include <boost/test/data/test_case.hpp>
 
+#include <FMT/util-generic/join.hpp>
+#include <fmt/core.h>
 #include <functional>
 #include <iomanip>
 
@@ -55,26 +56,26 @@ namespace
       );
 
     const std::string expected
-      ( ( ::boost::format (R"EOS(<memory-%1%%4%%5%>
-  <global>%2%</global>
-  <local>%3%</local>
-</memory-%1%>)EOS")
-        % tag
-        % fhg::util::join (expressions_global, ';')
-        % fhg::util::join (expressions_local, ';')
-        % ( not_modified_in_module_call
-          ? ( ::boost::format (" not-modified-in-module-call=\"%1%\"")
-            % (*not_modified_in_module_call ? "true" : "false")
-            ).str()
+      ( fmt::format (R"EOS(<memory-{0}{3}{4}>
+  <global>{1}</global>
+  <local>{2}</local>
+</memory-{0}>)EOS"
+        , tag
+        , fhg::util::join (expressions_global, ';')
+        , fhg::util::join (expressions_local, ';')
+        , ( not_modified_in_module_call
+          ? fmt::format ( " not-modified-in-module-call=\"{}\""
+                        , *not_modified_in_module_call ? "true" : "false"
+                        )
           : ""
           )
-        % ( allow_empty_ranges
-          ? ( ::boost::format (" allow-empty-ranges=\"%1%\"")
-            % (*allow_empty_ranges ? "true" : "false")
-            ).str()
+        , ( allow_empty_ranges
+          ? fmt::format ( " allow-empty-ranges=\"{}\""
+                        , *allow_empty_ranges ? "true" : "false"
+                        )
           : ""
           )
-        ).str()
+        )
       );
 
     BOOST_REQUIRE_EQUAL (expected, oss.str());

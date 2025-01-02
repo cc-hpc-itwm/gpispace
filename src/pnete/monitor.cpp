@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <pnete/ui/execution_monitor.hpp>
@@ -16,9 +16,7 @@
 #include <util-qt/message_box.hpp>
 #include <util-qt/scoped_until_qt_owned_ptr.hpp>
 
-#include <boost/optional.hpp>
 #include <boost/program_options.hpp>
-#include <boost/utility/in_place_factory.hpp>
 
 #include <QtCore/QString>
 #include <QtCore/QStringList>
@@ -29,7 +27,10 @@
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QTabWidget>
 
+#include <functional>
 #include <iostream>
+#include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -80,13 +81,21 @@ try
       }
     );
 
-  ::boost::optional<fhg::logging::tcp_server_providing_add_emitters>
-    tcp_server_providing_add_emitters;
   auto const port (option::port.get<unsigned short> (vm));
-  if (port)
-  {
-    tcp_server_providing_add_emitters = ::boost::in_place (&log_receiver, *port);
-  }
+  auto tcp_server_providing_add_emitters
+    { std::invoke
+      ( [&]() -> std::optional<fhg::logging::tcp_server_providing_add_emitters>
+        {
+          if (port)
+          {
+            return std::optional<fhg::logging::tcp_server_providing_add_emitters>
+              {std::in_place, std::addressof (log_receiver), *port};
+          }
+
+          return {};
+        }
+      )
+    };
 
   auto add_emitter (window.menuBar()->addAction ("Add emitters"));
   add_emitter->setShortcuts (QKeySequence::New);

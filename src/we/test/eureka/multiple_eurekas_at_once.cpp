@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -10,8 +10,6 @@
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/multimap.hpp>
 #include <util-generic/testing/require_container_is_permutation.hpp>
-
-#include <boost/range/adaptor/indexed.hpp>
 
 #include <set>
 #include <string>
@@ -34,7 +32,7 @@ BOOST_FIXTURE_TEST_CASE
   auto const eureka_groups (random.unique_eureka_groups (number_of_groups));
   unsigned int total_number_of_tasks (0);
 
-  for (auto group : eureka_groups | ::boost::adaptors::indexed (0))
+  for (auto const& group : eureka_groups)
   {
     auto const number_of_tasks
       (random.between (0, worker_per_node_per_group * NUMBER_OF_NODES()));
@@ -42,10 +40,10 @@ BOOST_FIXTURE_TEST_CASE
     for (unsigned int t (0); t < number_of_tasks; ++t, ++total_number_of_tasks)
     {
       auto const task (random.unique_task());
-      expected_tasks[group.value()].emplace (task);
+      expected_tasks[group].emplace (task);
 
       WE_TEST_EUREKA_PUT_TOKEN ("task", task);
-      WE_TEST_EUREKA_PUT_TOKEN ("eureka_group", group.value());
+      WE_TEST_EUREKA_PUT_TOKEN ("eureka_group", group);
       WE_TEST_EUREKA_PUT_TOKEN ("sleep_for", random.sleep_time());
     }
 

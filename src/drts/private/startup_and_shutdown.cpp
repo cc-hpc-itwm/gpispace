@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <drts/private/startup_and_shutdown.hpp>
@@ -10,11 +10,9 @@
 
 #include <fhg/util/starts_with.hpp>
 #include <util-generic/functor_visitor.hpp>
-#include <util-generic/getenv.hpp>
 #include <util-generic/hostname.hpp>
 #include <util-generic/join.hpp>
 #include <util-generic/make_optional.hpp>
-#include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_exception.hpp>
 #include <util-generic/read_file.hpp>
 #include <util-generic/read_lines.hpp>
@@ -27,17 +25,19 @@
 #include <util-rpc/remote_socket_endpoint.hpp>
 #include <util-rpc/remote_tcp_endpoint.hpp>
 
-#include <boost/algorithm/string/classification.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/format.hpp>
 #include <boost/optional.hpp>
-#include <boost/range/adaptors.hpp>
 #include <boost/serialization/unordered_map.hpp>
 #include <boost/utility/in_place_factory.hpp>
 
+#include <FMT/util-generic/exception_printer.hpp>
+#include <FMT/rif/entry_point.hpp>
 #include <algorithm>
 #include <atomic>
 #include <cassert>
+#include <cstdlib>
+#include <exception>
+#include <fmt/core.h>
 #include <functional>
 #include <future>
 #include <iterator>
@@ -47,7 +47,6 @@
 #include <stdexcept>
 #include <tuple>
 #include <type_traits>
-
 #include <unistd.h>
 
 namespace fhg
@@ -71,7 +70,7 @@ namespace fhg
           );
       }
     }
-    ::boost::optional<pid_t> processes_storage::pidof
+    std::optional<pid_t> processes_storage::pidof
       (fhg::rif::entry_point const& entry_point, std::string const& name)
     {
       std::lock_guard<std::mutex> const guard (_guard);
@@ -80,14 +79,14 @@ namespace fhg
 
       if (pos_entry_point == _.end())
       {
-        return ::boost::none;
+        return {};
       }
 
       auto pos_name (pos_entry_point->second.find (name));
 
       if (pos_name == pos_entry_point->second.end())
       {
-        return ::boost::none;
+        return {};
       }
 
       return pos_name->second;
@@ -100,11 +99,11 @@ namespace
   std::string build_parent_with_hostinfo
     (std::string const& name, fhg::drts::hostinfo_type const& hostinfo)
   {
-    return ( ::boost::format ("%1%%%%2%%%%3%")
-           % name
-           % hostinfo.first
-           % hostinfo.second
-           ).str();
+    return fmt::format ( "{}%{}%{}"
+                       , name
+                       , hostinfo.first
+                       , hostinfo.second
+                       );
   }
 
   fhg::drts::hostinfo_type start_agent
@@ -176,8 +175,19 @@ namespace fhg
      auto const& description (*description_._);
 
      std::string name_prefix (fhg::util::join (description.capabilities, '+').string());
+
+     auto is_any_of
+       { [] (std::string cs)
+         {
+           return [cs] (auto c)
+             {
+               return cs.find (c) != std::string::npos;
+             };
+         }
+       };
+
      std::replace_if
-       (name_prefix.begin(), name_prefix.end(), ::boost::is_any_of ("+#.-"), '_');
+       (name_prefix.begin(), name_prefix.end(), is_any_of ("+#.-"), '_');
 
      info_output << "I: starting " << name_prefix << " workers (parent "
                  << parent_name << ", "
@@ -190,13 +200,13 @@ namespace fhg
                  << parent_name << " on rif entry point "
                  << fhg::util::join
                       ( entry_points
-                      | ::boost::adaptors::transformed
-                          ( [] (fhg::rif::entry_point const& entry_point)
-                            {
-                              return entry_point.string();
-                            }
-                          )
                       , ", "
+                      , [] ( std::ostream& os
+                           , auto const& entry_point
+                           ) -> std::ostream&
+                        {
+                          return os << entry_point.string();
+                        }
                       )
                  << "\n";
 
@@ -231,13 +241,13 @@ namespace fhg
      if (description.socket)
      {
        arguments.emplace_back ("--socket");
-       arguments.emplace_back (std::to_string (description.socket.get()));
+       arguments.emplace_back (std::to_string (*description.socket));
      }
 
-     if (certificates)
+     if (certificates.path.has_value())
      {
        arguments.emplace_back ("--certificates");
-       arguments.emplace_back (certificates->string());
+       arguments.emplace_back (certificates.path->string());
      }
 
      std::atomic<std::size_t> num_nodes (0);
@@ -250,20 +260,22 @@ namespace fhg
         (std::min (64UL, entry_points.size()));
 
       std::list<std::pair<rif::client, rif::entry_point>> rif_connections;
-      util::nest_exceptions<std::runtime_error>
-        ( [&]
-          {
-            for (rif::entry_point const& entry_point : entry_points)
-            {
-              rif_connections.emplace_back
-                ( std::piecewise_construct
-                , std::forward_as_tuple (io_service, entry_point)
-                , std::forward_as_tuple (entry_point)
-                );
-            }
-          }
-        , "connecting to rif entry points"
-        );
+      try
+      {
+        for (rif::entry_point const& entry_point : entry_points)
+        {
+          rif_connections.emplace_back
+            ( std::piecewise_construct
+            , std::forward_as_tuple (io_service, entry_point)
+            , std::forward_as_tuple (entry_point)
+            );
+        }
+      }
+      catch (...)
+      {
+        std::throw_with_nested
+          (std::runtime_error {"connecting to rif entry points"});
+      }
 
       std::vector<std::tuple< fhg::rif::entry_point
                             , std::future<fhg::rif::protocol::start_worker_result>
@@ -299,24 +311,21 @@ namespace fhg
               ( name_prefix + "-" + connection.second.string()
               + "-" + std::to_string (identity + 1)
               + ( description.socket
-                ? ("." + std::to_string (description.socket.get()))
+                ? ("." + std::to_string (*description.socket))
                 : std::string()
                 )
               );
             std::string const storage_name ("drts-kernel-" + name);
 
+            if ( auto const mpid
+                   {processes.pidof (connection.second, storage_name)}
+               )
             {
-              ::boost::optional<pid_t> const mpid
-                (processes.pidof (connection.second, storage_name));
-
-              if (!!mpid)
-              {
-                throw std::logic_error
-                  ( "process with name '" + name + "' on entry point '"
-                  + connection.second.string() + "' already exists with pid "
-                  + std::to_string (*mpid)
-                  );
-              }
+              throw std::logic_error
+                ( "process with name '" + name + "' on entry point '"
+                + connection.second.string() + "' already exists with pid "
+                + std::to_string (*mpid)
+                );
             }
 
             std::unordered_map<std::string, std::string> environment;
@@ -333,7 +342,7 @@ namespace fhg
 
             for (auto const& key : worker_env_copy_variable)
             {
-              auto const value (fhg::util::getenv (key.c_str()));
+              auto const value (std::getenv (key.c_str()));
               if (!value)
               {
                 throw std::invalid_argument
@@ -341,7 +350,7 @@ namespace fhg
                   + "', but variable is not set"
                   );
               }
-              environment.emplace (key, *value);
+              environment.emplace (key, value);
             }
 
             if (worker_env_copy_current)
@@ -449,12 +458,14 @@ namespace fhg
       {
         return util::visit<std::unique_ptr<rpc::remote_endpoint>>
           ( ep.best (util::hostname())
-          , [&] (logging::socket_endpoint const& as_socket)
+          , [&] ( logging::socket_endpoint const& as_socket
+                ) -> std::unique_ptr<rpc::remote_endpoint>
             {
               return std::make_unique<rpc::remote_socket_endpoint>
                 (io_service, as_socket.socket);
             }
-          , [&] (logging::tcp_endpoint const& as_tcp)
+          , [&] ( logging::tcp_endpoint const& as_tcp
+                ) -> std::unique_ptr<rpc::remote_endpoint>
             {
               return std::make_unique<rpc::remote_tcp_endpoint>
                 (io_service, as_tcp);
@@ -507,15 +518,19 @@ namespace fhg
         info_output << "I: starting top level gspc logging demultiplexer on "
                     << log_rif_entry_point->hostname << "\n";
 
-        logging_rif_info
-          = util::nest_exceptions<std::runtime_error>
-              ( [&]
-                {
-                  return logging_rif_client->start_logging_demultiplexer
-                    (installation_path.logging_demultiplexer()).get();
-                }
-              , "Starting top level logging demultiplexer failed"
-              );
+        try
+        {
+          logging_rif_info
+            = logging_rif_client->start_logging_demultiplexer
+                (installation_path.logging_demultiplexer()).get();
+        }
+        catch (...)
+        {
+          std::throw_with_nested
+            ( std::runtime_error
+                {"Starting top level logging demultiplexer failed"}
+            );
+        }
 
         info_output << "   => accepting registration on '"
                     << logging_rif_info->sink_endpoint.to_string()
@@ -528,36 +543,43 @@ namespace fhg
           {logging_rif_info->sink_endpoint};
         for (auto const& receiver : default_log_receivers)
         {
-          util::nest_exceptions<std::runtime_error>
-            ( [&]
-              {
-                auto const endpoint (connect (io_service, receiver));
-                using fun = logging::protocol::receiver::add_emitters;
-                rpc::sync_remote_function<fun> {*endpoint} (top_level_endpoint);
-              }
-            , "Requesting " + receiver.to_string()
-            + " to connect to top level logging demultiplexer failed"
-            );
+          try
+          {
+            auto const endpoint (connect (io_service, receiver));
+            using fun = logging::protocol::receiver::add_emitters;
+            rpc::sync_remote_function<fun> {*endpoint} (top_level_endpoint);
+          }
+          catch (...)
+          {
+            std::throw_with_nested
+              ( std::runtime_error
+                 { "Requesting " + receiver.to_string()
+                 + " to connect to top level logging demultiplexer failed"
+                 }
+              );
+          }
         }
       }
 
       std::list<std::pair<rif::client, rif::entry_point>> rif_connections;
       std::vector<std::string> hostnames;
-      util::nest_exceptions<std::runtime_error>
-        ( [&]
-          {
-            for (rif::entry_point const& entry_point : rif_entry_points)
-            {
-              rif_connections.emplace_back
-                ( std::piecewise_construct
-                , std::forward_as_tuple (io_service, entry_point)
-                , std::forward_as_tuple (entry_point)
-                );
-              hostnames.emplace_back (entry_point.hostname);
-            }
-          }
-        , "connecting to rif entry points"
-        );
+      try
+      {
+        for (rif::entry_point const& entry_point : rif_entry_points)
+        {
+          rif_connections.emplace_back
+            ( std::piecewise_construct
+            , std::forward_as_tuple (io_service, entry_point)
+            , std::forward_as_tuple (entry_point)
+            );
+          hostnames.emplace_back (entry_point.hostname);
+        }
+      }
+      catch (...)
+      {
+        std::throw_with_nested
+          (std::runtime_error {"connecting to rif entry points"});
+      }
 
       if (gpi_socket)
       {
@@ -816,13 +838,16 @@ namespace fhg
             {
               for (auto const& fails : failure.second.second)
               {
-                _info_output <<
-                  ( ::boost::format ("Could not terminate %1%[%2%] on %3%: %4%")
-                  % failure.second.first
-                  % fails.first
-                  % failure.first
-                  % util::exception_printer (fails.second)
-                  ) << std::endl;
+                _info_output
+                  << fmt::format
+                     ( "Could not terminate {}[{}] on {}: {}"
+                     , failure.second.first
+                     , fails.first
+                     , failure.first
+                     , util::exception_printer (fails.second)
+                     )
+                  << std::endl
+                  ;
               }
             }
           }

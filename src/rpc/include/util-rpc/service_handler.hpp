@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -6,8 +6,6 @@
 #include <util-rpc/detail/unique_scoped_handler_insert.hpp>
 #include <util-rpc/function_description.hpp>
 #include <util-rpc/service_dispatcher.hpp>
-
-#include <boost/noncopyable.hpp>
 
 namespace fhg
 {
@@ -20,7 +18,7 @@ namespace fhg
     //! function \a Description which has been declared using \c
     //! FHG_RPC_FUNCTION_DESCRIPTION.
     template<typename Description>
-      struct service_handler : ::boost::noncopyable
+      struct service_handler
     {
       static_assert ( is_function_description_t<Description>::value
                     , "Description shall be a FHG_RPC_FUNCTION_DESCRIPTION"
@@ -64,6 +62,11 @@ namespace fhg
                         , Func&& handler
                         , Yielding = Yielding{}
                         );
+
+      service_handler (service_handler const&) = delete;
+      service_handler (service_handler&&) = delete;
+      auto operator= (service_handler const&) -> service_handler& = delete;
+      auto operator= (service_handler&&) -> service_handler& = delete;
 
     private:
       detail::unique_scoped_handler_insert<decltype (service_dispatcher::_handlers)>

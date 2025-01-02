@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <implementation/finance/asianopt.hpp>
@@ -6,9 +6,8 @@
 #include <bin/run.hpp>
 #include <util/print_exception.hpp>
 
-#include <boost/format.hpp>
-
 #include <exception>
+#include <fmt/core.h>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -87,11 +86,9 @@ namespace
            : o == "FixC" ? asianopt::FixC
            : o == "FixP" ? asianopt::FixP
            : throw ::boost::program_options::invalid_option_value
-             ( ( ::boost::format
-                 ("invalid option '%1%', allowed: FloC, FloP, FixC, FixP")
-               % o
-               ).str()
-             )
+             { fmt::format
+               ("invalid option '{}', allowed: FloC, FloP, FixC, FixP", o)
+             }
            );
   }
 }

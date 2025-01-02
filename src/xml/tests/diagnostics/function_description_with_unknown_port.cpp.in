@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -9,6 +9,9 @@
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/require_exception.hpp>
+
+#include <fmt/core.h>
+#include <FMT/boost/filesystem/path.hpp>
 
 BOOST_AUTO_TEST_CASE (function_description_with_unknown_return_port)
 {
@@ -22,10 +25,14 @@ BOOST_AUTO_TEST_CASE (function_description_with_unknown_return_port)
   fhg::util::testing::require_exception_with_message
     <xml::parse::error::function_description_with_unknown_port>
   ( [&state, &filename] { xml::parse::just_parse (state, filename); }
-  , boost::format ("ERROR: unknown %1% port %2%"
-                   " in description of function %3%.%4% in %5%"
-                  )
-  % "return" % "r" % "m" % "f" % boost::filesystem::path (filename)
+  , fmt::format ( "ERROR: unknown {} port {}"
+                  " in description of function {}.{} in {}"
+                , "return"
+                , "r"
+                , "m"
+                , "f"
+                , boost::filesystem::path (filename)
+                )
   );
 }
 
@@ -41,9 +48,13 @@ BOOST_AUTO_TEST_CASE (function_description_with_unknown_argument_port)
   fhg::util::testing::require_exception_with_message
     <xml::parse::error::function_description_with_unknown_port>
   ( [&state, &filename] { xml::parse::just_parse (state, filename); }
-  , boost::format ("ERROR: unknown %1% port %2%"
-                   " in description of function %3%.%4% in %5%"
-                  )
-  % "argument" % "p" % "m" % "f" % boost::filesystem::path (filename)
+  , fmt::format ( "ERROR: unknown {} port {}"
+                  " in description of function {}.{} in {}"
+                , "argument"
+                , "p"
+                , "m"
+                , "f"
+                , boost::filesystem::path (filename)
+                )
   );
 }

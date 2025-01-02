@@ -1,12 +1,11 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <sdpa/daemon/Implementation.hpp>
 #include <sdpa/daemon/scheduler/Reservation.hpp>
 
-#include <boost/format.hpp>
-
 #include <algorithm>
+#include <fmt/core.h>
 #include <stdexcept>
 #include <utility>
 
@@ -67,16 +66,15 @@ namespace sdpa
         if (implementation && !supports_implementation (*implementation))
         {
           throw std::runtime_error
-            ( ( ::boost::format
-                  ( "Cannot replace worker %1% with worker %2%: "
-                    "%3% does not support the implementation %4%."
-                  )
-              % current_worker
-              % new_worker
-              % new_worker
-              % *implementation
-              ).str()
-            );
+            { fmt::format
+                ( "Cannot replace worker {} with worker {}: "
+                  "{} does not support the implementation {}."
+                , current_worker
+                , new_worker
+                , new_worker
+                , *implementation
+                )
+            };
         }
 
         _implementation = implementation;
@@ -111,9 +109,10 @@ namespace sdpa
         {
           throw std::logic_error ("store_result: second result");
         }
-        if (auto* state = ::boost::get<JobFSM_::s_finished> (&result))
+        if (std::holds_alternative<JobFSM_::s_finished> (result))
         {
-          _results.last_success = std::move (*state);
+          _results.last_success =
+            std::move (std::get<JobFSM_::s_finished> (result));
         }
       }
       void Reservation::mark_as_canceled_if_no_result_stored_yet
@@ -154,7 +153,7 @@ namespace sdpa
           , _results.individual_results.end()
           , [] (std::pair<sdpa::worker_id_t, terminal_state> const& result)
             {
-              return ::boost::get<JobFSM_::s_canceled> (&result.second);
+              return std::holds_alternative<JobFSM_::s_canceled> (result.second);
             }
           );
       }

@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <we/type/Transition.hpp>
@@ -14,14 +14,16 @@
 
 #include <util-generic/functor_visitor.hpp>
 #include <util-generic/join.hpp>
-#include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_container.hpp>
 #include <util-generic/unreachable.hpp>
 
-#include <boost/format.hpp>
-#include <boost/range/adaptor/map.hpp>
-
+#include <FMT/boost/variant.hpp>
+#include <FMT/util-generic/join.hpp>
+#include <FMT/we/expr/type/Type.hpp>
+#include <FMT/we/type/Expression.hpp>
+#include <FMT/we/type/value/show.hpp>
 #include <algorithm>
+#include <fmt/core.h>
 #include <stdexcept>
 #include <string>
 
@@ -31,7 +33,8 @@ namespace we
   {
     namespace
     {
-      struct visitor_signature_to_type : ::boost::static_visitor<::expr::Type>
+      struct visitor_signature_to_type
+        : private ::boost::static_visitor<::expr::Type>
       {
         ::expr::Type operator()
           (std::string const& name) const
@@ -203,11 +206,12 @@ namespace we
             if (net() && !port.associated_place())
             {
               throw std::runtime_error
-                ( ( ::boost::format ("Error when adding output port '%1%' to net '%2%':"
-                                  " Not associated with any place"
-                                  ) % port.name() % name()
-                  ).str()
-                );
+                { fmt::format ( "Error when adding output port '{}' to net '{}':"
+                                " Not associated with any place"
+                              , port.name()
+                              , name()
+                              )
+                };
             }
             _ports_output.emplace (port_id, port);
           }
@@ -279,7 +283,7 @@ namespace we
       auto const bind
         ( [] (auto& context, auto const& ports)
           {
-            for (auto const& port : ports | ::boost::adaptors::map_values)
+            for (auto const& [_ignore, port] : ports)
             {
               context.bind (port.name(), signature_to_type (port.signature()));
             }
@@ -312,16 +316,17 @@ namespace we
         ( [] ( Expression const& expression
              , expr::Type const& expected
              , expr::type::Context context
-             , ::boost::format message
+             , std::string message
              )
           {
-            fhg::util::nest_exceptions<std::runtime_error>
-              ( [&]
-                {
-                  expression.assert_type (expected, context);
-                }
-              , str (message)
-              );
+            try
+            {
+              expression.assert_type (expected, context);
+            }
+            catch (...)
+            {
+              std::throw_with_nested (std::runtime_error {message});
+            }
           }
         );
 
@@ -331,9 +336,10 @@ namespace we
           ( *condition_
           , expr::type::Boolean{}
           , inference_context_before_eval()
-          , ::boost::format ("In the <condition> expression '%1%'")
-          % condition_->expression()
-          );
+          , fmt::format ( "In the <condition> expression '{}'"
+                        , condition_->expression()
+                        )
+            );
 
         //! \note this is the reason for the method being non-const
         if (condition_->ast().is_const_true())
@@ -348,8 +354,9 @@ namespace we
           ( *eureka_id_
           , expr::type::String()
           , inference_context_before_eval()
-          , ::boost::format ("In the <eureka-group> expression '%1%'")
-          % *eureka_id_
+          , fmt::format ( "In the <eureka-group> expression '{}'"
+                        , *eureka_id_
+                        )
           );
       }
 
@@ -364,23 +371,23 @@ namespace we
               if (!::boost::get<std::string> (&*property))
               {
                 throw std::runtime_error
-                  (str ( ::boost::format
-                           ("In the property at '%1%': '%2%' is not a string."
-                           " The property at '%1%' must contain a string to be interpreted as an expression."
-                           " Did you mean '\"%2%\"'?"
-                           )
-                       % fhg::util::join (path, ".")
-                       % pnet::type::value::show (*property)
-                       )
-                  );
+                  { fmt::format
+                      ( "In the property at '{0}': '{1}' is not a string."
+                        " The property at '{0}' must contain a string to be interpreted as an expression."
+                        " Did you mean '\"{1}\"'?"
+                      , fhg::util::join (path, ".")
+                      , pnet::type::value::show (*property)
+                      )
+                  };
               }
 
               require_expression_has_type
                 ( ::boost::get<std::string> (*property)
                 , expected
                 , context
-                , ::boost::format ("In the property at '%1%'")
-                % fhg::util::join (path, ".")
+                , fmt::format ( "In the property at '{}'"
+                              , fhg::util::join (path, ".")
+                              )
                 );
             }
           }
@@ -410,7 +417,7 @@ namespace we
       auto const assert_outputs_have_correct_type
         ( [&] (auto const& context)
           {
-            for (auto const& port : _ports_output | ::boost::adaptors::map_values)
+            for (auto const& [_ignore, port] : _ports_output)
             {
               auto const mtype (context.at (port.name()));
               auto const port_type (signature_to_type (port.signature()));
@@ -420,33 +427,38 @@ namespace we
                 throw pnet::exception::missing_binding (port.name());
               }
 
-              fhg::util::nest_exceptions<std::runtime_error>
-                ( [&]
-                  {
-                    if (  port_type
-                       != assign_result (port.name(), port_type, *mtype)
-                       )
-                    {
-                      // std::clog
-                      //   << ( ::boost::format
-                      //        ("On output port '%1%':"
-                      //        " The declared type '%2%' is different from the"
-                      //        " infered type '%3%'"
-                      //        )
-                      //      % port.name()
-                      //      % port_type
-                      //      % *mtype
-                      //      )
-                      //   << std::endl
-                      //   ;
-                      (void) port_type;
+              try
+              {
+                if (  port_type
+                   != assign_result (port.name(), port_type, *mtype)
+                   )
+                {
+                  // std::clog
+                  //   << ( fmt::format
+                  //        ("On output port '{}':"
+                  //        " The declared type '{}' is different from the"
+                  //        " infered type '{}'"
+                  //        )
+                  //      % port.name()
+                  //      % port_type
+                  //      % *mtype
+                  //      )
+                  //   << std::endl
+                  //   ;
+                  (void) port_type;
+                }
+              }
+              catch (...)
+              {
+                std::throw_with_nested
+                  ( std::runtime_error
+                    { fmt::format ( "Output port '{}' expects type '{}'"
+                                  , port.name()
+                                  , port_type
+                                  )
                     }
-                  }
-                , str ( ::boost::format ("Output port '%1%' expects type '%2%'")
-                      % port.name()
-                      % port_type
-                      )
-                );
+                  );
+              }
             }
           }
         )
@@ -465,13 +477,13 @@ namespace we
             if (*type != expected)
             {
               throw pnet::exception::type_error
-                (str ( ::boost::format
-                         ("'%1%' has type '%2%' but expected is type '%3%'")
-                     % key
-                     % *type
-                     % expected
-                     )
-                );
+                { fmt::format
+                    ( "'{}' has type '{}' but expected is type '{}'"
+                    , key
+                    , *type
+                    , expected
+                    )
+                };
             }
           }
         );
@@ -489,18 +501,23 @@ namespace we
           {
             for (auto const& m : ms)
             {
-              fhg::util::nest_exceptions<std::runtime_error>
-                ( [&]
-                  {
-                    m.second.assert_correct_expression_types
-                      ( inference_context_before_eval()
-                      , inference_context_after_eval()
-                      );
-                  }
-                , str ( ::boost::format ("In the <preference> of module '%1%'")
-                      % m.first
-                      )
-                );
+              try
+              {
+                m.second.assert_correct_expression_types
+                  ( inference_context_before_eval()
+                  , inference_context_after_eval()
+                  );
+              }
+              catch (...)
+              {
+                std::throw_with_nested
+                  ( std::runtime_error
+                    { fmt::format ( "In the <preference> of module '{}'"
+                                  , m.first
+                                  )
+                    }
+                  );
+              }
             }
           }
         , [] (net_type& net)
@@ -509,23 +526,28 @@ namespace we
           }
         , [&] (Expression& e)
           {
-            fhg::util::nest_exceptions<pnet::exception::type_error>
-              ( [&]
-                {
-                  auto context (inference_context_before_eval());
+            try
+            {
+              auto context (inference_context_before_eval());
 
-                  (void) e.type (context);
+              std::ignore = e.type (context);
 
-                  //! \note exploits internal knowledge of `we::net_type`
-                  if (prop_.get ({"gspc", "we", "plugin", "create"}))
-                  {
-                    context.bind ({"plugin_id"}, expr::type::ULong{});
+              //! \note exploits internal knowledge of `we::net_type`
+              if (prop_.get ({"gspc", "we", "plugin", "create"}))
+              {
+                context.bind ({"plugin_id"}, expr::type::ULong{});
+              }
+
+              assert_outputs_have_correct_type (context);
+            }
+            catch (...)
+            {
+              std::throw_with_nested
+                ( pnet::exception::type_error
+                  { fmt::format ("In expression '{}'", e)
                   }
-
-                  assert_outputs_have_correct_type (context);
-                }
-              , str (::boost::format ("In expression '%1%'") % e)
-              );
+                );
+            }
 
             //! \note exploits internal knowledge of `we::net_type`
             if (prop_.get ({"gspc", "we", "plugin", "create"}))

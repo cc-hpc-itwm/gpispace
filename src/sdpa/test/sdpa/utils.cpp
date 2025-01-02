@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <sdpa/test/sdpa/utils.hpp>
@@ -437,10 +437,10 @@ namespace utils
     sink().add_emitters_blocking ({component.logger_registration_endpoint()});
   }
 
-  agent::agent (fhg::com::Certificates const& certificates)
+  agent::agent (gspc::Certificates const& certificates)
     :  _ ( random_peer_name(), "127.0.0.1"
          , std::make_unique<::boost::asio::io_service>()
-         , ::boost::none
+         , std::nullopt
          , certificates
          )
   {}
@@ -461,12 +461,12 @@ namespace utils
   }
 
   basic_drts_component_no_logic::basic_drts_component_no_logic
-      (fhg::com::Certificates const& certificates)
+      (gspc::Certificates const& certificates)
     : basic_drts_component_no_logic
         (reused_component_name {random_peer_name()}, certificates)
   {}
   basic_drts_component_no_logic::basic_drts_component_no_logic
-      (reused_component_name name, fhg::com::Certificates const& certificates)
+      (reused_component_name name, gspc::Certificates const& certificates)
     : _event_queue()
     , _name (name._name)
     , _network ( [this] ( fhg::com::p2p::address_t const& source
@@ -518,7 +518,7 @@ namespace utils
   {}
 
   basic_drts_component::basic_drts_component
-      (fhg::com::Certificates const& certificates)
+      (gspc::Certificates const& certificates)
     : basic_drts_component_no_logic (certificates)
     , _parent (::boost::none)
   {}
@@ -526,7 +526,7 @@ namespace utils
   basic_drts_component::basic_drts_component
       ( agent const& parent
       , CapabilityNames capability_names
-      , fhg::com::Certificates const& certificates
+      , gspc::Certificates const& certificates
       )
     : basic_drts_component (certificates)
   {
@@ -550,7 +550,7 @@ namespace utils
   basic_drts_component::basic_drts_component
       ( agent const& parent
       , sdpa::Capabilities capabilities
-      , fhg::com::Certificates const& certificates
+      , gspc::Certificates const& certificates
       )
     : basic_drts_component (certificates)
   {
@@ -568,7 +568,7 @@ namespace utils
   basic_drts_component::basic_drts_component
       ( reused_component_name name
       , agent const& parent
-      , fhg::com::Certificates const& certificates
+      , gspc::Certificates const& certificates
       )
     : basic_drts_component_no_logic (name, certificates)
     , _parent (::boost::none)
@@ -652,14 +652,14 @@ namespace utils
   {
     basic_drts_worker::basic_drts_worker
         ( agent const& parent
-        , fhg::com::Certificates const& certificates
+        , gspc::Certificates const& certificates
         )
       : basic_drts_worker (parent, {}, certificates)
     {}
     basic_drts_worker::basic_drts_worker
         ( agent const& parent
         , sdpa::Capabilities capabilities
-        , fhg::com::Certificates const& certificates
+        , gspc::Certificates const& certificates
         )
       : basic_drts_component
           (parent, std::move (capabilities), certificates)
@@ -667,7 +667,7 @@ namespace utils
     basic_drts_worker::basic_drts_worker
         ( reused_component_name name
         , agent const& parent
-        , fhg::com::Certificates const& certificates
+        , gspc::Certificates const& certificates
         )
       : basic_drts_component (name, parent, certificates)
     {}
@@ -676,7 +676,7 @@ namespace utils
       ::fake_drts_worker_notifying_module_call_submission
         ( std::function<void (std::string)> announce_job
         , agent const& parent
-        , fhg::com::Certificates const& certificates
+        , gspc::Certificates const& certificates
         )
       : basic_drts_worker (parent, certificates)
       , _announce_job (announce_job)
@@ -687,7 +687,7 @@ namespace utils
         ( reused_component_name name
         , std::function<void (std::string)> announce_job
         , agent const& parent
-        , fhg::com::Certificates const& certificates
+        , gspc::Certificates const& certificates
         )
       : basic_drts_worker (std::move (name), parent, certificates)
       , _announce_job (announce_job)
@@ -758,7 +758,7 @@ namespace utils
       ::fake_drts_worker_waiting_for_finished_ack
         ( std::function<void (std::string)> announce_job
         , agent const& parent_agent
-        , fhg::com::Certificates const& certificates
+        , gspc::Certificates const& certificates
         )
       : fake_drts_worker_notifying_module_call_submission
           (announce_job, parent_agent, certificates)
@@ -769,7 +769,7 @@ namespace utils
         ( reused_component_name name
         , std::function<void (std::string)> announce_job
         , agent const& parent_agent
-        , fhg::com::Certificates const& certificates
+        , gspc::Certificates const& certificates
         )
       : fake_drts_worker_notifying_module_call_submission
           (std::move (name), announce_job, parent_agent, certificates)
@@ -797,13 +797,13 @@ namespace utils
   }
 
   basic_drts_worker::basic_drts_worker
-      (agent const& parent, fhg::com::Certificates const& certificates)
+      (agent const& parent, gspc::Certificates const& certificates)
     : no_thread::basic_drts_worker (parent, certificates)
   {}
   basic_drts_worker::basic_drts_worker
       ( agent const& parent
       , sdpa::Capabilities capabilities
-      , fhg::com::Certificates const& certificates
+      , gspc::Certificates const& certificates
       )
     : no_thread::basic_drts_worker (parent, std::move (capabilities), certificates)
   {}
@@ -812,7 +812,7 @@ namespace utils
     ::fake_drts_worker_notifying_module_call_submission
       ( std::function<void (std::string)> announce_job
       , agent const& parent
-      , fhg::com::Certificates const& certificates
+      , gspc::Certificates const& certificates
       )
     : no_thread::fake_drts_worker_notifying_module_call_submission
         (announce_job, parent, certificates)
@@ -823,7 +823,7 @@ namespace utils
       ( reused_component_name name
       , std::function<void (std::string)> announce_job
       , agent const& parent
-      , fhg::com::Certificates const& certificates
+      , gspc::Certificates const& certificates
       )
     : no_thread::fake_drts_worker_notifying_module_call_submission
         (std::move (name), announce_job, parent, certificates)
@@ -833,7 +833,7 @@ namespace utils
     ::fake_drts_worker_waiting_for_finished_ack
       ( std::function<void (std::string)> announce_job
       , agent const& parent_agent
-      , fhg::com::Certificates const& certificates
+      , gspc::Certificates const& certificates
       )
   : no_thread::fake_drts_worker_waiting_for_finished_ack
       (std::move (announce_job), parent_agent, certificates)
@@ -844,7 +844,7 @@ namespace utils
       ( reused_component_name name
       , std::function<void (std::string)> announce_job
       , agent const& parent_agent
-      , fhg::com::Certificates const& certificates
+      , gspc::Certificates const& certificates
       )
     : no_thread::fake_drts_worker_waiting_for_finished_ack
         (std::move (name), announce_job, parent_agent, certificates)
@@ -854,7 +854,7 @@ namespace utils
       ( std::function<void (std::string)> announce_job
       , std::function<void (std::string)> announce_cancel
       , agent const& parent_agent
-      , fhg::com::Certificates const& certificates
+      , gspc::Certificates const& certificates
       )
     : no_thread::fake_drts_worker_waiting_for_finished_ack
         (announce_job, parent_agent, certificates)
@@ -902,7 +902,7 @@ namespace utils
       ( std::function<void (std::string)> announce_job
       , std::function<void (std::string)> announce_cancel
       , agent const& parent_agent
-      , fhg::com::Certificates const& certificates
+      , gspc::Certificates const& certificates
       )
     : no_thread::fake_drts_worker_waiting_for_finished_ack
         (announce_job, parent_agent, certificates)
@@ -918,7 +918,7 @@ namespace utils
   }
 
   client::client ( agent const& parent_agent
-                 , fhg::com::Certificates const& certificates
+                 , gspc::Certificates const& certificates
                  )
     : _ ( parent_agent.host()
         , parent_agent.port()

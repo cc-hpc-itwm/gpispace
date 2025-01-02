@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/format.hpp>
@@ -66,7 +66,8 @@ namespace fhg
               );
           }
 
-          return vm.at (name()).template as<Validator>();
+          // \note static_cast to be backward compatible in option validation
+          return static_cast<T> (vm.at (name()).template as<Validator>());
         }
         template<typename T, typename Validator>
           T option<T, Validator>::get_from_or_value

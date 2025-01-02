@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <iml/rif/EntryPoints.hpp>
@@ -13,6 +13,10 @@ namespace iml
   namespace rif
   {
     EntryPoints read_from_file (::boost::filesystem::path const& path)
+    {
+      return read_from_file (std::filesystem::path {path.string()});
+    }
+    EntryPoints read_from_file (std::filesystem::path const& path)
     try
     {
       EntryPoints entry_points;

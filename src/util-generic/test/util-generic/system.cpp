@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -11,10 +11,11 @@
 #include <util-generic/testing/require_exception.hpp>
 
 #include <boost/filesystem.hpp>
-#include <boost/format.hpp>
 
+#include <FMT/boost/filesystem/path.hpp>
 #include <cerrno>
 #include <cstring>
+#include <fmt/core.h>
 #include <stdexcept>
 #include <string>
 
@@ -30,7 +31,7 @@ namespace fhg
         with_command()
         {
           BOOST_REQUIRE_EQUAL
-            (::boost::unit_test::framework::master_test_suite().argc, 2);
+            (::boost::unit_test::framework::master_test_suite().argc, 4);
 
           _ = ::boost::unit_test::framework::master_test_suite().argv[1];
         }
@@ -52,7 +53,7 @@ namespace fhg
                              (testing::random<std::string>::identifier{})
                          );
 
-      system (::boost::format ("%1% %2% %3%") % command() % path % content);
+      system (fmt::format ("{0} {1} {2}", command(), path, content));
 
       BOOST_REQUIRE_EQUAL (read_file (path), content);
     }
@@ -62,10 +63,10 @@ namespace fhg
       std::runtime_error einval (std::string command)
       {
         return std::runtime_error
-          { ( ::boost::format ("Could not execute '%1%': %2%")
-            % command
-            % std::strerror (EINVAL)
-            ).str()
+          { fmt::format ( "Could not execute '{0}': {1}"
+                        , command
+                        , std::strerror (EINVAL)
+                        )
           };
       }
     }

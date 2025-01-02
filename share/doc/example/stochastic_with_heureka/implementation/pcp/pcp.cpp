@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <interface.hpp>
@@ -12,11 +12,11 @@
 
 namespace pcp
 {
-  ::boost::optional<configuration>
+  std::optional<configuration>
     configuration::apply (std::pair<std::string, std::string> const& rule) const
   {
-    std::string const top (_top.get_value_or ("") + rule.first);
-    std::string const bot (_bot.get_value_or ("") + rule.second);
+    std::string const top (_top.value_or ("") + rule.first);
+    std::string const bot (_bot.value_or ("") + rule.second);
 
     std::string::const_iterator top_pos (top.cbegin());
     std::string::const_iterator bot_pos (bot.cbegin());
@@ -27,15 +27,19 @@ namespace pcp
       ++bot_pos;
     }
 
-    return ::boost::make_optional
-      ( top_pos == top.end() || bot_pos == bot.end()
-      , configuration
-        { ::boost::make_optional
-          (top_pos != top.end(), std::string (top_pos, top.end()))
-        , ::boost::make_optional
-          (bot_pos != bot.end(), std::string (bot_pos, bot.end()))
-        }
-      );
+    return top_pos == top.end() || bot_pos == bot.end()
+      ? std::make_optional
+        ( configuration
+          { top_pos != top.end()
+            ? std::make_optional (std::string (top_pos, top.end()))
+            : std::nullopt
+          , bot_pos != bot.end()
+            ? std::make_optional (std::string (bot_pos, bot.end()))
+            : std::nullopt
+          }
+        )
+      : std::nullopt
+      ;
   }
 
   we::type::bytearray pcp::bytearray() const
@@ -84,7 +88,7 @@ extern "C"
   std::mt19937 generator (seed);
 
   std::string path;
-  pcp::configuration configuration (::boost::none, ::boost::none);
+  pcp::configuration configuration (std::nullopt, std::nullopt);
 
   for (unsigned long i (0); i < n; ++i)
   {
@@ -94,10 +98,7 @@ extern "C"
 
     for (std::pair<std::string, std::string> rule : pcp.rules())
     {
-      ::boost::optional<pcp::configuration> successor
-        (configuration.apply (rule));
-
-      if (successor)
+      if (auto successor {configuration.apply (rule)})
       {
         successors.emplace_back (rule_id, *successor);
       }

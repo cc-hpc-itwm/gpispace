@@ -97,6 +97,7 @@ iml_add_unit_test (NAME rif-started_process_promise
   DESCRIPTION "pipe used for communicating with a iml-rif-started process during startup"
   LIBRARIES IMLPrivate::rif-started_process_promise
             Util::Generic
+            PRIVATE fmt
 )
 
 ## System tests

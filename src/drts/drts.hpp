@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -30,6 +30,7 @@
 #include <boost/program_options/variables_map.hpp>
 
 #include <exception>
+#include <filesystem>
 #include <functional>
 #include <iostream>
 #include <list>
@@ -53,16 +54,18 @@ namespace gspc
   class GSPC_DLLEXPORT installation
   {
   public:
+    [[deprecated ("use installation (std::filesystem::path")]]
     installation (::boost::filesystem::path const& gspc_home);
+    installation (std::filesystem::path const& gspc_home);
     installation (::boost::program_options::variables_map const& vm);
 
-    ::boost::filesystem::path const& gspc_home() const
+    std::filesystem::path const& gspc_home() const
     {
       return _gspc_home;
     }
 
   private:
-    ::boost::filesystem::path const _gspc_home;
+    std::filesystem::path const _gspc_home;
   };
 
   class GSPC_DLLEXPORT scoped_runtime_system
@@ -72,14 +75,14 @@ namespace gspc
                           , installation const&
                           , std::string const& topology_description
                           , std::ostream& info_output = std::cerr
-                          , Certificates const& certificates = ::boost::none
+                          , Certificates const& = {}
                           );
     scoped_runtime_system ( ::boost::program_options::variables_map const& vm
                           , installation const&
                           , std::string const& topology_description
                           , rifd_entry_points const& entry_points
                           , std::ostream& info_output = std::cerr
-                          , Certificates const& certificates = ::boost::none
+                          , Certificates const& = {}
                           );
     scoped_runtime_system
       ( ::boost::program_options::variables_map const& vm
@@ -88,7 +91,7 @@ namespace gspc
       , ::boost::optional<rifd_entry_points> const& entry_points
       , rifd_entry_point const& parent
       , std::ostream& info_output = std::cerr
-      , Certificates const& certificates = ::boost::none
+      , Certificates const& = {}
       );
 
     std::unordered_map< rifd_entry_point
@@ -97,7 +100,7 @@ namespace gspc
                       >
       add_worker
         ( rifd_entry_points const&
-        , Certificates const& certificates = ::boost::none
+        , Certificates const& = {}
         );
 
     std::unordered_map< rifd_entry_point
@@ -107,7 +110,7 @@ namespace gspc
       add_worker
         ( std::vector<worker_description> const&
         , rifd_entry_points const&
-        , Certificates const& certificates = ::boost::none
+        , Certificates const& = {}
         );
 
     std::unordered_map< rifd_entry_point
@@ -158,12 +161,21 @@ namespace gspc
     PIMPL (scoped_runtime_system);
   };
 
+  [[deprecated ("use set_application_search_path (vm, std::filesystem::path) instead")]]
   GSPC_DLLEXPORT void set_application_search_path
     ( ::boost::program_options::variables_map&
     , ::boost::filesystem::path const&
     );
+  GSPC_DLLEXPORT void set_application_search_path
+    ( ::boost::program_options::variables_map&
+    , std::filesystem::path const&
+    );
+  [[deprecated ("use set_gspc_home (vm, std::filesystem::path) instead")]]
   GSPC_DLLEXPORT void set_gspc_home ( ::boost::program_options::variables_map&
                                     , ::boost::filesystem::path const&
+                                    );
+  GSPC_DLLEXPORT void set_gspc_home ( ::boost::program_options::variables_map&
+                                    , std::filesystem::path const&
                                     );
 
   GSPC_DLLEXPORT void set_remote_iml_vmem_socket

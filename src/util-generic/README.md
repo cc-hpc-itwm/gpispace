@@ -151,11 +151,6 @@ family of system calls.
 A basic abstraction for the `/proc` filesystem to inspect running
 processes.
 
-## getenv
-
-Wrapper for `std::getenv()` with a sane return value for missing
-environment variables.
-
 ## hostname
 
 Wrapper for `gethostname()` that avoids the required buffer management
@@ -276,11 +271,6 @@ static_assert (!has_operator_not<struct some_type>{}, "");
 static_assert (has_operator_not<int>{}, "");
 ```
 
-## cxx17/logical_operator_type_traits
-
-Compile time combinators for `std::integral_constant`s:
-`conjunction<B...>`, `disjunction<B...>` and `negation<B>`.
-
 ## mp/find
 
 Returns an `std::integral_constant<std::size_t>` with the first index
@@ -310,10 +300,6 @@ Rebind a variadic template `T = Sequence<U...>` to `To<U...>`.
 
 Given a type-sequence `Sequence = sequence_types<Types...>`, returns
 `sequence_type<unique (Types...)>`.
-
-## cxx17/apply
-
-Call a given function with the arguments in the given tuple.
 
 ## va_args
 
@@ -392,11 +378,6 @@ Variations of threadsafe queues that block until a value can be
 retrieved. Optionally interruptible and bounded capacity.
 
 # Exceptions
-
-## nest_exceptions
-
-Call a functor and wrap any exception thrown inside with a given
-exception.
 
 ## print_exception
 

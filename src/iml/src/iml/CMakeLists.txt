@@ -68,6 +68,7 @@ iml_add_library (
     PUBLIC Boost::program_options
     PUBLIC Boost::serialization
     PRIVATE Boost::thread
+    PUBLIC fmt
   INCLUDE_DIRECTORIES
     PUBLIC "${PROJECT_SOURCE_DIR}/include"
   INSTALL
@@ -103,6 +104,7 @@ iml_add_library (
     PUBLIC Boost::serialization
     PRIVATE Boost::system
     PUBLIC Boost::thread
+    PRIVATE fmt
 )
 
 iml_add_executable (
@@ -155,6 +157,7 @@ iml_add_executable (
             Boost::program_options
             Boost::system
             Boost::thread
+            PRIVATE fmt
   INSTALL
     INSTALL_DESTINATION "libexec/iml"
     RPATH "lib"
@@ -170,6 +173,7 @@ iml_add_library (
     PRIVATE Util::Generic
     PRIVATE Boost::iostreams
     PRIVATE Boost::serialization
+    PRIVATE fmt
 )
 
 iml_add_executable (
@@ -180,6 +184,7 @@ iml_add_executable (
             Boost::filesystem
             Boost::program_options
             Boost::system
+            PRIVATE fmt
   INSTALL
     INSTALL_DESTINATION "bin"
     RPATH "lib"
@@ -193,6 +198,7 @@ iml_add_executable (
             Boost::filesystem
             Boost::program_options
             Boost::system
+            PRIVATE fmt
   INSTALL
     INSTALL_DESTINATION "bin"
     RPATH "lib"

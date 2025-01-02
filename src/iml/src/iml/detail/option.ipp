@@ -1,8 +1,7 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <boost/format.hpp>
-
+#include <fmt/core.h>
 #include <stdexcept>
 #include <string>
 
@@ -41,10 +40,7 @@ namespace iml
       }
 
       throw std::logic_error
-        ( ( ::boost::format ("missing key '%1%' in variables map")
-          % name
-          ).str()
-        );
+        {fmt::format ("missing key '{}' in variables map", name)};
     }
 
     template<typename Type, typename As, typename ToString>
@@ -62,13 +58,13 @@ namespace iml
       if (!pos_and_success.second)
       {
         throw std::runtime_error
-          ( ( ::boost::format
-                ("Failed to set option '%1%' to '%2%': Found old value '%3%'")
-            % name
-            % to_string (Type (value))
-            % to_string (Type (pos_and_success.first->second.as<As>()))
-            ).str()
-          );
+          { fmt::format
+              ( "Failed to set option '{}' to '{}': Found old value '{}'"
+              , name
+              , to_string (Type (value))
+              , to_string (Type (pos_and_success.first->second.as<As>()))
+              )
+          };
       }
     }
   }

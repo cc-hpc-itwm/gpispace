@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -85,7 +85,7 @@ public:
     , std::vector<std::string> const& capability_names
     , std::vector<::boost::filesystem::path> const& library_path
     , fhg::logging::stream_emitter& log_emitter
-    , fhg::com::Certificates const& certificates
+    , gspc::Certificates const&
     );
   ~DRTSImpl() override;
   DRTSImpl (DRTSImpl const&) = delete;

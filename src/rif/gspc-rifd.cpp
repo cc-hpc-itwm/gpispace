@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <drts/certificates.hpp>
@@ -11,7 +11,6 @@
 #include <util-generic/exit_status.hpp>
 #include <util-generic/hostname.hpp>
 #include <util-generic/join.hpp>
-#include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_exception.hpp>
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 #include <util-generic/syscall.hpp>
@@ -233,10 +232,10 @@ try
             arguments.emplace_back ("--vmem-socket");
             arguments.emplace_back (gpi_socket->string());
           }
-          if (certificates)
+          if (certificates.path.has_value())
           {
             arguments.emplace_back ("--ssl-certificates");
-            arguments.emplace_back (certificates->string());
+            arguments.emplace_back (certificates.path->string());
           }
 
           auto const startup_result

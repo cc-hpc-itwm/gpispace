@@ -1,10 +1,9 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <map/interface.hpp>
 
-#include <boost/format.hpp>
-
+#include <fmt/core.h>
 #include <iostream>
 #include <stdexcept>
 
@@ -39,11 +38,12 @@ void map_process
   if (input.second != output.second)
   {
     throw std::logic_error
-      ( ( ::boost::format ("input/output buffer sizes differ: %1% != %2%")
-        % input.second
-        % output.second
-        ).str()
-      );
+      { fmt::format
+          ( "input/output buffer sizes differ: {} != {}"
+          , input.second
+          , output.second
+          )
+      };
   }
 
   auto const* const mem_input
@@ -76,13 +76,14 @@ void map_consume ( map::user_data_type const& user_data
     if (mem[i] != std::numeric_limits<unsigned long>::max() - id)
     {
       throw std::logic_error
-        ( ( ::boost::format ("verify failed: [id = %1%, i = %2%]: %2% != %4%")
-          % id
-          % i
-          % mem[i]
-          % (std::numeric_limits<unsigned long>::max() - id)
-          ).str()
-        );
+        { fmt::format
+            ( "verify failed: [id = {}, i = {}]: {} != {}"
+            , id
+            , i
+            , mem[i]
+            , std::numeric_limits<unsigned long>::max() - id
+            )
+        };
     }
   }
 }

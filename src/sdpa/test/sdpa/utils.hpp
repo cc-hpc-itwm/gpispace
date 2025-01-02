@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -76,7 +76,7 @@ namespace utils
 
   struct agent
   {
-    agent (fhg::com::Certificates const&);
+    agent (gspc::Certificates const&);
 
     agent() = delete;
     agent (agent const&) = delete;
@@ -110,9 +110,9 @@ namespace utils
   class basic_drts_component_no_logic : sdpa::events::EventHandler
   {
   public:
-    basic_drts_component_no_logic (fhg::com::Certificates const&);
+    basic_drts_component_no_logic (gspc::Certificates const&);
     basic_drts_component_no_logic
-      (reused_component_name, fhg::com::Certificates const&);
+      (reused_component_name, gspc::Certificates const&);
 
     std::string name() const;
     fhg::com::host_t host() const;
@@ -143,18 +143,18 @@ namespace utils
   class basic_drts_component : public basic_drts_component_no_logic
   {
   public:
-    basic_drts_component (fhg::com::Certificates const&);
+    basic_drts_component (gspc::Certificates const&);
     basic_drts_component ( agent const& parent
                          , sdpa::Capabilities
-                         , fhg::com::Certificates const&
+                         , gspc::Certificates const&
                          );
     basic_drts_component ( agent const& parent
                          , CapabilityNames
-                         , fhg::com::Certificates const&
+                         , gspc::Certificates const&
                          );
     basic_drts_component ( reused_component_name
                          , agent const& parent
-                         , fhg::com::Certificates const&
+                         , gspc::Certificates const&
                          );
     ~basic_drts_component() override;
     basic_drts_component (basic_drts_component const&) = delete;
@@ -208,17 +208,17 @@ namespace utils
     public:
       basic_drts_worker
         ( agent const& parent
-        , fhg::com::Certificates const&
+        , gspc::Certificates const&
         );
       basic_drts_worker
         ( agent const& parent
         , sdpa::Capabilities
-        , fhg::com::Certificates const&
+        , gspc::Certificates const&
         );
       basic_drts_worker
         ( reused_component_name
         , agent const& parent
-        , fhg::com::Certificates const&
+        , gspc::Certificates const&
         );
     };
 
@@ -229,14 +229,14 @@ namespace utils
       fake_drts_worker_notifying_module_call_submission
         ( std::function<void (std::string)> announce_job
         , agent const& parent
-        , fhg::com::Certificates const&
+        , gspc::Certificates const&
         );
 
       fake_drts_worker_notifying_module_call_submission
         ( reused_component_name name
         , std::function<void (std::string)>
         , agent const&
-        , fhg::com::Certificates const&
+        , gspc::Certificates const&
         );
 
       void handleSubmitJobEvent
@@ -278,14 +278,14 @@ namespace utils
       fake_drts_worker_waiting_for_finished_ack
         ( std::function<void (std::string)> announce_job
         , agent const& parent
-        , fhg::com::Certificates const&
+        , gspc::Certificates const&
         );
 
       fake_drts_worker_waiting_for_finished_ack
         ( reused_component_name name
         , std::function<void (std::string)> announce_job
         , agent const& parent
-        , fhg::com::Certificates const&
+        , gspc::Certificates const&
         );
 
       void handleJobFinishedAckEvent
@@ -303,11 +303,11 @@ namespace utils
   struct basic_drts_worker final : public no_thread::basic_drts_worker
   {
     basic_drts_worker ( agent const& parent
-                      , fhg::com::Certificates const&
+                      , gspc::Certificates const&
                       );
     basic_drts_worker ( agent const& parent
                       , sdpa::Capabilities
-                      , fhg::com::Certificates const&
+                      , gspc::Certificates const&
                       );
 
     basic_drts_component::event_thread_and_worker_join _ = {*this};
@@ -319,14 +319,14 @@ namespace utils
     fake_drts_worker_notifying_module_call_submission
       ( std::function<void (std::string)> announce_job
       , agent const& parent
-      , fhg::com::Certificates const&
+      , gspc::Certificates const&
       );
 
     fake_drts_worker_notifying_module_call_submission
       ( reused_component_name name
       , std::function<void (std::string)> announce_job
       , agent const& parent
-      , fhg::com::Certificates const&
+      , gspc::Certificates const&
       );
 
     basic_drts_component::event_thread_and_worker_join _ = {*this};
@@ -338,14 +338,14 @@ namespace utils
     fake_drts_worker_waiting_for_finished_ack
       ( std::function<void (std::string)> announce_job
       , agent const& parent
-      , fhg::com::Certificates const&
+      , gspc::Certificates const&
       );
 
     fake_drts_worker_waiting_for_finished_ack
       ( reused_component_name name
       , std::function<void (std::string)> announce_job
       , agent const& parent
-      , fhg::com::Certificates const&
+      , gspc::Certificates const&
       );
 
     basic_drts_component::event_thread_and_worker_join _ = {*this};
@@ -359,7 +359,7 @@ namespace utils
       ( std::function<void (std::string)> announce_job
       , std::function<void (std::string)> announce_cancel
       , agent const& parent
-      , fhg::com::Certificates const&
+      , gspc::Certificates const&
       );
 
     void handleCancelJobEvent
@@ -384,7 +384,7 @@ namespace utils
       ( std::function<void (std::string)> announce_job
       , std::function<void (std::string)> announce_cancel
       , agent const& parent
-      , fhg::com::Certificates const&
+      , gspc::Certificates const&
       );
 
     void handleCancelJobEvent
@@ -399,7 +399,7 @@ namespace utils
 
   struct client
   {
-    client (agent const&, fhg::com::Certificates const&);
+    client (agent const&, gspc::Certificates const&);
 
     client() = delete;
     client (client const&) = delete;

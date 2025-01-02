@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <xml/parse/error.hpp>
@@ -23,7 +23,8 @@
 #include <util-generic/first_then.hpp>
 #include <util-generic/print_container.hpp>
 
-#include <boost/format.hpp>
+#include <FMT/we/type/net.hpp>
+#include <fmt/core.h>
 
 namespace xml
 {
@@ -35,13 +36,13 @@ namespace xml
                              , rapidxml::node_type const& got
                              , util::position_type const& position
                              )
-        : generic ( ::boost::format ( "expected node of type %1%: got node of"
-                                    " type %2% in %3%"
-                                  )
-                  % util::show_node_type (want)
-                  % util::show_node_type (got)
-                  % position
-                  )
+        : generic { fmt::format ( "expected node of type {}: got node of"
+                                  " type {} in {}"
+                                , util::show_node_type (want)
+                                , util::show_node_type (got)
+                                , position
+                                )
+                  }
       { }
 
       wrong_node::wrong_node ( rapidxml::node_type const& want1
@@ -49,68 +50,72 @@ namespace xml
                              , rapidxml::node_type const& got
                              , util::position_type const& position
                              )
-        : generic ( ::boost::format ( "expected node of type %1%: or %2% got"
-                                    " node of type %3% in %4%"
-                                  )
-                  % util::show_node_type (want1)
-                  % util::show_node_type (want2)
-                  % util::show_node_type (got)
-                  % position
-                  )
+        : generic { fmt::format ( "expected node of type {}: or {} got"
+                                  " node of type {} in {}"
+                                , util::show_node_type (want1)
+                                , util::show_node_type (want2)
+                                , util::show_node_type (got)
+                                , position
+                                )
+                  }
       { }
 
       missing_attr::missing_attr ( std::string const& pre
                                  , std::string const& attr
                                  , util::position_type const& position
                                  )
-        : generic ( ::boost::format ("%1%: missing attribute %2% in %3%")
-                  % pre
-                  % attr
-                  % position
-                  )
+        : generic { fmt::format ( "{}: missing attribute {} in {}"
+                                , pre
+                                , attr
+                                , position
+                                )
+                  }
       { }
 
       no_elements_given::no_elements_given ( std::string const& pre
                                            , ::boost::filesystem::path const& path
                                            )
-        : generic ( ::boost::format ("%1%: no elements given at all in %2%")
-                  % pre
-                  % path
-                  )
+        : generic { fmt::format ( "{}: no elements given at all in {}"
+                                , pre
+                                , path
+                                )
+                  }
       { }
 
       more_than_one_definition::more_than_one_definition
         (std::string const& pre, util::position_type const& position)
-          : generic ( ::boost::format ("%1%: more than one definition in %2%")
-                    % pre
-                    % position
-                    )
+          : generic { fmt::format ( "{}: more than one definition in {}"
+                                  , pre
+                                  , position
+                                  )
+                    }
       { }
 
       port_type_mismatch::port_type_mismatch
         ( type::port_type const& port
         , type::port_type const& other_port
         )
-          : generic ( ::boost::format ( "in-/out-port %1% has different types: "
-                                    "%2% (%3%) from %4% and %5% (%6%) from %7%"
-                                    )
-                    % port.name()
-                    % port.type()
-                    % port.direction()
-                    % port.position_of_definition()
-                    % other_port.type()
-                    % other_port.direction()
-                    % other_port.position_of_definition()
-                    )
+          : generic { fmt::format ( "in-/out-port {} has different types: "
+                                    "{} ({}) from {} and {} ({}) from {}"
+                                  , port.name()
+                                  , port.type()
+                                  , port.direction()
+                                  , port.position_of_definition()
+                                  , other_port.type()
+                                  , other_port.direction()
+                                  , other_port.position_of_definition()
+                                  )
+                    }
       { }
 
       port_not_connected::port_not_connected
         (type::port_type const& port, ::boost::filesystem::path const& path)
-          : generic ( ::boost::format ("%1%-port %2% not connected in %3%")
-                    % port.direction()
-                    % port.name()
-                    % path
-                    )
+          : generic { fmt::format ( "{}-port {} not connected in {}"
+                                  , port.direction()
+                                  , port.name()
+                                  , path
+                                  )
+                    }
           , _path (path)
       { }
 
@@ -119,16 +124,16 @@ namespace xml
         , type::place_type const& place
         , ::boost::filesystem::path const& path
         )
-          : generic ( ::boost::format ( "type error: %1%-port %2% of type %3% "
-                                      "connected to place %4% of type %5% in %6%"
-                                    )
-                    % port.direction()
-                    % port.name()
-                    % port.type()
-                    % place.name()
-                    % place.type()
-                    % path
-                    )
+          : generic { fmt::format ( "type error: {}-port {} of type {} "
+                                    "connected to place {} of type {} in {}"
+                                  , port.direction()
+                                  , port.name()
+                                  , port.type()
+                                  , place.name()
+                                  , place.type()
+                                  , path
+                                  )
+                    }
         , _path (path)
       { }
 
@@ -136,14 +141,14 @@ namespace xml
         ( type::port_type const& port
         , ::boost::filesystem::path const& path
         )
-          : generic ( ::boost::format ( "%1%-port %2% connected to "
-                                      "non-existing place %3% in %4%"
-                                    )
-                    % port.direction()
-                    % port.name()
-                    % *port.place
-                    % path
-                    )
+          : generic { fmt::format ( "{}-port {} connected to "
+                                    "non-existing place {} in {}"
+                                  , port.direction()
+                                  , port.name()
+                                  , *port.place
+                                  , path
+                                  )
+                    }
             , _path (path)
       { }
 
@@ -152,13 +157,13 @@ namespace xml
         , type::place_type const& place
         , ::boost::filesystem::path const& path
         )
-          : generic ( ::boost::format ( "tunnel %1% connected to non-virtual "
-                                      "place %2% in %3%"
-                                    )
-                    % port.name()
-                    % place.name()
-                    % path
-                    )
+          : generic { fmt::format ( "tunnel {} connected to non-virtual "
+                                    "place {} in {}"
+                                  , port.name()
+                                  , place.name()
+                                  , path
+                                  )
+                    }
           , _path (path)
       { }
 
@@ -167,46 +172,48 @@ namespace xml
         , type::place_type const& place
         , ::boost::filesystem::path const& path
         )
-          : generic ( ::boost::format ( "tunnel %1% is connected to place with "
-                                      "different name  %2% in %3%"
-                                    )
-                    % port.name()
-                    % place.name()
-                    % path
-                    )
+          : generic { fmt::format ( "tunnel {} is connected to place with "
+                                    "different name {} in {}"
+                                  , port.name()
+                                  , place.name()
+                                  , path
+                                  )
+                    }
               , _path (path)
       { }
 
       unknown_function::unknown_function ( std::string const& fun
                                          , type::transition_type const& trans
                                          )
-        : generic ( ::boost::format ( "unknown function %1% in transition %2%"
-                                    " in %3%"
-                                  )
-                  % fun
-                  % trans.name()
-                  % trans.position_of_definition()
-                  )
+        : generic { fmt::format ( "unknown function {} in transition {}"
+                                  " in {}"
+                                , fun
+                                , trans.name()
+                                , trans.position_of_definition()
+                                )
+                  }
         , _function_name (fun)
       {}
 
       unknown_port_in_connect_response::unknown_port_in_connect_response
         (type::response_type const& response)
           : generic
-            ( ::boost::format ("connect-response from unknown output port '%1%'")
-            % response.port()
+            { fmt::format ( "connect-response from unknown output port '{}'"
+                          , response.port()
+                          )
             , response.position_of_definition()
-            )
+            }
       {}
 
       unknown_to_in_connect_response::unknown_to_in_connect_response
         (type::response_type const& response)
           : generic
-            ( ::boost::format
-              ("unknown input port '%1%' in attribute 'to' of connect-response")
-            % response.to()
+            { fmt::format
+              ( "unknown input port '{}' in attribute 'to' of connect-response"
+              , response.to()
+              )
             , response.position_of_definition()
-            )
+            }
       {}
 
       invalid_signature_in_connect_response::invalid_signature_in_connect_response
@@ -214,70 +221,70 @@ namespace xml
         , type::port_type const& port
         )
           : generic
-            ( ::boost::format
-              ("invalid signature for response to port '%1%'."
-              " The type '%2%' with the signature '%3%' does not provide %4%"
+            { fmt::format
+              ( "invalid signature for response to port '{}'."
+                " The type '{}' with the signature '{}' does not provide {}"
+              , port.name()
+              , port.type()
+              , pnet::type::signature::show (port.signature())
+              , we::response_description_requirements()
               )
-            % port.name()
-            % port.type()
-            % pnet::type::signature::show (port.signature())
-            % we::response_description_requirements()
             , response.position_of_definition()
-            )
+            }
       {}
 
       unknown_template::unknown_template ( type::specialize_type const& spec
                                          , type::net_type const& net
                                          )
-        : generic ( ::boost::format ( "unknown template %1% in specialize at %2%"
-                                    " in net at %3%"
-                                  )
-                  % spec.use
-                  % spec.position_of_definition()
-                  % net.position_of_definition()
-                  )
+        : generic { fmt::format ( "unknown template {} in specialize at {}"
+                                  " in net at {}"
+                                , spec.use
+                                , spec.position_of_definition()
+                                , net.position_of_definition()
+                                )
+                 }
       {}
 
       connect_to_nonexistent_place::connect_to_nonexistent_place
        ( type::transition_type const& transition
        , type::connect_type const& connection
        )
-         : generic ( ::boost::format ( "connect-%1% to nonexistent place %2%"
-                                     " in transition %3% at %4%"
-                                   )
-                   % connection.direction()
-                   % connection.place()
-                   % transition.name()
-                   % connection.position_of_definition()
-                   )
+         : generic { fmt::format ( "connect-{} to nonexistent place {}"
+                                   " in transition {} at {}"
+                                 , connection.direction()
+                                 , connection.place()
+                                 , transition.name()
+                                 , connection.position_of_definition()
+                                 )
+                   }
         {}
 
       connect_to_nonexistent_port::connect_to_nonexistent_port
        ( type::transition_type const& transition
        , type::connect_type const& connection
        )
-         : generic ( ::boost::format ( "connect-%1% to nonexistent port %2%"
-                                     " in transition %3% at %4%"
-                                   )
-                   % connection.direction()
-                   % connection.port()
-                   % transition.name()
-                   % connection.position_of_definition()
-                   )
+         : generic { fmt::format ( "connect-{} to nonexistent port {}"
+                                   " in transition {} at {}"
+                                 , connection.direction()
+                                 , connection.port()
+                                 , transition.name()
+                                 , connection.position_of_definition()
+                                 )
+                   }
         {}
 
       eureka_port_type_mismatch::eureka_port_type_mismatch
        ( type::transition_type const& transition
        , type::eureka_type const& eureka
        )
-         : generic ( ::boost::format ( "connect-eureka output port %1%"
-                                     " is not of type \"set\""
-                                     " in transition %2% at %3%"
-                                   )
-                   % eureka.port()
-                   % transition.name()
-                   % eureka.position_of_definition()
-                   )
+         : generic { fmt::format ( "connect-eureka output port {}"
+                                   " is not of type \"set\""
+                                   " in transition {} at {}"
+                                 , eureka.port()
+                                 , transition.name()
+                                 , eureka.position_of_definition()
+                                 )
+                   }
         {}
 
       eureka_group_attribute_and_tag::eureka_group_attribute_and_tag
@@ -288,32 +295,32 @@ namespace xml
           , util::position_type const& pod_tag
           )
             : generic
-              ( ::boost::format
-                 ("both are given:"
-                 " the eureka attribute '%2%' at '%3%'"
-                 " and the eureka tag '%4%' at '%5%'"
-                 " in module '%1%'"
-                 " Define only the attribute or only the tag."
+              { fmt::format
+                 ( "both are given:"
+                   " the eureka attribute '{1}' at '{2}'"
+                   " and the eureka tag '{3}' at '{4}'"
+                   " in module '{0}'"
+                   " Define only the attribute or only the tag."
+                 , module_name
+                 , id_attribute
+                 , pod_attribute
+                 , id_tag
+                 , pod_tag
                  )
-              % module_name
-              % id_attribute
-              % pod_attribute
-              % id_tag
-              % pod_tag
-              )
+              }
       {}
 
       connect_eureka_to_nonexistent_out_port::connect_eureka_to_nonexistent_out_port
        ( type::transition_type const& transition
        , type::eureka_type const& eureka
        )
-         : generic ( ::boost::format ( "connect-eureka to non-existent output port %1%"
-                                     " in transition %2% at %3%"
-                                   )
-                   % eureka.port()
-                   % transition.name()
-                   % eureka.position_of_definition()
-                   )
+         : generic { fmt::format ( "connect-eureka to non-existent output port {}"
+                                   " in transition {} at {}"
+                                 , eureka.port()
+                                 , transition.name()
+                                 , eureka.position_of_definition()
+                                 )
+                   }
         {}
 
       connect_type_error::connect_type_error
@@ -322,33 +329,34 @@ namespace xml
         , type::port_type const& port
         , type::place_type const& place
         )
-         : generic ( ::boost::format ( "type-error: connect-%1%"
-                                     " from place %2%::%3% (%4%) at %5%"
-                                     " to port %6%::%7% (%8%) at %9%"
-                                     " in transition %10% at %11%"
-                                   )
-                   % connection.direction()
-                   % place.name()
-                   % place.type()
-                   % pnet::type::signature::show (place.signature())
-                   % place.position_of_definition()
-                   % port.name()
-                   % port.type()
-                   % pnet::type::signature::show (port.signature())
-                   % port.position_of_definition()
-                   % transition.name()
-                   % connection.position_of_definition()
-                   )
+          : generic { fmt::format ( "type-error: connect-{}"
+                                    " from place {}::{} ({}) at {}"
+                                    " to port {}::{} ({}) at {}"
+                                    " in transition ,10, at ,11,"
+                                  , connection.direction()
+                                  , place.name()
+                                  , place.type()
+                                  , pnet::type::signature::show (place.signature())
+                                  , place.position_of_definition()
+                                  , port.name()
+                                  , port.type()
+                                  , pnet::type::signature::show (port.signature())
+                                  , port.position_of_definition()
+                                  , transition.name()
+                                  , connection.position_of_definition()
+                                  )
+                    }
           {}
 
       memory_buffer_without_size::memory_buffer_without_size
         ( std::string const& name
         , util::position_type const& position_of_definition
         )
-        : generic ( ::boost::format ("memory-buffer '%1%' without size, at %2%")
-                  % name
-                  % position_of_definition
-                  )
+        : generic { fmt::format ( "memory-buffer '{}' without size, at {}"
+                                , name
+                                , position_of_definition
+                                )
+                  }
         , _name (name)
         , _position_of_definition (position_of_definition)
       {}
@@ -375,21 +383,19 @@ namespace xml
 
       memory_buffer_for_non_module::memory_buffer_for_non_module
         (type::function_type const& function)
-          : generic ( ::boost::format
-                      ( "non module call function '%1%'"
-                      " with %2% memory buffer%3%"
-                      ", function defined at %4%"
-                      ", memory buffer%3% defined at %5%"
+          : generic { fmt::format
+                      ( "non module call function '{0}'"
+                        " with {1} memory buffer{2}"
+                        ", function defined at {3}"
+                        ", memory buffer{2} defined at {4}"
+                      , function.name()
+                      , function.memory_buffers().size()
+                      , (function.memory_buffers().size() > 1) ? "s" : ""
+                      , function.position_of_definition()
+                      , print_memory_buffer_positions_of_definition
+                        (function.memory_buffers())
                       )
-                    % function.name()
-                    % function.memory_buffers().size()
-                    % ((function.memory_buffers().size() > 1)
-                       ? "s" : ""
-                      )
-                    % function.position_of_definition()
-                    % print_memory_buffer_positions_of_definition
-                      (function.memory_buffers())
-                    )
+                    }
       {}
 
       namespace
@@ -439,26 +445,26 @@ namespace xml
 
       memory_transfer_for_non_module::memory_transfer_for_non_module
         (type::function_type const& function)
-          : generic ( ::boost::format
-                      ( "non module call function '%1%'"
-                      " with %2% memory transfer%3%"
-                      ", function defined at %4%"
-                      ", memory transfer%3% defined at:%5%"
-                      )
-                    % function.name()
-                    % ( function.memory_gets().size()
-                      + function.memory_puts().size()
-                      + function.memory_getputs().size()
-                      )
-                    % ((( function.memory_gets().size()
+          : generic { fmt::format
+                      ( "non module call function '{0}'"
+                        " with {1} memory transfer{2}"
+                        ", function defined at {3}"
+                        ", memory transfer{2} defined at:{4}"
+                      , function.name()
+                      , ( function.memory_gets().size()
                         + function.memory_puts().size()
                         + function.memory_getputs().size()
-                        ) > 1
-                       ) ? "s" : ""
+                        )
+                      , ((( function.memory_gets().size()
+                          + function.memory_puts().size()
+                          + function.memory_getputs().size()
+                          ) > 1
+                         ) ? "s" : ""
+                        )
+                      , function.position_of_definition()
+                      , print_memory_transfer_positions_of_definition (function)
                       )
-                    % function.position_of_definition()
-                    % print_memory_transfer_positions_of_definition (function)
-                    )
+                    }
       {}
 
       memory_buffer_with_same_name_as_port
@@ -466,26 +472,27 @@ namespace xml
         ( type::memory_buffer_type const& memory_buffer
         , type::port_type const& port
         )
-          : generic ( ::boost::format
-                      ("memory buffer '%1%' defined at %2%"
-                      " with the same name as the %3%-port defined at %4%"
+          : generic { fmt::format
+                      ( "memory buffer '{}' defined at {}"
+                        " with the same name as the {}-port defined at {}"
+                      , memory_buffer.name()
+                      , memory_buffer.position_of_definition()
+                      , port.direction()
+                      , port.position_of_definition()
                       )
-                    % memory_buffer.name()
-                    % memory_buffer.position_of_definition()
-                    % port.direction()
-                    % port.position_of_definition()
-                    )
+                    }
         {}
 
       cannot_resolve::cannot_resolve ( std::string const& field
                                      , std::string const& type
                                      , type::structure_type const& strct
                                      )
-        : generic ( ::boost::format ("cannot resolve %1%::%2%, defined at %3%")
-                  % field
-                  % type
-                  % strct.position_of_definition()
-                  )
+        : generic { fmt::format ( "cannot resolve {}::{}, defined at {}"
+                                , field
+                                , type
+                                , strct.position_of_definition()
+                                )
+                  }
         , _field (field)
         , _type (type)
       {}
@@ -493,11 +500,12 @@ namespace xml
       struct_redefined::struct_redefined ( type::structure_type const& early
                                          , type::structure_type const& late
                                          )
-        : generic ( ::boost::format ("struct %1% at %2% redefined at %3%")
-                  % early.name()
-                  % early.position_of_definition()
-                  % late.position_of_definition()
-                  )
+        : generic { fmt::format ( "struct {} at {} redefined at {}"
+                                , early.name()
+                                , early.position_of_definition()
+                                , late.position_of_definition()
+                                )
+                  }
       {}
 
       duplicate_specialize::duplicate_specialize
@@ -505,14 +513,14 @@ namespace xml
         , type::specialize_type const& late
         )
           : generic_duplicate<type::specialize_type>
-            (early, late, ::boost::format ("specialize %1%") % early.name())
+            (early, late, fmt::format ("specialize {}", early.name()))
       {}
 
       duplicate_place::duplicate_place ( type::place_type const& early
                                        , type::place_type const& late
                                        )
         : generic_duplicate<type::place_type>
-          (early, late, ::boost::format ("place %1%") % early.name())
+          (early, late, fmt::format ("place {}", early.name()))
       {}
 
       duplicate_transition::duplicate_transition
@@ -520,7 +528,7 @@ namespace xml
         , type::transition_type const& late
         )
           : generic_duplicate<type::transition_type>
-            (early, late, ::boost::format ("transition %1%") % early.name())
+            (early, late, fmt::format ("transition {}", early.name()))
       {}
 
       duplicate_port::duplicate_port ( type::port_type const& early
@@ -529,9 +537,10 @@ namespace xml
         : generic_duplicate<type::port_type>
             ( early
             , late
-            , ::boost::format ("%1%-port %2%")
-            % early.direction()
-            % early.name()
+            , fmt::format ( "{}-port {}"
+                          , early.direction()
+                          , early.name()
+                          )
             )
       {}
 
@@ -540,7 +549,7 @@ namespace xml
         , type::tmpl_type const& late
         )
           : generic_duplicate<type::tmpl_type>
-            (early, late, ::boost::format ("template %1%") % early.name())
+            (early, late, fmt::format ("template {}", early.name()))
       {}
 
       duplicate_place_map::duplicate_place_map
@@ -550,9 +559,10 @@ namespace xml
           : generic_duplicate<type::place_map_type>
               ( early
               , late
-              , ::boost::format ("place-map %1% <-> %2%")
-              % early.place_virtual()
-              % early.place_real()
+              , fmt::format ( "place-map {} <-> {}"
+                            , early.place_virtual()
+                            , early.place_real()
+                            )
               )
       {}
 
@@ -563,11 +573,11 @@ namespace xml
           : generic_duplicate<type::module_type>
             ( early
             , late
-            , ::boost::format ( "external function %1% in module %2%"
-                              " has conflicting definition"
-                            )
-            % early.function()
-            % early.name()
+            , fmt::format ( "external function {} in module {}"
+                            " has conflicting definition"
+                          , early.function()
+                          , early.name()
+                          )
             )
       {}
 
@@ -578,13 +588,13 @@ namespace xml
           : generic_duplicate<type::connect_type>
             ( early
             , late
-            , ::boost::format ( "connect-%1% %2% <-> %3%"
-                              " (existing connection is connect-%4%)"
-                            )
-            % late.direction()
-            % late.place()
-            % late.port()
-            % early.direction()
+            , fmt::format ( "connect-{} {} <-> {}"
+                            " (existing connection is connect-{})"
+                          , late.direction()
+                          , late.place()
+                          , late.port()
+                          , early.direction()
+                          )
             )
       {}
 
@@ -595,12 +605,12 @@ namespace xml
           : generic_duplicate<type::response_type>
             ( early
             , late
-            , ::boost::format ( "connect-response %1% -> %2%"
-                              " (existing response connects to %3%)"
-                            )
-            % late.port()
-            % late.to()
-            % early.to()
+            , fmt::format ( "connect-response {} -> {}"
+                            " (existing response connects to {})"
+                          , late.port()
+                          , late.to()
+                          , early.to()
+                          )
             )
       {}
 
@@ -611,10 +621,9 @@ namespace xml
           : generic_duplicate<type::eureka_type>
             ( early
             , late
-            , ::boost::format ( "duplicate connect-eureka"
-                              " for port: %1%"
-                            )
-            % early.port()
+            , fmt::format ( "duplicate connect-eureka for port: {}"
+                          , early.port()
+                          )
             )
       {}
 
@@ -625,54 +634,55 @@ namespace xml
           : generic_duplicate<type::memory_buffer_type>
             ( early
             , late
-            , ::boost::format ("memory-buffer '%1%'") % late.name()
+            , fmt::format ("memory-buffer '{}'", late.name())
             )
       {}
 
       place_type_unknown::place_type_unknown (type::place_type const& place)
-        : generic ( ::boost::format ("unknown type %1% for place %2% at %3%")
-                  % place.type()
-                  % place.name()
-                  % place.position_of_definition()
-                  )
+        : generic { fmt::format ( "unknown type {} for place {} at {}"
+                                , place.type()
+                                , place.name()
+                                , place.position_of_definition()
+                                )
+                  }
       {}
 
       duplicate_preference::duplicate_preference
         (std::string const& target, util::position_type const& position)
-          : generic ( ::boost::format ( "duplicate target type '%1%' at %2%"
+          : generic { fmt::format ( "duplicate target type '{}' at {}"
                                       ", already in the preferences"
-                                    )
-                    % target
-                    % position
-                    )
+                                  , target
+                                  , position
+                                  )
+                    }
       {}
 
       empty_preferences::empty_preferences
         (util::position_type const& position)
-          : generic ( ::boost::format ( "preferences enabled, but no targets"
-                                      " specified at %1%"
-                                    )
-                    % position
-                    )
+          : generic { fmt::format ( "preferences enabled, but no targets"
+                                    " specified at {}"
+                                  , position
+                                  )
+                    }
       {}
 
       preferences_without_modules::preferences_without_modules
         (util::position_type const& position)
-          : generic ( ::boost::format ( "preferences enabled, but no modules"
-                                      " with target defined in %1%"
-                                    )
-                    % position
-                    )
+           : generic { fmt::format ( "preferences enabled, but no modules"
+                                     " with target defined in {}"
+                                   , position
+                                   )
+                     }
       {}
 
       missing_target_for_module::missing_target_for_module
         (std::string const& module, util::position_type const& position)
-          : generic ( ::boost::format ( "module '%1%' missing target"
-                                      " for multi-module transition at %2%"
-                                    )
-                    % module
-                    % position
-                    )
+          : generic { fmt::format ( "module '{}' missing target"
+                                    " for multi-module transition at {}"
+                                  , module
+                                  , position
+                                  )
+                    }
       {}
 
       modules_without_preferences::modules_without_preferences
@@ -680,20 +690,21 @@ namespace xml
         , std::string const& target
         , util::position_type const& position
         )
-          : generic ( ::boost::format ( "module '%1%' defined with target '%2%'"
-                                      ", but preferences not enabled at %3%"
-                                    )
-                    % module
-                    % target
-                    % position
-                    )
+           : generic { fmt::format ( "module '{}' defined with target '{}'"
+                                     ", but preferences not enabled at {}"
+                                   , module
+                                   , target
+                                   , position
+                                   )
+                     }
       {}
 
       modules_without_preferences::modules_without_preferences
           (util::position_type const& position)
-        : generic ( ::boost::format ("modules without preferences at %1%")
-                  % position
-                  )
+        : generic { fmt::format ( "modules without preferences at {}"
+                                , position
+                                )
+                  }
       {}
 
       duplicate_module_for_target::duplicate_module_for_target
@@ -701,23 +712,23 @@ namespace xml
         , std::string const& target
         , util::position_type const& position
         )
-          : generic ( ::boost::format ( "duplicate module '%1%' for target '%2%'"
-                                      " at %3%"
-                                    )
-                    % module
-                    % target
-                    % position
-                    )
+          : generic { fmt::format ( "duplicate module '{}' for target '{}'"
+                                    " at {}"
+                                  , module
+                                  , target
+                                  , position
+                                  )
+                    }
       {}
 
       mismatching_eureka_for_module::mismatching_eureka_for_module
         (std::string const& module, util::position_type const& position)
-          : generic ( ::boost::format ( "mismatching eureka group for module '%1%'"
-                                      " in multi-module transition at %2%"
-                                    )
-                    % module
-                    % position
-                    )
+          : generic { fmt::format ( "mismatching eureka group for module '{}'"
+                                    " in multi-module transition at {}"
+                                  , module
+                                  , position
+                                  )
+                    }
       {}
 
       namespace
@@ -740,17 +751,17 @@ namespace xml
         , std::list<std::string> const& missing_in_modules
         , util::position_type const& position
         )
-          : generic ( ::boost::format ( "mismatching targets for multi-module"
-                                      " transition in %3%, %1%%2%"
-                                    )
-                    % print_target_list ( "mismatch-in-preferences"
-                                        , missing_in_preferences
-                                        )
-                    % print_target_list ( ", mismatch-in-modules"
-                                        , missing_in_modules
-                                        )
-                    % position
-                    )
+          : generic { fmt::format ( "mismatching targets for multi-module"
+                                    " transition in {2}, {0}{1}"
+                                  , print_target_list ( "mismatch-in-preferences"
+                                                      , missing_in_preferences
+                                                      )
+                                  , print_target_list ( ", mismatch-in-modules"
+                                                      , missing_in_modules
+                                                      )
+                                  , position
+                                  )
+                    }
       {}
     }
   }

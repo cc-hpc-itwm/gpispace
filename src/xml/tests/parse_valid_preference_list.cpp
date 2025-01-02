@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -19,8 +19,6 @@
 #include <list>
 #include <string>
 #include <unordered_set>
-
-#include <boost/range/adaptors.hpp>
 
 #include <xml/tests/parse_preference_list_with_modules_helpers.hpp>
 

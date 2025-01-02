@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #define FHG_UTIL_TESTING_RANDOM_SPECIALIZE_COMMON_DECL(type_, cond_, templ_)   \

@@ -1,9 +1,7 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <we/test/operator_equal.hpp>
-
-#include <boost/range/adaptor/map.hpp>
 
 #include <map>
 #include <set>
@@ -46,13 +44,9 @@ namespace we
                 , std::multiset<pnet::type::value::value_type>
                 > tokens_on_place;
 
-        for ( we::place_id_type const& place_id
-            : n.places() | ::boost::adaptors::map_keys
-            )
+        for (auto const& [place_id, _ignore] : n.places())
         {
-          for ( pnet::type::value::value_type const& token
-              : n.get_token (place_id) | ::boost::adaptors::map_values
-              )
+          for (auto const& [_ignore1, token] : n.get_token (place_id))
           {
             tokens_on_place[place_id].emplace (token);
           }
@@ -123,4 +117,40 @@ namespace we
           ;
       }
     }
+}
+
+namespace we::type
+{
+  auto operator==
+    ( net_type::PlaceIDWithProperty const& lhs
+    , net_type::PlaceIDWithProperty const& rhs
+    ) -> bool
+  {
+    auto const essence
+      { [] (auto const& x)
+        {
+          return std::tie (x._place_id, x._property);
+        }
+      };
+
+    return essence (lhs) == essence (rhs);
+  }
+}
+
+namespace we::type
+{
+  auto operator==
+    ( net_type::PortIDWithProperty const& lhs
+    , net_type::PortIDWithProperty const& rhs
+    ) -> bool
+  {
+    auto const essence
+      { [] (auto const& x)
+        {
+          return std::tie (x._port_id, x._property);
+        }
+      };
+
+    return essence (lhs) == essence (rhs);
+  }
 }

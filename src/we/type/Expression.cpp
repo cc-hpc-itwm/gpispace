@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <we/type/Expression.hpp>
@@ -6,11 +6,12 @@
 #include <we/exception.hpp>
 #include <we/expr/type/AssignResult.hpp>
 
-#include <util-generic/nest_exceptions.hpp>
-
 #include <boost/algorithm/string.hpp>
-#include <boost/format.hpp>
 
+#include <FMT/boost/variant.hpp>
+#include <FMT/we/expr/type/Type.hpp>
+#include <exception>
+#include <fmt/core.h>
 #include <ostream>
 
 namespace we
@@ -65,20 +66,24 @@ namespace we
     {
       auto const _type (type (context));
 
-      fhg::util::nest_exceptions<pnet::exception::type_error>
-        ( [&]
-          {
-            (void) expr::type::assign_result ({}, expected, _type);
-          }
-        , str ( ::boost::format
-                   ("Expression '%1%' has incompatible type '%2%'."
-                   " Expected type '%3%'."
-                   )
-               % expression()
-               % _type
-               % expected
-               )
-        );
+      try
+      {
+        (void) expr::type::assign_result ({}, expected, _type);
+      }
+      catch (...)
+      {
+        std::throw_with_nested
+          ( pnet::exception::type_error
+            { fmt::format
+              ( "Expression '{}' has incompatible type '{}'."
+                " Expected type '{}'."
+              , expression()
+              , _type
+              , expected
+              )
+            }
+          );
+      }
     }
 
     std::ostream& operator<< (std::ostream& os, Expression const& e)

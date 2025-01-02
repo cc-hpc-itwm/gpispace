@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 /*
@@ -11,7 +11,6 @@
 #include <util-generic/boost/program_options/validators/nonexisting_path.hpp>
 #include <util-generic/boost/program_options/validators/nonexisting_path_in_existing_directory.hpp>
 #include <util-generic/boost/program_options/validators/positive_integral.hpp>
-#include <util-generic/getenv.hpp>
 #include <util-generic/print_exception.hpp>
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 #include <util-generic/syscall.hpp>
@@ -28,7 +27,6 @@
 
 #include <boost/asio/io_service.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/format.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/program_options.hpp>
 #include <boost/thread/scoped_thread.hpp>

@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <drts/private/scheduler_types_implementation.hpp>
@@ -23,15 +23,12 @@
 
 #include <gspc/iml/macros.hpp>
 
-#include <fhg/util/macros.hpp>
-#include <util-generic/cxx17/holds_alternative.hpp>
 #include <util-generic/fallthrough.hpp>
 #include <util-generic/functor_visitor.hpp>
 #include <util-generic/hostname.hpp>
 #include <util-generic/join.hpp>
 #include <util-generic/print_exception.hpp>
 
-#include <boost/range/adaptor/map.hpp>
 #include <boost/tokenizer.hpp>
 
 #include <algorithm>
@@ -89,25 +86,28 @@ namespace sdpa
         ) -> std::unique_ptr<sdpa::daemon::Scheduler>
         {
           using namespace gspc::scheduler;
-          return fhg::util::visit<std::unique_ptr<sdpa::daemon::Scheduler>>
+          return fhg::util::visit
             ( scheduler_type
             , [&] (CostAwareWithWorkStealing const& scheduler)
               {
-                return fhg::util::visit<std::unique_ptr<sdpa::daemon::Scheduler>>
+                return fhg::util::visit
                   ( scheduler._->constructed_from()
-                  , [&] (CostAwareWithWorkStealing::SingleAllocation)
+                  , [&] ( CostAwareWithWorkStealing::SingleAllocation
+                        ) -> std::unique_ptr<sdpa::daemon::Scheduler>
                     {
                       return std::make_unique<SingleAllocationScheduler>
                         (requirements_and_preferences, worker_manager);
                     }
-                  , [&] (CostAwareWithWorkStealing::CoallocationWithBackfilling)
+                  , [&] ( CostAwareWithWorkStealing::CoallocationWithBackfilling
+                        ) -> std::unique_ptr<sdpa::daemon::Scheduler>
                     {
                       return std::make_unique<CoallocationScheduler>
                         (requirements_and_preferences, worker_manager);
                     }
                   );
               }
-            , [&] (GreedyWithWorkStealing const&)
+            , [&] ( GreedyWithWorkStealing const&
+                  ) -> std::unique_ptr<sdpa::daemon::Scheduler>
               {
                 return std::make_unique<GreedyScheduler>
                   (requirements_and_preferences, worker_manager, random_engine);
@@ -120,8 +120,8 @@ namespace sdpa
         ( std::string name
         , std::string url
         , std::unique_ptr<::boost::asio::io_service> peer_io_service
-        , ::boost::optional<::boost::filesystem::path> const& IF_GSPC_WITH_IML (vmem_socket)
-        , fhg::com::Certificates const& certificates
+        , std::optional<::boost::filesystem::path> const& IF_GSPC_WITH_IML (vmem_socket)
+        , gspc::Certificates const& certificates
         )
       : _name (name)
       , _subscriptions()
@@ -189,7 +189,7 @@ namespace sdpa
 
     Agent::cleanup_job_map_on_dtor_helper::~cleanup_job_map_on_dtor_helper()
     {
-      for (const Job* const pJob : _ | ::boost::adaptors::map_values )
+      for (auto const& [_ignore, pJob] : _)
       {
         delete pJob;
       }
@@ -343,7 +343,7 @@ namespace sdpa
           ("Cannot delete a job which is in a non-terminal state.");
       }
 
-      if (!::boost::get<job_source_client> (&job->source()))
+      if (!std::holds_alternative<job_source_client> (job->source()))
       {
         throw std::invalid_argument
           ("tried deleting a job not submitted by a client");
@@ -377,8 +377,8 @@ namespace sdpa
       //! \note send immediately an acknowledgment to the component
       // that requested the cancellation if it does not get a
       // notification right after
-      if (::boost::get<job_source_wfe> (&job->source())
-         || ( ::boost::get<job_source_client> (&job->source())
+      if (std::holds_alternative<job_source_wfe> (job->source())
+          || ( std::holds_alternative<job_source_client> (job->source())
             && !isSubscriber (source, job->id())
             )
          )
@@ -386,7 +386,7 @@ namespace sdpa
         parent_proxy (this, source).cancel_job_ack (event->job_id());
       }
 
-      if (::boost::get<job_handler_wfe> (&job->handler()))
+      if (std::holds_alternative<job_handler_wfe> (job->handler()))
       {
         if (job->getStatus() == sdpa::status::RUNNING)
         {
@@ -469,7 +469,7 @@ namespace sdpa
         , job_map_.end()
         , [&] (auto const& job) -> bool
           {
-            return fhg::util::cxx17::holds_alternative<job_source_client>
+            return std::holds_alternative<job_source_client>
                      (job.second->source())
               && ( to_string (job.second->scheduler_type().get())
                  != to_string (pJob->scheduler_type().get())
@@ -690,7 +690,7 @@ namespace sdpa
       {
         job_canceled (pJob);
 
-        if (!::boost::get<job_source_client> (&pJob->source()))
+        if (!std::holds_alternative<job_source_client> (pJob->source()))
         {
           deleteJob (job_id);
         }
@@ -713,7 +713,7 @@ namespace sdpa
       job_finished (pJob, result);
 
       //! \note #817: gantt does not support nesting
-      if ( fhg::util::visit<bool>
+      if ( fhg::util::visit
              ( pJob->source()
              , [] (job_source_wfe const&) { return false; }
              , [] (job_source_client const&) { return true; }
@@ -804,11 +804,9 @@ namespace sdpa
         std::vector<std::string> errors;
         for (auto& result : results->individual_results)
         {
-          if ( JobFSM_::s_failed const* as_failed
-             = ::boost::get<JobFSM_::s_failed> (&result.second)
-             )
+          if (std::holds_alternative<JobFSM_::s_failed> (result.second))
           {
-            errors.emplace_back (result.first + ": " + as_failed->message);
+            errors.emplace_back (result.first + ": " + std::get<JobFSM_::s_failed> (result.second).message);
           }
         }
 
@@ -825,7 +823,7 @@ namespace sdpa
       _scheduler->release_reservation (job->id());
       request_scheduling();
 
-      if (::boost::get<job_source_wfe> (&job->source()))
+      if (std::holds_alternative<job_source_wfe> (job->source()))
       {
         deleteJob (job->id());
       }
@@ -886,7 +884,7 @@ namespace sdpa
         Job* _job;
         we::layer& _wfe;
       } visitor = {job, _workflow_engine};
-      ::boost::apply_visitor (visitor, job->source());
+      std::visit (visitor, job->source());
 
       notify_subscribers<events::JobFinishedEvent>
         (job->id(), job->id(), job->result());
@@ -905,7 +903,7 @@ namespace sdpa
         Job* _job;
         we::layer& _wfe;
       } visitor = {job, _workflow_engine};
-      ::boost::apply_visitor (visitor, job->source());
+      std::visit (visitor, job->source());
 
       notify_subscribers<events::JobFailedEvent>
         (job->id(), job->id(), job->error_message());
@@ -924,7 +922,7 @@ namespace sdpa
         Job* _job;
         we::layer& _wfe;
       } visitor = {job, _workflow_engine};
-      ::boost::apply_visitor (visitor, job->source());
+      std::visit (visitor, job->source());
 
       notify_subscribers<events::CancelJobAckEvent> (job->id(), job->id());
     }
@@ -1028,7 +1026,7 @@ namespace sdpa
         return;
       }
 
-      INVALID_ENUM_VALUE (sdpa::status::code, status);
+      throw std::logic_error {"invalid enum value"};
     }
 
     bool Agent::isSubscriber
@@ -1142,7 +1140,7 @@ namespace sdpa
           ("unable to put token: " + event->job_id() + " not running");
       }
 
-      fhg::util::visit<void>
+      fhg::util::visit
         ( job->handler()
         , [&] (job_handler_worker const&)
           {
@@ -1230,7 +1228,7 @@ namespace sdpa
           );
       }
 
-      fhg::util::visit<void>
+      fhg::util::visit
         ( job->handler()
         , [&] (job_handler_worker const&)
           {
@@ -1277,7 +1275,7 @@ namespace sdpa
     }
     void Agent::workflow_response_response
       ( std::string workflow_response_id
-      , ::boost::variant<std::exception_ptr, pnet::type::value::value_type> result
+      , std::variant<std::exception_ptr, pnet::type::value::value_type> result
       )
     {
       delay (std::bind ( &Agent::workflow_engine_workflow_response_response
@@ -1290,7 +1288,7 @@ namespace sdpa
 
     void Agent::workflow_engine_workflow_response_response
       ( std::string workflow_response_id
-      , ::boost::variant<std::exception_ptr, pnet::type::value::value_type> result
+      , std::variant<std::exception_ptr, pnet::type::value::value_type> result
       )
     {
       parent_proxy (this, take (_workflow_response_source, workflow_response_id))
@@ -1435,7 +1433,7 @@ namespace sdpa
 
     void Agent::parent_proxy::workflow_response_response
       ( std::string workflow_response_id
-      , ::boost::variant<std::exception_ptr, pnet::type::value::value_type> content
+      , std::variant<std::exception_ptr, pnet::type::value::value_type> content
       ) const
     {
       _that->sendEventToOther<events::workflow_response_response>

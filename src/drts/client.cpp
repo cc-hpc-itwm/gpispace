@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <drts/client.hpp>
@@ -13,8 +13,7 @@
 
 #include <sdpa/client.hpp>
 
-#include <boost/format.hpp>
-
+#include <fmt/core.h>
 #include <iostream>
 
 namespace gspc
@@ -27,6 +26,10 @@ namespace gspc
 
     ::we::type::Activity _activity;
   };
+
+  workflow::workflow (std::filesystem::path workflow_)
+    : workflow {::boost::filesystem::path {workflow_.string()}}
+  {}
 
   workflow::workflow (::boost::filesystem::path workflow_)
     : _ (new implementation (::we::type::Activity (workflow_)))
@@ -112,11 +115,12 @@ namespace gspc
       {
         //! \todo decorate the exception with the most progressed activity
         throw std::runtime_error
-          (( ::boost::format ("Job %1%: failed: error-message := %2%")
-           % job_id
-           % job_info.error_message
-           ).str()
-          );
+          { fmt::format
+            ( "Job {}: failed: error-message := {}"
+            , job_id
+            , job_info.error_message
+            )
+          };
       }
     }
 

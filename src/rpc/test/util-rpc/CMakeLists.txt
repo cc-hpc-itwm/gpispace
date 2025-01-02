@@ -41,7 +41,7 @@ rpc_unit_test (exceptions)
 
 rpc_unit_test (future)
 
-rpc_unit_test (locked_with_info_file)
+rpc_unit_test (locked_with_info_file PRIVATE fmt)
 
 rpc_unit_test (many_threads_hammer_one_server RUN_SERIAL)
 

@@ -1,9 +1,8 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
 
-#include <util-generic/cxx17/logical_operator_type_traits.hpp>
 #include <util-generic/serialization/detail/base_class.hpp>
 
 #include <boost/serialization/is_bitwise_serializable.hpp>
@@ -19,7 +18,7 @@ namespace fhg
       //! Check if all given Types are trivially serializable.
       template<typename... Types>
         using is_trivially_serializable
-          = cxx17::conjunction
+          = std::conjunction
               <::boost::serialization::is_bitwise_serializable<Types>...>;
 
       //! Let the serialization of type_ with the

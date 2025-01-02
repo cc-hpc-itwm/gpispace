@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -35,9 +35,17 @@
 #include <xml/parse/util/show_node_type.hpp>
 
 #include <boost/filesystem.hpp>
-#include <boost/format.hpp>
 #include <boost/optional.hpp>
 #include <boost/optional/optional_io.hpp>
+
+#include <FMT/boost/filesystem/path.hpp>
+#include <FMT/boost/optional.hpp>
+#include <FMT/boost/variant.hpp>
+#include <FMT/util-generic/join.hpp>
+#include <FMT/we/type/port/direction.hpp>
+#include <FMT/we/type/signature/show.hpp>
+#include <FMT/xml/parse/util/position.hpp>
+#include <fmt/core.h>
 
 namespace xml
 {
@@ -52,24 +60,20 @@ namespace xml
           : std::runtime_error ("ERROR: " + msg)
         { }
 
-        generic (::boost::format const& bf)
-          : generic (bf.str())
-        { }
-
         generic (std::string const& msg, std::string const& pre)
           : generic (pre + ": " + msg)
         { }
 
-        generic ( ::boost::format const& format
+        generic ( std::string const& message
                 , ::boost::filesystem::path const& path
                 )
-          : generic (::boost::format ("%1% in %2%") % format % path)
+          : generic {fmt::format ("{} in {}", message, path)}
         {}
 
-        generic ( ::boost::format const& format
+        generic ( std::string const& format
                 , util::position_type const& position
                 )
-          : generic (::boost::format ("%1% in %2%") % format % position)
+          : generic {fmt::format ("{} in {}", format, position)}
         {}
       };
 
@@ -167,9 +171,10 @@ namespace xml
       public:
         explicit file_already_there (::boost::filesystem::path const& file)
           : generic
-            ( ::boost::format ("file %1% already there with a different content")
-            % file
-            )
+            { fmt::format ( "file {} already there with a different content"
+                          , file
+                          )
+            }
         {}
       };
 
@@ -215,9 +220,9 @@ namespace xml
         struct_field_redefined ( std::string const& name
                                , ::boost::filesystem::path const& path
                                )
-          : generic ( ::boost::format ("struct field '%1%' redefined")
-                    % name , path
-                    )
+          : generic { fmt::format ("struct field '{}' redefined", name)
+                    , path
+                    }
         {}
       };
 
@@ -238,13 +243,14 @@ namespace xml
                    , std::string const& msg
                    )
           : generic
-            ( ::boost::format
-              ("when reading a value for place %1%%2% from %3%: %4%")
-            % place
-            % (field.empty() ? "" : (" for field " + field))
-            % path
-            % msg
-            )
+            { fmt::format
+              ( "when reading a value for place {}{} from {}: {}"
+              , place
+              , field.empty() ? "" : (" for field " + field)
+              , path
+              , msg
+              )
+            }
         {}
       };
 
@@ -268,15 +274,15 @@ namespace xml
       public:
         generic_duplicate ( T const& early
                           , T const& late
-                          , ::boost::format const& fmt
+                          , std::string const& fmt
                           )
-          : generic ( ::boost::format ( "duplicate %1% at %2%"
-                                      ", earlier definition is at %3%"
-                                    )
-                    % fmt
-                    % late.position_of_definition()
-                    % early.position_of_definition()
-                    )
+          : generic { fmt::format ( "duplicate {} at {}"
+                                    ", earlier definition is at {}"
+                                  , fmt
+                                  , late.position_of_definition()
+                                  , early.position_of_definition()
+                                  )
+                    }
         {}
       };
 
@@ -393,12 +399,13 @@ namespace xml
                                , ::boost::filesystem::path const& path
                                )
           : generic
-            ( ::boost::format ("%1% %2% with unknown type %3%")
-            % direction
-            % port
-            % type
+            { fmt::format ( "{} {} with unknown type {}"
+                          , direction
+                          , port
+                          , type
+                          )
             , path
-            )
+            }
         {}
       };
 
@@ -415,14 +422,15 @@ namespace xml
         , ::boost::filesystem::path const& path
         )
           : generic
-            ( ::boost::format
-              ("unknown %1% port %2% in description of function %3%.%4%")
-            % port_type
-            % port_name
-            % mod_name
-            % mod_function
+            { fmt::format
+              ( "unknown {} port {} in description of function {}.{}"
+              , port_type
+              , port_name
+              , mod_name
+              , mod_function
+              )
             , path
-            )
+            }
         {}
       };
 
@@ -504,16 +512,16 @@ namespace xml
                                  , ::boost::filesystem::path const& path
                                  )
           : generic
-            ( ::boost::format
-              ( "type error: virtual place %1% of type %2%"
-              " identified with real place %3% of type %4%"
+            { fmt::format
+              ( "type error: virtual place {} of type {}"
+                " identified with real place {} of type {}"
+              , name_virtual
+              , pnet::type::signature::show (sig_virtual)
+              , name_real
+              , pnet::type::signature::show (sig_real)
               )
-            % name_virtual
-            % pnet::type::signature::show (sig_virtual)
-            % name_real
-            % pnet::type::signature::show (sig_real)
             , path
-            )
+            }
         {}
       };
 
@@ -670,11 +678,12 @@ namespace xml
                          , ::boost::filesystem::path const& path
                          )
           : generic
-            ( ::boost::format ("%1% for property %2%")
-            % msg
-            % fhg::util::join (key, '.')
+            { fmt::format ( "{} for property {}"
+                          , msg
+                          , fhg::util::join (key, '.')
+                          )
             , path
-            )
+            }
         {}
       };
 
@@ -689,14 +698,14 @@ namespace xml
                           , ::boost::filesystem::path const& path
                           )
           : generic
-            ( ::boost::format ("type map mismatch, type %1% mapped to type %3%"
-                            " and earlier to type %3%"
-                            )
-            % from
-            % to_old
-            % to_new
+            { fmt::format ( "type map mismatch, type {} mapped to type {}"
+                            " and earlier to type {}"
+                          , from
+                          , to_old
+                          , to_new
+                          )
             , path
-            )
+            }
         {}
       };
 
@@ -710,11 +719,12 @@ namespace xml
                          , ::boost::filesystem::path const& path
                          )
           : generic
-            ( ::boost::format ("missing type-out %1% in specialization %2%")
-            % type
-            % spec
+            { fmt::format ( "missing type-out {} in specialization {}"
+                          , type
+                          , spec
+                          )
             , path
-            )
+            }
         {}
       };
 
@@ -728,11 +738,12 @@ namespace xml
                        , ::boost::filesystem::path const& path
                        )
           : generic
-            ( ::boost::format ("%2% %1% with invalid prefix")
-            % name
-            % type
+            { fmt::format ( "{1} {0} with invalid prefix"
+                          , name
+                          , type
+                          )
             , path
-            )
+            }
         {}
       };
 
@@ -746,12 +757,13 @@ namespace xml
                      , ::boost::filesystem::path const& path
                      )
           : generic
-            ( ::boost::format
-              ("%2% %1% is invalid (not of the form: [a-zA-Z_][a-zA-Z_0-9]^*)")
-            % name
-            % type
+            { fmt::format
+              ( "{1} {0} is invalid (not of the form: [a-zA-Z_][a-zA-Z_0-9]^*)"
+              , name
+              , type
+              )
             , path
-            )
+            }
         {}
       };
 
@@ -763,7 +775,7 @@ namespace xml
         invalid_field_name ( std::string const& name
                            , ::boost::filesystem::path const& path
                            )
-          : generic (::boost::format (" invalid field name %1%") % name, path)
+          : generic {fmt::format (" invalid field name {}", name), path}
         {}
       };
 
@@ -776,9 +788,9 @@ namespace xml
                                  , ::boost::filesystem::path const& path
                                  )
           : generic
-            ( ::boost::format (" missing map for virtual place %1%") % name
+            { fmt::format (" missing map for virtual place {}", name)
             , path
-            )
+            }
         {}
       };
 
@@ -803,15 +815,15 @@ namespace xml
                            , ::boost::filesystem::path const& path
                            )
           : generic
-            ( ::boost::format
-              (" missing real place %2% to replace virtual place %1%"
-              " in transition %3%"
+            { fmt::format
+              ( " missing real place {1} to replace virtual place {0}"
+                " in transition {2}"
+              , place_virtual
+              , place_real
+              , trans
               )
-            % place_virtual
-            % place_real
-            % trans
             , path
-            )
+            }
         {}
       };
 
@@ -829,19 +841,19 @@ namespace xml
                     , ::boost::filesystem::path const& path
                     )
             : generic
-              ( ::boost::format
-                (R"EOS(error while parsing a function description for module name %1% in %5%:
-%2%
-%4%^
-%3%
+              { fmt::format
+                (R"EOS(error while parsing a function description for module name {0} in {4}:
+{1}
+{3}^
+{2}
 )EOS"
+                , name
+                , function
+                , what
+                , std::string (k, ' ')
+                , path
                 )
-              % name
-              % function
-              % what
-              % std::string (k, ' ')
-              % path
-              )
+              }
           {}
         };
 
@@ -874,7 +886,7 @@ namespace xml
         {}
 
         could_not_open_file (std::string const& file)
-          : generic (::boost::format ("could not open file %1%") % file)
+          : generic {fmt::format ("could not open file {}", file)}
         {}
       };
 
@@ -884,7 +896,7 @@ namespace xml
       {
       public:
         could_not_create_directory (::boost::filesystem::path const& path)
-          : generic (::boost::format ("could not create directory %1%") % path)
+          : generic {fmt::format ("could not create directory {}", path)}
         {}
       };
 
@@ -897,7 +909,7 @@ namespace xml
                                   , ::boost::filesystem::path const& path
                                   )
           : generic
-            (::boost::format ("template %1% without a function") % name, path)
+            {fmt::format ("template {} without a function", name), path}
         {}
       };
 

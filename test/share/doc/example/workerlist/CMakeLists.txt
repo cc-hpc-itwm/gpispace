@@ -9,6 +9,7 @@ fhg_add_test (NAME doc_example_workerlist
             fhg-util
             Boost::program_options
             Boost::filesystem
+            fmt
   REQUIRES_INSTALLATION
   START_SCOPED_RIF
 )

@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <aggregate_sum/parse_parameters_from_commandline.hpp>
@@ -15,18 +15,20 @@ int main (int argc, char** argv)
 try
 {
   // (1) loading configuration options
-  auto const parameters = aggregate_sum::parse_parameters_from_commandline
-    (aggregate_sum::execution::options(),
-     aggregate_sum::Workflow::options(),
-     argc,
-     argv
-    );
+  auto const parameters
+    { aggregate_sum::parse_parameters_from_commandline
+       ( aggregate_sum::execution::options()
+       , aggregate_sum::Workflow::options()
+       , argc
+       , argv
+       )
+    };
 
   // (2) initializing a workflow
-  aggregate_sum::Workflow const workflow (parameters);
+  aggregate_sum::Workflow const workflow {parameters};
 
   // (3) executing the workflow
-  auto const results = aggregate_sum::execute (parameters, workflow);
+  auto const results {aggregate_sum::execute (parameters, workflow)};
 
   // (4) evaluating the workflow result
   return workflow.process (results);

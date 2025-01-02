@@ -5,6 +5,7 @@ if (BUILD_TESTING)
     INCLUDE_DIRECTORIES PRIVATE "${PROJECT_SOURCE_DIR}/share/doc/example"
     LIBRARIES GPISpace::header-only
               we-dev
+              fmt
   )
 
   math (EXPR size_input 50)

@@ -20,5 +20,5 @@ gspc_add_library (NAME build_net_description
   NAMESPACE Test
   TYPE STATIC
   SOURCES "net_description.cpp"
-  LIBRARIES Util::Generic
+  LIBRARIES Util::Generic fmt
 )

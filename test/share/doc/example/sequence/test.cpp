@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -21,7 +21,6 @@
 #include <we/type/value/boost/test/printer.hpp>
 
 #include <boost/program_options.hpp>
-#include <boost/range/adaptor/map.hpp>
 
 #include <map>
 #include <string>

@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <xml/parse/type/struct.hpp>
@@ -12,8 +12,6 @@
 #include <we/type/signature/specialize.hpp>
 
 #include <fhg/util/xml.hpp>
-
-#include <boost/range/adaptor/map.hpp>
 
 #include <functional>
 #include <unordered_map>
@@ -139,9 +137,7 @@ namespace xml
       {
         set_type joined (above);
 
-        for ( xml::parse::type::structure_type const& strct
-            : below | ::boost::adaptors::map_values
-            )
+        for (auto const& [_ignore, strct] : below)
         {
           set_type::const_iterator const old (joined.find (strct.name()));
 

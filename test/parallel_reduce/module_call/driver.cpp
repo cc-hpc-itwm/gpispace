@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -23,10 +23,10 @@
 #include <util-generic/testing/printer/multimap.hpp>
 #include <util-generic/testing/require_container_is_permutation.hpp>
 
-#include <boost/format.hpp>
 #include <boost/program_options.hpp>
 #include <boost/test/data/test_case.hpp>
 
+#include <fmt/core.h>
 #include <algorithm>
 #include <utility>
 #include <vector>
@@ -116,7 +116,7 @@ BOOST_DATA_TEST_CASE
   gspc::scoped_runtime_system const drts
     ( vm
     , installation
-    , str (boost::format ("work:%1%") % number_of_workers_per_host)
+    , fmt::format ("work:{}", number_of_workers_per_host)
     , rifds.entry_points()
     );
 

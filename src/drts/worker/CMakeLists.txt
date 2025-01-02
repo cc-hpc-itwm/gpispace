@@ -33,6 +33,7 @@ gspc_add_library (NAME drts-context
   LIBRARIES GPISpace::header-only
             gspc::logging
             Boost::iostreams
+            fmt
   TYPE SHARED
   INSTALL
   CREATE_BUNDLE_INFO

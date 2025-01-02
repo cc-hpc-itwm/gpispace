@@ -1,0 +1,80 @@
+<!-- Copyright (C) 2025 Fraunhofer ITWM        -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+
+<defun name="number_of_tokens_condition_and_number_on_the_same_place">
+
+  <in name="n" type="unsigned long" place="n"/>
+  <out name="sum" type="unsigned long" place="sum"/>
+  <out name="count" type="unsigned long" place="count"/>
+  <out name="i" type="unsigned long" place="i"/>
+
+  <net>
+    <place name="n" type="unsigned long"/>
+    <place name="sum" type="unsigned long">
+      <token><value>0UL</value></token>
+    </place>
+    <place name="count" type="unsigned long">
+      <token><value>0UL</value></token>
+    </place>
+    <place name="i" type="unsigned long"/>
+
+
+    <transition name="initialize">
+      <defun>
+        <in name="n" type="unsigned long"/>
+        <out name="generator_state" type="unsigned long"/>
+        <out name="threshold" type="unsigned long"/>
+        <expression>
+          ${generator_state} := 2UL * ${n};
+          ${threshold} := ${n};
+        </expression>
+      </defun>
+      <connect-in port="n" place="n"/>
+      <connect-out port="generator_state" place="generator_state"/>
+      <connect-out port="threshold" place="threshold"/>
+    </transition>
+
+    <place name="generator_state" type="unsigned long"/>
+    <place name="threshold" type="unsigned long"/>
+
+    <transition name="generate">
+      <defun>
+        <inout name="generator_state" type="unsigned long"/>
+        <out name="i" type="unsigned long"/>
+        <expression>
+          ${generator_state} := ${generator_state} - 1UL;
+          ${i} := ${generator_state};
+        </expression>
+        <condition>
+          ${generator_state} :gt: 0UL
+        </condition>
+      </defun>
+      <connect-inout port="generator_state" place="generator_state"/>
+      <connect-out port="i" place="i"/>
+    </transition>
+
+    <transition name="process">
+      <defun>
+        <in name="threshold" type="unsigned long"/>
+        <in name="number_of_i" type="unsigned long"/>
+        <in name="i" type="unsigned long"/>
+        <inout name="sum" type="unsigned long"/>
+        <inout name="count" type="unsigned long"/>
+        <expression>
+          ${sum} := ${sum} + ${i};
+          ${count} := ${count} + ${number_of_i};
+        </expression>
+        <condition>
+          (mod (${i}, 2UL) :eq: 0UL)
+          :and:
+          (${number_of_i} :gt: ${threshold})
+        </condition>
+      </defun>
+      <connect-read port="threshold" place="threshold"/>
+      <connect-inout port="sum" place="sum"/>
+      <connect-inout port="count" place="count"/>
+      <connect-in port="i" place="i"/>
+      <connect-number-of-tokens port="number_of_i" place="i"/>
+    </transition>
+  </net>
+</defun>

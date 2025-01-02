@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <rif/started_process_promise.hpp>
@@ -14,12 +14,13 @@
 #include <boost/test/unit_test.hpp>
 
 #include <boost/archive/text_iarchive.hpp>
-#include <boost/format.hpp>
 #include <boost/mpl/list.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/test/data/test_case.hpp>
 
+#include <FMT/boost/filesystem/path.hpp>
+#include <fmt/core.h>
 #include <string>
 #include <vector>
 
@@ -102,10 +103,10 @@ BOOST_AUTO_TEST_CASE (missing_special_argument_throws)
         fhg::rif::started_process_promise promise (argc, argv);
       }
     , std::invalid_argument
-        (( ::boost::format ("Usage: %1% <pipefd> [args]...")
-         % fhg::util::executable_path()
-         ).str()
-        )
+        { fmt::format ( "Usage: {} <pipefd> [args]..."
+                      , fhg::util::executable_path()
+                      )
+        }
     );
 
 }

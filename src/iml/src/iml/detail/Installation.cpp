@@ -1,10 +1,11 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <iml/detail/Installation.hpp>
 
 #include <util-generic/executable_path.hpp>
-#include <util-generic/getenv.hpp>
+
+#include <cstdlib>
 
 namespace iml
 {
@@ -25,10 +26,10 @@ namespace iml
       ::boost::filesystem::path installation_prefix()
       {
         auto const override_path
-          (fhg::util::getenv ("IML_TESTING_OVERRIDE_INSTALLATION_PREFIX"));
+          (std::getenv ("IML_TESTING_OVERRIDE_INSTALLATION_PREFIX"));
         if (override_path)
         {
-          return *override_path;
+          return override_path;
         }
 
         return nth_parent_path<IML_INSTALLATION_SENTINEL_SUBDIR_COUNT>

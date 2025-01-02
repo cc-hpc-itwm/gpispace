@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -8,6 +8,7 @@
 
 #include <boost/filesystem/path.hpp>
 
+#include <filesystem>
 #include <string>
 #include <unordered_map>
 
@@ -31,7 +32,10 @@ namespace iml
     //! Read a collection of entry points from the file at \a path.
     //! \note Compatible with the output of the iml-bootstrap-rifd
     //! binary.
+    [[deprecated ("use read_from_file (std::filesystem::path)")]]
     IML_DLLEXPORT EntryPoints read_from_file
       (::boost::filesystem::path const& path);
+    IML_DLLEXPORT EntryPoints read_from_file
+      (std::filesystem::path const& path);
   }
 }

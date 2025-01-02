@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -17,7 +17,6 @@
 
 #include <fhg/util/system_with_blocked_SIGCHLD.hpp>
 #include <util-generic/boost/program_options/validators/executable.hpp>
-#include <util-generic/nest_exceptions.hpp>
 #include <util-generic/temporary_file.hpp>
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
@@ -25,6 +24,8 @@
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 
+#include <exception>
+#include <filesystem>
 #include <map>
 #include <sstream>
 #include <stdexcept>
@@ -85,11 +86,11 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_avg_stddev)
     , installation_dir
     , test::option::options()
     . add<test::option::gen::include> (test::source_directory (vm) / "include")
-    . add<test::option::gen::cxx_flag> ("--std=c++11")
+    . add<test::option::gen::cxx_flag> ("--std=c++17")
     );
 
-  ::boost::filesystem::path const generator
-    ( ::boost::filesystem::canonical
+  auto const generator
+    ( std::filesystem::canonical
       (vm.at (option_name_generator).as<validators::executable>())
     );
 
@@ -98,26 +99,27 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_avg_stddev)
   long const size_buffer (8 << 20);
   long const num_buffer (10);
 
-  fhg::util::nest_exceptions<std::runtime_error>
-    ([&generator, &data_file]()
-     {
-       //! \todo inline the generator code instead of calling a binary
-       std::ostringstream command_generate;
+  try
+  {
+    //! \todo inline the generator code instead of calling a binary
+    std::ostringstream command_generate;
 
-       command_generate
-         << generator
-         << " -b " << size_buffer
-         << " -n " << num_values
-         << " -s 31415926"
-         << " -m 0"
-         << " -g 1"
-         << " -o " << data_file
-         ;
+    command_generate
+      << generator
+      << " -b " << size_buffer
+      << " -n " << num_values
+      << " -s 31415926"
+      << " -m 0"
+      << " -g 1"
+      << " -o " << data_file
+      ;
 
-       fhg::util::system_with_blocked_SIGCHLD (command_generate.str());
-     }
-    , "Could not generate data"
-    );
+    fhg::util::system_with_blocked_SIGCHLD (command_generate.str());
+  }
+  catch (...)
+  {
+    std::throw_with_nested (std::runtime_error {"Could not generate data"});
+  }
 
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
                                  , gspc::rifd::hostnames {vm}

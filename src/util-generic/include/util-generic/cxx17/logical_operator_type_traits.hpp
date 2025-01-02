@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -11,9 +11,9 @@ namespace fhg
   {
     namespace cxx17
     {
-      template<typename... B> struct conjunction;
-      template<typename... B> struct disjunction;
-      template<typename B> struct negation;
+      template<typename... B> struct [[deprecated ("use std::conjunction instead, will be removed after 2025/12/31")]] conjunction;
+      template<typename... B> struct [[deprecated ("use std::disjunction instead, will be removed after 2025/12/31")]] disjunction;
+      template<typename B> struct [[deprecated ("use std::negation instead, will be removed after 2025/12/31")]] negation;
     }
   }
 }

@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -13,14 +13,13 @@
 
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 
-#include <boost/variant.hpp>
-
 #include <condition_variable>
 #include <cstdint>
 #include <mutex>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <variant>
 
 namespace gspc
 {
@@ -47,7 +46,7 @@ namespace gspc
             struct Cancelled{};
             struct ExitedOrCancelled{};
 
-            using State = ::boost::variant<Running, Cancelled, ExitedOrCancelled>;
+            using State = std::variant<Running, Cancelled, ExitedOrCancelled>;
 
             void wait (std::size_t, EurekaGroup, State);
             void wait (std::size_t, TasksByEurekaGroup, State);

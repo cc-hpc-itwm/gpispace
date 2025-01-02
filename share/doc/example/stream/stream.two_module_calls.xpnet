@@ -1,4 +1,4 @@
-<!-- Copyright (C) 2023 Fraunhofer ITWM        -->
+<!-- Copyright (C) 2025 Fraunhofer ITWM        -->
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 
 <defun name="stream_two_module_calls">
@@ -84,7 +84,7 @@
                                   , work_package_processed
                                   )">
           <cinclude href="process.hpp"/>
-          <cxx flag="--std=c++11"/>
+          <cxx flag="--std=c++17"/>
           <ld flag="-lgspc"/>
           <code><![CDATA[
           std::pair< unsigned long
@@ -123,7 +123,7 @@
                             , package
                             )">
           <cinclude href="statistic.hpp"/>
-          <cxx flag="--std=c++11"/>
+          <cxx flag="--std=c++17"/>
           <ld flag="-lgspc"/>
           <code><![CDATA[
             static fhg::util::statistic delta ("mark_free: delta");

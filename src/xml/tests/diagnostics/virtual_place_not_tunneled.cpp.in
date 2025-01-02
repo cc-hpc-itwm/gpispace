@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -9,6 +9,9 @@
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/require_exception.hpp>
+
+#include <fmt/core.h>
+#include <FMT/boost/filesystem/path.hpp>
 
 BOOST_AUTO_TEST_CASE (virtual_place_not_tunneled)
 {
@@ -25,7 +28,9 @@ BOOST_AUTO_TEST_CASE (virtual_place_not_tunneled)
   fhg::util::testing::require_exception_with_message
     <xml::parse::warning::virtual_place_not_tunneled>
   ( [&state, &filename] { xml::parse::just_parse (state, filename); }
-  , boost::format ("WARNING: the virtual place %1% is not tunneled in %2%.")
-  % "v" % boost::filesystem::path (filename)
+  , fmt::format ( "WARNING: the virtual place {} is not tunneled in {}."
+                , "v"
+                , boost::filesystem::path (filename)
+                )
   );
 }

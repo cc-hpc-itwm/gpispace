@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <we/type/memory_transfer.hpp>
@@ -14,6 +14,9 @@
 
 #include <boost/test/data/test_case.hpp>
 
+#include <FMT/boost/variant.hpp>
+#include <FMT/we/expr/type/Type.hpp>
+#include <fmt/core.h>
 #include <vector>
 
 namespace
@@ -48,14 +51,11 @@ namespace
       , Expected expected
       )
   {
-    return str
-      ( ::boost::format
-          ("Expression '%1%' has incompatible type '%2%'."
-          " Expected type '%3%'."
-          )
-      % expression
-      % type
-      % expected
+    return fmt::format
+      ( "Expression '{}' has incompatible type '{}'. Expected type '{}'."
+      , expression
+      , type
+      , expected
       );
   }
 }

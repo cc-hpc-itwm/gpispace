@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <drts/worker_description.hpp>
@@ -11,8 +11,6 @@
 
 #include <util-generic/join.hpp>
 #include <util-generic/split.hpp>
-
-#include <boost/optional.hpp>
 
 #include <sstream>
 #include <stdexcept>
@@ -27,6 +25,24 @@ namespace gspc
     , std::size_t shm_size
     , ::boost::optional<std::size_t> socket
     , ::boost::optional<unsigned short> base_port
+    )
+      : worker_description
+        { capabilities
+        , num_per_node
+        , max_nodes
+        , shm_size
+        , socket ? std::make_optional (*socket) : std::nullopt
+        , base_port ? std::make_optional (*base_port) : std::nullopt
+        }
+  {}
+
+  worker_description::worker_description
+    ( std::vector<std::string> capabilities
+    , std::size_t num_per_node
+    , std::size_t max_nodes
+    , std::size_t shm_size
+    , std::optional<std::size_t> socket
+    , std::optional<unsigned short> base_port
     )
       : _ ( std::make_unique<worker_description_implementation>
               ( std::move (capabilities)
@@ -51,8 +67,8 @@ namespace gspc
     , std::size_t num_per_node_
     , std::size_t max_nodes_
     , std::size_t shm_size_
-    , ::boost::optional<std::size_t> socket_
-    , ::boost::optional<unsigned short> base_port_
+    , std::optional<std::size_t> socket_
+    , std::optional<unsigned short> base_port_
     )
       : capabilities (std::move (capabilities_))
       , num_per_node (std::move (num_per_node_))
@@ -116,11 +132,11 @@ namespace gspc
     std::ostringstream oss;
     oss << fhg::util::join (wd._->capabilities, '+');
 
-    if (wd._->socket)    { oss << '#' << wd._->socket.get();    }
+    if (wd._->socket)    { oss << '#' << wd._->socket.value();    }
                            oss << ':' << wd._->num_per_node;
                            oss << 'x' << wd._->max_nodes;
                            oss << ',' << wd._->shm_size;
-    if (wd._->base_port) { oss << '/' << wd._->base_port.get(); }
+    if (wd._->base_port) { oss << '/' << wd._->base_port.value(); }
 
     return oss.str();
   }

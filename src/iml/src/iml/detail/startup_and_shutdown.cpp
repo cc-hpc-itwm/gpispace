@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <iml/detail/startup_and_shutdown.hpp>
@@ -9,7 +9,6 @@
 #include <util-generic/hostname.hpp>
 #include <util-generic/join.hpp>
 #include <util-generic/make_optional.hpp>
-#include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_exception.hpp>
 #include <util-generic/read_file.hpp>
 #include <util-generic/read_lines.hpp>
@@ -22,19 +21,15 @@
 #include <util-rpc/remote_socket_endpoint.hpp>
 #include <util-rpc/remote_tcp_endpoint.hpp>
 
-#include <boost/algorithm/string/classification.hpp>
-#include <boost/algorithm/string/predicate.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/format.hpp>
-#include <boost/optional.hpp>
-#include <boost/range/adaptor/map.hpp>
-#include <boost/range/adaptors.hpp>
 #include <boost/serialization/unordered_map.hpp>
-#include <boost/utility/in_place_factory.hpp>
 
+#include <FMT/iml/rif/EntryPoint.hpp>
+#include <FMT/util-generic/exception_printer.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <exception>
+#include <fmt/core.h>
 #include <functional>
 #include <future>
 #include <iterator>
@@ -45,6 +40,18 @@
 #include <stdexcept>
 #include <tuple>
 #include <utility>
+
+namespace
+{
+  // true iff test is a prefix of input
+  [[nodiscard]] auto starts_with
+    ( std::string const& input
+    , std::string const& test
+    ) -> bool
+  {
+    return input.substr (0, test.size()) == test;
+  }
+}
 
 namespace iml
 {
@@ -59,19 +66,18 @@ namespace iml
       if (!_[entry_point].emplace (name, pid).second)
       {
         throw std::logic_error
-          ( str ( ::boost::format
-                    ( "process with name '%1%' on entry point '%2%' already "
-                      "exists with pid %3%, new pid %4%"
-                    )
-                % name
-                % entry_point
-                % _.at (entry_point).at (name)
-                % pid
-                )
-          );
+          { fmt::format
+              ( "process with name '{}' on entry point '{}' already "
+                "exists with pid {}, new pid {}"
+              , name
+              , entry_point
+              , _.at (entry_point).at (name)
+              , pid
+              )
+          };
       }
     }
-    ::boost::optional<pid_t> RuntimeSystem::ProcessesStorage::pidof
+    std::optional<pid_t> RuntimeSystem::ProcessesStorage::pidof
       (rif::EntryPoint const& entry_point, std::string const& name)
     {
       std::lock_guard<std::mutex> const guard (_guard);
@@ -80,14 +86,14 @@ namespace iml
 
       if (pos_entry_point == _.end())
       {
-        return ::boost::none;
+        return {};
       }
 
       auto pos_name (pos_entry_point->second.find (name));
 
       if (pos_name == pos_entry_point->second.end())
       {
-        return ::boost::none;
+        return {};
       }
 
       return pos_name->second;
@@ -110,88 +116,90 @@ namespace iml
 
       std::list<std::pair<fhg::iml::rif::client, rif::EntryPoint>> rif_connections;
       std::vector<std::string> hostnames;
-      fhg::util::nest_exceptions<std::runtime_error>
-        ( [&]
-          {
-            for ( rif::EntryPoint const& entry_point
-                : rif_entry_points | ::boost::adaptors::map_values
-                )
-            {
-              rif_connections.emplace_back
-                ( std::piecewise_construct
-                , std::forward_as_tuple (io_service, entry_point)
-                , std::forward_as_tuple (entry_point)
-                );
-              hostnames.emplace_back (entry_point.hostname);
-            }
-          }
-        , "connecting to rif entry points"
-        );
+      try
+      {
+        for (auto const& [_,entry_point] : rif_entry_points)
+        {
+          rif_connections.emplace_back
+            ( std::piecewise_construct
+            , std::forward_as_tuple (io_service, entry_point)
+            , std::forward_as_tuple (entry_point)
+            );
+          hostnames.emplace_back (entry_point.hostname);
+        }
+      }
+      catch (...)
+      {
+        std::throw_with_nested
+          (std::runtime_error {"connecting to rif entry points"});
+      }
 
       info_output << "I: starting VMEM on: " << gpi_socket
                   << " with a timeout of " << vmem_startup_timeout.count()
                   << " seconds\n";
 
-      fhg::util::nest_exceptions<std::runtime_error>
-        ( [&]
-          {
-            std::unordered_map<rif::EntryPoint, std::future<pid_t>>
-              queued_start_requests;
-            std::unordered_map<rif::EntryPoint, std::exception_ptr>
-              fails;
+      try
+      {
+        std::unordered_map<rif::EntryPoint, std::future<pid_t>>
+          queued_start_requests;
+        std::unordered_map<rif::EntryPoint, std::exception_ptr>
+          fails;
 
-            //! \note requires ranks to be matching index in hostnames!
-            std::size_t rank (0);
-            for (auto& connection : rif_connections)
-            {
-              try
+        //! \note requires ranks to be matching index in hostnames!
+        std::size_t rank (0);
+        for (auto& connection : rif_connections)
+        {
+          try
+          {
+            queued_start_requests.emplace
+              ( connection.second
+              , connection.first.start_vmem
+                  ( gpi_socket
+                  , vmem_port
+                  , vmem_startup_timeout
+                  , hostnames
+                  , rank++
+                  , vmem_netdev_id
+                  )
+              );
+          }
+          catch (...)
+          {
+            fails.emplace (connection.second, std::current_exception());
+          }
+        }
+
+        for (auto& request : queued_start_requests)
+        {
+          try
+          {
+            store (request.first, "vmem", request.second.get());
+          }
+          catch (...)
+          {
+            fails.emplace (request.first, std::current_exception());
+          }
+        }
+
+        if (!fails.empty())
+        {
+          fhg::util::throw_collected_exceptions
+            ( fails
+            , [] (std::pair<rif::EntryPoint, std::exception_ptr> const& fail)
               {
-                queued_start_requests.emplace
-                  ( connection.second
-                  , connection.first.start_vmem
-                      ( gpi_socket
-                      , vmem_port
-                      , vmem_startup_timeout
-                      , hostnames
-                      , rank++
-                      , vmem_netdev_id
-                      )
+                return fmt::format
+                  ( "vmem startup failed {}: {}"
+                  , fail.first
+                  , fhg::util::exception_printer (fail.second)
                   );
               }
-              catch (...)
-              {
-                fails.emplace (connection.second, std::current_exception());
-              }
-            }
-
-            for (auto& request : queued_start_requests)
-            {
-              try
-              {
-                store (request.first, "vmem", request.second.get());
-              }
-              catch (...)
-              {
-                fails.emplace (request.first, std::current_exception());
-              }
-            }
-
-            if (!fails.empty())
-            {
-              fhg::util::throw_collected_exceptions
-                ( fails
-                , [] (std::pair<rif::EntryPoint, std::exception_ptr> const& fail)
-                  {
-                    return ( ::boost::format ("vmem startup failed %1%: %2%")
-                           % fail.first
-                           % fhg::util::exception_printer (fail.second)
-                           ).str();
-                  }
-                );
-            }
-          }
-        , "could not start vmem"
-        );
+            );
+        }
+      }
+      catch (...)
+      {
+        std::throw_with_nested (std::runtime_error {"could not start vmem"});
+      }
     }
 
     namespace
@@ -227,7 +235,7 @@ namespace iml
         {
           for (auto const& it : entry_point_processes->second)
           {
-            if (::boost::algorithm::starts_with (it.first, kind))
+            if (starts_with (it.first, kind))
             {
               ++processes_to_kill;
             }
@@ -258,7 +266,7 @@ namespace iml
               ; ++it
               )
           {
-            if (::boost::algorithm::starts_with (it->first, kind))
+            if (starts_with (it->first, kind))
             {
               to_erase.emplace (it->second, it);
               pids.emplace_back (it->second);
@@ -365,12 +373,12 @@ namespace iml
             {
               for (auto const& fails : failure.second.second)
               {
-                _info_output <<
-                  ( ::boost::format ("Could not terminate %1%[%2%] on %3%: %4%")
-                  % failure.second.first
-                  % fails.first
-                  % failure.first
-                  % fhg::util::exception_printer (fails.second)
+                _info_output << fmt::format
+                  ( "Could not terminate {}[{}] on {}: {}"
+                  , failure.second.first
+                  , fails.first
+                  , failure.first
+                  , fhg::util::exception_printer (fails.second)
                   ) << std::endl;
               }
             }

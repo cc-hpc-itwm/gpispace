@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <sdpa/daemon/WorkerManager.hpp>
@@ -22,7 +22,6 @@
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/optional.hpp>
 #include <boost/optional/optional_io.hpp>
-#include <boost/range/adaptor/map.hpp>
 #include <boost/test/unit_test.hpp>
 
 #include <algorithm>
@@ -762,9 +761,7 @@ BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_preassignment_and_load_balan
                             + _computational_cost
                             );
 
-  for ( std::set<sdpa::worker_id_t> const& job_assigned_workers
-      : assignment | ::boost::adaptors::map_values
-      )
+  for (auto const& [_ignore, job_assigned_workers] : assignment)
   {
     for (decltype (worker_ids)::size_type k=0; k<n_workers; ++k)
     {
@@ -1121,9 +1118,7 @@ struct fixture_add_new_workers
     }
 
     std::set<sdpa::worker_id_t> assigned_workers;
-    for ( std::set<sdpa::worker_id_t> const& s
-        : assignment | ::boost::adaptors::map_values
-        )
+    for (auto const& [_ignore, s] : assignment)
     {
       std::set_union ( assigned_workers.begin()
                      , assigned_workers.end()

@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -12,6 +12,7 @@ namespace fhg
 {
   namespace util
   {
+    [[deprecated ("use std::getenv from <cstdlib> instead, will be removed after 2025/12/31")]]
     inline ::boost::optional<const char*> getenv (const char* env_var)
     {
       const char *val (std::getenv (env_var));

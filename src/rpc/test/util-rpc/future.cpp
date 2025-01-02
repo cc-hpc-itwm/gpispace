@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <util-rpc/future.hpp>
@@ -9,7 +9,6 @@
 #include <util-rpc/service_tcp_provider.hpp>
 
 #include <util-generic/connectable_to_address_string.hpp>
-#include <util-generic/cxx17/future_error.hpp>
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 #include <util-generic/testing/printer/future.hpp>
 #include <util-generic/testing/random.hpp>
@@ -36,7 +35,7 @@ namespace fhg
             {
               prom.set_value();
             }
-          , util::cxx17::make_future_error
+          , std::future_error
               (std::future_errc::promise_already_satisfied)
           );
       }
@@ -50,7 +49,7 @@ namespace fhg
             {
               prom.set_value();
             }
-          , util::cxx17::make_future_error
+          , std::future_error
               (std::future_errc::promise_already_satisfied)
           );
       }
@@ -64,7 +63,7 @@ namespace fhg
             {
               prom.set_exception (nullptr);
             }
-          , util::cxx17::make_future_error
+          , std::future_error
               (std::future_errc::promise_already_satisfied)
           );
       }
@@ -78,7 +77,7 @@ namespace fhg
             {
               prom.set_exception (nullptr);
             }
-          , util::cxx17::make_future_error
+          , std::future_error
               (std::future_errc::promise_already_satisfied)
           );
       }
@@ -97,7 +96,7 @@ namespace fhg
           {
             prom.get_future();
           }
-        , util::cxx17::make_future_error
+        , std::future_error
             (std::future_errc::future_already_retrieved)
         );
     }

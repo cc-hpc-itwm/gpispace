@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <util-rpc/remote_tcp_endpoint.hpp>
@@ -12,7 +12,6 @@
 #include <boost/asio/write.hpp>
 #include <boost/iostreams/device/array.hpp>
 #include <boost/iostreams/stream.hpp>
-#include <boost/range/adaptor/map.hpp>
 #include <boost/thread/locks.hpp>
 #include <boost/thread/reverse_lock.hpp>
 #include <boost/thread/shared_lock_guard.hpp>
@@ -416,9 +415,7 @@ namespace fhg
                          );
         _socket.cancel();
 
-        for ( auto const& set_exception
-            : _set_exception | ::boost::adaptors::map_values
-            )
+        for (auto const& [_ignore, set_exception] : _set_exception)
         {
           // Callback without yield passed down! Fine: only given by
           // `remote_function` which passes a Promise's

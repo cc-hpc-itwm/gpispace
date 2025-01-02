@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <iml/testing/beegfs_directory.hpp>
@@ -38,7 +38,9 @@ namespace iml_test
   ::boost::filesystem::path beegfs_directory
     (::boost::program_options::variables_map const& vm)
   {
-    return vm.at (options::name::beegfs_directory)
-      .as<validators::existing_directory>();
+    return static_cast<::boost::filesystem::path>
+      ( vm.at (options::name::beegfs_directory)
+      . as<validators::existing_directory>()
+      );
   }
 }

@@ -1,11 +1,10 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
 
-#include <boost/variant.hpp>
-
 #include <memory>
+#include <variant>
 
 namespace gspc
 {
@@ -41,6 +40,6 @@ namespace gspc
       ~GreedyWithWorkStealing() = default;
     };
 
-    using Type = ::boost::variant<GreedyWithWorkStealing, CostAwareWithWorkStealing>;
+    using Type = std::variant<GreedyWithWorkStealing, CostAwareWithWorkStealing>;
   }
 }

@@ -1,3 +1,100 @@
+# [24.12] - 2024-12-27
+
+## List of supported OS:
+
+- oraclelinux8 (gcc)
+- oraclelinux9 (gcc, clang)
+- rockylinux8 (gcc)
+- rockylinux9 (gcc, clang)
+- ubuntu2004 (gcc, clang)
+- ubuntu2204 (gcc, clang)
+- ubuntu2404 (gcc, clang)
+
+Note that Ubuntu18.04 has reached the end of its life and the support
+has been dropped.
+
+## Support for "Number of tokens on a place":
+
+The GPI-Space Petri-nets provide the "number of tokens" extension:
+Petri-Nets are able to observe the number of tokens that are currently
+placed on a place.
+
+The connection type `connect-number-of-tokens` can be used to bind the
+number of tokens on a place to a port of type `unsigned long`. Please see `share/doc/number_of_tokens_on_a_place.md` for more details.
+
+## API CHANGEs and deprecations:
+
+- GPI-Space has enabled c++17 across the code base and also in the
+  public interfaces. This implies that the minimum required GCC
+  compiler version has increased to 8.5.
+
+- The Petri net compiler `pnetc` now includes `--std=c++17` in the
+  flags used to compile the generated wrapper code. It used to be
+  `--std=c++14` before.
+
+- Use of some Boost classes has been deprecated (variant, optional,
+  filesystem::path) and their STL counterparts are used instead. This
+  is part of a bigger effort that has the goal to finally get rid of
+  the dependency to the Boost library.
+
+  Applications can still use the Boost interfaces. At some places
+  existing codes might not be 100% compatible. One example is the use
+  of the program options validation classes: Explicit casts to either
+  `boost::filesystem::path` of `std::filesystem::path` might be required
+  and code that looked like
+
+  ```
+     auto const path
+       {vm.at (option::hostfile).as (po::nonempty_file)()};
+  ```
+
+  now becomes
+
+  ```
+     auto const path
+       { static_cast<std::filesystem::path>
+           (vm.at (option::hostfile).as (po::nonempty_file)())
+       };
+  ```
+
+- `util-generic/nest_exceptions` has been deprecated: Please unroll
+  the corresponding codes: What was
+
+  ```
+      util::nest_exception<Ex>
+        ( fun
+        , ctor_args
+        );
+  ```
+
+  now becomes
+
+  ```
+      try
+      {
+        fun();
+      }
+      catch (...)
+      {
+        std::throw_with_nested (Ex {ctos_args});
+      }
+  ```
+
+  To write it that way make it more explicit what happens and avoid
+  issues with opening a new scope within fun.
+
+## Misc: Use Spack for Eureka SelfTest
+
+- The README instructions were updated to use a Spack installation of
+  GPI-Space.
+
+- `libssh2@1.11.0` and beyond broke their build API by changing how
+  their library targets work.  This MR introduces a compatibility
+  layer to ensure smooth working with older and newer versions of
+  `libssh2`.d
+
+- The support for colored cmake strings has been removed.
+
 # [23.06] - 2023-07-03
 
 ## CMake Minimum Version Upgrade
@@ -229,7 +326,7 @@ codes. The function `util_cmake_color_string` is located in
 
 ## Fixes
 
-- **API CHANGE:** The Petri net compiler `pnetc` now includes `--std=c++14` in the flags used to compile the generated wrapper code. It used to be `--std=c++11` before.
+- **API CHANGE:** The Petri net compiler `pnetc` now includes `--std=c++14` in the flags used to compile the generated wrapper code. It used to be `--std=c++17` before.
 - When ports are connected with places of wrong type, then the error
   messages are now always correctly printing the direction,
   e.g. `connect-in` and not `connect-0` any longer as in

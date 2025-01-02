@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -8,6 +8,8 @@
 #include <boost/ref.hpp>
 #include <boost/test/data/monomorphic.hpp>
 
+#include <iostream>
+
 namespace gspc
 {
   namespace testing
@@ -15,6 +17,8 @@ namespace gspc
     Certificates no_certs();
     Certificates yes_certs();
   }
+
+  auto operator<< (std::ostream&, Certificates const&) -> std::ostream&;
 }
 
 #define certificates_data                                               \

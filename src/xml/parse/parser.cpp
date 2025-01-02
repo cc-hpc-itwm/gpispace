@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <xml/parse/parser.hpp>
@@ -50,11 +50,12 @@
 #include <fhg/util/read_bool.hpp>
 #include <util-generic/join.hpp>
 
-#include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
 #include <boost/range/algorithm.hpp>
 
+#include <FMT/xml/parse/util/position.hpp>
+#include <fmt/core.h>
 #include <functional>
 #include <istream>
 #include <sstream>
@@ -107,12 +108,13 @@ namespace xml
         catch (rapidxml::parse_error const& e)
         {
           throw std::runtime_error
-            ( ( ::boost::format ("Parse error: %1%: %2%")
-              % util::position_type
+            { fmt::format
+              ( "Parse error: {}: {}"
+              , util::position_type
                 (inp.data(), e.where<char>(), state.file_in_progress())
-              % e.what()
-              ).str()
-            );
+              , e.what()
+              )
+            };
         }
 
         state.set_in_progress_position (inp.data());
@@ -931,6 +933,11 @@ namespace xml
             {
               connections.push<error::duplicate_connect>
                 (connect_type (child, state, we::edge::PT_READ{}));
+            }
+            else if (child_name == "connect-number-of-tokens")
+            {
+              connections.push<error::duplicate_connect>
+                (connect_type (child, state, we::edge::PT_NUMBER_OF_TOKENS{}));
             }
             else if (child_name == "connect-response")
             {

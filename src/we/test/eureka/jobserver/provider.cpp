@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <we/test/eureka/jobserver/provider.hpp>
@@ -53,7 +53,7 @@ namespace gspc
 
           void JobServer::wait (std::size_t N, State state)
           {
-            return fhg::util::visit<void>
+            return fhg::util::visit
               ( state
               , [&] (Running) { return _running.wait (N); }
               , [&] (Cancelled) { return _cancelled.wait (N); }
@@ -63,7 +63,7 @@ namespace gspc
 
           void JobServer::wait (std::size_t N, EurekaGroup eureka_group, State state)
           {
-            return fhg::util::visit<void>
+            return fhg::util::visit
               ( state
               , [&] (Running) { return _running.wait (N, eureka_group); }
               , [&] (Cancelled) { return _cancelled.wait (N, eureka_group); }
@@ -80,7 +80,7 @@ namespace gspc
 
           TasksByEurekaGroup JobServer::tasks (State state)
           {
-            return fhg::util::visit<TasksByEurekaGroup>
+            return fhg::util::visit
               ( state
               , [&] (Running) { return _running.tasks(); }
               , [&] (Cancelled) { return _cancelled.tasks(); }

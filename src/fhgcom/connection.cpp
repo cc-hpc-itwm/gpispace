@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <fhgcom/connection.hpp>
@@ -29,7 +29,7 @@ namespace fhg
           , Buffer&&... buffer
           )
       {
-        return fhg::util::visit<void>
+        return fhg::util::visit
           ( arg0
           , [&] (auto const& socket)
             {
@@ -47,7 +47,7 @@ namespace fhg
     template<typename SocketPtr>
       tcp_socket_t& raw_socket (SocketPtr& socket)
     {
-      struct : ::boost::static_visitor<tcp_socket_t&>
+      struct visitor
       {
         tcp_socket_t& operator() (std::unique_ptr<tcp_socket_t>& stream) const
         {
@@ -57,8 +57,8 @@ namespace fhg
         {
           return stream->next_layer();
         }
-      } visitor;
-      return ::boost::apply_visitor (visitor, socket);
+      };
+      return std::visit (visitor{}, socket);
     }
 
     connection_t::connection_t
@@ -122,7 +122,7 @@ namespace fhg
       _raw_socket.shutdown
         (::boost::asio::ip::tcp::socket::shutdown_both, ignore);
 
-      fhg::util::visit<void>
+      fhg::util::visit
         ( socket_
         , [&] (std::unique_ptr<ssl_stream_t> const& stream)
           {
@@ -145,7 +145,7 @@ namespace fhg
           }
         );
 
-      fhg::util::visit<void>
+      fhg::util::visit
         ( socket_
         , [=] (std::unique_ptr<ssl_stream_t> const& stream)
           {
@@ -171,7 +171,7 @@ namespace fhg
           }
         );
 
-      fhg::util::visit<void>
+      fhg::util::visit
         ( socket_
         , [=] (std::unique_ptr<ssl_stream_t> const& stream)
           {
@@ -260,7 +260,7 @@ namespace fhg
 
     void connection_t::start_send (message_t const& message)
     {
-      return fhg::util::visit<void>
+      return fhg::util::visit
         ( socket_
         , [&] (auto const& socket)
           {

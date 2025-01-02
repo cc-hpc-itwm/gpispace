@@ -1,4 +1,4 @@
-# Copyright (C) 2023 Fraunhofer ITWM
+# Copyright (C) 2025 Fraunhofer ITWM
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 if (_arg IN_LIST ${_internal}_required)

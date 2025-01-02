@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -7,6 +7,7 @@
 
 #include <type_traits>
 #include <utility>
+#include <variant>
 
 namespace fhg
 {
@@ -66,5 +67,19 @@ namespace fhg
       return visit<Ret>
         (variant, make_visitor<Ret> (std::forward<Functors> (lambdas)...));
     }
+  }
+}
+
+namespace fhg::util
+{
+  template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
+
+  template<typename Variant, typename... Functors>
+    constexpr auto visit (Variant&& variant, Functors&&... fs)
+  {
+    return std::visit
+      ( overloaded<Functors...> {std::forward<Functors> (fs)...}
+      , std::forward<Variant> (variant)
+      );
   }
 }

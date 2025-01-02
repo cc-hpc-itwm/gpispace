@@ -1,4 +1,4 @@
-# Copyright (C) 2023 Fraunhofer ITWM
+# Copyright (C) 2025 Fraunhofer ITWM
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 #[============================================================================[
@@ -82,6 +82,10 @@ if (NOT ${CMAKE_FIND_PACKAGE_NAME}_NO_CMAKE)
   # populate output cache variables, otherwise there won't be an entry in the
   # configuration output
   if (${CMAKE_FIND_PACKAGE_NAME}_FOUND)
+    if (NOT TARGET Libssh2::libssh2)
+      add_library (Libssh2::libssh2 ALIAS Libssh2::libssh2_shared)
+    endif()
+
     get_target_property (${CMAKE_FIND_PACKAGE_NAME}_INCLUDE_DIR
       Libssh2::libssh2
       INTERFACE_INCLUDE_DIRECTORIES

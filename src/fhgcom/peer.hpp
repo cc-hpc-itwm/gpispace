@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -44,8 +44,6 @@ namespace fhg
 {
   namespace com
   {
-    using Certificates = gspc::Certificates;
-
     /*!
       This class abstracts from an endpoint
      */
@@ -58,7 +56,7 @@ namespace fhg
       peer_t ( std::unique_ptr<::boost::asio::io_service>
              , host_t const& host
              , port_t const& port
-             , Certificates const& certificates
+             , gspc::Certificates const& certificates
              );
 
       virtual ~peer_t ();

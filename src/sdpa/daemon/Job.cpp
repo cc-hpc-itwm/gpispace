@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <drts/private/scheduler_types_implementation.hpp>
@@ -25,7 +25,7 @@ namespace sdpa
       , _requirements_and_preferences (std::move (requirements_and_preferences))
       , _scheduler_type
           ( FHG_UTIL_MAKE_OPTIONAL
-              ( !!::boost::get<job_source_client> (&source)
+              ( std::holds_alternative<job_source_client> (source)
               , get_scheduler_type (_activity)
               )
           )

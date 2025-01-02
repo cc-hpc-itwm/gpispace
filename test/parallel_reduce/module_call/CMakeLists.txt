@@ -17,6 +17,7 @@ gspc_add_library (NAME share_example_parallel_reduce_module_call_JobExecutor
     PRIVATE Util::Generic
     PRIVATE GSPC::share_example_parallel_reduce_module_call_Task
     PRIVATE Boost::base
+    PRIVATE fmt
   INCLUDE_DIRECTORIES PRIVATE "${PROJECT_SOURCE_DIR}/"
 )
 gspc_add_library (NAME share_example_parallel_reduce_module_call_JobServer
@@ -42,6 +43,7 @@ fhg_add_test (NAME share_example_parallel_reduce_module_call
             Boost::program_options
             Boost::filesystem
             GSPC::share_example_parallel_reduce_module_call_JobServer
+            fmt
   REQUIRES_INSTALLATION
   START_SCOPED_RIF
   COMPILE_DEFINITIONS

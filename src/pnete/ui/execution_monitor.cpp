@@ -1,12 +1,10 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <pnete/ui/execution_monitor.hpp>
 
 #include <pnete/ui/execution_monitor_detail.hpp>
 #include <pnete/ui/execution_monitor_worker_model.hpp>
-
-#include <fhg/util/macros.hpp>
 
 #include <util-qt/variant.hpp>
 #include <util-qt/widget/mini_button.hpp>
@@ -32,6 +30,7 @@
 
 #include <functional>
 #include <sstream>
+#include <stdexcept>
 #include <utility>
 
 Q_DECLARE_METATYPE (sdpa::daemon::NotificationEvent::state_t)
@@ -202,7 +201,7 @@ namespace fhg
           case event::STATE_CANCELED: return "canceled";
           }
 
-          INVALID_ENUM_VALUE (worker_model::state_type, state);
+          throw std::logic_error {"invalid enum value"};
         }
 
         QColor get_or_set_with_default

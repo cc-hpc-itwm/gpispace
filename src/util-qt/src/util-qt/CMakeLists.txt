@@ -18,6 +18,7 @@ extended_add_library (NAME Qt
   LIBRARIES
     PUBLIC
       Util::Qt-Headers
+    PUBLIC fmt
   INSTALL
 )
 target_compile_features (Util-Qt

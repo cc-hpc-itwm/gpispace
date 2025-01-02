@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -11,6 +11,7 @@ namespace fhg
   namespace util
   {
     template<typename Exception, typename... ExceptionArgs, typename Fun>
+      [[deprecated ("manually use throw_with_nested")]]
       auto nest_exceptions (Fun&& fun, ExceptionArgs&&... exception_args)
       -> decltype (fun())
     {

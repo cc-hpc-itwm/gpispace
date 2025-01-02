@@ -13,6 +13,7 @@ gspc_add_library (NAME we-dev
           "type/value/path/join.cpp"
           "type/value/path/split.cpp"
           "type/value/peek.cpp"
+          "type/value/peek_or_die.cpp"
           "type/value/poke.cpp"
           "type/value/show.cpp"
           "type/value/read.cpp"

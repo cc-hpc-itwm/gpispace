@@ -15,6 +15,8 @@ find_package (Boost 1.61.0 REQUIRED
      program_options
 )
 
+include (FetchContent)
+
 include (util-cmake/add_macros)
 
 set (BUNDLE_ROOT "libexec/bundle")
@@ -82,6 +84,7 @@ extended_add_executable (NAME "${DRIVER_BINARY}"
                     Boost::headers
                     Boost::filesystem
                     Boost::program_options
+                    fmt
   INSTALL
   INSTALL_DESTINATION bin
 )

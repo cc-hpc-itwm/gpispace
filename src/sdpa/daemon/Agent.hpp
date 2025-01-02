@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -46,7 +46,6 @@
 #include <boost/bimap.hpp>
 #include <boost/bimap/unordered_multiset_of.hpp>
 #include <boost/optional.hpp>
-#include <boost/range/adaptor/map.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/scoped_thread.hpp>
 #include <boost/utility.hpp>
@@ -55,8 +54,10 @@
 #include <forward_list>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <queue>
 #include <random>
+#include <variant>
 
 namespace sdpa {
   namespace daemon {
@@ -66,8 +67,8 @@ namespace sdpa {
       Agent ( std::string name
             , std::string url
             , std::unique_ptr<::boost::asio::io_service> peer_io_service
-            , ::boost::optional<::boost::filesystem::path> const& vmem_socket
-            , fhg::com::Certificates const& certificates
+            , std::optional<::boost::filesystem::path> const& vmem_socket
+            , gspc::Certificates const& certificates
             );
       ~Agent() override = default;
       Agent (Agent const&) = delete;
@@ -91,7 +92,7 @@ namespace sdpa {
         (std::string put_token_id, ::boost::optional<std::exception_ptr>);
       void workflow_response_response
         ( std::string workflow_response_id
-        , ::boost::variant<std::exception_ptr, pnet::type::value::value_type>
+        , std::variant<std::exception_ptr, pnet::type::value::value_type>
         );
 
       void addCapability (Capability const& cpb);
@@ -109,12 +110,13 @@ namespace sdpa {
       {
         std::lock_guard<std::mutex> const _ (mtx_subscriber_);
 
-        for  ( fhg::com::p2p::address_t const& subscriber
-             : _subscriptions.right.equal_range (job_id)
-             | ::boost::adaptors::map_values
+        for  ( auto [subscription, end] {_subscriptions.right.equal_range (job_id)}
+             ; subscription != end
+             ; ++subscription
              )
         {
-          sendEventToOther<Event> (subscriber, std::forward<Args> (args)...);
+          sendEventToOther<Event>
+            (subscription->second, std::forward<Args> (args)...);
         }
 
         _subscriptions.right.erase (job_id);
@@ -211,7 +213,7 @@ namespace sdpa {
         (std::string, ::boost::optional<std::exception_ptr>);
       void workflow_engine_workflow_response_response
         ( std::string
-        , ::boost::variant<std::exception_ptr, pnet::type::value::value_type>
+        , std::variant<std::exception_ptr, pnet::type::value::value_type>
         );
 
       //! \todo aggregated results for coallocation jobs and sub jobs
@@ -378,7 +380,7 @@ namespace sdpa {
                                 ) const;
         void workflow_response_response
           ( std::string workflow_response_id
-          , ::boost::variant<std::exception_ptr, pnet::type::value::value_type>
+          , std::variant<std::exception_ptr, pnet::type::value::value_type>
           ) const;
 
       private:

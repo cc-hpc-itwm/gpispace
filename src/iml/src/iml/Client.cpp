@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <iml/Client.hpp>
@@ -13,13 +13,13 @@
 
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
-#include <boost/format.hpp>
-#include <boost/range/adaptor/map.hpp>
 
 #include <sys/un.h>
 
+#include <FMT/iml/AllocationHandle.hpp>
 #include <cstdint>
 #include <exception>
+#include <fmt/core.h>
 #include <stdexcept>
 #include <string>
 
@@ -363,10 +363,7 @@ namespace iml
         }
 
         throw std::runtime_error
-          ( ( ::boost::format("Requested pointer for unknown handle '%1%'")
-            % handle
-            ).str()
-          );
+          {fmt::format ("Requested pointer for unknown handle '{}'", handle)};
       }
 
       MemcpyID Client::async_memcpy ( MemoryLocation const& destination

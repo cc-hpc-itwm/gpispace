@@ -1,7 +1,6 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <util-generic/cxx17/logical_operator_type_traits.hpp>
 #include <util-generic/cxx17/void_t.hpp>
 #include <util-generic/testing/printer/generic.hpp>
 #include <util-generic/testing/require_compiletime.hpp>

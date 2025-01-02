@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <preferences_and_multimodules/parse_parameters_from_commandline.hpp>
@@ -17,19 +17,18 @@ namespace preferences_and_multimodules
     , char** argv
     )
   {
-    namespace po = boost::program_options;
-
     ParametersDescription options;
     options.add_options() ("help", "this message");
     options.add (driver_opts);
     options.add (workflow_opts);
 
     Parameters parameters;
-    po::store ( po::command_line_parser (argc, argv)
-              . options (options)
-              . run()
-              , parameters
-              );
+    ::boost::program_options::store
+        ( ::boost::program_options::command_line_parser (argc, argv)
+          . options (options)
+          . run()
+        , parameters
+        );
 
     if (parameters.count ("help"))
     {

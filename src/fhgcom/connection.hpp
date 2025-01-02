@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -13,7 +13,6 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/system/system_error.hpp>
-#include <boost/variant/variant.hpp>
 
 #include <algorithm>
 #include <cstddef>
@@ -22,6 +21,7 @@
 #include <future>
 #include <list>
 #include <memory>
+#include <variant>
 
 namespace boost
 {
@@ -43,7 +43,7 @@ namespace fhg
 
     using tcp_socket_t = ::boost::asio::ip::tcp::socket;
     using ssl_stream_t = ::boost::asio::ssl::stream<tcp_socket_t>;
-    using socket_t = ::boost::variant<std::unique_ptr<tcp_socket_t>, std::unique_ptr<ssl_stream_t>>;
+    using socket_t = std::variant<std::unique_ptr<tcp_socket_t>, std::unique_ptr<ssl_stream_t>>;
 
     class handshake_exception : public ::boost::system::system_error
     {

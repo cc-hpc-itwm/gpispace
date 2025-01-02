@@ -12,6 +12,7 @@ if (BUILD_TESTING)
     SOURCES "implementation.cpp"
     LIBRARIES GPISpace::header-only
               transform_file_type
+              fmt
     INCLUDE_DIRECTORIES
       PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}/../.."
@@ -43,6 +44,7 @@ fhg_add_test (NAME doc_example_map_transform_file
             fhg-util
             Boost::program_options
             Boost::filesystem
+            fmt
   DEPENDS transform_file_map-impl
   REQUIRES_INSTALLATION
   REQUIRES_VIRTUAL_MEMORY

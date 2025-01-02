@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <drts/private/scheduler_types_implementation.hpp>
@@ -60,7 +60,7 @@ namespace gspc
     std::string to_string
       (CostAwareWithWorkStealing::Implementation const& impl)
     {
-      return fhg::util::visit<std::string>
+      return fhg::util::visit
         ( impl._constructed_from
         , [] (auto const& type) { return to_string (type); }
         );
@@ -80,7 +80,7 @@ namespace gspc
     std::string to_string
       (Type const& scheduler_type)
     {
-      return fhg::util::visit<std::string>
+      return fhg::util::visit
         ( scheduler_type
         , [] (auto const& type) { return to_string (type); }
         );

@@ -1,13 +1,11 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <we/type/Expression.hpp>
 #include <we/type/memory_transfer.hpp>
 
-#include <util-generic/nest_exceptions.hpp>
-
-#include <boost/format.hpp>
-
+#include <exception>
+#include <fmt/core.h>
 #include <stdexcept>
 
 namespace we
@@ -46,48 +44,54 @@ namespace we
     void memory_transfer::assert_correct_expression_types
       (expr::type::Context const& context) const
     {
-      fhg::util::nest_exceptions<std::runtime_error>
-        ( [&]
-          {
-            expr::type::Struct const local_range_type
-              ( { {"buffer", expr::type::String{}}
-                , {"offset", expr::type::ULong{}}
-                , {"size", expr::type::ULong{}}
-                }
-              )
-              ;
-            expr::type::List const expected (local_range_type);
+      try
+      {
+        expr::type::Struct const local_range_type
+          ( { {"buffer", expr::type::String{}}
+            , {"offset", expr::type::ULong{}}
+            , {"size", expr::type::ULong{}}
+            }
+          )
+          ;
+        expr::type::List const expected (local_range_type);
 
-            Expression (_local).assert_type (expected, context);
-          }
-        , str ( ::boost::format ("In the <local> expression '%1%'")
-              % _local
-              )
-        );
+        Expression (_local).assert_type (expected, context);
+      }
+      catch (...)
+      {
+        std::throw_with_nested
+          ( std::runtime_error
+            { fmt::format ("In the <local> expression '{}'", _local)
+            }
+          );
+      }
 
-      fhg::util::nest_exceptions<std::runtime_error>
-        ( [&]
-          {
-            expr::type::Struct const global_handle_type
-              ( { {"name", expr::type::String{}}
-                }
-              )
-              ;
-            expr::type::Struct const global_range_type
-              ( { {"handle", global_handle_type}
-                , {"offset", expr::type::ULong{}}
-                , {"size", expr::type::ULong{}}
-                }
-              )
-              ;
-            expr::type::List const expected (global_range_type);
+      try
+      {
+        expr::type::Struct const global_handle_type
+          ( { {"name", expr::type::String{}}
+            }
+          )
+          ;
+        expr::type::Struct const global_range_type
+          ( { {"handle", global_handle_type}
+            , {"offset", expr::type::ULong{}}
+            , {"size", expr::type::ULong{}}
+            }
+          )
+          ;
+        expr::type::List const expected (global_range_type);
 
-            Expression (_global).assert_type (expected, context);
-          }
-        , str ( ::boost::format ("In the <global> expression '%1%'")
-              % _global
-              )
-        );
+        Expression (_global).assert_type (expected, context);
+      }
+      catch (...)
+      {
+        std::throw_with_nested
+          ( std::runtime_error
+            { fmt::format ("In the <global> expression '{}'", _global)
+            }
+          );
+      }
     }
   }
 }

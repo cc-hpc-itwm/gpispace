@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -9,9 +9,8 @@
 #include <util-generic/testing/random/string.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
-#include <boost/format.hpp>
-
 #include <algorithm>
+#include <fmt/core.h>
 #include <future>
 #include <iterator>
 #include <list>
@@ -32,8 +31,7 @@ namespace
 
       if (!_ids.insert (id).second)
       {
-        throw std::runtime_error
-          ((::boost::format ("duplicate id '%1%'") % id).str());
+        throw std::runtime_error {fmt::format ("duplicate id '{}'", id)};
       }
 
       return id;
@@ -54,8 +52,7 @@ BOOST_AUTO_TEST_CASE (threaded_unique_set_of_id_throws_on_duplicate)
 
   fhg::util::testing::require_exception
     ( [&id, &ids] { ids.insert (id); }
-    , std::runtime_error
-        ((::boost::format ("duplicate id '%1%'") % id).str())
+    , std::runtime_error {fmt::format ("duplicate id '{}'", id)}
     );
 }
 

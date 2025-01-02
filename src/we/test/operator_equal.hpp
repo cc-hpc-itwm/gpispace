@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -29,6 +29,8 @@ namespace we
   namespace type
   {
     bool operator== (net_type const& lhs, net_type const& rhs);
+    bool operator== (net_type::PlaceIDWithProperty const& lhs, net_type::PlaceIDWithProperty const& rhs);
+    bool operator== (net_type::PortIDWithProperty const& lhs, net_type::PortIDWithProperty const& rhs);
     bool operator== (Port const& lhs, Port const& rhs);
     bool operator== (Requirement const& lhs, Requirement const& rhs);
     bool operator== (ModuleCall const& lhs, ModuleCall const& rhs);
@@ -41,3 +43,10 @@ namespace we
       bool operator== (Activity const& lhs, Activity const& rhs);
     }
 }
+
+namespace we::type
+{
+  constexpr auto operator== (TokenOnPort const&, TokenOnPort const&) -> bool;
+}
+
+#include "detail/operator_equal.ipp"

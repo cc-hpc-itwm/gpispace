@@ -1,0 +1,103 @@
+<!-- Copyright (C) 2025 Fraunhofer ITWM        -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+
+<defun name="number_of_tokens_co_generate_expression">
+
+  <struct name="task">
+    <field name="input" type="unsigned long"/>
+  </struct>
+
+  <in name="n" type="unsigned long" place="n"/>
+  <in name="number_of_process_workers" type="unsigned long" place="number_of_process_workers"/>
+  <out name="sum" type="unsigned long" place="sum"/>
+  <out name="task_ready" type="task" place="task_ready"/>
+
+  <net>
+
+    <place name="n" type="unsigned long"/>
+    <place name="number_of_process_workers" type="unsigned long"/>
+    <place name="sum" type="unsigned long">
+      <token><value>0UL</value></token>
+    </place>
+
+    <place name="generator_state" type="unsigned long">
+      <token><value>0UL</value></token>
+    </place>
+
+    <place name="task_ready" type="task"/>
+    <place name="task_result" type="unsigned long"/>
+
+    <place name="process_token" type="control"/>
+
+    <transition name="generate_process_token">
+      <defun>
+        <inout name="n" type="unsigned long"/>
+        <out name="token" type="control"/>
+        <expression>
+          ${token} := [];
+          ${n} := ${n} - 1UL;
+        </expression>
+        <condition>
+          ${n} :gt: 0UL
+        </condition>
+      </defun>
+      <connect-inout port="n" place="n"/>
+      <connect-out port="token" place="process_token"/>
+    </transition>
+
+    <transition name="generate_task">
+      <defun>
+        <in name="number_of_process_workers" type="unsigned long"/>
+        <in name="number_of_ready_tasks" type="unsigned long"/>
+        <inout name="state" type="unsigned long"/>
+        <out name="task" type="task"/>
+        <expression>
+          ${task.input} := ${state};
+          ${state} := ${state} + 1UL;
+        </expression>
+        <condition>
+          ${number_of_ready_tasks} :lt: ${number_of_process_workers}
+        </condition>
+      </defun>
+      <connect-read port="number_of_process_workers" place="number_of_process_workers"/>
+      <connect-number-of-tokens port="number_of_ready_tasks" place="task_ready"/>
+      <connect-inout port="state" place="generator_state"/>
+      <connect-out port="task" place="task_ready"/>
+    </transition>
+
+    <transition name="process">
+      <defun>
+        <require key="process"/>
+        <in name="token" type="control"/>
+        <in name="task" type="task"/>
+        <out name="result" type="unsigned long"/>
+        <module name="number_of_tokens_co_generate_expression"
+                function="result process (task)"
+        >
+          <cinclude href="chrono"/>
+          <cinclude href="thread"/>
+          <code><![CDATA[
+            std::this_thread::sleep_for (std::chrono::milliseconds (10));
+
+            return task.input;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="token" place="process_token"/>
+      <connect-in  port="task" place="task_ready"/>
+      <connect-out  port="result" place="task_result"/>
+    </transition>
+
+    <transition name="reduce">
+      <defun>
+        <inout name="sum" type="unsigned long"/>
+        <in name="result" type="unsigned long"/>
+        <expression>
+          ${sum} := ${sum} + ${result}
+        </expression>
+      </defun>
+      <connect-in port="result" place="task_result"/>
+      <connect-inout port="sum" place="sum"/>
+    </transition>
+  </net>
+</defun>

@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -104,8 +104,7 @@ namespace fhg
       //! (random<std::string>::content_string())` instead.
       std::string random_content_string();
 
-      //! \note that ::boost::format as well as std::string::operator+ have
-      //! problems with the zero
+      //! \note that std::string::operator+ has problems with the zero
       //! \note: deprecated Use `random<std::string>{}
       //! (random<char>::any_without_zero());` instead.
       std::string random_string_without_zero();

@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -10,28 +10,29 @@
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/random/string.hpp>
 
+#include <fmt/core.h>
 #include <list>
 #include <sstream>
 
 BOOST_AUTO_TEST_CASE (conditions_and_expressions_with_cdata)
 {
   std::string const input
-    ( ( ::boost::format (R"EOS(
-<defun name="%1%">
-<expression>${b} := ${a}
-<![CDATA[${c} := ${a} + 1L]]>
-${d} := 2L*${a};
-${another} := ${expression}
+    ( fmt::format (R"EOS(
+<defun name="{}">
+<expression>${{b}} := ${{a}}
+<![CDATA[${{c}} := ${{a}} + 1L]]>
+${{d}} := 2L*${{a}};
+${{another}} := ${{expression}}
 </expression>
-<condition><![CDATA[${a} < 10]]>
+<condition><![CDATA[${{a}} < 10]]>
            <!-- huhu -->
-           ${a} :gt: 20L
-           <![CDATA[${a}]]>
+           ${{a}} :gt: 20L
+           <![CDATA[${{a}}]]>
 </condition>
-<condition>${a} :gt: 20L</condition>
-</defun>)EOS")
-      % fhg::util::testing::random_identifier()
-      ).str()
+<condition>${{a}} :gt: 20L</condition>
+</defun>)EOS"
+                   , fhg::util::testing::random_identifier()
+      )
     );
 
   xml::parse::state::type state;

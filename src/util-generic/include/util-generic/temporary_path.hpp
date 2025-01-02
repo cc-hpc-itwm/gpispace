@@ -1,10 +1,10 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
 
+#include <util-generic/detail/dllexport.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/format.hpp>
 #include <boost/utility.hpp>
 
 #include <stdexcept>
@@ -16,14 +16,10 @@ namespace fhg
   {
     namespace error
     {
-      struct path_already_exists : std::logic_error
+      struct UTIL_GENERIC_DLLEXPORT path_already_exists : std::logic_error
       {
         ::boost::filesystem::path path;
-        path_already_exists (decltype (path) p)
-          : std::logic_error
-              ((::boost::format ("Temporary path %1% already exists.") % p).str())
-          , path (std::move (p))
-        {}
+        path_already_exists (::boost::filesystem::path);
       };
     }
 

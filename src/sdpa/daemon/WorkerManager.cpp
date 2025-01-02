@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <sdpa/daemon/WorkerManager.hpp>
@@ -12,8 +12,6 @@
 #include <util-generic/functor_visitor.hpp>
 #include <util-generic/make_optional.hpp>
 
-#include <boost/range/adaptor/filtered.hpp>
-#include <boost/range/adaptor/map.hpp>
 #include <boost/range/algorithm.hpp>
 
 #include <algorithm>
@@ -343,7 +341,7 @@ namespace sdpa
         auto const cost
           ( [&] (job_id_t const& job_id)
             {
-              return fhg::util::visit<double>
+              return fhg::util::visit
                 ( cost_model
                 , [&] (UsingCosts)
                   {
@@ -360,7 +358,7 @@ namespace sdpa
         auto const comp
           ( [&] (worker_iterator const& lhs, worker_iterator const& rhs)
             {
-              return fhg::util::visit<bool>
+              return fhg::util::visit
                 ( cost_model
                 , [&] (UsingCosts)
                   {
@@ -400,7 +398,7 @@ namespace sdpa
           Worker& richest_worker (richest->second);
 
           auto it_job
-            ( fhg::util::visit<decltype (richest_worker.pending_)::iterator>
+            ( fhg::util::visit
                 ( cost_model
                 , [&] (UsingCosts)
                   {

@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -6,7 +6,6 @@
 #include <util-rpc/detail/service_stream_provider.hpp>
 
 #include <boost/asio/local/stream_protocol.hpp>
-#include <boost/mpl/vector.hpp>
 
 namespace fhg
 {

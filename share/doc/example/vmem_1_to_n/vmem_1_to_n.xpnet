@@ -1,4 +1,4 @@
-<!-- Copyright (C) 2023 Fraunhofer ITWM        -->
+<!-- Copyright (C) 2025 Fraunhofer ITWM        -->
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 
 <defun name="vmem_1_to_n">
@@ -68,9 +68,10 @@
                                                         , memory
                                                         )"
         >
-          <cinclude href="boost/random.hpp"/>
+          <cinclude href="random"/>
           <cinclude href="limits"/>
           <cinclude href="stdexcept"/>
+          <cinclude href="iostream"/>
           <code><![CDATA[
           unsigned long const num_long (memory.size / sizeof (long));
 
@@ -78,11 +79,12 @@
                     << seed << '\n';
           long *a (static_cast<long*>(data));
 
-          boost::uniform_int<long> rand ( std::numeric_limits<long>::min()
+          std::uniform_int_distribution<long> rand
+                                        ( std::numeric_limits<long>::min()
                                         , std::numeric_limits<long>::max()
                                         );
 
-          boost::mt19937 engine (seed);
+          std::mt19937 engine (seed);
 
           for (unsigned long i (0); i < num_long; ++i, ++a)
           {

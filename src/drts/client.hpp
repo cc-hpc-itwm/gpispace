@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -15,6 +15,7 @@
 
 #include <boost/filesystem/path.hpp>
 
+#include <filesystem>
 #include <map>
 #include <string>
 #include <vector>
@@ -24,7 +25,9 @@ namespace gspc
   class GSPC_DLLEXPORT workflow
   {
   public:
+    [[deprecated ("use workflow (std::filesystem::path)")]]
     workflow (::boost::filesystem::path workflow);
+    workflow (std::filesystem::path workflow);
 
     void set_wait_for_output();
 
@@ -48,8 +51,8 @@ namespace gspc
     //! \note The drts client constructor/destructor is not thread-safe
     // with the scoped_rifd's constructor/destructor. However, such cases, when
     // they are called concurrently, are extremly unlikely to happen in practice.
-    client (scoped_runtime_system const&, Certificates const& = ::boost::none);
-    explicit client (information_to_reattach const&, Certificates const& = ::boost::none);
+    client (scoped_runtime_system const&, Certificates const& = {});
+    explicit client (information_to_reattach const&, Certificates const& = {});
 
     client (client const&) = delete;
     client (client&&) = delete;

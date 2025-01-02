@@ -74,7 +74,7 @@ mark_as_advanced (${_project_entry}_CONFIG_INSTALL_DIR)
 set (_project_config_install_dir ${${_project_entry}_CONFIG_INSTALL_DIR})
 
 set (${_project_entry}_CXX_STANDARD
-  14
+  17
   CACHE STRING
   "${PROJECT_NAME} C++ standard"
 )

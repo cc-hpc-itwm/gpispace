@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -23,9 +23,9 @@
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 
 #include <boost/filesystem.hpp>
-#include <boost/format.hpp>
 #include <boost/program_options.hpp>
 
+#include <fmt/core.h>
 #include <map>
 #include <set>
 #include <string>
@@ -81,10 +81,11 @@ namespace
           {
             for (unsigned long i (0); i < num_worker; ++i)
             {
-              workers.emplace ( ( ::boost::format ("worker-%1%-%2%")
-                                % entry_point
-                                % (i + 1)
-                                ).str()
+              workers.emplace ( fmt::format
+                                ( "worker-{}-{}"
+                                , entry_point
+                                , i + 1
+                                )
                               );
             }
           }

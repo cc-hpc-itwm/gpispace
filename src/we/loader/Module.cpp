@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <we/loader/Module.hpp>
@@ -6,8 +6,6 @@
 #include <we/loader/exceptions.hpp>
 
 #include <util-generic/print_exception.hpp>
-
-#include <boost/format.hpp>
 
 #include <exception>
 

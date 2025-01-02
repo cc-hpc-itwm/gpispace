@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/serialization/optional.hpp>
@@ -18,5 +18,14 @@ namespace we
       ar & _evaluation_context_requested;
       ar & _eureka_id;
     }
+  }
+}
+
+namespace we::type
+{
+  template<typename Archive>
+    auto TokenOnPort::serialize (Archive& ar, unsigned int) -> void
+  {
+    ar & _token & _port_id;
   }
 }

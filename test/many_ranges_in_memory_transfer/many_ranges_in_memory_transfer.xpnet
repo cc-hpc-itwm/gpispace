@@ -1,4 +1,4 @@
-<!-- Copyright (C) 2023 Fraunhofer ITWM        -->
+<!-- Copyright (C) 2025 Fraunhofer ITWM        -->
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 
 <defun name="many_ranges_in_memory_transfer">
@@ -45,7 +45,7 @@
                                          , distance_between_ranges
                                          , number_of_ranges
                                          )">
-          <cinclude href="boost/format.hpp"/>
+          <cinclude href="fmt/core.h"/>
           <cinclude href="stdexcept"/>
           <cinclude href="string"/>
           <code><![CDATA[
@@ -63,14 +63,14 @@
               if (*l != *d)
               {
                 throw std::runtime_error
-                  (str ( boost::format
-                           ("wrong content at (%1%, %2%): chr(%3%) != chr(%4%)")
-                       % range
-                       % i
-                       % static_cast<int> (*l)
-                       % static_cast<int> (*d)
-                       )
-                  );
+                  { fmt::format
+                    ( "wrong content at ({}, {}): chr({}) != chr({})"
+                    , range
+                    , i
+                    , static_cast<int> (*l)
+                    , static_cast<int> (*d)
+                    )
+                  };
               }
             }
           }

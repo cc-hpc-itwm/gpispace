@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <xml/parse/type/memory_buffer.hpp>
@@ -14,8 +14,9 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <boost/format.hpp>
 #include <boost/test/data/test_case.hpp>
+
+#include <fmt/core.h>
 
 BOOST_AUTO_TEST_CASE (name_is_stored)
 {
@@ -137,19 +138,19 @@ BOOST_DATA_TEST_CASE (dump, tribool_values(), read_only)
   xml::parse::type::dump::dump (s, mb);
 
   const std::string expected
-    ( ( ::boost::format (R"EOS(<memory-buffer name="%1%"%3%>
-  <size>%2%</size>
-  <alignment>%4%</alignment>
-</memory-buffer>)EOS")
-      % name
-      % size
-      % ( !::boost::get_pointer (read_only) ? std::string()
-        : ( ::boost::format (R"EOS( read-only="%1%")EOS")
-          % (*read_only ? "true" : "false")
-          ).str()
+    ( fmt::format (R"EOS(<memory-buffer name="{0}"{2}>
+  <size>{1}</size>
+  <alignment>{3}</alignment>
+</memory-buffer>)EOS"
+      , name
+      , size
+      , ( !::boost::get_pointer (read_only) ? std::string()
+        : fmt::format ( R"EOS( read-only="{}")EOS"
+                      , *read_only ? "true" : "false"
+                      )
         )
-      % alignment
-      ).str()
+      , alignment
+      )
     );
 
   BOOST_REQUIRE_EQUAL (expected, oss.str());
@@ -160,17 +161,17 @@ BOOST_DATA_TEST_CASE
   (read_only_is_generating_correctly, tribool_values(), read_only)
 {
   std::istringstream input_stream
-    ( str ( ::boost::format
+    ( fmt::format
               (R"EOS(
 <defun name="f">
-  <memory-buffer name="b" %1%>
+  <memory-buffer name="b" {}>
     <size>1</size>
   </memory-buffer>
   <module name="m" function="f (b)">
     <code/>
   </module>
-</defun>)EOS")
-          % (  read_only &&  *read_only ? "read-only=\"true\""
+</defun>)EOS"
+         ,  (  read_only &&  *read_only ? "read-only=\"true\""
             :  read_only && !*read_only ? "read-only=\"false\""
             : !read_only                ? ""
                                         : "<unreachable>"
@@ -179,26 +180,26 @@ BOOST_DATA_TEST_CASE
     );
 
   auto const expected_generated_cpp
-    ( str ( ::boost::format
+    ( fmt::format
               (R"EOS(#include <pnetc/op/m/f.hpp>
 
 namespace pnetc
-{
+{{
   namespace op
-  {
+  {{
     namespace m
-    {
+    {{
       void f
-        ( %1% b
+        ( {} b
         )
-      {
+      {{
 #line 7 "<stdin>"
 
-      }
-    }
-  }
-})EOS")
-          % (  read_only &&  *read_only ? "void const*"
+      }}
+    }}
+  }}
+}})EOS"
+          , (  read_only &&  *read_only ? "void const*"
             :  read_only && !*read_only ? "void*"
             : !read_only                ? "void*"
                                         : "<unreachable>"

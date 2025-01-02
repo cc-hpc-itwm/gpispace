@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -39,11 +39,11 @@
 namespace
 {
   bool compare_workflow_response_result
-    ( ::boost::variant<std::exception_ptr, pnet::type::value::value_type> const& l
-    , ::boost::variant<std::exception_ptr, pnet::type::value::value_type> const& r
+    ( std::variant<std::exception_ptr, pnet::type::value::value_type> const& l
+    , std::variant<std::exception_ptr, pnet::type::value::value_type> const& r
     )
   {
-    struct : ::boost::static_visitor<bool>
+    struct visitor
     {
       bool operator() (std::exception_ptr const&, pnet::type::value::value_type const&) const { return false; }
       bool operator() (pnet::type::value::value_type const&, std::exception_ptr const&) const { return false; }
@@ -63,8 +63,8 @@ namespace
         return fhg::util::serialization::exception::serialize (lhs)
           == fhg::util::serialization::exception::serialize (rhs);
       }
-    } visitor;
-    return ::boost::apply_visitor (visitor, l, r);
+    };
+    return std::visit (visitor{}, l, r);
   }
 }
 
@@ -330,17 +330,17 @@ struct daemon
 
   DECLARE_EXPECT_CLASS ( workflow_response
                        , std::string workflow_response_id
-        BOOST_PP_COMMA() ::boost::variant<std::exception_ptr BOOST_PP_COMMA() pnet::type::value::value_type> result
+        BOOST_PP_COMMA() std::variant<std::exception_ptr BOOST_PP_COMMA() pnet::type::value::value_type> result
                        , _workflow_response_id (workflow_response_id)
         BOOST_PP_COMMA() _result (result)
                        , we::layer::id_type _workflow_response_id
-                       ; ::boost::variant<std::exception_ptr BOOST_PP_COMMA() pnet::type::value::value_type> _result
+                       ; std::variant<std::exception_ptr BOOST_PP_COMMA() pnet::type::value::value_type> _result
                        , _workflow_response_id == workflow_response_id
                        && compare_workflow_response_result (_result, result)
                        );
 
   void workflow_response ( std::string workflow_response_id
-                         , ::boost::variant<std::exception_ptr, pnet::type::value::value_type> result
+                         , std::variant<std::exception_ptr, pnet::type::value::value_type> result
                          )
   {
     std::list<expect_workflow_response*>::iterator const e

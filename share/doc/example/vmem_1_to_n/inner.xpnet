@@ -1,4 +1,4 @@
-<!-- Copyright (C) 2023 Fraunhofer ITWM        -->
+<!-- Copyright (C) 2025 Fraunhofer ITWM        -->
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 
 <defun>
@@ -61,9 +61,10 @@
         >
           <cinclude href="stdexcept"/>
           <cinclude href="string.h"/>
-          <cinclude href="boost/random.hpp"/>
+          <cinclude href="random"/>
           <cinclude href="limits"/>
           <cinclude href="sstream"/>
+          <cinclude href="iostream"/>
           <code><![CDATA[
             std::cout << "run (" << id << ", " << i << ")" << '\n';
 
@@ -74,11 +75,12 @@
 
             long* a (static_cast<long*> (data));
 
-            boost::uniform_int<long> rand ( std::numeric_limits<long>::min()
+            std::uniform_int_distribution<long> rand
+                                          ( std::numeric_limits<long>::min()
                                           , std::numeric_limits<long>::max()
                                           );
 
-            boost::mt19937 engine (config.seed);
+            std::mt19937 engine (config.seed);
 
             for (unsigned long k (0); k < num_long; ++k, ++a)
             {

@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <sdpa/events/EventHandler.hpp>
@@ -15,8 +15,10 @@
 #include <util-generic/print_container.hpp>
 #include <util-generic/print_exception.hpp>
 
-#include <boost/format.hpp>
-
+#include <FMT/sdpa/events/error_code.hpp>
+#include <FMT/util-generic/join.hpp>
+#include <FMT/we/type/value/show.hpp>
+#include <fmt/core.h>
 #include <stdexcept>
 #include <string>
 
@@ -34,7 +36,7 @@ namespace sdpa
       (fhg::com::p2p::address_t const&, const Event* Var)             \
     {                                                                 \
       throw std::runtime_error                                        \
-        (str (::boost::format ("%1%%2%") % #Event % Message));          \
+        {fmt::format ("{}{}", #Event, Message)};                      \
     } using ::sdpa::events::detail::semi
 
     UNHANDLED (CancelJobAckEvent,,,"");
@@ -47,10 +49,10 @@ namespace sdpa
       ( ErrorEvent
       ,
       , e
-      , ( ::boost::format (": error_code '%1%', reason '%2%'")
-        % e->error_code()
-        % e->reason()
-        )
+      , fmt::format ( ": error_code '{}', reason '{}'"
+                    , e->error_code()
+                    , e->reason()
+                    )
       );
 
     UNHANDLED (JobFailedAckEvent,,,"");
@@ -59,9 +61,7 @@ namespace sdpa
       ( JobFailedEvent
       ,
       , f
-      , ( ::boost::format (": error_message '%1%'")
-        % f->error_message()
-        )
+      , fmt::format (": error_message '{}'",  f->error_message())
       );
 
     UNHANDLED (JobFinishedAckEvent,,,"");
@@ -80,28 +80,29 @@ namespace sdpa
       ( WorkerRegistrationEvent
       ,
       , w
-      , ( ::boost::format
-            ("name '%1%', host '%2%', capabilites '%3%', shm_size '%4%'")
-        % w->name()
-        % w->hostname()
-        % fhg::util::print_container
+      , fmt::format
+        ( "name '{}', host '{}', capabilites '{}', shm_size '{}'"
+        , w->name()
+        , w->hostname()
+        , fhg::util::print_container
             ( "{", ", ", "}", w->capabilities()
             , [] (auto& os, auto const& capability) -> decltype (os)
               {
                 return os << capability.name();
               }
             )
-        % w->allocated_shared_memory_size()
-       )
+        , w->allocated_shared_memory_size()
+        )
       );
 
     UNHANDLED
       ( put_token
       , _
       , p
-      , ( ::boost::format ("place '%1%', value '%2%'")
-        % p->place_name()
-        % ::pnet::type::value::show (p->value())
+      , fmt::format
+        ( "place '{}', value '{}'"
+        , p->place_name()
+        , ::pnet::type::value::show (p->value())
         )
       );
 
@@ -109,11 +110,11 @@ namespace sdpa
       ( put_token_response
       , _
       , r
-      , ( ::boost::format ("%1%")
-        % ( !!r->exception()
+      , fmt::format
+        ( "{}"
+        , !!r->exception()
           ? fhg::util::exception_printer (r->exception().get()).string()
           : std::string {"success"}
-          )
         )
       );
 
@@ -123,9 +124,10 @@ namespace sdpa
       ( workflow_response
       , _
       , r
-      , ( ::boost::format ("place '%1%', value '%2%'")
-        % r->place_name()
-        % ::pnet::type::value::show (r->value())
+      , fmt::format
+        ( "place '{}', value '{}'"
+        , r->place_name()
+        , ::pnet::type::value::show (r->value())
         )
       );
 
@@ -133,14 +135,13 @@ namespace sdpa
       ( workflow_response_response
       , _
       , r
-      , ( ::boost::format ("content '%1%'")
-        % fhg::util::visit<std::string>
+      , fmt::format
+        ( "content '{}'"
+        , fhg::util::visit<std::string>
           ( r->get()
           , [] (workflow_response_response::value_t const& value)
             {
-              return str ( ::boost::format ("%1%")
-                         % ::pnet::type::value::show (value)
-                         );
+              return fmt::format ("{}", ::pnet::type::value::show (value));
             }
           , [] (std::exception_ptr const& error)
             {

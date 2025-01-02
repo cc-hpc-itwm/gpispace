@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -10,8 +10,7 @@
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/random/string.hpp>
 
-#include <boost/format.hpp>
-
+#include <fmt/core.h>
 #include <sstream>
 
 BOOST_AUTO_TEST_CASE (dump_no_virtual)
@@ -35,10 +34,10 @@ BOOST_AUTO_TEST_CASE (dump_no_virtual)
     );
 
   std::string const expected
-    ( ( ::boost::format (R"EOS(<place name="%1%" type="%2%" virtual="false"/>)EOS")
-      % name
-      % type
-      ).str()
+    ( fmt::format ( R"EOS(<place name="{}" type="{}" virtual="false"/>)EOS"
+                  , name
+                  , type
+                  )
     );
 
   BOOST_REQUIRE_EQUAL (oss.str(), expected);
@@ -65,10 +64,10 @@ BOOST_AUTO_TEST_CASE (dump_virtual)
     );
 
   std::string const expected
-    ( ( ::boost::format (R"EOS(<place name="%1%" type="%2%" virtual="true"/>)EOS")
-      % name
-      % type
-      ).str()
+    ( fmt::format ( R"EOS(<place name="{}" type="{}" virtual="true"/>)EOS"
+                  , name
+                  , type
+                  )
     );
 
   BOOST_REQUIRE_EQUAL (oss.str(), expected);
@@ -98,15 +97,15 @@ BOOST_AUTO_TEST_CASE (dump_token)
   xml::parse::type::dump::dump (os, place);
 
   std::string const expected
-    ( ( ::boost::format (R"EOS(<place name="%1%" type="%2%" virtual="true">
+    ( fmt::format ( R"EOS(<place name="{}" type="{}" virtual="true">
   <token>
-    <value>%3%</value>
+    <value>{}</value>
   </token>
-</place>)EOS")
-      % name
-      % type
-      % token
-      ).str()
+</place>)EOS"
+                  , name
+                  , type
+                  , token
+                  )
     );
 
   BOOST_REQUIRE_EQUAL (oss.str(), expected);
@@ -142,19 +141,19 @@ BOOST_AUTO_TEST_CASE (dump_tokens)
   BOOST_REQUIRE_EQUAL (tokens.size(), 2);
 
   std::string const expected
-    ( ( ::boost::format (R"EOS(<place name="%1%" type="%2%" virtual="true">
+    ( fmt::format ( R"EOS(<place name="{}" type="{}" virtual="true">
   <token>
-    <value>%3%</value>
+    <value>{}</value>
   </token>
   <token>
-    <value>%4%</value>
+    <value>{}</value>
   </token>
-</place>)EOS")
-      % name
-      % type
-      % *(tokens.begin())
-      % *(std::next (tokens.begin()))
-      ).str()
+</place>)EOS"
+                  , name
+                  , type
+                  , *(tokens.begin())
+                  , *(std::next (tokens.begin()))
+                  )
     );
 
   BOOST_REQUIRE_EQUAL (oss.str(), expected);

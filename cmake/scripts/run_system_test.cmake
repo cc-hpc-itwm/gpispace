@@ -1,6 +1,6 @@
 #!/bin/env -S cmake -P
 
-# Copyright (C) 2023 Fraunhofer ITWM
+# Copyright (C) 2025 Fraunhofer ITWM
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -56,7 +56,6 @@ set (_include_dir "${CMAKE_CURRENT_LIST_DIR}/../include/util-cmake")
 
 include (ProcessorCount)
 
-include ("${_include_dir}/colors.cmake")
 include ("${_include_dir}/parse_arguments.cmake")
 
 ###############################################################################
@@ -64,36 +63,30 @@ include ("${_include_dir}/parse_arguments.cmake")
 ###############################################################################
 
 macro (_print_output)
-  util_cmake_color_string (_stdout_title bold_blue "[[ OUT ]]")
-  util_cmake_color_string (_stderr_title bold_blue "[[ ERR ]]")
-  util_cmake_color_string (_stderr red "${_stderr}")
-
   set (_offset "\n   ")
   string (REPLACE "\n" "${_offset}" _stdout "${_stdout}")
   string (REPLACE "\n" "${_offset}" _stderr "${_stderr}")
 
   message (STATUS
-    "${_stdout_title}${_offset}${_offset}${_stdout}"
+    "[[ OUT ]]${_offset}${_offset}${_stdout}"
   )
   message (STATUS
-    "${_stderr_title}${_offset}${_offset}${_stderr}"
+    "[[ ERR ]]${_offset}${_offset}${_stderr}"
   )
 endmacro()
 
 macro (_status_message _step)
   string (TOUPPER "${_step}" _uc_step)
-  util_cmake_color_string (_success bold_green "SUCCESS")
-  util_cmake_color_string (_failure bold_red "FAILURE")
   if (_status EQUAL 0)
     message (STATUS
-      "[${_success}] ${_arg_NAME} : ${_uc_step}"
+      "[SUCCESS] ${_arg_NAME} : ${_uc_step}"
     )
     if (_arg_VERBOSE)
       _print_output()
     endif()
   else()
     message (STATUS
-      "[${_failure}] ${_arg_NAME} : ${_uc_step}"
+      "[FAILURE] ${_arg_NAME} : ${_uc_step}"
     )
     _print_output()
     return()
@@ -156,7 +149,7 @@ endif()
 execute_process (
   COMMAND
     ${CMAKE_COMMAND}
-      -D CMAKE_BUILD_TYPE=Release
+      -D CMAKE_BUILD_TYPE=Debug
       -D CMAKE_INSTALL_PREFIX=${_arg_INSTALL_DIR}
       ${_arg_CMAKE_DEFINITIONS}
       -B ${_arg_BUILD_DIR}

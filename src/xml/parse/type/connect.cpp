@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <xml/parse/type/connect.hpp>
@@ -7,7 +7,8 @@
 
 #include <fhg/util/xml.hpp>
 
-#include <boost/format.hpp>
+#include <FMT/we/type/net.hpp>
+#include <fmt/core.h>
 
 namespace xml
 {
@@ -67,7 +68,7 @@ namespace xml
       {
         void dump (::fhg::util::xml::xmlstream& s, connect_type const& c)
         {
-          s.open (str (::boost::format ("connect-%1%") % c.direction()));
+          s.open (fmt::format ("connect-{}", c.direction()));
           s.attr ("port", c.port());
           s.attr ("place", c.place());
 

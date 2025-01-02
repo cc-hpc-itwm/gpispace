@@ -4,6 +4,7 @@ fhg_add_test (NAME use_fixed_ports_for_agents_and_workers
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
        --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
+       --fmt-directory "${FMT_DIR}"
   LIBRARIES gspc
             test-utilities
             fhg-util

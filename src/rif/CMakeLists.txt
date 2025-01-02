@@ -33,6 +33,7 @@ gspc_add_library (NAME rif-started_process_promise
             Boost::program_options
             Boost::serialization
             Util-Generic
+            PRIVATE fmt
 )
 
 install (FILES
@@ -48,6 +49,7 @@ add_unit_test (NAME started_process_promise
   USE_BOOST
   LIBRARIES rif-started_process_promise
             Util-Generic
+            PRIVATE fmt
 )
 
 gspc_add_library (NAME rif-strategies
@@ -70,6 +72,7 @@ gspc_add_library (NAME rif-strategies
     PUBLIC Boost::program_options
     PUBLIC Boost::serialization
     PRIVATE Boost::thread
+    PRIVATE fmt
 )
 
 gspc_add_executable (NAME gspc-bootstrap-rifd
@@ -82,6 +85,7 @@ gspc_add_executable (NAME gspc-bootstrap-rifd
             Boost::filesystem
             Boost::program_options
             Boost::system
+            PRIVATE fmt
   CREATE_BUNDLE_INFO
 )
 gspc_add_executable (NAME gspc-teardown-rifd
@@ -94,5 +98,6 @@ gspc_add_executable (NAME gspc-teardown-rifd
             Boost::filesystem
             Boost::program_options
             Boost::system
+            PRIVATE fmt
   CREATE_BUNDLE_INFO
 )

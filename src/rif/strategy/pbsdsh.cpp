@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <rif/strategy/pbsdsh.hpp>
@@ -8,9 +8,10 @@
 #include <util-generic/boost/program_options/generic.hpp>
 #include <util-generic/boost/program_options/validators/positive_integral.hpp>
 
-#include <boost/format.hpp>
-
+#include <FMT/boost/filesystem/path.hpp>
+#include <fmt/core.h>
 #include <stdexcept>
+#include <string>
 
 namespace fhg
 {
@@ -42,11 +43,11 @@ namespace fhg
           auto const block_size (option::block_size.get_from (vm))
 
           void do_pbsdsh
-            (std::string const& hostname, ::boost::format const& command)
+            (std::string const& hostname, std::string const& command)
           {
             //! \todo use torque's tm_spawn API directly to avoid system()
             util::system_with_blocked_SIGCHLD
-              (str (::boost::format ("pbsdsh -h %1% %2%") % hostname % command));
+              (fmt::format ("pbsdsh -h {} {}", hostname, command));
           }
         }
 
@@ -69,17 +70,17 @@ namespace fhg
             , [&] (std::string const& hostname)
               {
                 do_pbsdsh ( hostname
-                          , ::boost::format
-                              ( "%1%"
-                                "%2%"
-                                " --register-host %3% --register-port %4%"
-                                " --register-key %5%"
+                          , fmt::format
+                              ( "{0}"
+                                "{1}"
+                                " --register-host {2} --register-port {3}"
+                                " --register-key {4}"
+                              , binary
+                              , port ? " --port " + std::to_string (*port) : ""
+                              , register_host
+                              , register_port
+                              , hostname
                               )
-                          % binary
-                          % (port ? " --port " + std::to_string (*port) : "")
-                          % register_host
-                          % register_port
-                          % hostname
                           );
               }
             ).second;
@@ -104,8 +105,9 @@ namespace fhg
             , [&] (std::pair<std::string, fhg::rif::entry_point> const& entry_point)
               {
                 do_pbsdsh ( entry_point.second.hostname
-                          , ::boost::format ("/bin/kill -TERM %1%")
-                          % entry_point.second.pid
+                          , fmt::format ( "/bin/kill -TERM {}"
+                                        , entry_point.second.pid
+                                        )
                           );
               }
             );

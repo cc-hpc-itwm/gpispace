@@ -17,6 +17,7 @@ fhg_add_test (NAME doc_example_subnetwork
             fhg-util
             Boost::program_options
             Boost::filesystem
+            fmt
   REQUIRES_INSTALLATION
   REQUIRES_VIRTUAL_MEMORY
   START_SCOPED_RIF

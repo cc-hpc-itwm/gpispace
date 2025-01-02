@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <util-rpc/locked_with_info_file.hpp>
@@ -6,8 +6,8 @@
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/read_file.hpp>
 
-#include <boost/format.hpp>
-
+#include <FMT/boost/filesystem/path.hpp>
+#include <fmt/core.h>
 #include <exception>
 
 namespace fhg
@@ -20,12 +20,12 @@ namespace fhg
       {
         failed_to_create_server::failed_to_create_server (decltype (directory) dir)
           : std::runtime_error
-              ((::boost::format ("Failed to create server for %1%.") % dir).str())
+              {fmt::format ("Failed to create server for {}.", dir)}
           , directory (std::move (dir))
         {}
         failed_to_create_client::failed_to_create_client (decltype (directory) dir)
           : std::runtime_error
-              ((::boost::format ("Failed to create client for %1%.") % dir).str())
+              {fmt::format ("Failed to create client for {}.", dir)}
           , directory (std::move (dir))
         {}
         bad_server_description::bad_server_description()

@@ -1,12 +1,13 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
 
+#include <util-generic/detail/dllexport.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 
+#include <filesystem>
 #include <fstream>
 #include <iterator>
 #include <stdexcept>
@@ -16,15 +17,22 @@ namespace fhg
 {
   namespace util
   {
-    template<typename T = std::string>
-      T read_file (::boost::filesystem::path const& path)
+    namespace error::read_file
     {
-      std::ifstream ifs (path.string().c_str(), std::ifstream::binary);
+      auto UTIL_GENERIC_DLLEXPORT could_not_open
+        ( std::filesystem::path const&
+        ) -> std::runtime_error
+        ;
+    }
+
+    template<typename T = std::string>
+      T read_file (std::filesystem::path const& path)
+    {
+      std::ifstream ifs (path, std::ifstream::binary);
 
       if (not ifs)
       {
-        throw std::runtime_error
-          ((::boost::format ("could not open %1%") % path).str());
+        throw error::read_file::could_not_open (path);
       }
 
       ifs >> std::noskipws;
@@ -33,6 +41,20 @@ namespace fhg
     }
 
     template<typename T>
+      T read_file_as (std::filesystem::path const& path)
+    {
+      return ::boost::lexical_cast<T> (read_file (path));
+    }
+
+    template<typename T = std::string>
+      [[deprecated ("use read_file (std::filesystem::path)")]]
+      T read_file (::boost::filesystem::path const& path)
+    {
+      return read_file<T> (std::filesystem::path {path.string()});
+    }
+
+    template<typename T>
+      [[deprecated ("use read_file_as (std::filesystem::path)")]]
       T read_file_as (::boost::filesystem::path const& path)
     {
       return ::boost::lexical_cast<T> (read_file (path));

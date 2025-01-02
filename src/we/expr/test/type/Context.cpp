@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <we/expr/type/Context.hpp>
@@ -16,6 +16,11 @@
 
 #include <boost/test/data/test_case.hpp>
 
+#include <FMT/boost/variant.hpp>
+#include <FMT/util-generic/join.hpp>
+#include <FMT/we/expr/type/Path.hpp>
+#include <FMT/we/expr/type/Type.hpp>
+#include <fmt/core.h>
 #include <iterator>
 #include <string>
 #include <vector>
@@ -202,16 +207,19 @@ namespace expr
             }
           , fhg::util::testing::make_nested
             ( exception::type::error
-              ( ::boost::format ("expr::type::Context::bind (%1%, '%2%')")
-              % path
-              % typeB
-              )
+              { fmt::format ( "expr::type::Context::bind ({}, '{}')"
+                            , path
+                            , typeB
+                            )
+              }
             , exception::type::error
-              ( ::boost::format ("At %3%: Can not assign a value of type '%2%' to a value of type '%1%'")
-              % typeA
-              % typeB
-              % path
-              )
+              { fmt::format
+                  ( "At {2}: Can not assign a value of type '{1}' to a value of type '{0}'"
+                  , typeA
+                  , typeB
+                  , path
+                  )
+              }
             )
           );
       }
@@ -244,16 +252,18 @@ namespace expr
           }
         , fhg::util::testing::make_nested
           ( exception::type::error
-            ( ::boost::format ("expr::type::Context::bind (%1%, '%2%')")
-            % Path {prefix}
-            % typeB
-            )
+            { fmt::format ( "expr::type::Context::bind ({}, '{}')"
+                          , Path {prefix}
+                          , typeB
+                          )
+            }
           , exception::type::error
-            ( ::boost::format ("At %3%: Can not assign a value of type '%2%' to a value of type '%1%'")
-            % chain (std::begin (suffix), std::end (suffix), typeA)
-            % typeB
-            % Path {prefix}
-            )
+            { fmt::format ( "At {2}: Can not assign a value of type '{1}' to a value of type '{0}'"
+                          , chain (std::begin (suffix), std::end (suffix), typeA)
+                          , typeB
+                          , Path {prefix}
+                          )
+            }
           )
         );
     }
@@ -284,15 +294,17 @@ namespace expr
           }
         , fhg::util::testing::make_nested
           ( exception::type::error
-            ( ::boost::format ("expr::type::Context::bind (${%1%}, '%2%')")
-            % fhg::util::join (path, ".")
-            % deeper
-            )
+            { fmt::format ( "expr::type::Context::bind (${{{}}}, '{}')"
+                          , fhg::util::join (path, ".")
+                          , deeper
+                          )
+            }
           , exception::type::error
-            ( ::boost::format ("Not a struct at ${%1%}: '%2%'")
-            % fhg::util::join (prefix, ".")
-            % leaf
-            )
+            { fmt::format ( "Not a struct at ${{{}}}: '{}'"
+                          , fhg::util::join (prefix, ".")
+                          , leaf
+                          )
+            }
           )
         );
     }

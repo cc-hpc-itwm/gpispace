@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <util-generic/functor_visitor.hpp>
@@ -31,7 +31,7 @@ namespace fhg
     {
       template<typename From, typename... To>
         struct variant_cast_visitor
-          : ::boost::static_visitor<::boost::variant<To...>>
+          : private ::boost::static_visitor<::boost::variant<To...>>
       {
         variant_cast_visitor () = default;
 

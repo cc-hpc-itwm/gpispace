@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #ifndef FHG_UTIL_BOOST_PROGRAM_OPTIONS_VALIDATORS_IS_DIRECTORY_IF_EXISTS_HPP
@@ -17,26 +17,43 @@ namespace fhg
     {
       namespace program_options
       {
-        struct is_directory_if_exists : public ::boost::filesystem::path
+        struct is_directory_if_exists
         {
           is_directory_if_exists (std::string const& option)
-            : ::boost::filesystem::path (option)
+            : is_directory_if_exists {std::filesystem::path {option}}
+          {}
+
+          is_directory_if_exists (std::filesystem::path const& path)
+            : _path {path}
           {
-            if ( ::boost::filesystem::exists (*this)
-               && !::boost::filesystem::is_directory (*this)
+            if ( std::filesystem::exists (_path)
+               && !std::filesystem::is_directory (_path)
                )
             {
               throw ::boost::program_options::invalid_option_value
-                (( ::boost::format ("%1% exists and is not a directory.")
-                 % *this
-                 ).str()
-                );
+                { fmt::format ("{} exists and is not a directory.", path)
+                };
             }
           }
 
+          operator std::filesystem::path() const
+          {
+            return _path;
+          }
+
+          [[deprecated ("use is_directory_if_exists (std::filesystem::path)")]]
           is_directory_if_exists (::boost::filesystem::path const& p)
             : is_directory_if_exists (p.string())
           {}
+
+          [[deprecated ("use is_directory_if_exists::operator (std::filesystem::path)")]]
+          explicit operator ::boost::filesystem::path() const
+          {
+            return _path.string();
+          }
+
+        private:
+          std::filesystem::path _path;
         };
 
         inline void validate ( ::boost::any& v
@@ -46,6 +63,14 @@ namespace fhg
                              )
         {
           validate<is_directory_if_exists> (v, values);
+        }
+
+        inline auto operator<<
+          ( std::ostream& os
+          , is_directory_if_exists const& p
+          ) -> std::ostream&
+        {
+          return os << static_cast<std::filesystem::path> (p);
         }
       }
     }

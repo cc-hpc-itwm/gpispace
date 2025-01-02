@@ -1,16 +1,16 @@
 #! This script is not intended to be used stand-alone but is used by
 
-# Copyright (C) 2023 Fraunhofer ITWM
+# Copyright (C) 2025 Fraunhofer ITWM
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 #! `add_unit_test.cmake` to wrap (unit) tests with code to execute before
 
-# Copyright (C) 2023 Fraunhofer ITWM
+# Copyright (C) 2025 Fraunhofer ITWM
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 #! and after running the test itself.
 
-# Copyright (C) 2023 Fraunhofer ITWM
+# Copyright (C) 2025 Fraunhofer ITWM
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 

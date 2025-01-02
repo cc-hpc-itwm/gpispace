@@ -1,4 +1,4 @@
-<!-- Copyright (C) 2023 Fraunhofer ITWM        -->
+<!-- Copyright (C) 2025 Fraunhofer ITWM        -->
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 
 <defun>
@@ -15,7 +15,7 @@
     <cinclude href="chrono"/>
     <cinclude href="fstream"/>
     <cinclude href="thread"/>
-    <cxx flag="--std=c++11"/>
+    <cxx flag="--std=c++17"/>
     <code><![CDATA[
       std::ofstream {filename_a};
 

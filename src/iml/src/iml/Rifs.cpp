@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <iml/Rifs.hpp>
@@ -14,8 +14,7 @@
 #include <util-generic/read_lines.hpp>
 #include <util-generic/wait_and_collect_exceptions.hpp>
 
-#include <boost/range/adaptor/map.hpp>
-
+#include <algorithm>
 #include <iterator>
 #include <stdexcept>
 #include <unordered_map>
@@ -28,9 +27,18 @@ namespace iml
     template<typename Key, typename Value>
       std::vector<Value> values (std::unordered_map<Key, Value> const& map)
     {
-      auto range (map | ::boost::adaptors::map_values);
-
-      return {std::begin (range), std::end (range)};
+      auto vs {std::vector<Value>{}};
+      vs.reserve (map.size());
+      std::transform
+        ( std::begin (map), std::end (map)
+        , std::back_inserter (vs)
+        , [] (auto const& kv)
+          {
+            auto const& [key, value] {kv};
+            return value;
+          }
+        );
+      return vs;
     }
   }
 

@@ -1,9 +1,9 @@
-# Copyright (C) 2023 Fraunhofer ITWM
+# Copyright (C) 2025 Fraunhofer ITWM
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 include (util-cmake/add_cxx_compiler_flag_if_supported)
 
-set (CMAKE_CXX_STANDARD 14)
+set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_STANDARD_REQUIRED on)
 
 add_cxx_compiler_flag_if_supported (-W)
@@ -44,12 +44,25 @@ add_cxx_compiler_flag_if_supported (-fpic)
 add_cxx_compiler_flag_if_supported (-fcolor-diagnostics)
 add_cxx_compiler_flag_if_supported (-ftemplate-depth=1024)
 
+# TODO: do not use deprecated declarations
+add_cxx_compiler_flag_if_supported (-Wno-deprecated-declarations)
+
 add_cxx_compiler_flag_if_supported (-Wno-maybe-uninitialized)
 
-# Modern Debian has changed the default from `--no-as-needed` to
-# `--as-needed`, which leads to shared objects being filtered if the
-# linker can't prove it being used. This check fails when symbols are
-# needed only by dlopen()ed libraries, e.g. when linking
-# GPISpace::APIGuard to provide WE_GUARD_SYMBOL in drts-kernel. Thus,
-# be sure to always link without that optimization.
-add_cxx_compiler_flag_if_supported (-Wl,--no-as-needed)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  # do nothing
+else()
+  # Modern Debian has changed the default from `--no-as-needed` to
+  # `--as-needed`, which leads to shared objects being filtered if the
+  # linker can't prove it being used. This check fails when symbols are
+  # needed only by dlopen()ed libraries, e.g. when linking
+  # GPISpace::APIGuard to provide WE_GUARD_SYMBOL in drts-kernel. Thus,
+  # be sure to always link without that optimization.
+  add_cxx_compiler_flag_if_supported (-Wl,--no-as-needed)
+endif()
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9)
+    set (CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE} -lstdc++fs")
+  endif()
+endif()

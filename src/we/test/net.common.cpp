@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <we/test/net.common.hpp>
@@ -8,8 +8,8 @@
 #include <util-generic/print_container.hpp>
 #include <util-generic/testing/random.hpp>
 
-#include <boost/format.hpp>
-
+#include <FMT/util-generic/join.hpp>
+#include <fmt/core.h>
 #include <stdexcept>
 
   [[noreturn]] void unexpected_workflow_response
@@ -21,10 +21,10 @@
   [[noreturn]] void unexpected_eureka (we::type::eureka_ids_type const& ids)
   {
     throw std::logic_error
-      (str ( ::boost::format ("Unexpected call to eureka: %1%")
-           % fhg::util::print_container ("{", ", ", "}", ids)
-           )
-      );
+      { fmt::format ( "Unexpected call to eureka: {}"
+                    , fhg::util::print_container ("{", ", ", "}", ids)
+                    )
+      };
   }
 
   std::mt19937& random_engine()

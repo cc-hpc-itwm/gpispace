@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -8,6 +8,7 @@
 #include <fhg/util/parse/error.hpp>
 #include <fhg/util/parse/require.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <FMT/std/variant.hpp>
 
 #include <boost/test/data/monomorphic.hpp>
 #include <boost/test/data/test_case.hpp>

@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <we/expr/type/AssignResult.hpp>
@@ -12,10 +12,13 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <boost/format.hpp>
 #include <boost/test/data/test_case.hpp>
 
+#include <FMT/boost/variant.hpp>
+#include <FMT/we/expr/type/Path.hpp>
+#include <FMT/we/expr/type/Type.hpp>
 #include <algorithm>
+#include <fmt/core.h>
 #include <iterator>
 #include <string>
 #include <vector>
@@ -105,14 +108,14 @@ namespace expr
               (void) assign_result (path, tdA.type, tdB.type);
             }
           , exception::type::error
-            ( ::boost::format
-               ("At %3%: Can not assign a value of type '%2%'"
-               " to a value of type '%1%'"
+            { fmt::format
+               ( "At {2}: Can not assign a value of type '{1}'"
+                 " to a value of type '{0}'"
+               , tdA.type
+               , tdB.type
+               , path
                )
-            % tdA.type
-            % tdB.type
-            % path
-            )
+            }
           );
       }
     }
@@ -179,14 +182,14 @@ namespace expr
               (void) assign_result (path, lhs, rhs);
             }
           , exception::type::error
-            ( ::boost::format
-               ("At %3%: Can not assign a value of type '%2%'"
-               " to a value of type '%1%'"
+            { fmt::format
+               ( "At {2}: Can not assign a value of type '{1}'"
+                 " to a value of type '{0}'"
+               , tdA.type
+               , tdB.type
+               , path_plus_field_name
                )
-            % tdA.type
-            % tdB.type
-            % path_plus_field_name
-            )
+            }
           );
       }
     }
@@ -212,14 +215,15 @@ namespace expr
             (void) assign_result (path, lhs, rhs);
           }
         , exception::type::error
-          ( ::boost::format
-              ("Can not assign a value of type '%2%' to a value of type '%1%' at %3%: Missing field '%4%', found '%5%' instead")
-          % lhs
-          % rhs
-          % path
-          % field_nameA
-          % field_nameB
-          )
+          { fmt::format
+              ( "Can not assign a value of type '{1}' to a value of type '{0}' at {2}: Missing field '{3}', found '{4}' instead"
+              , lhs
+              , rhs
+              , path
+              , field_nameA
+              , field_nameB
+              )
+          }
         );
     }
 
@@ -240,13 +244,14 @@ namespace expr
             (void) assign_result (path, lhs, rhs);
           }
         , exception::type::error
-          ( ::boost::format
-              ("Can not assign a value of type '%2%' to a value of type '%1%' at %3%: Missing field(s) {'%4%'}")
-          % lhs
-          % rhs
-          % path
-          % field_name
-          )
+          { fmt::format
+              ( "Can not assign a value of type '{1}' to a value of type '{0}' at {2}: Missing field(s) {{'{3}'}}"
+              , lhs
+              , rhs
+              , path
+              , field_name
+              )
+          }
         );
     }
 
@@ -267,13 +272,14 @@ namespace expr
             (void) assign_result (path, lhs, rhs);
           }
         , exception::type::error
-          ( ::boost::format
-              ("Can not assign a value of type '%2%' to a value of type '%1%' at %3%: Additional field(s) {'%4%'}")
-          % lhs
-          % rhs
-          % path
-          % field_name
-          )
+          { fmt::format
+              ( "Can not assign a value of type '{1}' to a value of type '{0}' at {2}: Additional field(s) {{'{3}'}}"
+              , lhs
+              , rhs
+              , path
+              , field_name
+              )
+          }
         );
     }
   }

@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -27,10 +27,10 @@
 #include <util-generic/testing/require_exception.hpp>
 
 #include <boost/filesystem.hpp>
-#include <boost/format.hpp>
 #include <boost/program_options.hpp>
 #include <boost/test/data/test_case.hpp>
 
+#include <fmt/core.h>
 #include <iostream>
 #include <regex>
 
@@ -89,12 +89,12 @@
     );                                                                   \
                                                                          \
   auto const test_case_dir                                               \
-    (str ( ::boost::format ("%1%-%2%-%3%-%4%")                             \
-         % std::string (#TESTCASE)                                       \
-         % BUFFSIZE                                                      \
-         % OFFSET                                                        \
-         % SIZE                                                          \
-         )                                                               \
+    ( fmt::format ("{}-{}-{}-{}"                                         \
+                  , std::string (#TESTCASE)                              \
+                  , BUFFSIZE                                             \
+                  , OFFSET                                               \
+                  , SIZE                                                 \
+                  )                                                      \
     );                                                                   \
                                                                          \
   fhg::util::temporary_path const shared_directory                       \

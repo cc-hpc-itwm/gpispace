@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <iml/rif/strategy/local.hpp>
@@ -7,9 +7,10 @@
 
 #include <util-generic/hostname.hpp>
 
-#include <boost/format.hpp>
-
+#include <FMT/boost/filesystem/path.hpp>
+#include <fmt/core.h>
 #include <stdexcept>
+#include <string>
 
 namespace fhg
 {
@@ -23,9 +24,9 @@ namespace fhg
         {
           namespace
           {
-            void do_local (::boost::format const& command)
+            void do_local (std::string const& command)
             {
-              util::system_with_blocked_SIGCHLD (str (command));
+              util::system_with_blocked_SIGCHLD (command);
             }
           }
 
@@ -65,17 +66,17 @@ namespace fhg
 
             try
             {
-              do_local ( ::boost::format
-                           ( "%1%"
-                             "%2%"
-                             " --register-host %3% --register-port %4%"
-                             " --register-key %5%"
+              do_local ( fmt::format
+                           ( "{}"
+                             "{}"
+                             " --register-host {} --register-port {}"
+                             " --register-key {}"
+                           , binary
+                           , (port ? " --port " + std::to_string (*port) : "")
+                           , register_host
+                           , register_port
+                           , hostname
                            )
-                       % binary
-                       % (port ? " --port " + std::to_string (*port) : "")
-                       % register_host
-                       % register_port
-                       % hostname
                        );
 
               return std::unordered_map<std::string, std::exception_ptr>{};
@@ -120,8 +121,9 @@ namespace fhg
 
             try
             {
-              do_local ( ::boost::format ("/bin/kill -TERM %1%")
-                       % entry_point.second.pid
+              do_local ( fmt::format ( "/bin/kill -TERM {}"
+                                     , entry_point.second.pid
+                                     )
                        );
 
               return { {hostname}

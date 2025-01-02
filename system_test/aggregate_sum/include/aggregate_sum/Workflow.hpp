@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -14,11 +14,11 @@ namespace aggregate_sum
   public:
     static ParametersDescription options();
 
-    Workflow (Parameters const& parameters);
+    Workflow (Parameters const&);
 
     ValuesOnPorts inputs() const;
 
-    int process (WorkflowResult const& result) const;
+    int process (WorkflowResult const&) const;
 
   private:
     int _N;

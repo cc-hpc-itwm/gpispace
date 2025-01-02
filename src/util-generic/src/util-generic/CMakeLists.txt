@@ -19,19 +19,24 @@ extended_add_library (NAME Generic
     "print_exception.cpp"
     "procfs.cpp"
     "boost/program_options/separated_argument_list_parser.cpp"
+    "read_file.cpp"
     "read_lines.cpp"
     "sig_err.cpp"
     "serialization/exception.cpp"
+    "serialization/std/variant.cpp"
     "syscall.cpp"
     "system.cpp"
     "syscall/directory.cpp"
     "syscall/process_signal_block.cpp"
     "syscall/signal_fd.cpp"
     "syscall/signal_set.cpp"
+    "temporary_file.cpp"
+    "temporary_path.cpp"
     "testing/random.cpp"
     "testing/random/char.cpp"
     "testing/random/string.cpp"
     "wait_and_collect_exceptions.cpp"
+    "write_file.cpp"
   LIBRARIES
     Util::Generic-Headers
     Boost::base
@@ -43,6 +48,7 @@ extended_add_library (NAME Generic
     #! \todo find librt and only link if required by shm_open+
     rt
     Threads::Threads
+    PUBLIC fmt
   COMPILE_DEFINITIONS
     FUNCTION_EXISTS_SIGNALFD=$<BOOL:${FUNCTION_EXISTS_SIGNALFD}>
     FUNCTION_EXISTS_PIPE2=$<BOOL:${FUNCTION_EXISTS_PIPE2}>

@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -12,10 +12,12 @@
 #include <util-generic/read_lines.hpp>
 #include <util-generic/testing/random.hpp>
 
-#include <boost/format.hpp>
 #include <boost/optional/optional_io.hpp>
 #include <boost/test/data/test_case.hpp>
 
+#include <FMT/util-generic/join.hpp>
+#include <FMT/std/optional.hpp>
+#include <fmt/core.h>
 #include <iostream>
 #include <sstream>
 #include <tuple>
@@ -95,8 +97,8 @@ namespace fhg
         , 1
         , 0
         , 0
-        , {}
-        , {}
+        , std::nullopt
+        , std::nullopt
         };
 
       BOOST_REQUIRE_EQUAL (wd, expected);
@@ -105,19 +107,15 @@ namespace fhg
     BOOST_AUTO_TEST_CASE (multiple_identifiers_separated_by_PLUS_are_capabilities)
     {
       auto const identifiers (random_identifiers());
-      auto const input
-        (str ( boost::format ("%1%")
-             % fhg::util::join (identifiers, "+")
-             )
-        );
+      auto const input {fmt::format ("{}", fhg::util::join (identifiers, "+"))};
       gspc::worker_description const wd (input);
       gspc::worker_description const expected
         { identifiers
         , 1
         , 0
         , 0
-        , {}
-        , {}
+        , std::nullopt
+        , std::nullopt
         };
 
       BOOST_REQUIRE_EQUAL (wd, expected);
@@ -125,20 +123,17 @@ namespace fhg
 
     BOOST_AUTO_TEST_CASE (test_issue_986)
     {
-      auto const identifiers (fhg::util::read_lines ("@ISSUE_986_DATA@"));
-      auto const input
-        (str ( boost::format ("%1%")
-             % fhg::util::join (identifiers, "+")
-             )
-        );
+      auto const identifiers
+        (fhg::util::read_lines (std::filesystem::path {"@ISSUE_986_DATA@"}));
+      auto const input {fmt::format ("{}", fhg::util::join (identifiers, "+"))};
       gspc::worker_description const wd (input);
       gspc::worker_description const expected
         { identifiers
         , 1
         , 0
         , 0
-        , {}
-        , {}
+        , std::nullopt
+        , std::nullopt
         };
 
       BOOST_REQUIRE_EQUAL (wd, expected);
@@ -149,19 +144,15 @@ namespace fhg
       auto const identifiers (random_identifiers());
       auto const socket (fhg::util::testing::random<std::size_t>{}());
       auto const input
-        (str ( boost::format ("%1%#%2%")
-             % fhg::util::join (identifiers, "+")
-             % socket
-             )
-        );
+        {fmt::format ("{}#{}", fhg::util::join (identifiers, "+"), socket)};
       gspc::worker_description const wd (input);
       gspc::worker_description const expected
         { identifiers
         , 1
         , 0
         , 0
-        , {socket}
-        , {}
+        , std::make_optional (socket)
+        , std::nullopt
         };
 
       BOOST_REQUIRE_EQUAL (wd, expected);
@@ -173,19 +164,15 @@ namespace fhg
       auto const identifiers (random_identifiers());
       auto const per_node (fhg::util::testing::random<std::size_t>{}());
       auto const input
-        (str ( boost::format ("%1%:%2%")
-             % fhg::util::join (identifiers, "+")
-             % per_node
-             )
-        );
+        {fmt::format ("{}:{}", fhg::util::join (identifiers, "+"), per_node)};
       gspc::worker_description const wd (input);
       gspc::worker_description const expected
         { identifiers
         , per_node
         , 0
         , 0
-        , {}
-        , {}
+        , std::nullopt
+        , std::nullopt
         };
 
       BOOST_REQUIRE_EQUAL (wd, expected);
@@ -197,20 +184,20 @@ namespace fhg
       auto const socket (fhg::util::testing::random<std::size_t>{}());
       auto const per_node (fhg::util::testing::random<std::size_t>{}());
       auto const input
-        (str ( boost::format ("%1%#%2%:%3%")
-             % fhg::util::join (identifiers, "+")
-             % socket
-             % per_node
-             )
-        );
+        { fmt::format ( "{}#{}:{}"
+                      , fhg::util::join (identifiers, "+")
+                      , socket
+                      , per_node
+                      )
+         };
       gspc::worker_description const wd (input);
       gspc::worker_description const expected
         { identifiers
         , per_node
         , 0
         , 0
-        , {socket}
-        , {}
+        , std::make_optional (socket)
+        , std::nullopt
         };
 
       BOOST_REQUIRE_EQUAL (wd, expected);
@@ -222,20 +209,20 @@ namespace fhg
       auto const per_node (fhg::util::testing::random<std::size_t>{}());
       auto const max_nodes (fhg::util::testing::random<std::size_t>{}());
       auto const input
-        (str ( boost::format ("%1%:%2%x%3%")
-             % fhg::util::join (identifiers, "+")
-             % per_node
-             % max_nodes
-             )
-        );
+        { fmt::format ( "{}:{}x{}"
+                      , fhg::util::join (identifiers, "+")
+                      , per_node
+                      , max_nodes
+                      )
+         };
       gspc::worker_description const wd (input);
       gspc::worker_description const expected
         { identifiers
         , per_node
         , max_nodes
         , 0
-        , {}
-        , {}
+        , std::nullopt
+        , std::nullopt
         };
 
       BOOST_REQUIRE_EQUAL (wd, expected);
@@ -247,20 +234,20 @@ namespace fhg
       auto const per_node (fhg::util::testing::random<std::size_t>{}());
       auto const shm_size (fhg::util::testing::random<std::size_t>{}());
       auto const input
-        (str ( boost::format ("%1%:%2%,%3%")
-             % fhg::util::join (identifiers, "+")
-             % per_node
-             % shm_size
-             )
-        );
+        { fmt::format ( "{}:{},{}"
+                      , fhg::util::join (identifiers, "+")
+                      , per_node
+                      , shm_size
+                      )
+         };
       gspc::worker_description const wd (input);
       gspc::worker_description const expected
         { identifiers
         , per_node
         , 0
         , shm_size
-        , {}
-        , {}
+        , std::nullopt
+        , std::nullopt
         };
 
       BOOST_REQUIRE_EQUAL (wd, expected);
@@ -272,20 +259,20 @@ namespace fhg
       auto const per_node (fhg::util::testing::random<std::size_t>{}());
       auto const port (fhg::util::testing::random<unsigned short>{}());
       auto const input
-        (str ( boost::format ("%1%:%2%/%3%")
-             % fhg::util::join (identifiers, "+")
-             % per_node
-             % port
-             )
-        );
+        { fmt::format ( "{}:{}/{}"
+                      , fhg::util::join (identifiers, "+")
+                      , per_node
+                      , port
+                      )
+         };
       gspc::worker_description const wd (input);
       gspc::worker_description const expected
         { identifiers
         , per_node
         , 0
         , 0
-        , {}
-        , {port}
+        , std::nullopt
+        , std::make_optional (port)
         };
 
       BOOST_REQUIRE_EQUAL (wd, expected);
@@ -330,8 +317,8 @@ namespace fhg
         , per_node
         , _max_nodes ? max_nodes : 0
         , _shm_size ? shm_size : 0
-        , boost::make_optional (_socket, socket)
-        , boost::make_optional (_port, port)
+        , _socket ? std::make_optional (socket) : std::nullopt
+        , _port ? std::make_optional (port) : std::nullopt
         };
     }
 
@@ -354,8 +341,8 @@ namespace fhg
         , _per_node ? random_num() : 1
         , _max_nodes ? random_num() : 0
         , _shm_size ? random_num() : 0
-        , boost::make_optional (_socket, random_num())
-        , boost::make_optional (_port, random_port())
+        , _socket ? std::make_optional (random_num()) : std::nullopt
+        , _port ? std::make_optional (random_port()) : std::nullopt
         );
 
       BOOST_REQUIRE_EQUAL (wd, gspc::worker_description (to_string (wd)));

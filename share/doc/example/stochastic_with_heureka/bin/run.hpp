@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -6,12 +6,12 @@
 #include <we/type/bytearray.hpp>
 #include <we/type/value.hpp>
 
-#include <boost/filesystem/path.hpp>
-#include <boost/optional.hpp>
 #include <boost/program_options.hpp>
 
+#include <filesystem>
 #include <functional>
 #include <map>
+#include <optional>
 #include <string>
 
 namespace stochastic_with_heureka
@@ -43,10 +43,10 @@ namespace stochastic_with_heureka
   workflow_result run
     ( int argc
     , char** argv
-    , ::boost::optional<::boost::program_options::options_description>
-    , std::function< ::boost::filesystem::path
+    , std::optional<::boost::program_options::options_description>
+    , std::function< std::filesystem::path
                        ( ::boost::program_options::variables_map const&
-                       , ::boost::filesystem::path installation_dir
+                       , std::filesystem::path installation_dir
                        )
                    > implementation
     , std::function< we::type::bytearray
@@ -57,7 +57,7 @@ namespace stochastic_with_heureka
   workflow_result run
     ( int argc
     , char** argv
-    , ::boost::optional<::boost::program_options::options_description>
+    , std::optional<::boost::program_options::options_description>
     , std::string const implementation
     , std::function< we::type::bytearray
                      (::boost::program_options::variables_map const&)

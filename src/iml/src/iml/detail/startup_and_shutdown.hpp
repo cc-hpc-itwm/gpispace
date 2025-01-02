@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -10,10 +10,10 @@
 #include <iml/rif/protocol.hpp>
 
 #include <boost/filesystem/path.hpp>
-#include <boost/optional.hpp>
 
 #include <chrono>
 #include <mutex>
+#include <optional>
 #include <ostream>
 #include <string>
 #include <unordered_map>
@@ -44,7 +44,7 @@ namespace iml
       ProcessesStorage& operator= (ProcessesStorage&&) = delete;
 
       void store (rif::EntryPoint const&, std::string const& name, pid_t);
-      ::boost::optional<pid_t> pidof
+      std::optional<pid_t> pidof
         (rif::EntryPoint const&, std::string const& name);
 
       void startup

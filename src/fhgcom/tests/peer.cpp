@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <fhgcom/channel.hpp>
@@ -35,6 +35,7 @@
 #include <string>
 #include <thread>
 #include <utility>
+#include <variant>
 #include <vector>
 
 BOOST_TEST_DECORATOR (*::boost::unit_test::timeout (30))
@@ -364,7 +365,7 @@ BOOST_DATA_TEST_CASE
   auto const payload (fhg::util::testing::random<std::string>{}());
 
   using Received
-    = ::boost::variant<::boost::system::error_code, fhg::com::message_t>;
+    = std::variant<::boost::system::error_code, fhg::com::message_t>;
 
   // No lock: async_recv loop is single threaded.
   std::vector<Received> receive_results;
@@ -435,7 +436,7 @@ BOOST_DATA_TEST_CASE
   }
   for (auto const& result : receive_results)
   {
-    fhg::util::visit<void>
+    fhg::util::visit
       ( result
       , [] (::boost::system::error_code const& ec)
         {
@@ -470,11 +471,11 @@ BOOST_AUTO_TEST_CASE (require_certificates_location_to_exist)
     ( peer_t peer_1 ( std::make_unique<::boost::asio::io_service>()
                     , host_t ("localhost")
                     , port_t (0)
-                    , fhg::com::Certificates
+                    , gspc::Certificates
                         {::boost::filesystem::path (empty_directory) / "nonexist"}
                     )
-    , ::boost::filesystem::filesystem_error
-    , [&] (::boost::filesystem::filesystem_error const& exc)
+    , std::filesystem::filesystem_error
+    , [&] (std::filesystem::filesystem_error const& exc)
       {
         return std::string (exc.what()).find
           ("No such file or directory") != std::string::npos;
@@ -493,10 +494,10 @@ BOOST_AUTO_TEST_CASE
     ( peer_t peer_1 ( std::make_unique<::boost::asio::io_service>()
                     , host_t ("localhost")
                     , port_t (0)
-                    , fhg::com::Certificates {empty_directory}
+                    , gspc::Certificates {empty_directory}
                     )
-    , ::boost::filesystem::filesystem_error
-    , [&] (::boost::filesystem::filesystem_error const& exc)
+    , std::filesystem::filesystem_error
+    , [&] (std::filesystem::filesystem_error const& exc)
       {
         return std::string (exc.what()).find
           ("No such file or directory") != std::string::npos;
@@ -520,7 +521,7 @@ BOOST_AUTO_TEST_CASE (using_empty_Certificates_throws)
     ( peer_t peer_1 ( std::make_unique<::boost::asio::io_service>()
                     , host_t ("localhost")
                     , port_t (0)
-                    , fhg::com::Certificates {certificates_directory}
+                    , gspc::Certificates {certificates_directory}
                     )
     , std::runtime_error
     , [&] (std::runtime_error const& exc)

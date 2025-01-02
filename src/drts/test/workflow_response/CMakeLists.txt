@@ -49,6 +49,7 @@ fhg_add_test (NAME drts_workflow_response_workflow_response_fails
             fhg-util
             Boost::program_options
             Boost::filesystem
+            fmt
   REQUIRES_INSTALLATION
   START_SCOPED_RIF
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"

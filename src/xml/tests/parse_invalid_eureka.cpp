@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -12,6 +12,7 @@
 #include <util-generic/testing/random.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
+#include <fmt/core.h>
 #include <cstdio>
 #include <sstream>
 #include <string>
@@ -34,21 +35,21 @@ BOOST_AUTO_TEST_CASE (no_output_port_for_eureka)
     (fhg::util::testing::random_identifier_without_leading_underscore());
 
   std::string const input
-    ( ( ::boost::format (R"EOS(
+    ( fmt::format (R"EOS(
 <defun name="foo">
  <net>
-  <transition name="%1%">
+  <transition name="{0}">
     <defun>
-      <in name="%2%" type="set"/>
+      <in name="{1}" type="set"/>
       <expression/>
     </defun>
-    <connect-eureka port="%2%"/>
+    <connect-eureka port="{1}"/>
   </transition>
  </net>
-</defun>)EOS")
-      % trans_name
-      % port_name
-      ).str()
+</defun>)EOS"
+      , trans_name
+      , port_name
+      )
     );
 
   fhg::util::testing::require_exception_with_message
@@ -59,13 +60,13 @@ BOOST_AUTO_TEST_CASE (no_output_port_for_eureka)
         auto function (xml::parse::just_parse (state, input_stream));
         xml::parse::post_processing_passes (function, &state);
       }
-    , ::boost::format
-        ( "ERROR: connect-eureka to non-existent output port %1%"
-          " in transition %2% at %3%"
+    , fmt::format
+        ( "ERROR: connect-eureka to non-existent output port {}"
+          " in transition {} at {}"
+        , port_name
+        , trans_name
+        , "[<stdin>:9:5]"
         )
-    % port_name
-    % trans_name
-    % "[<stdin>:9:5]"
     );
 }
 
@@ -80,22 +81,22 @@ BOOST_AUTO_TEST_CASE (output_port_for_eureka_type_mismatch)
   std::string const type_name ("list");
 
   std::string const input
-    ( ( ::boost::format (R"EOS(
+    ( fmt::format (R"EOS(
 <defun name="foo">
  <net>
-  <transition name="%1%">
+  <transition name="{0}">
     <defun>
-      <out name="%2%" type="%3%"/>
+      <out name="{1}" type="{2}"/>
       <expression/>
     </defun>
-    <connect-eureka port="%2%"/>
+    <connect-eureka port="{1}"/>
   </transition>
  </net>
-</defun>)EOS")
-      % trans_name
-      % port_name
-      % type_name
-      ).str()
+</defun>)EOS"
+      , trans_name
+      , port_name
+      , type_name
+      )
     );
 
   fhg::util::testing::require_exception_with_message
@@ -106,14 +107,14 @@ BOOST_AUTO_TEST_CASE (output_port_for_eureka_type_mismatch)
         auto function (xml::parse::just_parse (state, input_stream));
         xml::parse::post_processing_passes (function, &state);
       }
-    , ::boost::format
-        ( "ERROR: connect-eureka output port %1%"
+    , fmt::format
+        ( "ERROR: connect-eureka output port {}"
           " is not of type \"set\""
-          " in transition %2% at %3%"
+          " in transition {} at {}"
+        , port_name
+        , trans_name
+        , "[<stdin>:9:5]"
         )
-    % port_name
-    % trans_name
-    % "[<stdin>:9:5]"
     );
 }
 
@@ -145,36 +146,36 @@ BOOST_FIXTURE_TEST_CASE ( mismatching_eureka_for_modules_with_target
   auto const eureka_a (eureka_groups());
   auto const eureka_b (eureka_groups());
 
-  for ( auto format
-      : { ::boost::format (R"EOS( eureka-group="%1%">)EOS")
-        , ::boost::format (R"EOS(><eureka-group>"%1%"</eureka-group>)EOS")
+  for ( auto format_string
+      : { R"EOS( eureka-group="{}">)EOS"
+        , R"EOS(><eureka-group>"{}"</eureka-group>)EOS"
         }
       )
   {
     std::string const input
-      ( ( ::boost::format (R"EOS(
+      ( fmt::format (R"EOS(
 <defun name="foo">
  <net>
   <transition name="foo">
     <defun>
       <modules>
         <preferences>
-          <target>%2%</target>
-          <target>%3%</target>
+          <target>{1}</target>
+          <target>{2}</target>
         </preferences>
-        <module name="%1%" function="func()" target="%2%"%4%</module>
-        <module name="%1%" function="func()" target="%3%"%5%</module>
+        <module name="{0}" function="func()" target="{1}"{3}</module>
+        <module name="{0}" function="func()" target="{2}"{4}</module>
       </modules>
     </defun>
   </transition>
  </net>
-</defun>)EOS")
-        % mod_name
-        % target_a
-        % target_b
-        % str (format % eureka_a)
-        % str (format % eureka_b)
-        ).str()
+</defun>)EOS"
+        , mod_name
+        , target_a
+        , target_b
+        , fmt::format (format_string, eureka_a)
+        , fmt::format (format_string, eureka_b)
+        )
       );
 
     fhg::util::testing::require_exception_with_message
@@ -184,12 +185,12 @@ BOOST_FIXTURE_TEST_CASE ( mismatching_eureka_for_modules_with_target
           std::istringstream input_stream (input);
           xml::parse::just_parse (state_empty, input_stream);
         }
-      , ::boost::format
-          ( "ERROR: mismatching eureka group for module '%1%'"
-            " in multi-module transition at %2%"
+      , fmt::format
+          ( "ERROR: mismatching eureka group for module '{}'"
+            " in multi-module transition at {}"
+          , (mod_name + "_" + target_a)
+          , "[<stdin>:5:5]"
           )
-      % (mod_name + "_" + target_a)
-      % "[<stdin>:5:5]"
       );
   }
 }
@@ -212,36 +213,36 @@ BOOST_DATA_TEST_CASE ( missing_eureka_for_modules_with_target
   std::string const eureka_b
     (eureka_missing_on_first ? eureka : "");
 
-  for ( auto format
-      : { ::boost::format (R"EOS( eureka-group="%1%">)EOS")
-        , ::boost::format (R"EOS(><eureka-group>"%1%"</eureka-group>)EOS")
+  for ( auto format_string
+      : { R"EOS( eureka-group="{}">)EOS"
+        , R"EOS(><eureka-group>"{}"</eureka-group>)EOS"
         }
       )
   {
     std::string const input
-      ( ( ::boost::format (R"EOS(
+      ( fmt::format (R"EOS(
 <defun name="foo">
  <net>
   <transition name="foo">
     <defun>
       <modules>
         <preferences>
-          <target>%2%</target>
-          <target>%3%</target>
+          <target>{1}</target>
+          <target>{2}</target>
         </preferences>
-        <module name="%1%" function="func()" target="%2%"%4%</module>
-        <module name="%1%" function="func()" target="%3%"%5%</module>
+        <module name="{0}" function="func()" target="{1}"{3}</module>
+        <module name="{0}" function="func()" target="{2}"{4}</module>
       </modules>
     </defun>
   </transition>
  </net>
-</defun>)EOS")
-        % mod_name
-        % target_a
-        % target_b
-        % str (format % eureka_a)
-        % str (format % eureka_b)
-        ).str()
+</defun>)EOS"
+        , mod_name
+        , target_a
+        , target_b
+        , fmt::format (format_string, eureka_a)
+        , fmt::format (format_string, eureka_b)
+        )
       );
 
     fhg::util::testing::require_exception_with_message
@@ -251,12 +252,12 @@ BOOST_DATA_TEST_CASE ( missing_eureka_for_modules_with_target
           std::istringstream input_stream (input);
           xml::parse::just_parse (state, input_stream);
         }
-      , ::boost::format
-          ( "ERROR: mismatching eureka group for module '%1%'"
-            " in multi-module transition at %2%"
+      , fmt::format
+          ( "ERROR: mismatching eureka group for module '{}'"
+            " in multi-module transition at {}"
+          , (mod_name + "_" + target_a)
+          , "[<stdin>:5:5]"
           )
-      % (mod_name + "_" + target_a)
-      % "[<stdin>:5:5]"
       );
   }
 }
@@ -270,17 +271,17 @@ BOOST_AUTO_TEST_CASE (throw_when_eureka_attribute_and_tag_both_are_given)
   auto const eureka_tag (random_identifier_without_leading_underscore());
 
   std::string const input
-    ( ( ::boost::format (R"EOS(
+    ( fmt::format (R"EOS(
 <defun>
-  <module name="%1%" function="%2%()" eureka-group="%3%">
-    <eureka-group>%4%</eureka-group>
+  <module name="{}" function="{}()" eureka-group="{}">
+    <eureka-group>{}</eureka-group>
   </module>
-</defun>)EOS")
-      % module_name
-      % random_identifier_without_leading_underscore()
-      % eureka_attribute
-      % eureka_tag
-      ).str()
+</defun>)EOS"
+      , module_name
+      , random_identifier_without_leading_underscore()
+      , eureka_attribute
+      , eureka_tag
+      )
     );
 
   fhg::util::testing::require_exception_with_message
@@ -290,18 +291,18 @@ BOOST_AUTO_TEST_CASE (throw_when_eureka_attribute_and_tag_both_are_given)
         std::istringstream input_stream (input);
         xml::parse::just_parse (state, input_stream);
       }
-    , ::boost::format
+    , fmt::format
         ( "ERROR:"
           " both are given:"
-          " the eureka attribute '%2%' at '%3%'"
-          " and the eureka tag '%4%' at '%5%'"
-          " in module '%1%'"
+          " the eureka attribute '{1}' at '{2}'"
+          " and the eureka tag '{3}' at '{4}'"
+          " in module '{0}'"
           " Define only the attribute or only the tag."
+        , module_name
+        , eureka_attribute
+        , "[<stdin>:3:3]"
+        , eureka_tag
+        , "[<stdin>:4:5]"
         )
-    % module_name
-    % eureka_attribute
-    % "[<stdin>:3:3]"
-    % eureka_tag
-    % "[<stdin>:4:5]"
     );
 }

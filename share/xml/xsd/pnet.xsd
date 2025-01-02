@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- Copyright (C) 2023 Fraunhofer ITWM        -->
+<!-- Copyright (C) 2025 Fraunhofer ITWM        -->
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -331,6 +331,7 @@
         <xsd:element name="connect-read" type="connect_type"/>
         <xsd:element name="connect-response" type="connect_response_type"/>
         <xsd:element name="connect-eureka" type="connect_eureka_type"/>
+        <xsd:element name="connect-number-of-tokens" type="connect_type"/>
         <xsd:element name="place-map" type="place_map_type"/>
         <xsd:element name="condition" type="xsd:string"/>
       </xsd:choice>

@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -37,6 +37,8 @@
 
 #include <algorithm>
 #include <cctype>
+#include <filesystem>
+#include <fmt/core.h>
 #include <fstream>
 #include <map>
 #include <vector>
@@ -53,7 +55,7 @@ namespace
     if (!data)
     {
       throw std::runtime_error
-        ((::boost::format ("Could not open '%1%'") % data_file).str());
+        {fmt::format ("Could not open '{}'", data_file.string())};
     }
 
     std::vector<char> chunk (chunk_size);
@@ -164,8 +166,8 @@ BOOST_AUTO_TEST_CASE (share_example_map_transform_file)
     . add<test::option::gen::include> (test::source_directory (vm))
     );
 
-  ::boost::filesystem::path const implementation
-    ( ::boost::filesystem::canonical
+  std::filesystem::path const implementation
+    ( std::filesystem::canonical
       (vm.at (option_implementation).as<validators::executable>())
     );
   unsigned long const size_input

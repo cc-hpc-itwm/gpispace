@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -7,8 +7,6 @@
 #include <we/type/Activity.hpp>
 #include <we/type/net.hpp>
 #include <we/type/value/poke.hpp>
-
-#include <boost/range/adaptor/map.hpp>
 
 BOOST_AUTO_TEST_CASE (create_and_execute_cross_product)
 {
@@ -166,15 +164,11 @@ BOOST_AUTO_TEST_CASE (create_and_execute_cross_product)
     , std::list<pnet::type::value::value_type>
     > values_by_port_id;
 
-  for ( auto const& token
-      : net.get_token (pid_store) | ::boost::adaptors::map_values
-      )
+  for (auto const& [_ignore, token] : net.get_token (pid_store))
   {
     values_by_port_id[port_id_store_out_net].push_back (token);
   }
-  for ( auto const& token
-      : net.get_token (pid_pair) | ::boost::adaptors::map_values
-      )
+  for (auto const& [_ignore, token] : net.get_token (pid_pair))
   {
     values_by_port_id[port_id_pair_net].push_back (token);
   }

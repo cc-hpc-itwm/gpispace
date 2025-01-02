@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <fhg/util/parse/error.hpp>
@@ -14,7 +14,7 @@ namespace fhg
       namespace error
       {
         expected::expected (std::string const& what, position const& inp)
-          : generic (::boost::format ("expected '%1%'") % what, inp)
+          : generic {fmt::format ("expected '{}'", what), inp}
         {}
       }
     }

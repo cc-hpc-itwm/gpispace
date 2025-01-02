@@ -1,11 +1,10 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <map/interface.hpp>
 #include <map/transform_file/type.hpp>
 
-#include <boost/format.hpp>
-
+#include <fmt/core.h>
 #include <cctype>
 #include <fstream>
 #include <iostream>
@@ -28,17 +27,18 @@ void map_produce ( map::user_data_type const& user_data
   if (!stream)
   {
     throw std::runtime_error
-      ((::boost::format ("Could not open '%1%' for reading") % input).str());
+      {fmt::format ("Could not open '{}' for reading", input)};
   }
 
   if (!stream.seekg (id * buffer.second, stream.beg))
   {
     throw std::runtime_error
-      (( ::boost::format ("Could not seek to position '%2%' of '%1%'")
-       % input
-       % (id * buffer.second)
-       ).str()
-      );
+      { fmt::format
+          ( "Could not seek to position '{}' of '{}'"
+          , input
+          , (id * buffer.second)
+          )
+      };
   }
 
   if (!stream.read ( static_cast<char*> (buffer.first)
@@ -46,8 +46,7 @@ void map_produce ( map::user_data_type const& user_data
                    )
      )
   {
-    throw std::runtime_error
-      ((::boost::format ("Could not read from '%1%'") % input).str());
+    throw std::runtime_error {fmt::format ("Could not read from '{}'", input)};
   }
 }
 
@@ -62,11 +61,12 @@ void map_process
   if (input.second != output.second)
   {
     throw std::logic_error
-      ( ( ::boost::format ("input/output buffer sizes differ: %1% != %2%")
-        % input.second
-        % output.second
-        ).str()
-      );
+      { fmt::format
+          ( "input/output buffer sizes differ: {} != {}"
+          , input.second
+          , output.second
+          )
+      };
   }
 
   char const* const mem_input (static_cast<char const*> (input.first));
@@ -96,17 +96,18 @@ void map_consume ( map::user_data_type const& user_data
   if (!stream)
   {
     throw std::runtime_error
-      ((::boost::format ("Could not open '%1%' for writing") % output).str());
+      {fmt::format ("Could not open '{}' for writing", output)};
   }
 
   if (!stream.seekp (id * buffer.second, stream.beg))
   {
     throw std::runtime_error
-      (( ::boost::format ("Could not seek to position '%2%' of '%1%'")
-       % output
-       % (id * buffer.second)
-       ).str()
-      );
+      { fmt::format
+          ( "Could not seek to position '{}' of '{}'"
+          , id * buffer.second
+          , output
+          )
+      };
   }
 
   if (!stream.write ( static_cast<char const*> (buffer.first)
@@ -114,7 +115,6 @@ void map_consume ( map::user_data_type const& user_data
                     )
      )
   {
-    throw std::runtime_error
-      ((::boost::format ("Could not write to '%1%'") % output).str());
+    throw std::runtime_error {fmt::format ("Could not write to '{}'", output)};
   }
 }

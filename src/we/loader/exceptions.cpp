@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <we/loader/exceptions.hpp>
@@ -6,9 +6,10 @@
 #include <util-generic/hash/boost/filesystem/path.hpp>
 #include <util-generic/print_container.hpp>
 
-#include <boost/format.hpp>
-
+#include <FMT/boost/filesystem/path.hpp>
+#include <FMT/util-generic/join.hpp>
 #include <algorithm>
+#include <fmt/core.h>
 #include <iterator>
 
 namespace we
@@ -20,11 +21,11 @@ namespace we
         , std::string const& reason
         )
       : std::runtime_error
-          ( ( ::boost::format ("could not load module '%1%': %2%")
-            % file
-            % reason
-            ).str()
-          )
+          { fmt::format ( "could not load module '{0}': {1}"
+                        , file
+                        , reason
+                        )
+          }
     {}
 
     module_not_found::module_not_found
@@ -32,11 +33,11 @@ namespace we
         , std::string const& search_path
         )
       : std::runtime_error
-          ( ( ::boost::format ("module '%1%' not found in '%2%'")
-            % file
-            % search_path
-            ).str()
-          )
+          { fmt::format ( "module '{0}' not found in '{1}'"
+                        , file
+                        , search_path
+                        )
+          }
     {}
 
     function_not_found::function_not_found
@@ -44,11 +45,11 @@ namespace we
         , std::string const& name
         )
       : std::runtime_error
-          ( ( ::boost::format ("function %1%::%2% not found")
-            % module
-            % name
-            ).str()
-          )
+          { fmt::format ( "function {0}::{1} not found"
+                        , module
+                        , name
+                        )
+          }
     {}
 
     duplicate_function::duplicate_function
@@ -56,11 +57,11 @@ namespace we
         , std::string const& name
         )
       : std::runtime_error
-          ( ( ::boost::format ("duplicate function %1%::%2%")
-            % module
-            % name
-            ).str()
-          )
+          { fmt::format ( "duplicate function {0}::{1}"
+                        , module
+                        , name
+                        )
+          }
     {}
 
     namespace
@@ -91,13 +92,12 @@ namespace we
         , std::vector<::boost::filesystem::path> left_over
         )
       : std::runtime_error
-          ( ( ::boost::format ( "module '%1%' does not properly unload on dlclose"
-                              ", leaking %2% loaded in the process"
-                            )
-            % module
-            % fhg::util::print_container ("{", ", ", "}", left_over)
-            ).str()
-          )
+          { fmt::format ( "module '{0}' does not properly unload on dlclose"
+                          ", leaking {1} loaded in the process"
+                        , module
+                        , fhg::util::print_container ("{", ", ", "}", left_over)
+                        )
+          }
     {}
 
     function_does_not_unload::function_does_not_unload
@@ -115,15 +115,14 @@ namespace we
         , std::vector<::boost::filesystem::path> left_over
         )
       : std::runtime_error
-          ( ( ::boost::format ( "function %1%::%2% dynamically opened libraries "
-                              "but did not properly unload, leaking %3% "
-                              "loaded in the process"
-                            )
-            % module
-            % name
-            % fhg::util::print_container ("{", ", ", "}", left_over)
-            ).str()
-          )
+          { fmt::format ( "function {0}::{1} dynamically opened libraries "
+                            "but did not properly unload, leaking {2} "
+                            "loaded in the process"
+                        , module
+                        , name
+                        , fhg::util::print_container ("{", ", ", "}", left_over)
+                        )
+          }
     {}
   }
 }

@@ -1,10 +1,9 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
 
-#include <boost/format.hpp>
-
+#include <fmt/core.h>
 #include <stdexcept>
 
 namespace expr
@@ -60,7 +59,6 @@ namespace expr
       {
       public:
         type_error (std::string const&);
-        type_error (::boost::format const&);
       };
 
       class negative_exponent : public std::runtime_error
@@ -75,9 +73,8 @@ namespace expr
       public:
         square_root_for_negative_argument (T value)
           : std::runtime_error
-            (( ::boost::format ("square root for negative argument '%1%'") % value
-             ).str()
-            )
+            { fmt::format ("square root for negative argument '{}'", value)
+            }
           , _value (value)
         {}
 
@@ -91,10 +88,8 @@ namespace expr
       public:
         log_for_nonpositive_argument (T value)
           : std::runtime_error
-            (( ::boost::format ("logarithm for nonpositive argument '%1%'")
-             % value
-             ).str()
-            )
+            { fmt::format ("logarithm for nonpositive argument '{}'", value)
+            }
           , _value (value)
         {}
 
@@ -109,7 +104,6 @@ namespace expr
       {
       public:
         error (std::string const&);
-        error (::boost::format const&);
       };
     }
   }

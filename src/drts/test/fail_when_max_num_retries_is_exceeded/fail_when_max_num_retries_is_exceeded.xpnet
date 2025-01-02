@@ -1,4 +1,4 @@
-<!-- Copyright (C) 2023 Fraunhofer ITWM        -->
+<!-- Copyright (C) 2025 Fraunhofer ITWM        -->
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 
 <defun name="test_fail_when_max_num_retries_is_exceeded">
@@ -23,7 +23,7 @@
     <cinclude href="chrono"/>
     <cinclude href="vector"/>
     <cinclude href="thread"/>
-    <cxx flag="--std=c++11"/>
+    <cxx flag="--std=c++17"/>
     <code><![CDATA[
 
       fhg::util::scoped_boost_asio_io_service_with_threads io_service (1);

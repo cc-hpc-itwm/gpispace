@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <we/test/buffer_alignment/nets_using_buffers.hpp>
@@ -7,9 +7,6 @@
 
 #include <util-generic/print_container.hpp>
 #include <util-generic/testing/random.hpp>
-
-#include <boost/align/is_aligned.hpp>
-#include <boost/format.hpp>
 
 #include <algorithm>
 #include <list>

@@ -1,0 +1,6 @@
+add_subdirectory (co_generate)
+add_subdirectory (condition_and_number_on_the_same_place)
+add_subdirectory (out_many)
+add_subdirectory (plugin_put_token_updates_the_number_of_tokens)
+add_subdirectory (put_token_updates_the_number_of_tokens)
+add_subdirectory (reduce_after_process)

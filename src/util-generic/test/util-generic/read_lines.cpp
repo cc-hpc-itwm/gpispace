@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -11,6 +11,7 @@
 #include <util-generic/testing/printer/vector.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
+#include <fmt/core.h>
 #include <fstream>
 #include <functional>
 
@@ -59,18 +60,26 @@ BOOST_AUTO_TEST_CASE (read_lines_check_throw_on_no_such_file_or_directory)
   BOOST_REQUIRE (!::boost::filesystem::exists (_));
 
   fhg::util::testing::require_exception
-    ( std::bind (fhg::util::read_lines, _)
+    ( [&]
+      {
+        return fhg::util::read_lines (_);
+      }
     , std::runtime_error
-        ( ( ::boost::format ("could not open file '%1%' for reading: %2%")
-          % _.string()
-          % "No such file or directory"
-          ).str()
-        )
+        { fmt::format ( "could not open file '{}' for reading: {}"
+                      , _.string()
+                      , "No such file or directory"
+                      )
+        }
     );
 }
 
 BOOST_AUTO_TEST_CASE (read_lines_check_throw_on_permission_denied)
 {
+  if (fhg::util::syscall::getuid() == uid_t {0})
+  {
+    return;
+  }
+
   ::boost::filesystem::path const _
     (::boost::filesystem::unique_path ("non-readable-%%%%-%%%%-%%%%-%%%%"));
 
@@ -82,12 +91,15 @@ BOOST_AUTO_TEST_CASE (read_lines_check_throw_on_permission_denied)
   BOOST_REQUIRE (::boost::filesystem::exists (_));
 
   fhg::util::testing::require_exception
-    ( std::bind (fhg::util::read_lines, _)
+    ( [&]
+      {
+        return fhg::util::read_lines (_);
+      }
     , std::runtime_error
-        ( ( ::boost::format ("could not open file '%1%' for reading: %2%")
-          % _.string()
-          % "Permission denied"
-          ).str()
-        )
+        { fmt::format ( "could not open file '{}' for reading: {}"
+                      , _.string()
+                      , "Permission denied"
+                      )
+        }
     );
 }

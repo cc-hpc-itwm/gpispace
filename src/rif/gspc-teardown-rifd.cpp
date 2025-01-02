@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <rif/entry_point.hpp>
@@ -13,9 +13,10 @@
 
 #include <rif/strategy/meta.hpp>
 
-#include <boost/format.hpp>
 #include <boost/program_options.hpp>
 
+#include <FMT/util-generic/join.hpp>
+#include <fmt/core.h>
 #include <iostream>
 #include <vector>
 
@@ -87,20 +88,23 @@ try
   if (std::find (strategies.begin(), strategies.end(), strategy) == strategies.end())
   {
     throw std::invalid_argument
-      (( ::boost::format ("invalid argument '%1%' for --%2%: one of %3%")
-       % strategy
-       % option::strategy
-       % fhg::util::join (strategies, ", ")
-       ).str()
-      );
+      { fmt::format
+          ( "invalid argument '{}' for --{}: one of {}"
+          , strategy
+          , option::strategy
+          , fhg::util::join (strategies, ", ")
+          )
+      };
   }
 
   std::unordered_map<std::string, fhg::rif::entry_point> entry_points;
 
   for ( std::string line
       : fhg::util::read_lines
-          ( vm.at (option::entry_points_file)
-          . as<fhg::util::boost::program_options::existing_path>()
+          ( static_cast<std::filesystem::path>
+            ( vm.at (option::entry_points_file)
+            . as<fhg::util::boost::program_options::existing_path>()
+            )
           )
       )
   {

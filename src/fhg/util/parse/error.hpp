@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -7,7 +7,7 @@
 
 #include <fhg/util/parse/position.hpp>
 
-#include <boost/format.hpp>
+#include <fmt/core.h>
 
 namespace fhg
 {
@@ -23,9 +23,6 @@ namespace fhg
           generic (std::string const& msg, position const& inp)
             : std::runtime_error (inp.error_message (msg))
           {}
-          generic (::boost::format const& msg, position const& inp)
-            : std::runtime_error (inp.error_message (msg.str()))
-          {}
         };
 
         class expected : public generic
@@ -39,11 +36,12 @@ namespace fhg
         {
         public:
           value_too_big (From const& f, position const& pos)
-            : generic ( ::boost::format ("value %1% larger than maximum %2%")
-                      % f
-                      % std::numeric_limits<To>::max()
+            : generic { fmt::format ( "value {} larger than maximum {}"
+                                    , f
+                                    , std::numeric_limits<To>::max()
+                                    )
                       , pos
-                      )
+                      }
           {}
         };
 
@@ -52,13 +50,13 @@ namespace fhg
         {
         public:
           unexpected_digit (position const& pos)
-            : generic ( ::boost::format
-                        ( "unexpected digit"
-                        " (parsed value would be larger than %1%)"
-                        )
-                      % std::numeric_limits<I>::max()
-                      , pos
-                      )
+            : generic
+              { fmt::format
+                ( "unexpected digit (parsed value would be larger than {})"
+                , std::numeric_limits<I>::max()
+                )
+              , pos
+              }
           {}
         };
       }

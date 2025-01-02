@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -15,8 +15,7 @@
 #include <util-generic/testing/random.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
-#include <boost/format.hpp>
-
+#include <fmt/core.h>
 #include <string>
 
 namespace
@@ -43,13 +42,13 @@ BOOST_AUTO_TEST_CASE (memory_buffer_without_size_throws)
   std::string const name (random_identifier_with_valid_prefix());
 
   std::string const input
-    ( ( ::boost::format (R"EOS(
+    ( fmt::format (R"EOS(
 <defun>
-  <memory-buffer name="%1%"/>
+  <memory-buffer name="{0}"/>
   <expression/>
-</defun>)EOS")
-      % name
-      ).str()
+</defun>)EOS"
+      , name
+      )
     );
 
     xml::parse::state::type state;
@@ -60,9 +59,10 @@ BOOST_AUTO_TEST_CASE (memory_buffer_without_size_throws)
       { std::istringstream input_stream (input);
         xml::parse::just_parse (state, input_stream);
       }
-      , ::boost::format ("ERROR: memory-buffer '%1%' without size, at %2%")
-      % name
-      % "[<stdin>:3:3]"
+      , fmt::format ( "ERROR: memory-buffer '{0}' without size, at {1}"
+                    , name
+                    , "[<stdin>:3:3]"
+                    )
       );
 }
 
@@ -74,16 +74,16 @@ BOOST_AUTO_TEST_CASE
   std::string const default_alignment ("1UL");
 
   std::string const input
-    ( ( ::boost::format (R"EOS(
+    ( fmt::format (R"EOS(
 <defun>
-  <memory-buffer name="%1%"><size>%2%</size></memory-buffer>
-  <module name="%3%" function="%4%"/>
-</defun>)EOS")
-      % name
-      % size
-      % fhg::util::testing::random_identifier()
-      % fhg::util::testing::random_identifier()
-      ).str()
+  <memory-buffer name="{0}"><size>{1}</size></memory-buffer>
+  <module name="{2}" function="{3}"/>
+</defun>)EOS"
+      , name
+      , size
+      , fhg::util::testing::random_identifier()
+      , fhg::util::testing::random_identifier()
+      )
     );
 
   std::istringstream input_stream (input);
@@ -107,14 +107,14 @@ BOOST_AUTO_TEST_CASE (duplicate_memory_buffer_throws)
   std::string const name (random_identifier_with_valid_prefix());
 
   std::string const input
-    ( ( ::boost::format (R"EOS(
+    ( fmt::format (R"EOS(
 <defun>
-  <memory-buffer name="%1%"><size/></memory-buffer>
-  <memory-buffer name="%1%"><size/></memory-buffer>
+  <memory-buffer name="{0}"><size/></memory-buffer>
+  <memory-buffer name="{0}"><size/></memory-buffer>
   <expression/>
-</defun>)EOS")
-      % name
-      ).str()
+</defun>)EOS"
+      , name
+      )
     );
 
     xml::parse::state::type state;
@@ -125,12 +125,12 @@ BOOST_AUTO_TEST_CASE (duplicate_memory_buffer_throws)
       { std::istringstream input_stream (input);
         xml::parse::just_parse (state, input_stream);
       }
-      , ::boost::format ("ERROR: duplicate memory-buffer '%1%'"
-                      " at %2%, earlier definition is at %3%"
-                      )
-      % name
-      % "[<stdin>:4:3]"
-      % "[<stdin>:3:3]"
+      , fmt::format ( "ERROR: duplicate memory-buffer '{0}'"
+                      " at {1}, earlier definition is at {2}"
+                    , name
+                    , "[<stdin>:4:3]"
+                    , "[<stdin>:3:3]"
+                    )
       );
 }
 
@@ -140,16 +140,16 @@ BOOST_AUTO_TEST_CASE (memory_buffer_is_stored_in_function)
   std::string const size (fhg::util::testing::random_content_string());
 
   std::string const input
-    ( ( ::boost::format (R"EOS(
+    ( fmt::format (R"EOS(
 <defun>
-  <memory-buffer name="%1%"><size>%2%</size></memory-buffer>
-  <module name="%3%" function="%4%"/>
-</defun>)EOS")
-      % name
-      % size
-      % fhg::util::testing::random_identifier()
-      % fhg::util::testing::random_identifier()
-      ).str()
+  <memory-buffer name="{0}"><size>{1}</size></memory-buffer>
+  <module name="{2}" function="{3}"/>
+</defun>)EOS"
+      , name
+      , size
+      , fhg::util::testing::random_identifier()
+      , fhg::util::testing::random_identifier()
+      )
     );
 
     std::istringstream input_stream (input);
@@ -176,19 +176,19 @@ BOOST_AUTO_TEST_CASE (memory_buffers_are_stored_in_function)
   std::string const size_2 (fhg::util::testing::random_content_string());
 
   std::string const input
-    ( ( ::boost::format (R"EOS(
+    ( fmt::format (R"EOS(
 <defun>
-  <memory-buffer name="%1%"><size>%2%</size></memory-buffer>
-  <memory-buffer name="%3%"><size>%4%</size></memory-buffer>
-  <module name="%5%" function="%6%"/>
-</defun>)EOS")
-      % name_1
-      % size_1
-      % name_2
-      % size_2
-      % fhg::util::testing::random_identifier()
-      % fhg::util::testing::random_identifier()
-      ).str()
+  <memory-buffer name="{0}"><size>{1}</size></memory-buffer>
+  <memory-buffer name="{2}"><size>{3}</size></memory-buffer>
+  <module name="{4}" function="{5}"/>
+</defun>)EOS"
+      , name_1
+      , size_1
+      , name_2
+      , size_2
+      , fhg::util::testing::random_identifier()
+      , fhg::util::testing::random_identifier()
+      )
     );
 
     std::istringstream input_stream (input);
@@ -214,15 +214,15 @@ namespace
     std::string const name_function (fhg::util::testing::random_identifier());
 
     std::string const input
-      ( ( ::boost::format (R"EOS(
-<defun name="%1%">
-  <memory-buffer name="%3%"><size/></memory-buffer>
-  <%2%/>
-</defun>)EOS")
-        % name_function
-        % tag
-        % random_identifier_with_valid_prefix()
-        ).str()
+      ( fmt::format (R"EOS(
+<defun name="{0}">
+  <memory-buffer name="{2}"><size/></memory-buffer>
+  <{1}/>
+</defun>)EOS"
+        , name_function
+        , tag
+        , random_identifier_with_valid_prefix()
+        )
       );
 
     xml::parse::state::type state;
@@ -233,16 +233,16 @@ namespace
       { std::istringstream input_stream (input);
         xml::parse::just_parse (state, input_stream);
       }
-      , ::boost::format ("ERROR: non module call function ' %1%'"
-                      " with %2% memory buffer%3%"
-                      ", function defined at %4%"
-                      ", memory buffer%3% defined at %5%"
-                      )
-      %  name_function
-      % "1"
-      % ""
-      % "[<stdin>:2:1]"
-      % "{[<stdin>:3:3]}"
+      , fmt::format ( "ERROR: non module call function '{0}'"
+                      " with {1} memory buffer{2}"
+                      ", function defined at {3}"
+                      ", memory buffer{2} defined at {4}"
+                    ,  name_function
+                    , "1"
+                    , ""
+                    , "[<stdin>:2:1]"
+                    , "{[<stdin>:3:3]}"
+                    )
       );
   }
 
@@ -253,17 +253,17 @@ namespace
     std::string const name_function (fhg::util::testing::random_identifier());
 
     std::string const input
-      ( ( ::boost::format (R"EOS(
-<defun name="%1%">
-  <memory-buffer name="%3%"><size/></memory-buffer>
-  <memory-buffer name="%4%"><size/></memory-buffer>
-  <%2%/>
-</defun>)EOS")
-        % name_function
-        % tag
-        % buffer_names()
-        % buffer_names()
-        ).str()
+      ( fmt::format (R"EOS(
+<defun name="{0}">
+  <memory-buffer name="{2}"><size/></memory-buffer>
+  <memory-buffer name="{3}"><size/></memory-buffer>
+  <{1}/>
+</defun>)EOS"
+        , name_function
+        , tag
+        , buffer_names()
+        , buffer_names()
+        )
       );
 
     xml::parse::state::type state;
@@ -274,26 +274,26 @@ namespace
       { std::istringstream input_stream (input);
         xml::parse::just_parse (state, input_stream);
       }
-      , { ::boost::format ("ERROR: non module call function ' %1%'"
-                        " with %2% memory buffer%3%"
-                        ", function defined at %4%"
-                        ", memory buffer%3% defined at %5%"
-                        )
-        %  name_function
-        % "2"
-        % "s"
-        % "[<stdin>:2:1]"
-        % "{[<stdin>:3:3], [<stdin>:4:3]}"
-        , ::boost::format ("ERROR: non module call function ' %1%'"
-                        " with %2% memory buffer%3%"
-                        ", function defined at %4%"
-                        ", memory buffer%3% defined at %5%"
-                        )
-        %  name_function
-        % "2"
-        % "s"
-        % "[<stdin>:2:1]"
-        % "{[<stdin>:4:3], [<stdin>:3:3]}"
+      , { fmt::format ( "ERROR: non module call function '{0}'"
+                        " with {1} memory buffer{2}"
+                        ", function defined at {3}"
+                        ", memory buffer{2} defined at {4}"
+                      ,  name_function
+                      , "2"
+                      , "s"
+                      , "[<stdin>:2:1]"
+                      , "{[<stdin>:3:3], [<stdin>:4:3]}"
+                      )
+        , fmt::format ( "ERROR: non module call function '{0}'"
+                        " with {1} memory buffer{2}"
+                        ", function defined at {3}"
+                        ", memory buffer{2} defined at {4}"
+                      ,  name_function
+                      , "2"
+                      , "s"
+                      , "[<stdin>:2:1]"
+                      , "{[<stdin>:4:3], [<stdin>:3:3]}"
+                      )
         }
       );
   }
@@ -320,17 +320,17 @@ namespace
       (random_identifier_with_valid_prefix());
 
     std::string const input
-      ( ( ::boost::format (R"EOS(
+      ( fmt::format (R"EOS(
 <defun>
-  <%2% name="%1%" type=""/>
-  <memory-buffer name="%1%"><size/></memory-buffer>
-  <module name="%3%" function="%4%"/>
-</defun>)EOS")
-        % name_port_and_memory_buffer
-        % port_direction
-        % fhg::util::testing::random_identifier()
-        % fhg::util::testing::random_identifier()
-        ).str()
+  <{1} name="{0}" type=""/>
+  <memory-buffer name="{0}"><size/></memory-buffer>
+  <module name="{2}" function="{3}"/>
+</defun>)EOS"
+        , name_port_and_memory_buffer
+        , port_direction
+        , fhg::util::testing::random_identifier()
+        , fhg::util::testing::random_identifier()
+        )
       );
 
     xml::parse::state::type state;
@@ -341,13 +341,13 @@ namespace
       { std::istringstream input_stream (input);
         xml::parse::just_parse (state, input_stream);
       }
-      , ::boost::format ("ERROR: memory buffer '%1%' defined at %2%"
-                      " with the same name as the %3%-port defined at %4%"
-                      )
-      %  name_port_and_memory_buffer
-      % "[<stdin>:4:3]"
-      % port_direction
-      % "[<stdin>:3:3]"
+      , fmt::format ( "ERROR: memory buffer '{0}' defined at {1}"
+                      " with the same name as the {2}-port defined at {3}"
+                    ,  name_port_and_memory_buffer
+                    , "[<stdin>:4:3]"
+                    , port_direction
+                    , "[<stdin>:3:3]"
+                    )
       );
   }
 }
@@ -368,19 +368,19 @@ namespace
     std::string const name_port_and_memory_buffer (port_names());
 
     std::string const input
-      ( ( ::boost::format (R"EOS(
+      ( fmt::format (R"EOS(
 <defun>
-  <in name="%1%" type=""/>
-  <memory-buffer name="%2%"><size/></memory-buffer>
-  <%3% name="%2%" type=""/>
-  <module name="%4%" function="%5%"/>
-</defun>)EOS")
-        % name_port_added_earlier
-        % name_port_and_memory_buffer
-        % port_direction
-        % fhg::util::testing::random_identifier()
-        % fhg::util::testing::random_identifier()
-        ).str()
+  <in name="{0}" type=""/>
+  <memory-buffer name="{1}"><size/></memory-buffer>
+  <{2} name="{1}" type=""/>
+  <module name="{3}" function="{4}"/>
+</defun>)EOS"
+        , name_port_added_earlier
+        , name_port_and_memory_buffer
+        , port_direction
+        , fhg::util::testing::random_identifier()
+        , fhg::util::testing::random_identifier()
+        )
       );
 
     xml::parse::state::type state;
@@ -391,13 +391,13 @@ namespace
       { std::istringstream input_stream (input);
         xml::parse::just_parse (state, input_stream);
       }
-      , ::boost::format ("ERROR: memory buffer '%1%' defined at %2%"
-                      " with the same name as the %3%-port defined at %4%"
-                      )
-      %  name_port_and_memory_buffer
-      % "[<stdin>:4:3]"
-      % port_direction
-      % "[<stdin>:5:3]"
+      , fmt::format ( "ERROR: memory buffer '{0}' defined at {1}"
+                      " with the same name as the {2}-port defined at {3}"
+                    ,  name_port_and_memory_buffer
+                    , "[<stdin>:4:3]"
+                    , port_direction
+                    , "[<stdin>:5:3]"
+                    )
       );
   }
 }
@@ -414,14 +414,14 @@ BOOST_AUTO_TEST_CASE (memory_buffer_accepted_as_argument_in_function_signature)
   std::string const name_memory_buffer (random_identifier_with_valid_prefix());
 
   std::string const input
-    ( ( ::boost::format (R"EOS(
+    ( fmt::format (R"EOS(
 <defun>
-  <memory-buffer name="%1%"><size/></memory-buffer>
-  <module name="" function="%2% (%1%)"/>
-</defun>)EOS")
-      % name_memory_buffer
-      % random_identifier_with_valid_prefix()
-      ).str()
+  <memory-buffer name="{0}"><size/></memory-buffer>
+  <module name="" function="{1} ({0})"/>
+</defun>)EOS"
+      , name_memory_buffer
+      , random_identifier_with_valid_prefix()
+      )
     );
 
     std::istringstream input_stream (input);
@@ -452,16 +452,16 @@ BOOST_AUTO_TEST_CASE (memory_buffer_accepted_as_arguments_in_function_signature)
   std::string const name_memory_buffer_B (buffer_names());
 
   std::string const input
-    ( ( ::boost::format (R"EOS(
+    ( fmt::format (R"EOS(
 <defun>
-  <memory-buffer name="%1%"><size/></memory-buffer>
-  <memory-buffer name="%2%"><size/></memory-buffer>
-  <module name="" function="%3% (%1%, %2%)"/>
-</defun>)EOS")
-      % name_memory_buffer_A
-      % name_memory_buffer_B
-      % fhg::util::testing::random_identifier()
-      ).str()
+  <memory-buffer name="{0}"><size/></memory-buffer>
+  <memory-buffer name="{1}"><size/></memory-buffer>
+  <module name="" function="{2} ({0}, {1})"/>
+</defun>)EOS"
+      , name_memory_buffer_A
+      , name_memory_buffer_B
+      , fhg::util::testing::random_identifier()
+      )
     );
 
     std::istringstream input_stream (input);
@@ -497,16 +497,16 @@ BOOST_AUTO_TEST_CASE
   std::string const name_memory_buffer (port_and_buffer_names());
 
   std::string const input
-    ( ( ::boost::format (R"EOS(
+    ( fmt::format (R"EOS(
 <defun>
-  <in name="%1%" type=""/>
-  <memory-buffer name="%2%"><size/></memory-buffer>
-  <module name="" function="%3% (%1%, %2%)"/>
-</defun>)EOS")
-      % name_port
-      % name_memory_buffer
-      % fhg::util::testing::random_identifier()
-      ).str()
+  <in name="{0}" type=""/>
+  <memory-buffer name="{1}"><size/></memory-buffer>
+  <module name="" function="{2} ({0}, {1})"/>
+</defun>)EOS"
+      , name_port
+      , name_memory_buffer
+      , fhg::util::testing::random_identifier()
+      )
     );
 
     std::istringstream input_stream (input);
@@ -537,14 +537,14 @@ BOOST_AUTO_TEST_CASE (memory_buffer_accepted_as_return_in_function_signature)
   std::string const name_memory_buffer (random_identifier_with_valid_prefix());
 
   std::string const input
-    ( ( ::boost::format (R"EOS(
+    ( fmt::format (R"EOS(
 <defun>
-  <memory-buffer name="%1%"><size/></memory-buffer>
-  <module name="" function="%1% %2% ()"/>
-</defun>)EOS")
-      % name_memory_buffer
-      % fhg::util::testing::random_identifier()
-      ).str()
+  <memory-buffer name="{0}"><size/></memory-buffer>
+  <module name="" function="{0} {1} ()"/>
+</defun>)EOS"
+      , name_memory_buffer
+      , fhg::util::testing::random_identifier()
+      )
     );
 
     std::istringstream input_stream (input);
@@ -572,14 +572,14 @@ BOOST_AUTO_TEST_CASE
   std::string const name_memory_buffer (random_identifier_with_valid_prefix());
 
   std::string const input
-    ( ( ::boost::format (R"EOS(
+    ( fmt::format (R"EOS(
 <defun>
-  <memory-buffer name="%1%"><size/></memory-buffer>
-  <module name="" function="%1% %2% (%1%)"/>
-</defun>)EOS")
-      % name_memory_buffer
-      % fhg::util::testing::random_identifier()
-      ).str()
+  <memory-buffer name="{0}"><size/></memory-buffer>
+  <module name="" function="{0} {1} ({0})"/>
+</defun>)EOS"
+      , name_memory_buffer
+      , fhg::util::testing::random_identifier()
+      )
     );
 
     std::istringstream input_stream (input);

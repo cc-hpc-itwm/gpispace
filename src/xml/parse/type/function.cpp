@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <installation_path.hpp>
@@ -45,10 +45,9 @@
 
 #include <we/type/id.hpp>
 
-#include <boost/format.hpp>
-#include <boost/range/adaptors.hpp>
-
+#include <FMT/xml/parse/util/position.hpp>
 #include <exception>
+#include <fmt/core.h>
 #include <functional>
 #include <iostream>
 #include <set>
@@ -743,11 +742,11 @@ namespace xml
       {
         std::throw_with_nested
           ( std::runtime_error
-            (str ( ::boost::format ("In '%1%' defined at %2%.")
-                 % (this->name() ? this->name().get() : name)
-                 % this->position_of_definition()
-                 )
-            )
+            { fmt::format ( "In '{}' defined at {}."
+                          , this->name() ? this->name().get() : name
+                          , this->position_of_definition()
+                          )
+            }
           );
       }
 
@@ -974,7 +973,7 @@ namespace xml
         stream << "ifeq '' '$(findstring clang,$(CXX))'"           << std::endl;
         stream << "  CXXFLAGS += -fno-gnu-unique"                  << std::endl;
         stream << "endif"                                          << std::endl;
-        stream << "CXXFLAGS += --std=c++14"                        << std::endl;
+        stream << "CXXFLAGS += --std=c++17"                        << std::endl;
         stream                                                     << std::endl;
         stream << "CXXFLAGS += -I."                                << std::endl;
         stream << "CXXFLAGS += -isystem "
@@ -1186,7 +1185,8 @@ namespace xml
                    << " -o $@"
                    << " $(" << ldflags << ")"
                    << " $(LDFLAGS)"
-                   << " -lwe-dev"                                  << std::endl;
+                   << " -lwe-dev"
+                   << " -lUtil-Generic"                            << std::endl;
             stream                                                 << std::endl;
           }
 
@@ -1305,7 +1305,6 @@ namespace xml
       namespace
       {
         class transition_find_module_calls_visitor
-          : public ::boost::static_visitor<bool>
         {
         private:
           state::type const& state;
@@ -1351,7 +1350,7 @@ namespace xml
           for (transition_type& transition : n.transitions())
             {
               n.contains_a_module_call
-                |= ::boost::apply_visitor
+                |= std::visit
                 ( transition_find_module_calls_visitor
                   (state, transition, m, mcs)
                 , transition.function_or_use()
@@ -1824,7 +1823,7 @@ namespace xml
 
             if (mod.port_return())
             {
-              port_type const& port
+              auto const port
                 (_function.get_port_out (*mod.port_return()).get());
 
               port_return = port_with_type (*mod.port_return(), port.type());
@@ -1835,8 +1834,7 @@ namespace xml
             {
               if (_function.is_known_port_inout (name))
               {
-                port_type const& port_in
-                  (_function.get_port_in (name).get());
+                auto const port_in (_function.get_port_in (name).get());
 
                 if (    mod.port_return()
                    && (*mod.port_return() == port_in.name())
@@ -1853,16 +1851,14 @@ namespace xml
               }
               else if (_function.is_known_port_in (name))
               {
-                port_type const& port_in
-                  (_function.get_port_in (name).get());
+                auto const port_in (_function.get_port_in (name).get());
 
                 ports_const.push_back (port_with_type (name, port_in.type()));
                 types.insert (port_in.type());
               }
               else if (_function.is_known_port_out (name))
               {
-                port_type const& port_out
-                  (_function.get_port_out (name).get());
+                auto const port_out (_function.get_port_out (name).get());
 
                 if (    mod.port_return()
                    && (*mod.port_return() == port_out.name())
@@ -2230,7 +2226,7 @@ namespace xml
 
               for (transition_type const& transition : n.transitions())
               {
-                ::boost::apply_visitor (*this, transition.function_or_use());
+                std::visit (*this, transition.function_or_use());
               }
             }
           }

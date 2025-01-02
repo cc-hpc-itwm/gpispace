@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <sdpa/events/CancelJobAckEvent.hpp>
@@ -141,7 +141,7 @@ namespace
         ( std::function<void (std::string)> announce_job
         , std::function<void (std::string)> announce_cancel
         , utils::agent const& parent_agent
-        , fhg::com::Certificates const& certificates
+        , gspc::Certificates const& certificates
         )
       : utils::no_thread::fake_drts_worker_notifying_module_call_submission
           (announce_job, parent_agent, certificates)

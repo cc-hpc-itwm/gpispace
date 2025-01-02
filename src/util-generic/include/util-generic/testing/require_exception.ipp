@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <util-generic/callable_signature.hpp>
@@ -11,6 +11,8 @@
 #include <exception>
 #include <stdexcept>
 #include <utility>
+
+#include <boost/format.hpp>
 
 namespace fhg
 {
@@ -321,37 +323,12 @@ namespace fhg
       }
 
       template<typename Exception, typename Fun>
-        void require_exception_with_message_in
-          ( Fun&& fun
-          , std::list<::boost::format> const& fmts
-          )
-      {
-        std::list<std::string> whats;
-        for (::boost::format const& fmt : fmts)
-        {
-          whats.emplace_back (fmt.str());
-        }
-
-        require_exception_with_message_in<Exception>
-          (std::forward<Fun> (fun), whats);
-      }
-
-      template<typename Exception, typename Fun>
         void require_exception_with_message ( Fun&& fun
                                             , std::string const& what
                                             )
       {
         require_exception_with_message_in<Exception, Fun>
           (std::forward<Fun> (fun), {what});
-      }
-
-      template<typename Exception, typename Fun>
-        void require_exception_with_message ( Fun&& fun
-                                            , ::boost::format const& fmt
-                                            )
-      {
-        require_exception_with_message<Exception>
-          (std::forward<Fun> (fun), fmt.str());
       }
     }
   }

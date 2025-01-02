@@ -1,12 +1,11 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <drts/virtual_memory.hpp>
 
 #include <drts/drts_iml.hpp>
 
-#include <boost/format.hpp>
-
+#include <fmt/core.h>
 #include <cstddef>
 #include <stdexcept>
 #include <utility>
@@ -29,10 +28,12 @@ namespace gspc
     if ((offset + size) > _alloc.size())
     {
       throw std::logic_error
-        ((::boost::format ("slice [%1%, %2%) is outside of allocation")
-         % offset % (offset + size)
-         ).str()
-        );
+        { fmt::format
+            ( "slice [{}, {}) is outside of allocation"
+            , offset
+            , offset + size
+            )
+        };
     }
 
     return pnet::vmem::memory_region_to_value

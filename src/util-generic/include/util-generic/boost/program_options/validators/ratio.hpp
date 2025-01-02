@@ -1,15 +1,16 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
 
 #include <util-generic/boost/program_options/validators.hpp>
 
-#include <util-generic/nest_exceptions.hpp>
 #include <util-generic/ostream/modifier.hpp>
 
 #include <boost/format.hpp>
 
+#include <exception>
+#include <stdexcept>
 #include <string>
 #include <typeinfo>
 
@@ -67,66 +68,71 @@ namespace fhg
           {}
           ratio (std::string const& option)
           {
-            fhg::util::nest_exceptions<::boost::program_options::invalid_option_value>
-              ([this, &option]()
-               {
-                 auto&& parse
-                   ([](std::string const& input, std::size_t* pos)
-                    {
-                      std::size_t pos_parse (0);
-
-                      T const x
-                        { detail::ratio::parser<T>::parse
-                            (input.substr (*pos), &pos_parse)
-                        };
-
-                      *pos += pos_parse;
-
-                      return x;
-                   }
-                   );
-
-                 std::size_t pos (0);
-
-                 _numerator = parse (option, &pos);
-
-                 while (pos < option.size() && std::isspace (option.at (pos)))
+            try
+            {
+              auto&& parse
+                ([](std::string const& input, std::size_t* pos)
                  {
-                   ++pos;
-                 }
+                   std::size_t pos_parse (0);
 
-                 if (! (pos < option.size()))
-                 {
-                   throw std::invalid_argument ("Missing '/'");
-                 }
+                   T const x
+                     { detail::ratio::parser<T>::parse
+                         (input.substr (*pos), &pos_parse)
+                     };
 
-                 if (option.at (pos) != '/')
-                 {
-                   throw std::invalid_argument
-                     (( ::boost::format ("Missing '/' in '%1%'")
-                      % option.substr (pos)
-                      ).str()
-                     );
-                 }
+                   *pos += pos_parse;
 
-                 ++pos;
+                   return x;
+                }
+                );
 
-                 _denumerator = parse (option, &pos);
+              std::size_t pos (0);
 
-                 if (pos < option.size())
-                 {
-                   throw std::invalid_argument
-                     (( ::boost::format ("Additional input '%1%'")
-                      % option.substr (pos)
-                      ).str());
-                 }
-               }
-              , ( ::boost::format
-                  ("Parse error: Input '%1%': Expected format: '<%2%>/<%2%>'.")
-                % option
-                % typeid (T).name()
-                ).str()
-              );
+              _numerator = parse (option, &pos);
+
+              while (pos < option.size() && std::isspace (option.at (pos)))
+              {
+                ++pos;
+              }
+
+              if (! (pos < option.size()))
+              {
+                throw std::invalid_argument ("Missing '/'");
+              }
+
+              if (option.at (pos) != '/')
+              {
+                throw std::invalid_argument
+                  (( ::boost::format ("Missing '/' in '%1%'")
+                   % option.substr (pos)
+                   ).str()
+                  );
+              }
+
+              ++pos;
+
+              _denumerator = parse (option, &pos);
+
+              if (pos < option.size())
+              {
+                throw std::invalid_argument
+                  (( ::boost::format ("Additional input '%1%'")
+                   % option.substr (pos)
+                   ).str());
+              }
+            }
+            catch (...)
+            {
+              std::throw_with_nested
+                ( ::boost::program_options::invalid_option_value
+                  { ( ::boost::format
+                      ("Parse error: Input '%1%': Expected format: '<%2%>/<%2%>'.")
+                      % option
+                      % typeid (T).name()
+                    ).str()
+                  }
+                );
+            }
           }
 
           virtual std::ostream& operator() (std::ostream& os) const override

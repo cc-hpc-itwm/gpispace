@@ -1,12 +1,11 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <fhg/util/system_with_blocked_SIGCHLD.hpp>
 
 #include <util-generic/syscall.hpp>
 
-#include <boost/format.hpp>
-
+#include <fmt/core.h>
 #include <cstdlib>
 #include <exception>
 
@@ -42,11 +41,12 @@ namespace fhg
       if (int ec = std::system (command.c_str()))
       {
         throw std::runtime_error
-          (( ::boost::format ("Could not run '%1%': error code '%2%'")
-           % command
-           % ec
-           ).str()
-          );
+          { fmt::format
+              ( "Could not run '{}': error code '{}'"
+              , command
+              , ec
+              )
+          };
       }
     }
   }

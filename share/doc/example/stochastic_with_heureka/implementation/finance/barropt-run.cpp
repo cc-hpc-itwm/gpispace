@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <bin/run.hpp>
@@ -6,9 +6,8 @@
 
 #include <implementation/finance/barropt.hpp>
 
-#include <boost/format.hpp>
-
 #include <exception>
+#include <fmt/core.h>
 #include <ios>
 #include <iostream>
 #include <ostream>
@@ -86,10 +85,7 @@ namespace
       : b == "UaO" ? barrieropt::UaO
       : b == "UaI" ? barrieropt::UaI
       : throw ::boost::program_options::invalid_option_value
-        (( ::boost::format ("invalid barrier '%1%, allowed: DaO, DaI, UaO, UaI")
-         % b
-         ).str()
-        )
+        {fmt::format ("invalid barrier '{}, allowed: DaO, DaI, UaO, UaI", b)}
       ;
   }
 
@@ -98,7 +94,7 @@ namespace
     return o == "Call" ? barrieropt::Call
       : o == "Put" ? barrieropt::Put
       : throw ::boost::program_options::invalid_option_value
-        ((::boost::format ("invalid option '%1%', allowed: Call, Put") % o).str())
+        {fmt::format ("invalid option '{}', allowed: Call, Put", o)}
       ;
   }
 }

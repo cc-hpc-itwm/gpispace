@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -19,8 +19,8 @@ namespace preferences_and_multimodules
      using ValuesOnPorts::ValuesOnPorts;
 
      // asserts there is exactly one occurence of key
-     template<typename T> T const& get (Key) const;
-     template<typename T> std::vector<T> get_all (Key, std::size_t) const;
+     template<typename T> T const& at (Key) const;
+     template<typename T> std::vector<T> at_all (Key, std::size_t) const;
 
   private:
      void assert_key_count
@@ -29,14 +29,14 @@ namespace preferences_and_multimodules
       ) const;
 
      template<typename T, typename TypeDescription>
-       T const& get_impl (Key, TypeDescription) const;
+       T const& at_implementation (Key, TypeDescription) const;
      template<typename T, typename TypeDescription>
-       std::vector<std::string> get_all_impl
+       std::vector<std::string> at_all_implementation
          (Key, TypeDescription, std::size_t) const;
   };
 
   template<>
-    we::type::literal::control const& WorkflowResult::get (Key) const;
+    we::type::literal::control const& WorkflowResult::at (Key) const;
   template<>
-    std::vector<std::string> WorkflowResult::get_all (Key, std::size_t) const;
+    std::vector<std::string> WorkflowResult::at_all (Key, std::size_t) const;
 }

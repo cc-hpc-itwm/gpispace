@@ -1,11 +1,11 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <iml/vmem/tmmgr.hpp>
 
-#include <boost/format.hpp>
 #include <boost/preprocessor/stringize.hpp>
 
+#include <fmt/core.h>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -32,11 +32,11 @@ namespace iml_client
     if (! (cond))                                                       \
     {                                                                   \
       throw std::logic_error                                            \
-        ( ( ::boost::format ("[tmmgr:%1%] assertion '%2%' failed.")       \
-          % __LINE__                                                    \
-          % BOOST_PP_STRINGIZE (cond)                                   \
-          ).str()                                                       \
-        );                                                              \
+        { fmt::format ( "[tmmgr:{}] assertion '{}' failed."             \
+                      , __LINE__                                        \
+                      , BOOST_PP_STRINGIZE (cond)                       \
+                      )                                                 \
+        };                                                              \
     }                                                                   \
   } while (false)
 

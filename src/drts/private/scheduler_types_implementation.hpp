@@ -1,13 +1,12 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
 
 #include <drts/scheduler_types.hpp>
 
-#include <boost/variant.hpp>
-
 #include <string>
+#include <variant>
 
 namespace gspc
 {
@@ -15,7 +14,7 @@ namespace gspc
   {
     struct CostAwareWithWorkStealing::Implementation
     {
-      using Type = ::boost::variant
+      using Type = std::variant
                      < CostAwareWithWorkStealing::SingleAllocation
                      , CostAwareWithWorkStealing::CoallocationWithBackfilling
                      >;

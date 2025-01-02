@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <drts/worker/context.hpp>
@@ -11,11 +11,11 @@
 #include <util-generic/syscall/process_signal_block.hpp>
 #include <util-generic/syscall/signal_set.hpp>
 
-#include <boost/format.hpp>
 #include <boost/iostreams/device/file_descriptor.hpp>
 #include <boost/iostreams/stream.hpp>
 #include <boost/system/system_error.hpp>
 
+#include <fmt/core.h>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -162,8 +162,7 @@ namespace drts
 
         if (fhg::util::syscall::waitpid (child, &status, 0) != child)
         {
-          throw std::logic_error
-            ((::boost::format ("wait (%1%) != %1%") % child).str());
+          throw std::logic_error {fmt::format ("wait ({0}) != {0}", child)};
         }
 
         if (fhg::util::wifsignaled (status))

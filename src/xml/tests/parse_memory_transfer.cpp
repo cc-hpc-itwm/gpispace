@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -14,8 +14,7 @@
 #include <util-generic/testing/random/string.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
-#include <boost/format.hpp>
-
+#include <fmt/core.h>
 #include <string>
 
 BOOST_AUTO_TEST_CASE (memory_get_is_stored_in_function)
@@ -24,16 +23,16 @@ BOOST_AUTO_TEST_CASE (memory_get_is_stored_in_function)
   std::string const local (fhg::util::testing::random_content_string());
 
   std::string const input
-    ( ( ::boost::format (R"EOS(
+    ( fmt::format (R"EOS(
 <defun>
-  <memory-get><global>%1%</global><local>%2%</local></memory-get>
-  <module name="%3%" function="%4%"/>
-</defun>)EOS")
-      % global
-      % local
-      % fhg::util::testing::random_identifier()
-      % fhg::util::testing::random_identifier()
-      ).str()
+  <memory-get><global>{0}</global><local>{1}</local></memory-get>
+  <module name="{2}" function="{3}"/>
+</defun>)EOS"
+      , global
+      , local
+      , fhg::util::testing::random_identifier()
+      , fhg::util::testing::random_identifier()
+      )
     );
 
     std::istringstream input_stream (input);
@@ -53,9 +52,9 @@ namespace
     (::boost::optional<bool> not_modified_in_module_call)
   {
     return not_modified_in_module_call
-      ? ( ::boost::format (" not-modified-in-module-call=\"%1%\"")
-        % (*not_modified_in_module_call ? "true" : "false")
-        ).str()
+      ? fmt::format ( " not-modified-in-module-call=\"{0}\""
+                    , *not_modified_in_module_call ? "true" : "false"
+                    )
       : ""
       ;
   }
@@ -67,17 +66,17 @@ namespace
     std::string const local (fhg::util::testing::random_content_string());
 
     std::string const input
-      ( ( ::boost::format (R"EOS(
+      ( fmt::format (R"EOS(
 <defun>
-  <memory-put%3%><global>%1%</global><local>%2%</local></memory-put>
-  <module name="%4%" function="%5%"/>
-</defun>)EOS")
-        % global
-        % local
-        % attr_not_modified_in_module_call (not_modified_in_module_call)
-        % fhg::util::testing::random_identifier()
-        % fhg::util::testing::random_identifier()
-        ).str()
+  <memory-put{2}><global>{0}</global><local>{1}</local></memory-put>
+  <module name="{3}" function="{4}"/>
+</defun>)EOS"
+        , global
+        , local
+        , attr_not_modified_in_module_call (not_modified_in_module_call)
+        , fhg::util::testing::random_identifier()
+        , fhg::util::testing::random_identifier()
+        )
       );
 
     std::istringstream input_stream (input);
@@ -112,17 +111,17 @@ namespace
     std::string const local (fhg::util::testing::random_content_string());
 
     std::string const input
-      ( ( ::boost::format (R"EOS(
+      ( fmt::format (R"EOS(
 <defun>
-  <memory-getput%3%><global>%1%</global><local>%2%</local></memory-getput>
-  <module name="%4%" function="%5%"/>
-</defun>)EOS")
-        % global
-        % local
-        % attr_not_modified_in_module_call (not_modified_in_module_call)
-        % fhg::util::testing::random_identifier()
-        % fhg::util::testing::random_identifier()
-        ).str()
+  <memory-getput{2}><global>{0}</global><local>{1}</local></memory-getput>
+  <module name="{3}" function="{4}"/>
+</defun>)EOS"
+        , global
+        , local
+        , attr_not_modified_in_module_call (not_modified_in_module_call)
+        , fhg::util::testing::random_identifier()
+        , fhg::util::testing::random_identifier()
+        )
       );
 
     std::istringstream input_stream (input);
@@ -173,10 +172,10 @@ namespace
       input += "<memory-getput><global/><local/></memory-getput>";
     }
 
-    input += ( ::boost::format (R"EOS(<module name="%1%" function="%2%"/>)EOS")
-             % fhg::util::testing::random_identifier()
-             % fhg::util::testing::random_identifier()
-             ).str();
+    input += fmt::format ( R"EOS(<module name="{0}" function="{1}"/>)EOS"
+                         , fhg::util::testing::random_identifier()
+                         , fhg::util::testing::random_identifier()
+                         );
 
     input += "</defun>";
 
@@ -215,14 +214,14 @@ namespace
     std::string const name_function (fhg::util::testing::random_identifier());
 
     std::string const input
-      ( ( ::boost::format (R"EOS(
-<defun name="%1%">
+      ( fmt::format (R"EOS(
+<defun name="{0}">
   <memory-get><global/><local/></memory-get>
-  <%2%/>
-</defun>)EOS")
-        % name_function
-        % tag
-        ).str()
+  <{1}/>
+</defun>)EOS"
+        , name_function
+        , tag
+        )
       );
 
     xml::parse::state::type state;
@@ -233,16 +232,16 @@ namespace
       { std::istringstream input_stream (input);
         xml::parse::just_parse (state, input_stream);
       }
-      , ::boost::format ("ERROR: non module call function ' %1%'"
-                      " with %2% memory transfer%3%"
-                      ", function defined at %4%"
-                      ", memory transfer%3% defined at: get: %5%"
-                      )
-      %  name_function
-      % "1"
-      % ""
-      % "[<stdin>:2:1]"
-      % "([<stdin>:3:3])"
+      , fmt::format ( "ERROR: non module call function '{0}'"
+                      " with {1} memory transfer{2}"
+                      ", function defined at {3}"
+                      ", memory transfer{2} defined at: get: {4}"
+                    ,  name_function
+                    , "1"
+                    , ""
+                    , "[<stdin>:2:1]"
+                    , "([<stdin>:3:3])"
+                    )
       );
   }
 
@@ -252,17 +251,17 @@ namespace
     std::string const name_function (fhg::util::testing::random_identifier());
 
     std::string const input
-      ( ( ::boost::format (R"EOS(
-<defun name="%1%">
+      ( fmt::format (R"EOS(
+<defun name="{0}">
   <memory-put><global/><local/></memory-put>
   <memory-getput><global/><local/></memory-getput>
   <memory-put><global/><local/></memory-put>
   <memory-getput><global/><local/></memory-getput>
-  <%2%/>
-</defun>)EOS")
-        % name_function
-        % tag
-        ).str()
+  <{1}/>
+</defun>)EOS"
+        , name_function
+        , tag
+        )
       );
 
     xml::parse::state::type state;
@@ -273,17 +272,17 @@ namespace
       { std::istringstream input_stream (input);
         xml::parse::just_parse (state, input_stream);
       }
-      , ::boost::format ("ERROR: non module call function ' %1%'"
-                      " with %2% memory transfer%3%"
-                      ", function defined at %4%"
-                      ", memory transfer%3% defined at: put: %5%, getput: %6%"
-                      )
-      %  name_function
-      % "4"
-      % "s"
-      % "[<stdin>:2:1]"
-      % "([<stdin>:3:3], [<stdin>:5:3])"
-      % "([<stdin>:4:3], [<stdin>:6:3])"
+      , fmt::format ( "ERROR: non module call function '{0}'"
+                      " with {1} memory transfer{2}"
+                      ", function defined at {3}"
+                      ", memory transfer{2} defined at: put: {4}, getput: {5}"
+                    ,  name_function
+                    , "4"
+                    , "s"
+                    , "[<stdin>:2:1]"
+                    , "([<stdin>:3:3], [<stdin>:5:3])"
+                    , "([<stdin>:4:3], [<stdin>:6:3])"
+                    )
       );
   }
 }

@@ -1,0 +1,53 @@
+<!-- Copyright (C) 2025 Fraunhofer ITWM        -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+
+<defun name="number_of_tokens_out_many_phi">
+
+  <in name="n" type="unsigned long" place="n"/>
+  <out name="phi" type="unsigned long" place="phi"/>
+
+  <net>
+    <place name="n" type="unsigned long"/>
+    <place name="i" type="unsigned long"/>
+    <place name="phi" type="unsigned long"/>
+
+    <transition name="phi">
+      <defun>
+        <in name="n" type="unsigned long"/>
+        <out name="is" type="list"/>
+        <module name="phi" function="coprimes (n, is)">
+          <cinclude href="numeric"/>
+          <code><![CDATA[
+          for (auto i {1ul}; i <= n; ++i)
+          {
+            if (std::gcd (i, n) == 1ul)
+            {
+              is.emplace_back (i);
+            }
+          }
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="n" place="n"/>
+      <connect-out-many port="is" place="i"/>
+    </transition>
+
+    <place name="trigger" type="control">
+      <token><value>[]</value></token>
+    </place>
+
+    <transition name="count">
+      <defun>
+        <in name="trigger" type="control"/>
+        <inout name="phi" type="unsigned long"/>
+        <expression/>
+        <condition>
+          ${phi} :gt: 0ul
+        </condition>
+      </defun>
+      <connect-in port="trigger" place="trigger"/>
+      <connect-number-of-tokens port="phi" place="i"/>
+      <connect-out port="phi" place="phi"/>
+    </transition>
+  </net>
+</defun>

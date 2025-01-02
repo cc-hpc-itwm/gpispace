@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <we/expr/type/Context.hpp>
@@ -8,11 +8,14 @@
 
 #include <util-generic/functor_visitor.hpp>
 
-#include <boost/format.hpp>
 #include <boost/optional.hpp>
 
+#include <FMT/boost/variant.hpp>
+#include <FMT/we/expr/type/Path.hpp>
+#include <FMT/we/expr/type/Type.hpp>
 #include <algorithm>
 #include <exception>
+#include <fmt/core.h>
 #include <functional>
 #include <iterator>
 #include <stdexcept>
@@ -111,10 +114,11 @@ namespace expr
           }
 
           throw exception::type::error
-            ( ::boost::format ("Not a struct at %1%: '%2%'")
-            % Path (std::begin (_path), key)
-            % node
-            );
+            { fmt::format ( "Not a struct at {}: '{}'"
+                          , Path (std::begin (_path), key)
+                          , node
+                          )
+            };
         }
 
         Type operator() (Type& node)
@@ -180,10 +184,11 @@ namespace expr
     {
       std::throw_with_nested
         ( exception::type::error
-          ( ::boost::format ("expr::type::Context::bind (%1%, '%2%')")
-          % path
-          % type
-          )
+          { fmt::format ( "expr::type::Context::bind ({}, '{}')"
+                        , path
+                        , type
+                        )
+          }
         );
     }
 

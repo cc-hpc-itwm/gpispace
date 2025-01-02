@@ -2,6 +2,9 @@ cmake_minimum_required (VERSION 3.16)
 include (${CMAKE_CURRENT_SOURCE_DIR}/project-info.cmake)
 project (gspc VERSION ${GSPC_VERSION} LANGUAGES CXX)
 
+set (FMT_DIR "${CMAKE_BINARY_DIR}/3rdparty/fmt")
+add_subdirectory (3rdparty)
+
 # Sane default build type with optimizations enabled.
 if (NOT CMAKE_BUILD_TYPE)
   set (_default_build_type "Release")
@@ -127,7 +130,7 @@ add_definitions (-DBOOST_THREAD_THROW_IF_PRECONDITION_NOT_SATISFIED)
 add_definitions ("-DBOOST_MPL_CFG_NO_PREPROCESSED_HEADERS")
 add_definitions ("-DBOOST_MPL_LIMIT_VECTOR_SIZE=40")
 
-require_compiler_version_ge (COMPILER "GNU" VERSION 4.9.4)
+require_compiler_version_ge (COMPILER "GNU" VERSION 8.5)
 
 set (_boost_minimum_version 1.61.0)
 set (_boost_maximum_version 1.63.0)

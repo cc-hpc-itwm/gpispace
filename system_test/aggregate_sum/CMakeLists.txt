@@ -11,9 +11,10 @@ find_package (util-generic REQUIRED)
 find_package (util-cmake REQUIRED)
 find_package (Boost 1.61.0 REQUIRED
   COMPONENTS
-     filesystem
      program_options
 )
+
+include (FetchContent)
 
 include (util-cmake/add_macros)
 
@@ -71,8 +72,8 @@ extended_add_executable (NAME "${DRIVER_BINARY}"
   LIBRARIES PRIVATE Util::Generic
                     GPISpace::execution
                     Boost::headers
-                    Boost::filesystem
                     Boost::program_options
+                    fmt
   INSTALL
   INSTALL_DESTINATION bin
 )

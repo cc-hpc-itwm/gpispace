@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <we/layer.hpp>
@@ -6,13 +6,12 @@
 #include <fhg/assert.hpp>
 #include <fhg/util/read_bool.hpp>
 #include <util-generic/functor_visitor.hpp>
-#include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_exception.hpp>
 
-#include <boost/range/adaptor/map.hpp>
-
 #include <algorithm>
+#include <exception>
 #include <functional>
+#include <stdexcept>
 
 namespace we
 {
@@ -23,7 +22,7 @@ namespace we
         , std::function<void (id_type, std::string)> rts_failed
         , std::function<void (id_type)> rts_canceled
         , std::function<void (std::string, ::boost::optional<std::exception_ptr>)> rts_token_put
-        , std::function<void (std::string workflow_response_id, ::boost::variant<std::exception_ptr, pnet::type::value::value_type>)> rts_workflow_response
+        , std::function<void (std::string workflow_response_id, std::variant<std::exception_ptr, pnet::type::value::value_type>)> rts_workflow_response
         , std::function<id_type()> rts_id_generator
         , std::mt19937& random_extraction_engine
         )
@@ -221,7 +220,7 @@ namespace we
   void layer::workflow_response
     ( id_type id
     , std::string const& response_id
-    , ::boost::variant<std::exception_ptr, pnet::type::value::value_type> const& response
+    , std::variant<std::exception_ptr, pnet::type::value::value_type> const& response
     )
   {
     _rts_workflow_response (response_id, response);
@@ -281,47 +280,49 @@ namespace we
         ::boost::optional<type::Activity> activity;
         try
         {
-          fhg::util::nest_exceptions<std::runtime_error>
-            ( [&]
-              {
-                activity = activity_data._activity->extract
-                      ( _random_extraction_engine
-                      , [this, &activity_data] ( pnet::type::value::value_type const& description
-                                               , pnet::type::value::value_type const& value
-                                               )
-                        {
-                          workflow_response ( activity_data._id
-                                            , get_response_id (description)
-                                            , value
-                                            );
-                        }
-                      , [this, &activity_data] (type::eureka_ids_type const& eureka_ids)
-                        {
-                          eureka_response ( activity_data._id
-                                          , ::boost::none
-                                          , eureka_ids
-                                          );
-                        }
-                      , _plugins
-                      , [this, id]
-                          ( std::string place_name
-                          , pnet::type::value::value_type value
-                          )
-                        {
-                          _nets_to_extract_from.apply
-                            ( id
-                            , [place_name, value]
-                                (activity_data_type& ad)
-                              {
-                                ad._activity->put_token (place_name, value);
-                              }
-                            , &std::rethrow_exception
-                            );
-                        }
-                      );
-              }
-            , "workflow interpretation"
-            );
+          try
+          {
+            activity = activity_data._activity->extract
+                  ( _random_extraction_engine
+                  , [this, &activity_data] ( pnet::type::value::value_type const& description
+                                           , pnet::type::value::value_type const& value
+                                           )
+                    {
+                      workflow_response ( activity_data._id
+                                        , get_response_id (description)
+                                        , value
+                                        );
+                    }
+                  , [this, &activity_data] (type::eureka_ids_type const& eureka_ids)
+                    {
+                      eureka_response ( activity_data._id
+                                      , ::boost::none
+                                      , eureka_ids
+                                      );
+                    }
+                  , _plugins
+                  , [this, id]
+                      ( std::string place_name
+                      , pnet::type::value::value_type value
+                      )
+                    {
+                      _nets_to_extract_from.apply
+                        ( id
+                        , [place_name, value]
+                            (activity_data_type& ad)
+                          {
+                            ad._activity->put_token (place_name, value);
+                          }
+                        , &std::rethrow_exception
+                        );
+                    }
+                  );
+          }
+          catch (...)
+          {
+            std::throw_with_nested
+              (std::runtime_error {"workflow interpretation"});
+          }
         }
         catch (...)
         {
@@ -362,14 +363,19 @@ namespace we
 
           try
           {
-            fhg::util::nest_exceptions<std::runtime_error>
-              ( [&]
-                {
-                  _nets_to_extract_from.put
-                    (std::move (activity_data), was_active);
-                }
-              , "waiting for further events to continue workflow interpretation"
-              );
+            try
+            {
+              _nets_to_extract_from.put
+                (std::move (activity_data), was_active);
+            }
+            catch (...)
+            {
+              std::throw_with_nested
+                ( std::runtime_error
+                  { "waiting for further events to continue workflow interpretation"
+                  }
+                );
+            }
           }
           catch (...)
           {
@@ -433,7 +439,7 @@ namespace we
   void layer::async_remove_queue::RemovalFunction::operator()
     (activity_data_type& activity_data) &&
   {
-    fhg::util::visit<void>
+    fhg::util::visit
       ( _function
       , [&] (std::function<void (activity_data_type&)> const& fun)
         {
@@ -824,11 +830,12 @@ namespace we
     {
       std::lock_guard<std::mutex> const _ (_relation_mutex);
 
-      for ( id_type child
-          : _relation.left.equal_range (parent) | ::boost::adaptors::map_values
+      for ( auto [child, end] {_relation.left.equal_range (parent)}
+          ; child != end
+          ; ++child
           )
       {
-        fun (child);
+        fun (child->second);
       }
     }
 
@@ -844,14 +851,15 @@ namespace we
 
       eureka_parent_id_type const eureka_by_parent (eureka_id, parent);
 
-      for ( id_type child
-          : _eureka_in_progress.left.equal_range (eureka_by_parent)
-          | ::boost::adaptors::map_values
+      for ( auto [child, end]
+              {_eureka_in_progress.left.equal_range (eureka_by_parent)}
+          ; child != end
+          ; ++child
           )
       {
-        if (eureka_caller != child)
+        if (eureka_caller != child->second)
         {
-          cancel (child);
+          cancel (child->second);
         }
       }
 

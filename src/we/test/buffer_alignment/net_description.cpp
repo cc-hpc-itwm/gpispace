@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <we/test/buffer_alignment/net_description.hpp>
@@ -7,7 +7,9 @@
 
 #include <util-generic/print_container.hpp>
 
-#include <boost/format.hpp>
+#include <FMT/util-generic/join.hpp>
+#include <FMT/we/type/value/show.hpp>
+#include <fmt/core.h>
 
 namespace we
 {
@@ -21,44 +23,44 @@ namespace we
         {
           if (!buffer.alignment)
           {
-            return ( ::boost::format (R"EOS(
-                     <memory-buffer name="%1%" readonly="true">
+            return fmt::format (R"EOS(
+                     <memory-buffer name="{0}" readonly="true">
                        <size>
-                         %2%
+                         {1}
                        </size>
-                     </memory-buffer>)EOS")
-                   % buffer.name
-                   % pnet::type::value::show (buffer.size)
-                   ).str();
+                     </memory-buffer>)EOS"
+                   , buffer.name
+                   , pnet::type::value::show (buffer.size)
+                   );
           }
           else
           {
-            return ( ::boost::format (R"EOS(
-                     <memory-buffer name="%1%" readonly="true">
+            return fmt::format (R"EOS(
+                     <memory-buffer name="{0}" readonly="true">
                        <size>
-                         %2%
+                         {1}
                        </size>
                        <alignment>
-                         %3%
+                         {2}
                        </alignment>
-                     </memory-buffer>)EOS")
-                   % buffer.name
-                   % pnet::type::value::show (buffer.size)
-                   % pnet::type::value::show (*buffer.alignment)
-                   ).str();
+                     </memory-buffer>)EOS"
+                   , buffer.name
+                   , pnet::type::value::show (buffer.size)
+                   , pnet::type::value::show (*buffer.alignment)
+                   );
           }
         }
 
         std::string create_alignment_test (BufferInfo const& buffer)
         {
-          return ( ::boost::format (R"EOS(
-                   if (!::boost::alignment::is_aligned (%1%, %2%))
-                   {
-                     throw std::runtime_error ("Buffer not %1%-bytes aligned!");
-                   })EOS")
-                 % buffer.alignment.get_value_or (1)
-                 % buffer.name
-                 ).str();
+          return fmt::format (R"EOS(
+                   if (!is_aligned ({0}, {1}))
+                   {{
+                     throw std::runtime_error ("Buffer not {0}-bytes aligned!");
+                   }})EOS"
+                 , buffer.alignment.get_value_or (1)
+                 , buffer.name
+                 );
         }
       }
 
@@ -76,7 +78,7 @@ namespace we
           buffer_names.emplace_back (buffer.name);
         }
 
-        return ( ::boost::format (R"EOS(
+        return fmt::format (R"EOS(
                  <defun name="arbitrary_buffer_sizes_and_alignments">
                    <in name="start" type="control" place="start"/>
                    <out name="done" type="control" place="done"/>
@@ -87,16 +89,22 @@ namespace we
                        <defun>
                          <in name="start" type="control"/>
                          <out name="done" type="control"/>
-                         %1%
+                         {0}
                          <module name="arbitrary_alignments"
-                                 function="done test (%2%)">
+                                 function="done test ({1})">
                            <cinclude href="stdexcept"/>
                            <cinclude href="inttypes.h"/>
                            <cinclude href="iostream"/>
-                           <cinclude href="boost/align/is_aligned.hpp"/>
-                           <cxx flag="--std=c++11"/>
+                           <cxx flag="--std=c++17"/>
                            <code><![CDATA[
-                             %3%
+                             auto is_aligned
+                               {{ [] (std::size_t alignment, void const* ptr)
+                                 {{
+                                   auto const value {{(std::size_t)ptr}};
+                                   return (value & (alignment - 1)) == 0;
+                                 }}
+                               }};
+                             {2}
                              return we::type::literal::control();
                            ]]></code>
                          </module>
@@ -105,11 +113,11 @@ namespace we
                        <connect-out port="done" place="done"/>
                      </transition>
                    </net>
-                 </defun>)EOS")
-               % buffer_descriptions
-               % fhg::util::print_container ("", ",", "", buffer_names)
-               % alignment_tests
-               ).str();
+                 </defun>)EOS"
+               , buffer_descriptions
+               , fhg::util::print_container ("", ",", "", buffer_names)
+               , alignment_tests
+               );
       }
     }
   }

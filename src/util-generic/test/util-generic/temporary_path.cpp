@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <util-generic/temporary_path.hpp>
@@ -25,8 +25,7 @@ namespace fhg
     BOOST_AUTO_TEST_CASE (throws_if_unable_to_create)
     {
       BOOST_REQUIRE_THROW
-        ( temporary_path
-            {"/we hopefully don't/run as root and this is/nonexistent"};
+        ( temporary_path {"/proc/nonexistent"};
         , ::boost::system::system_error
         );
     }

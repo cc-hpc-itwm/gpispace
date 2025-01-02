@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE (coalescing_lambda)
 namespace
 {
   template<typename T>
-    struct is_T : ::boost::static_visitor<bool>
+    struct is_T : private ::boost::static_visitor<bool>
   {
     bool operator() (T const&) const { return true; }
     template<typename U> bool operator() (U) const { return false; }
@@ -109,13 +109,13 @@ namespace fhg
 {
   namespace util
   {
+    struct D
+    {
+      bool visited = false;
+    };
+
     BOOST_AUTO_TEST_CASE (allows_modifying_visited_object)
     {
-      struct D
-      {
-        bool visited = false;
-      };
-
       ::boost::variant<D> x {D{}};
 
       fhg::util::visit<void> (x, [] (D& d) { d.visited = true; }, [] {});

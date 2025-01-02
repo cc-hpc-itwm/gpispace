@@ -1,13 +1,20 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <test/parallel_reduce/module_call/JobExecutor.hpp>
 
 #include <test/parallel_reduce/module_call/remote_function/Client.hpp>
 
-#include <boost/format.hpp>
-
+#include <fmt/core.h>
+#include <fmt/ostream.h>
 #include <stdexcept>
+
+namespace fmt
+{
+  template<> struct formatter<gspc::test::parallel_reduce::module_call::Task>
+    : ostream_formatter
+  {};
+}
 
 namespace gspc
 {
@@ -22,14 +29,14 @@ namespace gspc
           if (! (task == _task && worker_name == _worker_name))
           {
             throw std::invalid_argument
-              (str ( boost::format
-                       ("JobExecutor: wrong release: {%1%,%2%} != {%3%,%4%}")
-                   % task
-                   % worker_name
-                   % _task
-                   % _worker_name
-                   )
-              );
+              { fmt::format
+                  ( "JobExecutor: wrong release: {{{},{}}} != {{{},{}}}"
+                  , task
+                  , worker_name
+                  , _task
+                  , _worker_name
+                  )
+              };
           }
 
           _released.set_value();

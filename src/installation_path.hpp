@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -6,6 +6,8 @@
 #include <util-generic/executable_path.hpp>
 
 #include <boost/filesystem/path.hpp>
+
+#include <filesystem>
 
 namespace gspc
 {
@@ -18,6 +20,9 @@ namespace gspc
     {}
     installation_path (::boost::filesystem::path const& gspc_home)
       : ::boost::filesystem::path (gspc_home)
+    {}
+    installation_path (std::filesystem::path const& gspc_home)
+      : ::boost::filesystem::path (gspc_home.string())
     {}
 
     //! \todo configure

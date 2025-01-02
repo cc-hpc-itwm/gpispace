@@ -1,4 +1,4 @@
-<!-- Copyright (C) 2023 Fraunhofer ITWM        -->
+<!-- Copyright (C) 2025 Fraunhofer ITWM        -->
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 
 <defun name="put_many_manual">
@@ -18,8 +18,14 @@
         <module name="automatic" function="generate (N, out)">
           <cinclude href="numeric"/>
           <code><![CDATA[
-          out.resize (N);
-          std::iota (out.begin(), out.end(), 0UL);
+          std::generate_n
+            ( std::back_inserter (out)
+            , N
+            , [i = 0UL]() mutable
+              {
+                return ::pnet::type::value::value_type {i++};
+              }
+            );
           ]]>
           </code>
         </module>

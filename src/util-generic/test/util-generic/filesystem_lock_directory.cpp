@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <util-generic/filesystem_lock_directory.hpp>
@@ -8,6 +8,9 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/test/unit_test.hpp>
+
+#include <FMT/boost/filesystem/path.hpp>
+#include <fmt/core.h>
 
 BOOST_AUTO_TEST_CASE (lock_fails_on_existing_path_and_does_not_remove_it)
 {
@@ -23,10 +26,11 @@ BOOST_AUTO_TEST_CASE (lock_fails_on_existing_path_and_does_not_remove_it)
     , fhg::util::testing::make_nested
         ( fhg::util::failed_to_create_lock (path)
         , std::logic_error
-            ( ( ::boost::format ("Temporary path %1% already exists.")
-              % static_cast<::boost::filesystem::path> (path)
-              ).str()
-            )
+            { fmt::format
+                ( "Temporary path {} already exists."
+                , static_cast<::boost::filesystem::path> (path)
+                )
+            }
         )
     );
 
@@ -62,10 +66,11 @@ BOOST_AUTO_TEST_CASE (second_lock_fails)
     , fhg::util::testing::make_nested
         ( fhg::util::failed_to_create_lock (path)
         , std::logic_error
-            ( ( ::boost::format ("Temporary path %1% already exists.")
-              % path
-              ).str()
-            )
+            { fmt::format
+                ( "Temporary path {} already exists."
+                , path
+                )
+            }
         )
     );
 }

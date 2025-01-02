@@ -1,11 +1,10 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <rif/strategy/meta.hpp>
 
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/join.hpp>
-#include <util-generic/nest_exceptions.hpp>
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 
 #include <rif/strategy/local.hpp>
@@ -18,9 +17,9 @@
 
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
-#include <boost/range/adaptor/map.hpp>
 #include <boost/thread/scoped_thread.hpp>
 
+#include <algorithm>
 #include <condition_variable>
 #include <mutex>
 #include <stdexcept>
@@ -79,8 +78,18 @@ namespace fhg
 
       std::vector<std::string> available_strategies()
       {
-        auto const _ (strategies | ::boost::adaptors::map_keys);
-        return {_.begin(), _.end()};
+        auto vs {std::vector<std::string>{}};
+        vs.reserve (strategies.size());
+        std::transform
+          ( std::begin (strategies), std::end (strategies)
+          , std::back_inserter (vs)
+          , [] (auto const& kv)
+            {
+              auto const& [key, value] {kv};
+              return key;
+            }
+          );
+        return vs;
       }
 
       namespace

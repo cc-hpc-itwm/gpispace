@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <util-generic/latch.hpp>
@@ -10,6 +10,7 @@
 
 #include <chrono>
 #include <thread>
+#include <stdexcept>
 
 BOOST_AUTO_TEST_CASE
   (zero_threads_are_fine_if_just_not_used, *::boost::unit_test::timeout (10))

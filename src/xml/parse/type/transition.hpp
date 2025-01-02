@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -35,7 +35,7 @@ namespace xml
         using eurekas_type = fhg::pnet::util::unique<eureka_type>;
         using place_maps_type = fhg::pnet::util::unique<place_map_type>;
 
-        using function_or_use_type = ::boost::variant<function_type, use_type>;
+        using function_or_use_type = std::variant<function_type, use_type>;
 
         transition_type ( util::position_type const&
                         , function_or_use_type const&

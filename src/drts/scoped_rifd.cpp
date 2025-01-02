@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <drts/scoped_rifd.hpp>
@@ -15,10 +15,10 @@
 #include <rif/client.hpp>
 #include <rif/strategy/meta.hpp>
 
-#include <boost/format.hpp>
-#include <boost/range/adaptor/map.hpp>
 #include <boost/serialization/unordered_map.hpp>
 
+#include <algorithm>
+#include <fmt/core.h>
 #include <iterator>
 
 namespace gspc
@@ -123,10 +123,8 @@ namespace gspc
             ( hostname
             , std::make_exception_ptr
               ( std::invalid_argument
-                  (( ::boost::format ("bootstrap: duplicate host %1%")
-                   % hostname
-                   ).str()
-                  )
+                  { fmt::format ("bootstrap: duplicate host {}", hostname)
+                  }
               )
             );
         }
@@ -136,13 +134,14 @@ namespace gspc
                 , std::unordered_map<std::string, std::exception_ptr>
                 , std::unordered_map<std::string, std::string>
                 > const boot
-        ( fhg::rif::strategy::bootstrap ( _strategy
-                                        , no_duplicates
-                                        , _port
-                                        , _installation.gspc_home()
-                                        , _parameters
-                                        , out
-                                        )
+        ( fhg::rif::strategy::bootstrap
+          ( _strategy
+          , no_duplicates
+          , _port
+          , ::boost::filesystem::path {_installation.gspc_home().string()}
+          , _parameters
+          , out
+          )
         );
 
       std::unordered_map<std::string, std::string> const& real_hostname
@@ -153,10 +152,11 @@ namespace gspc
         if (!_entry_points.emplace (new_entry_point).second)
         {
           throw std::logic_error
-            (( ::boost::format ("STRANGE: duplicate key '%1%'!?")
-             % new_entry_point.first
-             ).str()
-            );
+            { fmt::format
+                ( "STRANGE: duplicate key '{}'!?"
+                , new_entry_point.first
+                )
+            };
         }
 
         _real_hostnames.emplace
@@ -220,10 +220,7 @@ namespace gspc
           if (pos == _entry_points.end())
           {
             throw std::invalid_argument
-              (( ::boost::format ("execute: unknown host '%1%'")
-               % hostname
-               ).str()
-              );
+              {fmt::format ("execute: unknown host '{}'", hostname)};
           }
 
           clients.emplace_back (io_service, pos->second);
@@ -274,19 +271,20 @@ namespace gspc
   namespace
   {
     template<typename Key, typename Value>
-      std::vector<Key> keys (std::unordered_map<Key, Value> const& map)
-    {
-      auto range (map | ::boost::adaptors::map_keys);
-
-      return {std::begin (range), std::end (range)};
-    }
-
-    template<typename Key, typename Value>
       std::vector<Value> values (std::unordered_map<Key, Value> const& map)
     {
-      auto range (map | ::boost::adaptors::map_values);
-
-      return {std::begin (range), std::end (range)};
+      auto vs {std::vector<Value>{}};
+      vs.reserve (map.size());
+      std::transform
+        ( std::begin (map), std::end (map)
+        , std::back_inserter (vs)
+        , [] (auto const& kv)
+          {
+            auto const& [key, value] {kv};
+            return value;
+          }
+        );
+      return vs;
     }
   }
 

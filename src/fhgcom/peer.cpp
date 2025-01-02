@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <fhgcom/peer.hpp>
@@ -10,10 +10,10 @@
 // should only need ssl/context.hpp, but that's missing an include
 #include <boost/asio/ssl.hpp>
 #include <boost/filesystem/operations.hpp>
-#include <boost/format.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/system/system_error.hpp>
 
+#include <fmt/core.h>
 #include <future>
 #include <stdexcept>
 #include <utility>
@@ -46,7 +46,7 @@ namespace fhg
     peer_t::peer_t ( std::unique_ptr<::boost::asio::io_service> io_service
                    , host_t const& host
                    , port_t const& port
-                   , Certificates const& certificates
+                   , gspc::Certificates const& certificates
                    )
       : io_service_ (std::move (io_service))
       , strand_ (*io_service_)
@@ -60,7 +60,7 @@ namespace fhg
       {
         lock_type const _ (mutex_);
 
-        if (certificates)
+        if (certificates.path.has_value())
         {
           std::lock_guard<std::mutex> lock_context
             (ssl_context_threadunsafety_guard);
@@ -74,14 +74,14 @@ namespace fhg
                             );
 
           ctx_->use_certificate_chain_file
-            (::boost::filesystem::canonical (certificates.get()/"server.crt").string());
+            (std::filesystem::canonical (certificates.path.value()/"server.crt").string());
 
           ctx_->use_private_key_file
-            (::boost::filesystem::canonical ( certificates.get()/"server.key").string()
-                                          , ::boost::asio::ssl::context::pem
-                                          );
+           ( std::filesystem::canonical (certificates.path.value()/"server.key").string()
+           , ::boost::asio::ssl::context::pem
+           );
           ctx_->use_tmp_dh_file
-            (::boost::filesystem::canonical (certificates.get()/"dh2048.pem").string());
+            (std::filesystem::canonical (certificates.path.value()/"dh2048.pem").string());
 
           ctx_->set_verify_mode
             ( ::boost::asio::ssl::context::verify_fail_if_no_peer_cert
@@ -89,7 +89,7 @@ namespace fhg
             );
 
           ctx_->load_verify_file
-            (::boost::filesystem::canonical (certificates.get()/"server.crt").string());
+            (std::filesystem::canonical (certificates.path.value()/"server.crt").string());
         }
 
         ::boost::asio::ip::tcp::resolver resolver(*io_service_);
@@ -172,11 +172,12 @@ namespace fhg
         if (connections_.find (addr) != connections_.end())
         {
           throw std::logic_error
-            (str ( boost::format ("already connected to %1%:%2%")
-                 % static_cast<std::string> (host)
-                 % to_string (port)
-                 )
-            );
+            { fmt::format
+                ( "already connected to {}:{}"
+                , static_cast<std::string> (host)
+                , to_string (port)
+                )
+            };
         }
       }
 

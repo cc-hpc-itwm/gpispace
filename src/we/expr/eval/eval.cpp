@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <we/expr/eval/eval.hpp>
@@ -11,8 +11,9 @@
 #include <we/type/value/function.hpp>
 #include <we/type/value/show.hpp>
 
-#include <boost/format.hpp>
-
+#include <FMT/we/expr/token/show.hpp>
+#include <FMT/we/type/value/show.hpp>
+#include <fmt/core.h>
 #include <stdexcept>
 
 namespace expr
@@ -136,19 +137,19 @@ namespace expr
                 catch (...)
                   {
                     throw expr::exception::eval::type_error
-                      (( ::boost::format ("map_assign (%1%, %2%, %3%)")
-                       % pnet::type::value::show (c0)
-                       % pnet::type::value::show (c1)
-                       % pnet::type::value::show (c2)
-                       ).str()
-                      );
+                      { fmt::format ( "map_assign ({}, {}, {})"
+                                    , pnet::type::value::show (c0)
+                                    , pnet::type::value::show (c1)
+                                    , pnet::type::value::show (c2)
+                                    )
+                      };
                   }
               }
             default: throw std::runtime_error
-                (( ::boost::format ("eval-ternary (%1%)")
-                 % expr::token::show (t.token)
-                 ).str()
-                );
+                { fmt::format ( "eval-ternary ({})"
+                              , expr::token::show (t.token)
+                              )
+                };
             }
         }
       };

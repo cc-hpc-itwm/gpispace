@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <aggregate_sum/WorkflowResult.hpp>
@@ -10,9 +10,15 @@
 #include <util-generic/cxx17/holds_alternative.hpp>
 #include <util-generic/join.hpp>
 
-#include <boost/format.hpp>
-
+#include <fmt/core.h>
+#include <fmt/ostream.h>
 #include <stdexcept>
+
+namespace fmt
+{
+  template<> struct formatter<pnet::type::value::show> : ostream_formatter{};
+  template<> struct formatter<pnet::type::signature::show> : ostream_formatter{};
+}
 
 namespace aggregate_sum
 {
@@ -26,24 +32,28 @@ namespace aggregate_sum
     if (count != expected_count)
     {
       throw std::logic_error
-        (str ( boost::format ("Expected count '%1%' for key '%2%': Got count '%3%' in { %4% }")
-              % expected_count
-              % key
-              % count
-              % fhg::util::join
-                ( _values_on_ports, ","
-                , [] (auto& os, auto const& kv) -> decltype (os)
-                  {
-                    return os << kv.first << " = " << pnet::type::value::show (kv.second);
-                  }
-                )
-              )
-        );
+        { fmt::format
+            ( "Expected count '{}' for key '{}': Got count '{}' in {{ {} }}"
+            , expected_count
+            , key
+            , count
+            , fhg::util::join
+              ( _values_on_ports, ","
+              , [] (auto& os, auto const& kv) -> decltype (os)
+                {
+                  return os << kv.first << " = " << pnet::type::value::show (kv.second);
+                }
+              ).string()
+            )
+        };
     }
   }
 
   template<typename T, typename TypeDescription>
-    T const& WorkflowResult::get_impl (Key key, TypeDescription type_description) const
+    T const& WorkflowResult::at_implementation
+      ( Key key
+      , TypeDescription type_description
+      ) const
   {
     assert_key_count (key, 1);
 
@@ -52,19 +62,20 @@ namespace aggregate_sum
     if (!fhg::util::cxx17::holds_alternative<T> (value))
     {
       throw std::logic_error
-        (str ( boost::format ("Inconsistency: Expected type '%1%'. Got value '%2%' with signature '%3%'.")
-             % type_description
-             % pnet::type::value::show (value)
-             % pnet::type::signature::show (pnet::signature_of (value))
-             )
-        );
+        { fmt::format
+            ( "Inconsistency: Expected type '{}'. Got value '{}' with signature '{}'."
+            , type_description
+            , pnet::type::value::show (value)
+            , pnet::type::signature::show (pnet::signature_of (value))
+            )
+        };
     }
 
     return boost::get<T> (value);
   }
 
-  template<> int const& WorkflowResult::get (Key key) const
+  template<> int const& WorkflowResult::at (Key key) const
   {
-    return get_impl<int> (key, "int");
+    return at_implementation<int> (key, "int");
   }
 }

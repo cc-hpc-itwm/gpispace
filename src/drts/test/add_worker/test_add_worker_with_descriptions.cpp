@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -31,10 +31,10 @@
 #include <we/type/value/boost/test/printer.hpp>
 
 #include <boost/filesystem.hpp>
-#include <boost/format.hpp>
 #include <boost/program_options.hpp>
 #include <boost/test/data/test_case.hpp>
 
+#include <fmt/core.h>
 #include <iostream>
 #include <list>
 #include <set>
@@ -184,7 +184,7 @@ BOOST_AUTO_TEST_CASE (add_workers_with_different_descriptions)
 
     std::vector<gspc::worker_description> descriptions;
     descriptions.emplace_back
-      (std::vector<std::string> {capabilities[k++]}, 1, 0, 0, ::boost::none, ::boost::none);
+      (std::vector<std::string> {capabilities[k++]}, 1, 0, 0, std::nullopt, std::nullopt);
     drts.add_worker (descriptions, rifd.entry_points(), certificates);
   }
 
@@ -199,8 +199,7 @@ BOOST_AUTO_TEST_CASE (add_workers_with_different_descriptions)
       {
         if (!announced_workers.emplace (w).second)
         {
-          throw std::runtime_error
-            (str (boost::format ("Duplicate worker '%1%'") % w));
+          throw std::runtime_error {fmt::format ("Duplicate worker '{}'", w)};
         }
       }
     , fhg::rpc::not_yielding

@@ -1,0 +1,68 @@
+<!-- Copyright (C) 2025 Fraunhofer ITWM        -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+
+<defun name="number_of_tokens_put_token_updates_the_number_of_tokens">
+
+  <properties name="drts">
+    <property key="wait_for_output" value="true"/>
+  </properties>
+
+  <in name="n" type="unsigned long" place="n"/>
+  <out name="sum" type="unsigned long" place="sum"/>
+
+  <net>
+    <place name="n" type="unsigned long"/>
+    <place name="sum" type="unsigned long"/>
+
+    <place name="value" type="unsigned long" put_token="true"/>
+
+    <transition name="delay">
+      <defun>
+        <in name="n" type="unsigned long"/>
+        <in name="number_of_values" type="unsigned long"/>
+        <out name="sum" type="unsigned long"/>
+        <expression>
+          ${sum} := 0UL
+        </expression>
+        <condition>
+          ${number_of_values} :ge: ${n}
+        </condition>
+      </defun>
+      <connect-in port="n" place="n"/>
+      <connect-out port="sum" place="accu"/>
+      <connect-number-of-tokens port="number_of_values" place="value"/>
+    </transition>
+
+    <place name="accu" type="unsigned long"/>
+
+    <transition name="sum">
+      <defun>
+        <inout name="sum" type="unsigned long"/>
+        <in name="value" type="unsigned long"/>
+        <expression>
+          ${sum} := ${sum} + ${value}
+        </expression>
+      </defun>
+      <connect-inout port="sum" place="accu"/>
+      <connect-in port="value" place="value"/>
+    </transition>
+
+    <place name="generator_done" type="control" put_token="true"/>
+
+    <transition name="done">
+      <defun>
+        <in name="number_of_values" type="unsigned long"/>
+        <in name="done" type="control"/>
+        <inout name="sum" type="unsigned long"/>
+        <expression/>
+        <condition>
+          ${number_of_values} :eq: 0UL
+        </condition>
+      </defun>
+      <connect-number-of-tokens port="number_of_values" place="value"/>
+      <connect-in port="done" place="generator_done"/>
+      <connect-in port="sum" place="accu"/>
+      <connect-out port="sum" place="sum"/>
+    </transition>
+  </net>
+</defun>

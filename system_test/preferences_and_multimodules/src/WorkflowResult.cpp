@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <preferences_and_multimodules/WorkflowResult.hpp>
@@ -10,12 +10,18 @@
 #include <util-generic/cxx17/holds_alternative.hpp>
 #include <util-generic/join.hpp>
 
-#include <boost/format.hpp>
-
+#include <fmt/core.h>
+#include <fmt/ostream.h>
 #include <algorithm>
 #include <stdexcept>
 #include <string>
 #include <vector>
+
+namespace fmt
+{
+  template<> struct formatter<pnet::type::value::show> : ostream_formatter{};
+  template<> struct formatter<pnet::type::signature::show> : ostream_formatter{};
+}
 
 namespace preferences_and_multimodules
 {
@@ -23,14 +29,14 @@ namespace preferences_and_multimodules
     { [] (auto const& value, auto const& type_description)
       {
         throw std::logic_error
-          ( ( boost::format ("Inconsistency: Expected type '%1%'. "
-                             "Got value '%2%' with signature '%3%'."
-                            )
-            % type_description
-            % pnet::type::value::show (value)
-            % pnet::type::signature::show (pnet::signature_of (value))
-            ).str()
-          );
+          { fmt::format
+              ( "Inconsistency: Expected type '{}'. "
+                "Got value '{}' with signature '{}'."
+              , type_description
+              , pnet::type::value::show (value)
+              , pnet::type::signature::show (pnet::signature_of (value))
+              )
+          };
       }
     };
 
@@ -44,28 +50,28 @@ namespace preferences_and_multimodules
     if (count != expected_count)
     {
       throw std::logic_error
-        (str ( boost::format ("Expected count '%1%' for key '%2%': "
-                              "Got count '%3%' in { %4% }"
-                             )
-              % expected_count
-              % key
-              % count
-              % fhg::util::join
-                  ( _values_on_ports, ","
-                  , [] (auto& os, auto const& kv) -> decltype (os)
-                    {
-                      return os << kv.first
-                                << " = "
-                                << pnet::type::value::show (kv.second);
-                    }
-                  )
-              )
-        );
+        { fmt::format
+            ( "Expected count '{}' for key '{}': "
+              "Got count '{}' in {{ {} }}"
+            , expected_count
+            , key
+            , count
+            , fhg::util::join
+                ( _values_on_ports, ","
+                , [] (auto& os, auto const& kv) -> decltype (os)
+                  {
+                    return os << kv.first
+                              << " = "
+                              << pnet::type::value::show (kv.second);
+                  }
+                ).string()
+            )
+        };
     }
   }
 
   template<typename T, typename TypeDescription>
-    T const& WorkflowResult::get_impl
+    T const& WorkflowResult::at_implementation
       (Key key, TypeDescription type_description) const
   {
     assert_key_count (key, 1);
@@ -81,14 +87,17 @@ namespace preferences_and_multimodules
   }
 
   template<>
-    we::type::literal::control const& WorkflowResult::get (Key key) const
+    we::type::literal::control const& WorkflowResult::at (Key key) const
   {
-    return get_impl<we::type::literal::control> (key, "control");
+    return at_implementation<we::type::literal::control> (key, "control");
   }
 
   template<typename T, typename TypeDescription>
-    std::vector<std::string> WorkflowResult::get_all_impl
-      (Key key, TypeDescription type_description, std::size_t expected_count) const
+    std::vector<std::string> WorkflowResult::at_all_implementation
+      ( Key key
+      , TypeDescription type_description
+      , std::size_t expected_count
+      ) const
   {
     assert_key_count (key, expected_count);
 
@@ -115,9 +124,9 @@ namespace preferences_and_multimodules
   }
 
   template<>
-    std::vector<std::string> WorkflowResult::get_all
+    std::vector<std::string> WorkflowResult::at_all
       (Key key, std::size_t expected_count) const
   {
-    return get_all_impl<std::string> (key, "string", expected_count);
+    return at_all_implementation<std::string> (key, "string", expected_count);
   }
 }

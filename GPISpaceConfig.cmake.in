@@ -53,7 +53,7 @@ set (GSPC_WITH_MONITOR_APP "@GSPC_WITH_MONITOR_APP@")
 set (GSPC_WITH_IML "@GSPC_WITH_IML@")
 
 # \todo remove, done by GPISpaceConfigVersion.cmake now
-set_and_check (GSPC_VERSION_FILE "${GSPC_HOME}/version")
+set_and_check (GSPC_VERSION_FILE "${GSPC_HOME}/gspc_version")
 # \todo remove, legacy
 set (GSPC_VERSION "@PROJECT_VERSION@")
 
@@ -146,6 +146,16 @@ if (NOT _boost_po_link_workaround IN_LIST _current_options)
     PROPERTY INTERFACE_LINK_OPTIONS ${_boost_po_link_workaround}
   )
 endif()
+
+###############################################################################
+# Dependency: fmt
+###############################################################################
+
+set (fmt_ROOT "${GSPC_HOME}")
+find_dependency (fmt REQUIRED)
+add_library (fmt INTERFACE)
+target_link_libraries (fmt INTERFACE fmt::fmt)
+target_compile_definitions (fmt INTERFACE FMT_HEADER_ONLY)
 
 ###############################################################################
 # Dependency: Util-Generic
@@ -246,6 +256,7 @@ target_link_libraries (GPISpace::execution
             Boost::program_options
             Boost::serialization
             Boost::thread
+            fmt
 )
 target_compile_definitions (GPISpace::execution
   INTERFACE
@@ -257,6 +268,11 @@ set_target_properties (GPISpace::pnetc PROPERTIES
   IMPORTED_LOCATION "${GSPC_pnetc_BINARY}"
 )
 
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9)
+    set (CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE} -lstdc++fs")
+  endif()
+endif()
 
 ###############################################################################
 # deployment helpers
@@ -551,7 +567,7 @@ macro (_GPISpace_deploy_do_installs_individual)
   install (PROGRAMS ${_bundled_libraries}
     DESTINATION "${ARG_DESTINATION}/libexec/bundle/lib"
   )
-  install (FILES "${GSPC_HOME}/version"
+  install (FILES "${GSPC_HOME}/gspc_version"
     DESTINATION "${ARG_DESTINATION}"
   )
 endmacro()

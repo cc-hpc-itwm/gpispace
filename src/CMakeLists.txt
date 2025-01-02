@@ -18,6 +18,8 @@ gspc_add_library (NAME fhgcom
     PUBLIC Boost::filesystem
     PUBLIC Boost::system
     PUBLIC Boost::thread
+    PUBLIC fmt
+    PUBLIC GPISpace-header-only
 )
 add_subdirectory (fhgcom/tests)
 
@@ -104,6 +106,7 @@ gspc_add_library (NAME pnet
           "we/type/value/path/join.cpp"
           "we/type/value/path/split.cpp"
           "we/type/value/peek.cpp"
+          "we/type/value/peek_or_die.cpp"
           "we/type/value/poke.cpp"
           "we/type/value/positions.cpp"
           "we/type/value/read.cpp"

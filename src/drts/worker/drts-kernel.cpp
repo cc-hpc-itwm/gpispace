@@ -1,11 +1,10 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <drts/worker/drts.hpp>
 
 #include <fhg/util/signal_handler_manager.hpp>
 #include <util-generic/boost/program_options/validators/existing_path.hpp>
-#include <util-generic/getenv.hpp>
 #include <util-generic/print_exception.hpp>
 
 #include <boost/asio/io_service.hpp>
@@ -16,6 +15,7 @@
 
 #include <hwloc.h>
 
+#include <fmt/core.h>
 #include <memory>
 #include <set>
 #include <sstream>
@@ -64,11 +64,11 @@ namespace
     if (target_socket >= available_sockets)
     {
       throw std::runtime_error
-        ( ::boost::str ( ::boost::format ("socket out of range: %1%/%2%")
-                     % target_socket
-                     % (available_sockets-1)
-                     )
-        );
+        { fmt::format ( "socket out of range: {}/{}"
+                      , target_socket
+                      , available_sockets - 1
+                      )
+        };
     }
 
     const hwloc_obj_t obj
@@ -94,13 +94,13 @@ namespace
       }
 
       throw std::runtime_error
-        ( ::boost::str
-        ( ::boost::format ("could not bind to socket #%1% with cpuset %2%: %3%")
-        % target_socket
-        % cpuset_string.data()
-        % strerror (errno)
-        )
-        );
+        { fmt::format
+            ( "could not bind to socket #{} with cpuset {}: {}"
+            , target_socket
+            , cpuset_string.data()
+            , strerror (errno)
+            )
+        };
     }
 
     hwloc_topology_destroy (topology);
@@ -233,7 +233,7 @@ int main (int ac, char **av)
       set_numa_socket (vm.at (option_name::socket).as<std::size_t>());
     }
 
-    fhg::com::Certificates certificates;
+    gspc::Certificates certificates;
 
     if (vm.count (option_name::certificates))
     {

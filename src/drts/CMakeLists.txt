@@ -57,6 +57,7 @@ gspc_add_library (NAME gspc
             # to provide public API.
             pnet
             rif-started_process_promise
+            fmt
   INSTALL
   CREATE_BUNDLE_INFO
 )

@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <fhg/util/num/show.hpp>
@@ -7,7 +7,7 @@
 
 namespace
 {
-  class visitor_show : public ::boost::static_visitor<std::ostream&>
+  class visitor_show
   {
   public:
     visitor_show (std::ostream& os)
@@ -48,7 +48,7 @@ std::ostream& operator<< (std::ostream& os, fhg::util::num_type const& v)
 {
   const std::ios_base::fmtflags ff (os.flags());
   os << std::showpoint;
-  ::boost::apply_visitor (visitor_show (os), v);
+  std::visit (visitor_show (os), v);
   os.flags (ff);
   return os;
 }

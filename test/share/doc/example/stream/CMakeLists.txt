@@ -17,6 +17,7 @@ fhg_add_test (NAME doc_example_stream_two_module_calls
             fhg-util
             Boost::program_options
             Boost::filesystem
+            fmt
   REQUIRES_INSTALLATION
   REQUIRES_VIRTUAL_MEMORY
   START_SCOPED_RIF
@@ -40,6 +41,7 @@ fhg_add_test (NAME doc_example_stream_one_module_call
             fhg-util
             Boost::program_options
             Boost::filesystem
+            fmt
   REQUIRES_INSTALLATION
   REQUIRES_VIRTUAL_MEMORY
   START_SCOPED_RIF

@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -18,18 +18,17 @@
 #include <we/type/value/poke.hpp>
 
 #include <fhg/util/system_with_blocked_SIGCHLD.hpp>
-#include <util-generic/nest_exceptions.hpp>
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/multimap.hpp>
 #include <util-generic/testing/require_container_is_permutation.hpp>
 
-#include <boost/format.hpp>
 #include <boost/program_options.hpp>
-#include <boost/range/adaptor/map.hpp>
 
 #include <algorithm>
+#include <exception>
 #include <map>
+#include <stdexcept>
 #include <vector>
 
 namespace
@@ -143,21 +142,24 @@ BOOST_AUTO_TEST_CASE (tutorial_sum_mod)
     (shared_directory / ::boost::filesystem::unique_path());
   ::boost::filesystem::path const sum_module_dir (_sum_module_dir);
 
-  fhg::util::nest_exceptions<std::runtime_error>
-    ([&sum_module_dir, &vm]()
-     {
-       std::ostringstream make_module;
+  try
+  {
+    std::ostringstream make_module;
 
-       make_module
-         << "make"
-         << " DIR_BUILD=" << sum_module_dir
-         << " -C " << (test::source_directory (vm) / "src")
-         ;
+    make_module
+      << "make"
+      << " DIR_BUILD=" << sum_module_dir
+      << " -C " << (test::source_directory (vm) / "src")
+      ;
 
-       fhg::util::system_with_blocked_SIGCHLD (make_module.str());
-     }
-    , "Could not 'make sum_module'"
-    );
+    fhg::util::system_with_blocked_SIGCHLD (make_module.str());
+  }
+  catch (...)
+  {
+    std::throw_with_nested
+      ( std::runtime_error {"Could not 'make sum_module'"}
+      );
+  }
 
   gspc::installation const installation (vm);
 

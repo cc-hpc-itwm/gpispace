@@ -1,12 +1,13 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <we/plugin/Plugin.hpp>
 
 #include <util-generic/print_exception.hpp>
 
-#include <boost/format.hpp>
-
+#include <FMT/util-generic/exception_printer.hpp>
+#include <exception>
+#include <fmt/core.h>
 #include <stdexcept>
 #include <utility>
 
@@ -30,10 +31,11 @@ namespace gspc
         catch (...)
         {
           throw std::runtime_error
-            (str ( ::boost::format ("Exception in gspc_we_plugin_create: %1%")
-                 % fhg::util::current_exception_printer()
-                 )
-            );
+            { fmt::format
+                ( "Exception in gspc_we_plugin_create: {}"
+                , fhg::util::exception_printer (std::current_exception())
+                )
+            };
         }
       }
 

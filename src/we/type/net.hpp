@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -25,6 +25,7 @@
 #include <forward_list>
 #include <functional>
 #include <iosfwd>
+#include <optional>
 #include <random>
 #include <stdexcept>
 #include <string>
@@ -38,16 +39,18 @@ namespace we
   {
     struct PT{};
     struct PT_READ{};
+    struct PT_NUMBER_OF_TOKENS{};
     struct TP{};
     struct TP_MANY{};
 
     //! \todo eliminate this, instead use subclasses of connection
-    using type = ::boost::variant<PT, PT_READ, TP, TP_MANY>;
+    using type = ::boost::variant<PT, PT_READ, PT_NUMBER_OF_TOKENS, TP, TP_MANY>;
 
     bool is_incoming (type const&);
 
     std::ostream& operator<< (std::ostream&, PT const&);
     std::ostream& operator<< (std::ostream&, PT_READ const&);
+    std::ostream& operator<< (std::ostream&, PT_NUMBER_OF_TOKENS const&);
     std::ostream& operator<< (std::ostream&, TP const&);
     std::ostream& operator<< (std::ostream&, TP_MANY const&);
   }
@@ -64,31 +67,75 @@ namespace we
         , ::boost::bimaps::unordered_multiset_of<transition_id_type, std::hash<transition_id_type>>
         , ::boost::bimaps::set_of_relation<>
         >;
+
+      struct PlaceIDWithProperty
+      {
+        place_id_type _place_id;
+        we::type::property::type _property;
+
+        template<typename Archive>
+          auto serialize (Archive& ar, unsigned int) -> void
+        {
+          ar & _place_id & _property;
+        }
+      };
+
       using port_to_place_type = std::unordered_map
         < transition_id_type
-        , std::unordered_map< port_id_type
-                            , std::pair<place_id_type, we::type::property::type>
-                            >
+        , std::unordered_map<port_id_type, PlaceIDWithProperty>
         >;
+
+      struct ResponseWithProperty
+      {
+        std::string _to;
+        we::type::property::type _property;
+
+        template<typename Archive>
+          auto serialize (Archive& ar, unsigned int) -> void
+        {
+          ar & _to & _property;
+        }
+      };
+
       using port_to_response_type = std::unordered_map
         < transition_id_type
-        , std::unordered_map< port_id_type
-                            , std::pair<std::string, we::type::property::type>
-                            >
+        , std::unordered_map<port_id_type, ResponseWithProperty>
         >;
       using port_to_eureka_type = std::unordered_map
         < transition_id_type
         , port_id_type
         >;
+
+      struct PortIDWithProperty
+      {
+        port_id_type _port_id;
+        we::type::property::type _property;
+
+        template<typename Archive>
+          auto serialize (Archive& ar, unsigned int) -> void
+        {
+          ar & _port_id & _property;
+        }
+      };
+
       using place_to_port_type = std::unordered_map
         < transition_id_type
-        , std::unordered_map< place_id_type
-                            , std::pair<port_id_type, we::type::property::type>
-                            >
+        , std::unordered_map<place_id_type, PortIDWithProperty>
         >;
       using token_by_id_type =
         std::unordered_map<token_id_type, pnet::type::value::value_type>;
 
+      struct SelectedToken
+      {
+        token_id_type _id;
+        bool _is_read;
+
+        template<typename Archive>
+          auto serialize (Archive& ar, unsigned long) -> void
+        {
+          ar & _id & _is_read;
+        }
+      };
 
       place_id_type add_place (place::type const&);
       transition_id_type add_transition (we::type::Transition const&);
@@ -159,10 +206,30 @@ namespace we
       bool might_have_tasks_requiring_multiple_workers() const;
       bool might_use_modules_with_multiple_implementations() const;
 
+      [[nodiscard]] auto number_of_tokens_place
+        ( place_id_type
+        ) const noexcept -> std::optional<place_id_type>
+        ;
+
     private:
       place_id_type _place_id;
       std::unordered_map<place_id_type, place::type> _pmap;
       std::unordered_map<std::string, place_id_type> _place_id_by_name;
+
+      std::unordered_map<place_id_type, place_id_type> _number_of_tokens_place;
+      std::unordered_map
+        < transition_id_type
+        , std::unordered_map<port_id_type, place_id_type>
+        > _consumed_from_places_by_port;
+
+      [[nodiscard]] auto add_number_of_tokens_place
+        ( place_id_type
+        ) -> place_id_type
+        ;
+      auto increment_number_of_tokens (place_id_type) -> void;
+      auto decrement_number_of_tokens (place_id_type) -> void;
+      template<typename Update>
+        auto update_number_of_tokens (place_id_type, Update&&) -> void;
 
       transition_id_type _transition_id;
       std::unordered_map<transition_id_type, we::type::Transition> _tmap;
@@ -193,16 +260,17 @@ namespace we
 
       std::unordered_map
         < transition_id_type
-        , std::unordered_map<place_id_type, std::pair<token_id_type, bool>>
+        , std::unordered_map<place_id_type, SelectedToken>
         > _enabled_choice;
 
-      using to_be_updated_type = std::pair<place_id_type, token_id_type>;
+      struct ToBeUpdated
+      {
+        place_id_type _place_id;
+        token_id_type _token_id;
+      };
 
       void update_enabled (transition_id_type);
-      void update_enabled_put_token
-        ( transition_id_type
-        , to_be_updated_type const&
-        );
+      void update_enabled_put_token (transition_id_type, ToBeUpdated const&);
 
       void disable (transition_id_type);
 
@@ -217,18 +285,22 @@ namespace we
         , gspc::we::plugin::PutToken
         );
 
-      using token_to_be_deleted_type = std::pair<place_id_type, token_id_type>;
+      struct ToBeDeleted
+      {
+        place_id_type _place_id;
+        token_id_type _token_id;
+      };
 
-      std::forward_list<token_to_be_deleted_type> do_extract
+      std::forward_list<ToBeDeleted> do_extract
         ( transition_id_type
         , std::function
             <void (port_id_type, pnet::type::value::value_type const&)>
         ) const;
-      void do_delete (std::forward_list<token_to_be_deleted_type> const&);
+      void do_delete (std::forward_list<ToBeDeleted> const&);
 
-      to_be_updated_type do_put_value
+      ToBeUpdated do_put_value
         (place_id_type, pnet::type::value::value_type const&);
-      void do_update (to_be_updated_type const&);
+      void do_update (ToBeUpdated const&);
 
       friend class ::boost::serialization::access;
       template<typename Archive>
@@ -237,6 +309,8 @@ namespace we
         ar & _place_id;
         ar & _pmap;
         ar & _place_id_by_name;
+        ar & _number_of_tokens_place;
+        ar & _consumed_from_places_by_port;
         ar & _transition_id;
         ar & _tmap;
         ar & _adj_pt_consume;

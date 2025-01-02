@@ -1,11 +1,12 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <util-generic/filesystem_lock_directory.hpp>
 
-#include <boost/format.hpp>
-
+#include <FMT/boost/filesystem/path.hpp>
 #include <exception>
+#include <fmt/core.h>
+#include <stdexcept>
 
 namespace fhg
 {
@@ -14,10 +15,8 @@ namespace fhg
     failed_to_create_lock::failed_to_create_lock
       (::boost::filesystem::path const& path)
         : std::runtime_error
-          ( ( ::boost::format ("Failed to create lock for %1%.")
-            % path
-            ).str()
-          )
+          { fmt::format ("Failed to create lock for {}.", path)
+          }
         , _path (path)
     {}
 

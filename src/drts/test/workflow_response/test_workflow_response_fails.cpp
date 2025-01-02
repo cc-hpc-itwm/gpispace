@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -37,6 +37,7 @@
 #include <boost/program_options.hpp>
 #include <boost/test/data/test_case.hpp>
 
+#include <fmt/core.h>
 #include <future>
 #include <map>
 #include <regex>
@@ -172,11 +173,12 @@ BOOST_AUTO_TEST_CASE (response_fails_if_workflow_fails_after_requesting)
         if (!fhg::util::ends_with (lhs.what(), rhs.what()))
         {
           throw std::logic_error
-            ( ( ::boost::format ("Wrong message: '%1%' does not ends with '%2%'.")
-              % rhs.what()
-              % lhs.what()
-              ).str()
-            );
+            { fmt::format
+                ( "Wrong message: '{}' does not ends with '{}'."
+                , rhs.what()
+                , lhs.what()
+                )
+            };
         }
       }
     );

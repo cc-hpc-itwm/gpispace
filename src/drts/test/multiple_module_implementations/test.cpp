@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -12,6 +12,7 @@
 #include <testing/scoped_nodefile_from_environment.hpp>
 #include <testing/shared_directory.hpp>
 #include <testing/source_directory.hpp>
+#include <testing/fmt_directory.hpp>
 
 #include <util-generic/read_lines.hpp>
 #include <util-generic/temporary_file.hpp>
@@ -33,6 +34,7 @@ BOOST_AUTO_TEST_CASE (multiple_module_implementations)
 
   options_description.add (test::options::source_directory());
   options_description.add (test::options::shared_directory());
+  options_description.add (test::options::fmt_directory());
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::logging());
@@ -73,6 +75,10 @@ BOOST_AUTO_TEST_CASE (multiple_module_implementations)
     . add<test::option::gen::include> (test::source_directory (vm))
     . add<test::option::gen::include>
         (test::source_directory (vm).parent_path().parent_path().parent_path())
+    . add<test::option::gen::include>
+        (test::source_directory (vm).parent_path().parent_path().parent_path())
+    . add<test::option::gen::include> (test::fmt_directory (vm) / "include")
+    . add<test::option::gen::cxx_flag> ("-DFMT_HEADER_ONLY")
     );
 
   std::vector<std::string> const hosts
@@ -126,6 +132,7 @@ BOOST_AUTO_TEST_CASE (single_module_with_target)
 
   options_description.add (test::options::source_directory());
   options_description.add (test::options::shared_directory());
+  options_description.add (test::options::fmt_directory());
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::logging());
@@ -166,6 +173,8 @@ BOOST_AUTO_TEST_CASE (single_module_with_target)
     . add<test::option::gen::include> (test::source_directory (vm))
     . add<test::option::gen::include>
         (test::source_directory (vm).parent_path().parent_path().parent_path())
+    . add<test::option::gen::include> (test::fmt_directory (vm) / "include")
+    . add<test::option::gen::cxx_flag> ("-DFMT_HEADER_ONLY")
     );
 
   std::vector<std::string> const hosts

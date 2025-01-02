@@ -1,11 +1,12 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <we/plugin/Plugins.hpp>
 
-#include <boost/format.hpp>
-
+#include <FMT/boost/filesystem/path.hpp>
+#include <FMT/we/expr/eval/context.hpp>
 #include <exception>
+#include <fmt/core.h>
 #include <stdexcept>
 #include <string>
 #include <tuple>
@@ -33,11 +34,11 @@ namespace gspc
       {
         std::throw_with_nested
           ( std::runtime_error
-            (str ( ::boost::format ("Plugins::create (%1%, %2%)")
-                 % path
-                 % context
-                 )
-            )
+            { fmt::format ( "Plugins::create ({}, {})"
+                          , path
+                          , context
+                          )
+            }
           );
       }
 
@@ -55,11 +56,11 @@ namespace gspc
       {
         std::throw_with_nested
           ( std::runtime_error
-            (str ( ::boost::format ("Plugins::before_eval (%1%, %2%)")
-                 % to_string (pid)
-                 % context
-                 )
-            )
+            { fmt::format ( "Plugins::before_eval ({}, {})"
+                          , to_string (pid)
+                          , context
+                          )
+            }
           );
       }
       void Plugins::after_eval (ID pid, Context const& context)
@@ -71,11 +72,11 @@ namespace gspc
       {
         std::throw_with_nested
           ( std::runtime_error
-            (str ( ::boost::format ("Plugins::after_eval (%1%, %2%)")
-                 % to_string (pid)
-                 % context
-                 )
-            )
+            { fmt::format ( "Plugins::after_eval ({}, {})"
+                          , to_string (pid)
+                          , context
+                          )
+            }
           );
       }
 

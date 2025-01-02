@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <iml/vmem/gaspi/pc/memory/memory_area.hpp>
@@ -7,7 +7,6 @@
 
 #include <stack>
 
-#include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/make_shared.hpp>
 
@@ -16,6 +15,8 @@
 #include <iml/MemorySize.hpp>
 #include <iml/vmem/gaspi/pc/type/impl_types.hpp>
 
+#include <FMT/iml/AllocationHandle.hpp>
+#include <fmt/core.h>
 #include <util-generic/unreachable.hpp>
 
 namespace gpi
@@ -107,15 +108,15 @@ namespace gpi
         if (! (loc.offset < hdl_it->second.size && (loc.offset + size) <= hdl_it->second.size))
         {
           throw std::invalid_argument
-            ( ( ::boost::format ("out-of-bounds: access to %1%-handle:"
-                              " range [%2%,%3%) is not within [0,%4%)"
-                              )
-              % hdl_it->second.id
-              % loc.offset
-              % (loc.offset + size)
-              % hdl_it->second.size
-              ).str()
-            );
+            { fmt::format
+                ( "out-of-bounds: access to {}-handle:"
+                  " range [{},{}) is not within [0,{})"
+                , hdl_it->second.id
+                , loc.offset
+                , (loc.offset + size)
+                , hdl_it->second.size
+                )
+            };
         }
       }
 

@@ -5,12 +5,15 @@ configure_file (
   @ONLY
 )
 
-file (WRITE "${CMAKE_BINARY_DIR}/version" "${PROJECT_VERSION}")
+file (WRITE "${CMAKE_BINARY_DIR}/gspc_version" "${PROJECT_VERSION}")
 
 gspc_add_library (NAME fhg-project_configuration
   TYPE STATIC
   SOURCES "${CMAKE_CURRENT_BINARY_DIR}/project_configuration.cpp"
 )
+
+add_library (fhg_assert INTERFACE)
+target_link_libraries (fhg_assert INTERFACE fmt)
 
 gspc_add_library (NAME fhg-util
   TYPE STATIC
@@ -42,8 +45,9 @@ gspc_add_library (NAME fhg-util
             Boost::thread
             Boost::system
             Boost::filesystem
+            fhg_assert
 )
 
 add_subdirectory (util/test)
 
-install (FILES "${CMAKE_BINARY_DIR}/version" DESTINATION .)
+install (FILES "${CMAKE_BINARY_DIR}/gspc_version" DESTINATION .)

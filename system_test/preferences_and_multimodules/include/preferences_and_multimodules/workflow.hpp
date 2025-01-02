@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -24,11 +24,11 @@ namespace preferences_and_multimodules
 
     Workflow (Parameters const&);
 
-    long get_num_tasks() const;
-    std::size_t get_num_nodes () const;
-    void set_num_nodes (std::size_t);
-    std::array<std::string, NUM_PREFERENCES> get_preferences() const;
-    std::vector<unsigned long> get_num_workers_per_target() const;
+    long num_tasks() const;
+    std::size_t num_nodes() const;
+    void num_nodes (std::size_t);
+    std::array<std::string, NUM_PREFERENCES> preferences() const;
+    std::vector<unsigned long> num_workers_per_target() const;
 
     void process (WorkflowResult);
 

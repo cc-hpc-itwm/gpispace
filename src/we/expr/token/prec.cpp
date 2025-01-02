@@ -1,10 +1,10 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <we/expr/token/prec.hpp>
 
-#include <boost/format.hpp>
-
+#include <FMT/we/expr/token/show.hpp>
+#include <fmt/core.h>
 #include <stdexcept>
 
 namespace expr
@@ -37,7 +37,7 @@ namespace expr
         case token::neg: return 25;
         case token::define: return -98;
         default: throw std::runtime_error
-            ((::boost::format ("prec (%1%)") % expr::token::show (token)).str());
+            {fmt::format ("prec ({})", expr::token::show (token))};
         }
     }
   }

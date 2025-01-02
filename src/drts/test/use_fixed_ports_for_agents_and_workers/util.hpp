@@ -1,11 +1,10 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <util-generic/finally.hpp>
 #include <util-generic/syscall.hpp>
 
-#include <boost/format.hpp>
-
+#include <fmt/core.h>
 #include <string>
 
 namespace
@@ -17,10 +16,10 @@ namespace
 
     FILE* pf
       ( fhg::util::syscall::popen
-          ( ( ::boost::format
-               ("netstat -lntp | grep -w '%1%' | awk '{print $NF}' | cut -d'/' -f2")
-            % port
-            ).str().c_str()
+          ( fmt::format
+            ( "netstat -lntp | grep -w '{}' | awk '{{print $NF}}' | cut -d'/' -f2"
+            , port
+            ).c_str()
           , "r"
           )
       );

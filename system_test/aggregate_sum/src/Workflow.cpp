@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <aggregate_sum/Workflow.hpp>
@@ -9,23 +9,24 @@ namespace aggregate_sum
 {
   ParametersDescription Workflow::options()
   {
-    namespace po = boost::program_options;
-
     ParametersDescription workflow_opts ("Workflow");
-    workflow_opts.add_options()("N", po::value<int>()->required());
+    workflow_opts.add_options()
+      ( "N"
+      , ::boost::program_options::value<int>()->required()
+      );
 
     return workflow_opts;
   }
 
   Workflow::Workflow (Parameters const& args)
-    : _N (args.at ("N").as<int>())
+    : _N {args.at ("N").as<int>()}
   {}
 
   ValuesOnPorts Workflow::inputs() const
   {
     ValuesOnPorts::Map values_on_ports;
 
-    for (int i = 1; i <= _N; ++i)
+    for (int i {1}; i <= _N; ++i)
     {
       values_on_ports.emplace ("values", i);
     }
@@ -35,7 +36,7 @@ namespace aggregate_sum
 
   int Workflow::process (WorkflowResult const& results) const
   {
-    auto const& sum = results.get<int> ("sum");
+    auto const& sum {results.at<int> ("sum")};
 
     std::cout << "Aggregate Sum: " << sum << std::endl;
 

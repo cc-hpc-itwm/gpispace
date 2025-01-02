@@ -1,13 +1,12 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <iml/SegmentAndAllocation.hpp>
 
 #include <iml/SharedMemoryAllocation.hpp>
 
-#include <boost/format.hpp>
-
 #include <algorithm>
+#include <fmt/core.h>
 #include <stdexcept>
 #include <utility>
 
@@ -76,10 +75,12 @@ namespace iml
     if ((offset + size) > _size)
     {
       throw std::logic_error
-        ( (::boost::format ("memory region [%1%, %2%) is outside of allocation")
-          % offset % (offset + size)
-          ).str()
-        );
+        { fmt::format
+          ( "memory region [{},{}) is outside of allocation"
+          , offset
+          , offset + size
+          )
+        };
     }
 
     return {memory_location (offset), size};

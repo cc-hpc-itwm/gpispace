@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -23,6 +23,7 @@
 #include <cstddef>
 #include <exception>
 #include <mutex>
+#include <optional>
 #include <ostream>
 #include <string>
 #include <unordered_map>
@@ -67,7 +68,7 @@ namespace fhg
         > shutdown_worker (std::vector<fhg::rif::entry_point> const&);
 
       void store (fhg::rif::entry_point const&, std::string const& name, pid_t);
-      ::boost::optional<pid_t> pidof
+      std::optional<pid_t> pidof
         (fhg::rif::entry_point const&, std::string const& name);
 
     private:
@@ -91,7 +92,7 @@ namespace fhg
       , gspc::installation_path const&
       , std::ostream& info_output
       , ::boost::optional<std::pair<fhg::rif::entry_point, pid_t>> top_level_log
-      , gspc::Certificates const& certificates
+      , gspc::Certificates const&
       );
 
     struct startup_result
@@ -114,7 +115,7 @@ namespace fhg
       , std::ostream& info_output
       , ::boost::optional<fhg::rif::entry_point> log_rif_entry_point
       , std::vector<fhg::logging::endpoint> default_log_receivers
-      , gspc::Certificates const& certificates
+      , gspc::Certificates const&
       );
   }
 }

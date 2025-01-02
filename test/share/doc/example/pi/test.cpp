@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -91,8 +91,8 @@ BOOST_AUTO_TEST_CASE (share_example_pi)
     );
 
   pnet::type::value::value_type expected_ratio;
-  pnet::type::value::poke ("in", expected_ratio, 196347269L);
-  pnet::type::value::poke ("total", expected_ratio, 250000000L);
+  pnet::type::value::poke ("in", expected_ratio, 392693727L);
+  pnet::type::value::poke ("total", expected_ratio, 500000000L);
 
   decltype (result) const expected {{"ratio", expected_ratio}};
   FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION (result, expected);

@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <util/qt/mvc/flat_to_tree_proxy.hpp>
@@ -7,11 +7,11 @@
 
 #include <fhg/assert.hpp>
 
-#include <boost/variant.hpp>
-
 #include <QSet>
 #include <QStringList>
 #include <QVector>
+
+#include <variant>
 
 namespace fhg
 {
@@ -168,27 +168,27 @@ namespace fhg
 
           bool is_leaf() const
           {
-            return ::boost::get<index_type> (&_data);
+            return std::holds_alternative<index_type> (_data);
           }
           bool is_branch() const
           {
-            return ::boost::get<name_and_child_type> (&_data);
+            return std::holds_alternative<name_and_child_type> (_data);
           }
 
           const QVector<index_tree_item*>& children() const
           {
             fhg_assert (is_branch(), "children() only to be called on branch");
-            return ::boost::get<name_and_child_type> (_data).second;
+            return std::get<name_and_child_type> (_data).second;
           }
           QString const& name() const
           {
             fhg_assert (is_branch(), "name() only to be called on branch");
-            return ::boost::get<name_and_child_type> (_data).first;
+            return std::get<name_and_child_type> (_data).first;
           }
           QPersistentModelIndex const& index() const
           {
             fhg_assert (is_leaf(), "index() only to be called on leaf");
-            return ::boost::get<index_type> (_data);
+            return std::get<index_type> (_data);
           }
 
           index_tree_item* parent() const
@@ -219,7 +219,7 @@ namespace fhg
           {
             fhg_assert (is_branch(), "remove_child() only to be called on branch");
 
-            ::boost::get<name_and_child_type> (_data).second.remove (index);
+            std::get<name_and_child_type> (_data).second.remove (index);
           }
 
         private:
@@ -228,7 +228,7 @@ namespace fhg
             if (_parent)
             {
               fhg_assert (_parent->is_branch(), "parent needs to be a branch");
-              ::boost::get<name_and_child_type> (_parent->_data).second << this;
+              std::get<name_and_child_type> (_parent->_data).second << this;
             }
           }
 
@@ -253,7 +253,7 @@ namespace fhg
             std::pair<QString, QVector<index_tree_item*>>;
           using index_type = QPersistentModelIndex;
 
-          ::boost::variant<name_and_child_type, index_type> _data;
+          std::variant<name_and_child_type, index_type> _data;
         };
 
         flat_to_tree_proxy::flat_to_tree_proxy

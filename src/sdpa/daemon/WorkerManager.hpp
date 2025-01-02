@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -13,7 +13,6 @@
 #include <boost/bimap.hpp>
 #include <boost/bimap/unordered_set_of.hpp>
 #include <boost/optional.hpp>
-#include <boost/variant.hpp>
 
 #include <functional>
 #include <map>
@@ -24,6 +23,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
+#include <variant>
 
 namespace sdpa
 {
@@ -31,7 +31,7 @@ namespace sdpa
   {
     struct UsingCosts{};
     struct NotUsingCosts{};
-    using CostModel = boost::variant<UsingCosts, NotUsingCosts>;
+    using CostModel = std::variant<UsingCosts, NotUsingCosts>;
 
     class WorkerManager
     {

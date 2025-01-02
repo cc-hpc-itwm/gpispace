@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -31,8 +31,8 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
-#include <boost/range/adaptor/map.hpp>
 
+#include <fmt/core.h>
 #include <chrono>
 #include <functional>
 #include <set>
@@ -164,7 +164,7 @@ namespace share_example_stream_test
           (clock.now().time_since_epoch()).count()
         );
 
-      std::string const data ((::boost::format ("%1% %2%") % id % now).str());
+      std::string const data {fmt::format ("{} {}", id, now)};
 
       expected_output.emplace (data);
 
@@ -204,11 +204,12 @@ namespace share_example_stream_test
 
     std::set<std::string> output;
 
-    for ( pnet::type::value::value_type const& package
-        : result.equal_range ("packages") | ::boost::adaptors::map_values
+    for ( auto [package, end] {result.equal_range ("packages")}
+        ; package != end
+        ; ++package
         )
     {
-      output.emplace (::boost::get<std::string> (package));
+      output.emplace (::boost::get<std::string> (package->second));
     }
 
     BOOST_REQUIRE_EQUAL (expected_output, output);

@@ -1,10 +1,11 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <network_description.hpp>
 
-#include <boost/format.hpp>
 #include <boost/optional.hpp>
+
+#include <fmt/core.h>
 
 namespace drts
 {
@@ -16,9 +17,8 @@ namespace drts
       , boost::optional<std::string> const& with_memory_buffers
       )
     {
-      return
-        ( ::boost::format (R"EOS(
-            <defun name="%1%">
+      return fmt::format (R"EOS(
+            <defun name="{0}">
               <in name="num_tasks" type="long" place="num_tasks"/>
               <out name="done" type="control" place="done"/>
 
@@ -52,11 +52,11 @@ namespace drts
                     <in name="total_num_tasks" type="long"/>
                     <out name="task_id_A" type="long"/>
                     <expression>
-                      ${task_id_A} := ${amount};
-                      ${amount} := ${amount} - 1L;
+                      ${{task_id_A}} := ${{amount}};
+                      ${{amount}} := ${{amount}} - 1L;
                     </expression>
                     <condition>
-                      (${amount} :gt: (${total_num_tasks} div 2L))
+                      (${{amount}} :gt: (${{total_num_tasks}} div 2L))
                     </condition>
                   </defun>
                   <connect-inout port="amount" place="num_tasks_gen"/>
@@ -70,11 +70,11 @@ namespace drts
                     <in name="total_num_tasks" type="long"/>
                     <out name="task_id_B" type="long"/>
                     <expression>
-                      ${task_id_B} := ${amount};
-                      ${amount} := ${amount} - 1L;
+                      ${{task_id_B}} := ${{amount}};
+                      ${{amount}} := ${{amount}} - 1L;
                     </expression>
                     <condition>
-                      (${amount} :le: (${total_num_tasks} div 2L)) :and: (${amount} :gt: 0L)
+                      (${{amount}} :le: (${{total_num_tasks}} div 2L)) :and: (${{amount}} :gt: 0L)
                     </condition>
                   </defun>
                   <connect-inout port="amount" place="num_tasks_gen"/>
@@ -86,15 +86,15 @@ namespace drts
 
                 <transition name="compute_A">
                   <defun>
-                    %2%
+                    {1}
                     <require key="A"/>
                     <in name="task_id_A" type="long"/>
                     <out name="task_finished" type="control"/>
-                    %3%
-                    <module name="module_%1%"
-                            function="task_A (task_finished%4%)">
+                    {2}
+                    <module name="module_{0}"
+                            function="task_A (task_finished{3})">
                       <code><![CDATA[
-                        %5%
+                        {4}
                         task_finished = we::type::literal::control();
                       ]]></code>
                     </module>
@@ -104,16 +104,16 @@ namespace drts
                 </transition>
 
                 <transition name="compute_B">
-                  %2%
+                  {1}
                   <defun>
                     <require key="B"/>
                     <in name="task_id_B" type="long"/>
                     <out name="task_finished" type="control"/>
-                    %3%
-                    <module name="module_%1%"
-                            function="task_B (task_finished%4%)">
+                    {2}
+                    <module name="module_{0}"
+                            function="task_B (task_finished{3})">
                       <code><![CDATA[
-                        %5%
+                        {4}
                         task_finished = we::type::literal::control();
                       ]]></code>
                     </module>
@@ -141,7 +141,7 @@ namespace drts
                     <in name="all_finished" type="control"/>
                     <out name="done" type="control"/>
                     <expression>
-                      ${done} := [];
+                      ${{done}} := [];
                     </expression>
                   </defun>
                   <connect-in port="total_num_tasks" place="total_num_tasks"/>
@@ -150,13 +150,13 @@ namespace drts
                   <connect-out port="done" place="done"/>
                 </transition>
               </net>
-            </defun>)EOS")
-        % name
-        % with_num_worker_prop.get_value_or ("")
-        % with_memory_buffers.get_value_or ("")
-        % (!!with_memory_buffers ? ",local" : "")
-        % (!!with_memory_buffers ? "(void) local;" : "")
-        ).str();
+            </defun>)EOS"
+        , name
+        , with_num_worker_prop.get_value_or ("")
+        , with_memory_buffers.get_value_or ("")
+        , (!!with_memory_buffers ? ",local" : "")
+        , (!!with_memory_buffers ? "(void) local;" : "")
+        );
     }
   }
 }

@@ -1,0 +1,126 @@
+<!-- Copyright (C) 2025 Fraunhofer ITWM        -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+
+<defun name="number_of_tokens_plugin_put_token_updates_the_number_of_tokens">
+
+  <properties name="drts">
+    <property key="wait_for_output" value="true"/>
+  </properties>
+
+  <in name="plugin_path" type="string" place="plugin_path"/>
+  <in name="n" type="unsigned long" place="n"/>
+  <in name="m" type="unsigned long" place="m"/>
+  <out name="sum" type="unsigned long" place="sum"/>
+
+  <net>
+    <place name="plugin_path" type="string"/>
+    <place name="n" type="unsigned long"/>
+    <place name="m" type="unsigned long"/>
+    <place name="sum" type="unsigned long"/>
+
+    <transition name="create_plugin">
+      <defun>
+        <properties name="gspc">
+          <properties name="we">
+            <properties name="plugin">
+              <property key="create"/>
+            </properties>
+          </properties>
+        </properties>
+        <in name="plugin_path" type="string"/>
+        <out name="plugin_id" type="unsigned long"/>
+        <expression/>
+      </defun>
+      <connect-in port="plugin_path" place="plugin_path"/>
+      <connect-out port="plugin_id" place="plugin_id"/>
+    </transition>
+
+    <place name="plugin_id" type="unsigned long"/>
+
+    <transition name="trigger_plugin_put_token">
+      <defun>
+        <properties name="gspc">
+          <properties name="we">
+            <properties name="plugin">
+              <property key="call_after_eval">
+                "stack_push (List(), ${plugin_id})"
+              </property>
+            </properties>
+          </properties>
+        </properties>
+        <inout name="m" type="unsigned long"/>
+        <in name="plugin_id" type="unsigned long"/>
+        <expression>
+          ${m} := ${m} - 1UL
+        </expression>
+        <condition>
+          ${m} :gt: 0UL
+        </condition>
+      </defun>
+      <connect-read port="plugin_id" place="plugin_id"/>
+      <connect-inout port="m" place="m"/>
+    </transition>
+
+
+    <place name="value" type="unsigned long" put_token="true"/>
+
+    <transition name="delay">
+      <defun>
+        <in name="n" type="unsigned long"/>
+        <in name="number_of_values" type="unsigned long"/>
+        <out name="sum" type="unsigned long"/>
+        <expression>
+          ${sum} := 0UL
+        </expression>
+        <condition>
+          ${number_of_values} :ge: ${n}
+        </condition>
+      </defun>
+      <connect-in port="n" place="n"/>
+      <connect-out port="sum" place="accu"/>
+      <connect-number-of-tokens port="number_of_values" place="value"/>
+    </transition>
+
+    <place name="accu" type="unsigned long"/>
+
+    <transition name="sum">
+      <defun>
+        <inout name="sum" type="unsigned long"/>
+        <in name="value" type="unsigned long"/>
+        <expression>
+          ${sum} := ${sum} + ${value}
+        </expression>
+      </defun>
+      <connect-inout port="sum" place="accu"/>
+      <connect-in port="value" place="value"/>
+    </transition>
+
+    <transition name="done">
+      <defun>
+        <properties name="gspc">
+          <properties name="we">
+            <properties name="plugin">
+              <property key="destroy"/>
+            </properties>
+          </properties>
+        </properties>
+        <in name="m" type="unsigned long"/>
+        <in name="plugin_id" type="unsigned long"/>
+        <in name="number_of_values" type="unsigned long"/>
+        <inout name="sum" type="unsigned long"/>
+        <expression/>
+        <condition>
+          ${m} :eq: 0UL
+        </condition>
+        <condition>
+          ${number_of_values} :eq: 0UL
+        </condition>
+      </defun>
+      <connect-in port="plugin_id" place="plugin_id"/>
+      <connect-in port="m" place="m"/>
+      <connect-number-of-tokens port="number_of_values" place="value"/>
+      <connect-in port="sum" place="accu"/>
+      <connect-out port="sum" place="sum"/>
+    </transition>
+  </net>
+</defun>

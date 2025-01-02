@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <sdpa/com/NetworkStrategy.hpp>
@@ -20,7 +20,7 @@ namespace sdpa
         , std::unique_ptr<::boost::asio::io_service> peer_io_service
         , fhg::com::host_t const& host
         , fhg::com::port_t const& port
-        , fhg::com::Certificates const& certificates
+        , gspc::Certificates const& certificates
         )
       : _codec()
       , _event_handler (event_handler)

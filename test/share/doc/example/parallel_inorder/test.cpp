@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -24,7 +24,6 @@
 #include <util-generic/testing/printer/multimap.hpp>
 #include <util-generic/testing/require_container_is_permutation.hpp>
 
-#include <boost/format.hpp>
 #include <boost/program_options.hpp>
 
 #include <map>
@@ -110,7 +109,7 @@ BOOST_AUTO_TEST_CASE (tutorial_parallel_inorder)
     , 4
     };
 
-  std::string const file_content (fhg::util::read_file (output_file.string()));
+  std::string const file_content (fhg::util::read_file (output_file));
 
   BOOST_REQUIRE_EQUAL_COLLECTIONS
     ( expected_file_content.begin(), expected_file_content.end()

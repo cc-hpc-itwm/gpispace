@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -114,6 +114,8 @@ BOOST_AUTO_TEST_CASE (run_bunch_of_tasks_with_put_token)
     , installation
     , "A:" + std::to_string (num_workers)
     , rifds.entry_points()
+    , std::cerr
+    , {}
     );
 
   gspc::client client (drts);

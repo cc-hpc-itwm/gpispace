@@ -1,4 +1,4 @@
-<!-- Copyright (C) 2023 Fraunhofer ITWM        -->
+<!-- Copyright (C) 2025 Fraunhofer ITWM        -->
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 
 <defun>
@@ -24,7 +24,7 @@
   <module name="stream"
           function="free (work_package, ptr_flag)">
     <cinclude href="drts/stream.hpp"/>
-    <cxx flag="--std=c++11"/>
+    <cxx flag="--std=c++17"/>
     <ld flag="-lgspc"/>
     <code><![CDATA[
       gspc::stream::mark_free ( work_package.flag

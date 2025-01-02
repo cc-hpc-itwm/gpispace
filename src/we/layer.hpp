@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -31,6 +31,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
+#include <variant>
 
 namespace we
 {
@@ -52,7 +53,7 @@ namespace we
               // result of put_token (parent) -> top level
             , std::function<void (std::string put_token_id, ::boost::optional<std::exception_ptr>)> rts_token_put
               //result of workflow_response (parent) -> top level
-            , std::function<void (std::string workflow_response_id, ::boost::variant<std::exception_ptr, pnet::type::value::value_type>)> rts_workflow_response
+            , std::function<void (std::string workflow_response_id, std::variant<std::exception_ptr, pnet::type::value::value_type>)> rts_workflow_response
             , std::function<id_type()> rts_id_generator
             , std::mt19937& random_extraction_engine
             );
@@ -94,7 +95,7 @@ namespace we
       std::function<void (id_type, std::string)> _rts_failed;
       std::function<void (id_type)> _rts_canceled;
       std::function<void (std::string, ::boost::optional<std::exception_ptr>)> _rts_token_put;
-      std::function<void (std::string workflow_response_id, ::boost::variant<std::exception_ptr, pnet::type::value::value_type>)> _rts_workflow_response;
+      std::function<void (std::string workflow_response_id, std::variant<std::exception_ptr, pnet::type::value::value_type>)> _rts_workflow_response;
       std::function<id_type()> _rts_id_generator;
 
       void rts_finished_and_forget (id_type, type::Activity);
@@ -103,7 +104,7 @@ namespace we
 
       void workflow_response ( id_type
                              , std::string const& response_id
-                             , ::boost::variant<std::exception_ptr, pnet::type::value::value_type> const&
+                             , std::variant<std::exception_ptr, pnet::type::value::value_type> const&
                              );
       void cancel_outstanding_responses (id_type, std::string const& reason);
 
@@ -167,7 +168,7 @@ namespace we
           RemovalFunction& operator= (RemovalFunction&&) = delete;
           ~RemovalFunction() = default;
 
-          ::boost::variant
+          std::variant
             < std::function<void (activity_data_type&)>
             , ToFinish
             > _function;

@@ -1,4 +1,4 @@
-<!-- Copyright (C) 2023 Fraunhofer ITWM        -->
+<!-- Copyright (C) 2025 Fraunhofer ITWM        -->
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 
 <defun name="net_with_single_module_implementation">
@@ -49,7 +49,7 @@
           <cinclude href="regex"/>
           <cinclude href="string"/>
           <cinclude href="thread"/>
-          <cxx flag="--std=c++11"/>
+          <cxx flag="--std=c++17"/>
           <code><![CDATA[
             std::string pattern
               ("A-" + slow_worker_host + " [0-9]* [0-9]*-1");

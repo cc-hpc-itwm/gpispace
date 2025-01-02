@@ -1,12 +1,11 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <drts/stream.hpp>
 
 #include <drts/drts_iml.hpp>
 
-#include <boost/format.hpp>
-
+#include <fmt/core.h>
 #include <algorithm>
 #include <stdexcept>
 
@@ -66,11 +65,12 @@ namespace gspc
     if (data.size() > _size_of_slot)
     {
       throw std::invalid_argument
-        ( ( ::boost::format ("data size > slot size (%1% > %2%")
-          % data.size()
-          % _size_of_slot
-          ).str()
-        );
+        { fmt::format
+            ( "data size > slot size ({} > {})"
+            , data.size()
+            , _size_of_slot
+            )
+        };
     }
 
     char* const flag (_flags.pointer());

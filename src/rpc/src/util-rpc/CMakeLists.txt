@@ -12,7 +12,7 @@ extended_add_library (NAME RPC
     "service_dispatcher.cpp"
     "service_socket_provider.cpp"
     "service_tcp_provider.cpp"
-  LIBRARIES 
+  LIBRARIES
     PUBLIC
       Util::Generic
       Boost::boost
@@ -22,6 +22,7 @@ extended_add_library (NAME RPC
       Boost::serialization
       Boost::system
       Boost::thread
+    PRIVATE fmt
   POSITION_INDEPENDENT
   INSTALL
 )

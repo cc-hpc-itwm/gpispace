@@ -1,11 +1,10 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <util-generic/exit_status.hpp>
 #include <util-generic/system.hpp>
 
-#include <boost/format.hpp>
-
+#include <fmt/core.h>
 #include <cstdlib>
 #include <cstring>
 #include <stdexcept>
@@ -21,11 +20,11 @@ namespace fhg
       if (int ec = std::system (command.c_str()))
       {
         throw std::runtime_error
-          ( ( ::boost::format ("Could not execute '%1%': %2%")
-            % command
-            % std::strerror (wexitstatus (ec))
-            ).str()
-          );
+          { fmt::format ( "Could not execute '{}': {}"
+                        , command
+                        , std::strerror (wexitstatus (ec))
+                        )
+          };
       }
 
       return;

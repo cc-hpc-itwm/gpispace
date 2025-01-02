@@ -1,12 +1,13 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <util-generic/read_lines.hpp>
 
-#include <boost/format.hpp>
-
 #include <cerrno>
+#include <fmt/core.h>
+#include <fmt/std.h>
 #include <fstream>
+#include <stdexcept>
 
 namespace fhg
 {
@@ -14,16 +15,20 @@ namespace fhg
   {
     std::vector<std::string> read_lines (::boost::filesystem::path const& filename)
     {
+      return read_lines (std::filesystem::path {filename.string()});
+    }
+    std::vector<std::string> read_lines (std::filesystem::path const& filename)
+    {
       std::vector<std::string> lines;
-      std::ifstream ifs (filename.string());
+      std::ifstream ifs (filename);
       if (!ifs)
       {
         throw std::runtime_error
-          ( ( ::boost::format ("could not open file '%1%' for reading: %2%")
-            % filename.string()
-            % strerror (errno)
-            ).str()
-          );
+          { fmt::format ( "could not open file '{}' for reading: {}"
+                        , filename
+                        , strerror (errno)
+                        )
+          };
       }
       for (std::string line; std::getline (ifs, line); )
       {

@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -13,7 +13,7 @@ namespace std
 {
   namespace
   {
-    struct hash_value_visitor : ::boost::static_visitor<std::size_t>
+    struct hash_value_visitor : private ::boost::static_visitor<std::size_t>
     {
       template<typename T>
         std::size_t operator() (T const& x) const

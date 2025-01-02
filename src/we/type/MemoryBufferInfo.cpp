@@ -1,13 +1,11 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <we/expr/parse/parser.hpp>
 #include <we/type/MemoryBufferInfo.hpp>
 
-#include <util-generic/nest_exceptions.hpp>
-
-#include <boost/format.hpp>
-
+#include <exception>
+#include <fmt/core.h>
 #include <stdexcept>
 
 namespace we
@@ -58,24 +56,33 @@ namespace we
     void MemoryBufferInfo::assert_correct_expression_types
       (expr::type::Context const& context) const
     {
-      fhg::util::nest_exceptions<std::runtime_error>
-        ( [&]
-          {
-            _size.assert_type (expr::type::ULong{}, context);
-          }
-        , str ( ::boost::format ("In the <size> expression '%1%'")
-              % _size.expression()
-              )
-        );
-      fhg::util::nest_exceptions<std::runtime_error>
-        ( [&]
-          {
-            _alignment.assert_type (expr::type::ULong{}, context);
-          }
-        , str ( ::boost::format ("In the <alignment> expression '%1%'")
-              % _alignment.expression()
-              )
-        );
+      try
+      {
+        _size.assert_type (expr::type::ULong{}, context);
+      }
+      catch (...)
+      {
+        std::throw_with_nested
+          ( std::runtime_error
+            { fmt::format ("In the <size> expression '{}'", _size.expression())
+            }
+          );
+      }
+
+      try
+      {
+        _alignment.assert_type (expr::type::ULong{}, context);
+      }
+      catch (...)
+      {
+        std::throw_with_nested
+          ( std::runtime_error
+            { fmt::format ( "In the <alignment> expression '{}'"
+                          , _alignment.expression()
+                          )
+            }
+          );
+      }
     }
   }
 }

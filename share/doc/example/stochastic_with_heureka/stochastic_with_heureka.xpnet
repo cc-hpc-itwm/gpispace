@@ -1,4 +1,4 @@
-<!-- Copyright (C) 2023 Fraunhofer ITWM        -->
+<!-- Copyright (C) 2025 Fraunhofer ITWM        -->
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 
 <defun name="stochastic_with_heureka">
@@ -114,26 +114,33 @@
           <eureka-group>"roll_and_heureka"</eureka-group>
           <cinclude href="interface.hpp"/>
           <cinclude href="util-generic/dynamic_linking.hpp"/>
-          <cinclude href="boost/archive/binary_iarchive.hpp"/>
-          <cinclude href="boost/archive/binary_oarchive.hpp"/>
-          <cinclude href="boost/filesystem.hpp"/>
+          <cinclude href="util-generic/syscall.hpp"/>
+          <cinclude href="filesystem"/>
           <cinclude href="fstream"/>
           <cinclude href="string"/>
           <cinclude href="utility"/>
-          <cxx flag="--std=c++11"/>
+          <cinclude href="memory"/>
+          <cinclude href="chrono"/>
+          <cxx flag="--std=c++17"/>
           <code><![CDATA[
 bool cancelled (false);
 
 auto const filename
-  ( boost::filesystem::unique_path
-      ("/dev/shm/stochastic_with_heureka_%%%%-%%%%-%%%%-%%%%")
+  ( std::filesystem::path
+      ( "/dev/shm/stochastic_with_heureka_"
+      + std::to_string (fhg::util::syscall::getpid())
+      + "_"
+      + std::to_string
+        ( std::chrono::high_resolution_clock::now().time_since_epoch().count()
+        )
+      )
   );
 
 struct remove_file
 {
-  remove_file (boost::filesystem::path path) : _path (path) {}
-  ~remove_file() { boost::filesystem::remove (_path); }
-  boost::filesystem::path _path;
+  remove_file (std::filesystem::path path) : _path (path) {}
+  ~remove_file() { std::filesystem::remove (_path); }
+  std::filesystem::path _path;
 } file_remover (filename);
 
 _pnetc_context->execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FROM_WITHIN
@@ -147,9 +154,11 @@ _pnetc_context->execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FRO
         );
 
       std::ofstream of (filename.string());
-      boost::archive::binary_oarchive oa (of);
-      oa << rah.first;
-      oa << rah.second;
+      auto const size {rah.first.v().size()};
+      of.write (reinterpret_cast<char const*> (std::addressof (size)), sizeof (size));
+      of.write (reinterpret_cast<char const*> (rah.first.v().data()), size);
+      int const i {rah.second ? 1 : 0};
+      of.write (reinterpret_cast<char const*> (std::addressof (i)), sizeof (i));
     }
   , [&]
     {
@@ -168,9 +177,14 @@ _pnetc_context->execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FRO
 if (!cancelled)
 {
   std::ifstream is (filename.string());
-  boost::archive::binary_iarchive ia (is);
-  ia >> partial_result_and_heureka.partial_result;
-  ia >> partial_result_and_heureka.heureka;
+  auto size {std::size_t{}};
+  is.read (reinterpret_cast<char*> (std::addressof (size)), sizeof (size));
+  auto bytes {std::vector<char> (size)};
+  is.read (reinterpret_cast<char*> (bytes.data()), size);
+  auto i {int{}};
+  is.read (reinterpret_cast<char*> (std::addressof (i)), sizeof (i));
+  partial_result_and_heureka.partial_result = we::type::bytearray (bytes);
+  partial_result_and_heureka.heureka = i == 1;
 
   if (partial_result_and_heureka.heureka)
   {
@@ -304,7 +318,7 @@ if (!cancelled)
                                                 )">
           <cinclude href="interface.hpp"/>
           <cinclude href="util-generic/dynamic_linking.hpp"/>
-          <cxx flag="--std=c++11"/>
+          <cxx flag="--std=c++17"/>
           <code><![CDATA[
           return fhg::util::scoped_dlhandle (implementation)
             .sym<decltype (stochastic_with_heureka_reduce)>
@@ -391,7 +405,7 @@ if (!cancelled)
                                                   )">
           <cinclude href="interface.hpp"/>
           <cinclude href="util-generic/dynamic_linking.hpp"/>
-          <cxx flag="--std=c++11"/>
+          <cxx flag="--std=c++17"/>
           <code><![CDATA[
           return fhg::util::scoped_dlhandle (implementation)
             .sym<decltype (stochastic_with_heureka_post_process)>

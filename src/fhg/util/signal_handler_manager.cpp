@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <fhg/util/signal_handler_manager.hpp>
@@ -7,8 +7,6 @@
 #include <fhg/util/backtracing_exception.hpp>
 #include <util-generic/syscall.hpp>
 #include <util-generic/this_bound_mem_fn.hpp>
-
-#include <boost/range/adaptor/map.hpp>
 
 #include <ios>
 #include <stdexcept>

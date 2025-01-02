@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -16,8 +16,8 @@
 #include <util-generic/testing/random.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
-#include <boost/format.hpp>
-
+#include <FMT/we/type/value/show.hpp>
+#include <fmt/core.h>
 #include <functional>
 #include <iterator>
 #include <limits>
@@ -33,18 +33,22 @@ namespace
   {
     expr::eval::context context;
 
-    BOOST_REQUIRE_EQUAL ( expr::parse::parser (expression).eval_all (context)
-                        , pnet::type::value::value_type (value)
-                        );
+    if constexpr (std::is_same_v<T, float> || std::is_same_v<T, double>)
+    {
+      BOOST_TEST
+        (  boost::get<T> (expr::parse::parser (expression).eval_all (context))
+        == value
+        , boost::test_tools::tolerance (1e-6)
+        );
+    }
+    else
+    {
+      BOOST_REQUIRE_EQUAL ( expr::parse::parser (expression).eval_all (context)
+                          , pnet::type::value::value_type (value)
+                          );
+    }
 
     return context;
-  }
-
-  template<typename T>
-  expr::eval::context require_evaluating_to
-    (::boost::format const& format, T const& value)
-  {
-    return require_evaluating_to (format.str(), value);
   }
 }
 
@@ -304,24 +308,24 @@ namespace
   void check_compare
     (std::string lhs, std::string rhs, bool lt, bool le, bool gt, bool ge)
   {
-    require_evaluating_to (::boost::format ("%1% < %2%") % lhs % rhs, lt);
-    require_evaluating_to (::boost::format ("%1% <= %2%") % lhs % rhs, le);
-    require_evaluating_to (::boost::format ("%1% > %2%") % lhs % rhs, gt);
-    require_evaluating_to (::boost::format ("%1% >= %2%") % lhs % rhs, ge);
+    require_evaluating_to (fmt::format ("{} < {}", lhs, rhs), lt);
+    require_evaluating_to (fmt::format ("{} <= {}", lhs, rhs), le);
+    require_evaluating_to (fmt::format ("{} > {}", lhs, rhs), gt);
+    require_evaluating_to (fmt::format ("{} >= {}", lhs, rhs), ge);
 
-    require_evaluating_to (::boost::format ("%1% :lt: %2%") % lhs % rhs, lt);
-    require_evaluating_to (::boost::format ("%1% :le: %2%") % lhs % rhs, le);
-    require_evaluating_to (::boost::format ("%1% :gt: %2%") % lhs % rhs, gt);
-    require_evaluating_to (::boost::format ("%1% :ge: %2%") % lhs % rhs, ge);
+    require_evaluating_to (fmt::format ("{} :lt: {}", lhs, rhs), lt);
+    require_evaluating_to (fmt::format ("{} :le: {}", lhs, rhs), le);
+    require_evaluating_to (fmt::format ("{} :gt: {}", lhs, rhs), gt);
+    require_evaluating_to (fmt::format ("{} :ge: {}", lhs, rhs), ge);
   }
 
   void check_equality (std::string lhs, std::string rhs, bool eq)
   {
-    require_evaluating_to (::boost::format ("%1% != %2%") % lhs % rhs, !eq);
-    require_evaluating_to (::boost::format ("%1% == %2%") % lhs % rhs, eq);
+    require_evaluating_to (fmt::format ("{} != {}", lhs, rhs), !eq);
+    require_evaluating_to (fmt::format ("{} == {}", lhs, rhs), eq);
 
-    require_evaluating_to (::boost::format ("%1% :ne: %2%") % lhs % rhs, !eq);
-    require_evaluating_to (::boost::format ("%1% :eq: %2%") % lhs % rhs, eq);
+    require_evaluating_to (fmt::format ("{} :ne: {}", lhs, rhs), !eq);
+    require_evaluating_to (fmt::format ("{} :eq: {}", lhs, rhs), eq);
   }
 }
 
@@ -452,12 +456,12 @@ namespace
                    )
   {
     require_evaluating_to
-      ( ( ::boost::format ("%1%%3% %4% %2%%3%")
-        % l
-        % r
-        % suffix<T>()()
-        % operation_string
-        ).str()
+      ( fmt::format ( "{0}{2} {3} {1}{2}"
+                    , l
+                    , r
+                    , suffix<T>()()
+                    , operation_string
+                    )
       , operation (l, r)
       );
   }
@@ -470,12 +474,12 @@ namespace
                           )
   {
     require_evaluating_to
-      ( ( ::boost::format ("%4% (%1%%3%, %2%%3%)")
-        % l
-        % r
-        % suffix<T>()()
-        % operation_string
-        ).str()
+      ( fmt::format ( "{3} ({0}{2}, {1}{2})"
+                    , l
+                    , r
+                    , suffix<T>()()
+                    , operation_string
+                    )
       , operation (l, r)
       );
   }
@@ -486,8 +490,7 @@ namespace
     expr::eval::context context;
 
     return ::boost::get<T>
-      ( expr::parse::parser
-        ((::boost::format ("%1%%2%") % x % suffix<T>()()).str())
+      ( expr::parse::parser {fmt::format ("{:g}{}", x, suffix<T>()())}
       . eval_all (context)
       );
   }
@@ -770,12 +773,12 @@ namespace
   void check_minus_for_unsigned_integral (T const& l, T const& r)
   {
     std::string const expression
-      ( ( ::boost::format ("%1%%3% - %2%%3%")
-        % l
-        % r
-        % suffix<T>()()
-        ).str()
-      );
+      { fmt::format ( "{0}{2} - {1}{2}"
+                    , l
+                    , r
+                    , suffix<T>()()
+                    )
+      };
 
     if (l >= r)
     {
@@ -850,13 +853,13 @@ namespace
     )
   {
     std::string const expression
-      ( ( ::boost::format ("%1%%3% %4% %2%%3%")
-        % l
-        % r
-        % suffix<T>()()
-        % operation_string
-        ).str()
-      );
+      { fmt::format ( "{0}{2} {3} {1}{2}"
+                    , l
+                    , r
+                    , suffix<T>()()
+                    , operation_string
+                    )
+      };
 
     if (r != 0)
     {
@@ -971,12 +974,11 @@ namespace
     for (int i (0); i < 100; ++i)
     {
       std::string const l
-        ((::boost::format ("%1%%2%") % random_real<T>() % suffix<T>()()).str());
+        {fmt::format ("{}{}", random_real<T>(), suffix<T>()())};
       std::string const r
-        ((::boost::format ("%1%%2%") % random_real<T>() % suffix<T>()()).str());
+        {fmt::format ("{}{}", random_real<T>(), suffix<T>()())};
 
-      std::string const expression
-        ((::boost::format ("%1% / %2%") % l % r).str());
+      std::string const expression {fmt::format ("{} / {}", l, r)};
 
       expr::eval::context context;
 
@@ -1029,16 +1031,16 @@ namespace
     for (int i (0); i < 100; ++i)
     {
       std::string const l
-        ((::boost::format ("%1%%2%") % random_real<T>() % suffix<T>()()).str());
+        {fmt::format ("{}{}", random_real<T>(), suffix<T>()())};
       std::string const r
-        ((::boost::format ("%1%%2%") % random_real<T>() % suffix<T>()()).str());
+        {fmt::format ("{}{}", random_real<T>(), suffix<T>()())};
 
       expr::eval::context context;
 
       BOOST_REQUIRE_EQUAL
         ( ::boost::get<T>
-          ( expr::parse::parser
-            ((::boost::format ("%1% ** %2%") % l % r).str()).eval_all (context)
+          ( expr::parse::parser {fmt::format ("{} ** {}", l, r)}
+          . eval_all (context)
           )
         , std::pow
           ( ::boost::get<T> (expr::parse::parser (l).eval_all (context))
@@ -1086,15 +1088,15 @@ namespace
     for (int i (0); i < 100; ++i)
     {
       std::string const input
-        ((::boost::format ("%1%%2%") % random_real<T>() % suffix<T>()()).str());
+        {fmt::format ("{}{}", random_real<T>(), suffix<T>()())};
 
       expr::eval::context context;
 
       BOOST_REQUIRE_EQUAL
         ( ::boost::get<R>
           ( expr::parse::parser
-            ((::boost::format ("%1% (%2%)") % operation_string  % input).str())
-          .eval_all (context)
+              {fmt::format ("{} ({})", operation_string, input)}
+          . eval_all (context)
           )
         , operation
           (::boost::get<T> (expr::parse::parser (input).eval_all (context)))
@@ -1114,9 +1116,11 @@ namespace
       T const x (number());
 
       require_evaluating_to
-        (( ::boost::format ("%1% (%2%%3%)")
-         % operation_string % x % suffix<T>()()
-         ).str()
+        ( fmt::format ( "{} ({}{})"
+                      , operation_string
+                      , x
+                      , suffix<T>()()
+                      )
         , operation (x)
         );
     }
@@ -1298,7 +1302,7 @@ BOOST_AUTO_TEST_CASE (integral_followed_by_f_is_parsed_as_float)
     auto const x (random_int());
 
     require_evaluating_to
-      (str (::boost::format ("%1%f") % x), static_cast<float> (x));
+      (fmt::format ("{}f", x), static_cast<float> (x));
   }
 }
 
@@ -1329,12 +1333,11 @@ namespace
     for (int i (0); i < 100; ++i)
     {
       std::string const input
-        ((::boost::format ("%1%%2%") % random_real<T>() % suffix<T>()()).str());
+        {fmt::format ("{}{}", random_real<T>(), suffix<T>()())};
 
       expr::eval::context _;
 
-      std::string const expression
-        ((::boost::format ("sqrt (%1%)") % input).str());
+      std::string const expression {fmt::format ("sqrt ({})", input)};
 
       T const value
         (::boost::get<T> (expr::parse::parser (input).eval_all (_)));
@@ -1366,7 +1369,7 @@ namespace
       T const x (number());
 
       std::string const expression
-        ((::boost::format ("sqrt (%1%%2%)") % x % suffix<T>()()).str());
+        {fmt::format ("sqrt ({}{})", x, suffix<T>()())};
 
       if (x < 0)
       {
@@ -1407,12 +1410,11 @@ namespace
     for (int i (0); i < 100; ++i)
     {
       std::string const input
-        ((::boost::format ("%1%%2%") % random_real<T>() % suffix<T>()()).str());
+        {fmt::format ("{}{}", random_real<T>(), suffix<T>()())};
 
       expr::eval::context _;
 
-      std::string const expression
-        ((::boost::format ("log (%1%)") % input).str());
+      std::string const expression {fmt::format ("log ({})", input)};
 
       T const value
         (::boost::get<T> (expr::parse::parser (input).eval_all (_)));
@@ -1444,7 +1446,7 @@ namespace
       T const x (number());
 
       std::string const expression
-        ((::boost::format ("log (%1%%2%)") % x % suffix<T>()()).str());
+        {fmt::format ("log ({}{})", x, suffix<T>()())};
 
       if (!(x > 0))
       {
@@ -1539,7 +1541,7 @@ BOOST_AUTO_TEST_CASE (token_bitset_count)
     ([](bitsetofint::type const& bs)
     {
       require_evaluating_to
-        (::boost::format ("bitset_count (%1%)") % bs, bs.count());
+        (fmt::format ("bitset_count ({})", bs), bs.count());
     }
     );
 }
@@ -1550,7 +1552,7 @@ BOOST_AUTO_TEST_CASE (token_bitset_fromhex_tohex_is_id)
     ([](bitsetofint::type const& bs)
     {
       require_evaluating_to
-        (::boost::format ("bitset_fromhex (bitset_tohex (%1%))") % bs, bs);
+        (fmt::format ("bitset_fromhex (bitset_tohex ({}))", bs), bs);
     }
     );
 }
@@ -1561,21 +1563,21 @@ BOOST_AUTO_TEST_CASE (token_bitset_logical)
     ([](bitsetofint::type const& l, bitsetofint::type const& r)
     {
       require_evaluating_to
-        (::boost::format ("bitset_or (%1%, %2%)") % l % r, l | r);
+        (fmt::format ("bitset_or ({}, {})", l, r), l | r);
     }
     );
   check_random_pairs_of_bitsets
     ([](bitsetofint::type const& l, bitsetofint::type const& r)
     {
       require_evaluating_to
-        (::boost::format ("bitset_and (%1%, %2%)") % l % r, l & r);
+        (fmt::format ("bitset_and ({}, {})", l, r), l & r);
     }
     );
   check_random_pairs_of_bitsets
     ([](bitsetofint::type const& l, bitsetofint::type const& r)
     {
       require_evaluating_to
-        (::boost::format ("bitset_xor (%1%, %2%)") % l % r, l ^ r);
+        (fmt::format ("bitset_xor ({}, {})", l, r), l ^ r);
     }
     );
 }
@@ -1597,35 +1599,35 @@ BOOST_AUTO_TEST_CASE (token_bitset_ins_del_is_elem)
       ks.insert (k);
 
       require_evaluating_to
-        ( ::boost::format ("bitset_is_element (%1%, %2%UL)") % a % k
+        ( fmt::format ("bitset_is_element ({}, {}UL)", a, k)
         , b.is_element (k)
         );
 
       b.ins (k);
 
       require_evaluating_to
-        (::boost::format ("bitset_insert (%1%, %2%UL)") % a % k, b);
+        (fmt::format ("bitset_insert ({}, {}UL)", a, k), b);
 
       a.ins (k);
 
       require_evaluating_to
-        (::boost::format ("bitset_is_element (%1%, %2%UL)") % a % k, true);
+        (fmt::format ("bitset_is_element ({}, {}UL)", a, k), true);
     }
 
     for (unsigned long k : ks)
     {
       require_evaluating_to
-        (::boost::format ("bitset_is_element (%1%, %2%UL)") % a % k, true);
+        (fmt::format ("bitset_is_element ({}, {}UL)", a, k), true);
 
       b.del (k);
 
       require_evaluating_to
-        (::boost::format ("bitset_delete (%1%, %2%UL)") % a % k, b);
+        (fmt::format ("bitset_delete ({}, {}UL)", a, k), b);
 
       a.del (k);
 
       require_evaluating_to
-        (::boost::format ("bitset_is_element (%1%, %2%UL)") % a % k, false);
+        (fmt::format ("bitset_is_element ({}, {}UL)", a, k), false);
     }
   }
 }
@@ -1640,9 +1642,7 @@ BOOST_AUTO_TEST_CASE (tokens_stack_push_top_pop_empty_size)
     std::list<pnet::type::value::value_type> b;
 
     require_evaluating_to
-      ( ( ::boost::format ("stack_empty (%1%)")
-        % pnet::type::value::show (a)
-        ).str()
+      ( fmt::format ("stack_empty ({})", pnet::type::value::show (a))
       , true
       );
 
@@ -1653,7 +1653,7 @@ BOOST_AUTO_TEST_CASE (tokens_stack_push_top_pop_empty_size)
     for (unsigned long i (0); i < n; ++i)
     {
       require_evaluating_to
-        (::boost::format ("stack_size (%1%)") % pnet::type::value::show (a), i);
+        (fmt::format ("stack_size ({})", pnet::type::value::show (a)), i);
 
       int const k (number());
 
@@ -1662,20 +1662,20 @@ BOOST_AUTO_TEST_CASE (tokens_stack_push_top_pop_empty_size)
       b.push_back (k);
 
       require_evaluating_to
-        ( ::boost::format ("stack_push (%1%, %2%)")
-        % pnet::type::value::show (a) % k
+        ( fmt::format ( "stack_push ({}, {})"
+                      , pnet::type::value::show (a)
+                      , k
+                      )
         , b
         );
 
       a.push_back (k);
 
       require_evaluating_to
-        (::boost::format ("stack_top (%1%)") % pnet::type::value::show (a), k);
+        (fmt::format ("stack_top ({})", pnet::type::value::show (a)), k);
 
       require_evaluating_to
-        ( ( ::boost::format ("stack_empty (%1%)")
-          % pnet::type::value::show (a)
-          ).str()
+        ( fmt::format ("stack_empty ({})", pnet::type::value::show (a))
         , false
         );
     }
@@ -1683,19 +1683,19 @@ BOOST_AUTO_TEST_CASE (tokens_stack_push_top_pop_empty_size)
     while (!ks.empty())
     {
       require_evaluating_to
-        ( ::boost::format ("stack_size (%1%)") % pnet::type::value::show (a)
+        ( fmt::format ("stack_size ({})", pnet::type::value::show (a))
         , ks.size()
         );
 
       require_evaluating_to
-        ( ::boost::format ("stack_top (%1%)") % pnet::type::value::show (a)
+        ( fmt::format ("stack_top ({})", pnet::type::value::show (a))
         , ks.top()
         );
 
       b.pop_back();
 
       require_evaluating_to
-        (::boost::format ("stack_pop (%1%)") % pnet::type::value::show (a), b);
+        (fmt::format ("stack_pop ({})", pnet::type::value::show (a)), b);
 
       a.pop_back();
 
@@ -1703,9 +1703,7 @@ BOOST_AUTO_TEST_CASE (tokens_stack_push_top_pop_empty_size)
     }
 
     require_evaluating_to
-      ( ( ::boost::format ("stack_empty (%1%)")
-        % pnet::type::value::show (a)
-        ).str()
+      ( fmt::format ("stack_empty ({})", pnet::type::value::show (a))
       , true
       );
   }
@@ -1736,10 +1734,10 @@ BOOST_AUTO_TEST_CASE (token_stack_join)
     }
 
     require_evaluating_to
-      ( ( ::boost::format ("stack_join (%1%, %2%)")
-        % pnet::type::value::show (a)
-        % pnet::type::value::show (b)
-        ).str()
+      ( fmt::format ( "stack_join ({}, {})"
+                    , pnet::type::value::show (a)
+                    , pnet::type::value::show (b)
+                    )
       , joined
       );
   }
@@ -1757,7 +1755,7 @@ BOOST_AUTO_TEST_CASE
     std::map<pnet::type::value::value_type, pnet::type::value::value_type> b;
 
     require_evaluating_to
-      ( (::boost::format ("map_empty (%1%)") % pnet::type::value::show (a)).str()
+      ( fmt::format ("map_empty ({})", pnet::type::value::show (a))
       , true
       );
 
@@ -1767,7 +1765,7 @@ BOOST_AUTO_TEST_CASE
     while (n --> 0)
     {
       require_evaluating_to
-        ( ::boost::format ("map_size (%1%)") % pnet::type::value::show (a)
+        ( fmt::format ("map_size ({})", pnet::type::value::show (a))
         , a.size()
         );
 
@@ -1777,42 +1775,44 @@ BOOST_AUTO_TEST_CASE
       ks.insert (k);
 
       require_evaluating_to
-        ( ::boost::format ("map_is_assigned (%1%, %2%)")
-        % pnet::type::value::show (a)
-        % k
+        ( fmt::format ( "map_is_assigned ({}, {})"
+                      , pnet::type::value::show (a)
+                      , k
+                      )
         , a.find (k) != a.end()
         );
 
       b.emplace (k, v);
 
       require_evaluating_to
-        ( ( ::boost::format ("map_assign (%1%, %2%, %3%L)")
-          % pnet::type::value::show (a)
-          % k
-          % v
-          ).str()
+        ( fmt::format ( "map_assign ({}, {}, {}L)"
+                      , pnet::type::value::show (a)
+                      , k
+                      , v
+                      )
         , b
         );
 
       a.emplace (k, v);
 
       require_evaluating_to
-        ( ::boost::format ("map_is_assigned (%1%, %2%)")
-        % pnet::type::value::show (a)
-        % k
+        ( fmt::format ( "map_is_assigned ({}, {})"
+                      , pnet::type::value::show (a)
+                      , k
+                      )
         , true
         );
 
       require_evaluating_to
-        ( ::boost::format ("map_get_assignment (%1%, %2%)")
-        % pnet::type::value::show (a)
-        % k
+        ( fmt::format ( "map_get_assignment ({}, {})"
+                      , pnet::type::value::show (a)
+                      , k
+                      )
         , v
         );
 
       require_evaluating_to
-        ( ( ::boost::format ("map_empty (%1%)") % pnet::type::value::show (a)
-          ).str()
+        ( fmt::format ("map_empty ({})", pnet::type::value::show (a))
         , false
         );
     }
@@ -1820,32 +1820,33 @@ BOOST_AUTO_TEST_CASE
     for (int k : ks)
     {
       require_evaluating_to
-        ( ::boost::format ("map_is_assigned (%1%, %2%)")
-        % pnet::type::value::show (a)
-        % k
+        ( fmt::format ( "map_is_assigned ({}, {})"
+                      , pnet::type::value::show (a)
+                      , k
+                      )
         , true
         );
 
       require_evaluating_to
-        ( ::boost::format ("map_get_assignment (%1%, %2%)")
-        % pnet::type::value::show (a)
-        % k
+        ( fmt::format ( "map_get_assignment ({}, {})"
+                      , pnet::type::value::show (a)
+                      , k
+                      )
         , a.at (k)
         );
 
       require_evaluating_to
-        ( ( ::boost::format ("map_empty (%1%)") % pnet::type::value::show (a)
-          ).str()
+        ( fmt::format ("map_empty ({})", pnet::type::value::show (a))
         , false
         );
 
       b.erase (k);
 
       require_evaluating_to
-        ( ( ::boost::format ("map_unassign (%1%, %2%)")
-          % pnet::type::value::show (a)
-          % k
-          ).str()
+        ( fmt::format ( "map_unassign ({}, {})"
+                      , pnet::type::value::show (a)
+                      , k
+                      )
         , b
         );
 
@@ -1853,7 +1854,7 @@ BOOST_AUTO_TEST_CASE
     }
 
     require_evaluating_to
-      ( (::boost::format ("map_empty (%1%)") % pnet::type::value::show (a)).str()
+      ( fmt::format ("map_empty ({})", pnet::type::value::show (a))
       , true
       );
   }
@@ -1869,7 +1870,7 @@ BOOST_AUTO_TEST_CASE (tokens_set_empty_size_insert_erase_is_element)
     std::set<pnet::type::value::value_type> b;
 
     require_evaluating_to
-      ( (::boost::format ("set_empty (%1%)") % pnet::type::value::show (a)).str()
+      ( fmt::format ("set_empty ({})", pnet::type::value::show (a))
       , true
       );
 
@@ -1879,7 +1880,7 @@ BOOST_AUTO_TEST_CASE (tokens_set_empty_size_insert_erase_is_element)
     while (n --> 0)
     {
       require_evaluating_to
-        ( ::boost::format ("set_size (%1%)") % pnet::type::value::show (a)
+        ( fmt::format ("set_size ({})",  pnet::type::value::show (a))
         , a.size()
         );
 
@@ -1887,18 +1888,20 @@ BOOST_AUTO_TEST_CASE (tokens_set_empty_size_insert_erase_is_element)
       ks.insert (k);
 
       require_evaluating_to
-        ( ::boost::format ("set_is_element (%1%, %2%L)")
-        % pnet::type::value::show (a)
-        % k
+        ( fmt::format ( "set_is_element ({}, {}L)"
+                      , pnet::type::value::show (a)
+                      , k
+                      )
         , a.find (k) != a.end()
         );
 
       b.insert (k);
 
       require_evaluating_to
-        ( ::boost::format ("set_insert (%1%, %2%L)")
-        % pnet::type::value::show (a)
-        % k
+        ( fmt::format ( "set_insert ({}, {}L)"
+                      , pnet::type::value::show (a)
+                      , k
+                      )
         , b
         );
 
@@ -1908,23 +1911,25 @@ BOOST_AUTO_TEST_CASE (tokens_set_empty_size_insert_erase_is_element)
     for (long k : ks)
     {
       require_evaluating_to
-        ( ::boost::format ("set_size (%1%)") % pnet::type::value::show (a)
+        ( fmt::format ("set_size ({})", pnet::type::value::show (a))
         , a.size()
         );
 
       require_evaluating_to
-        ( ::boost::format ("set_is_element (%1%, %2%L)")
-        % pnet::type::value::show (a)
-        % k
+        ( fmt::format ( "set_is_element ({}, {}L)"
+                      , pnet::type::value::show (a)
+                      , k
+                      )
         , true
         );
 
       b.erase (k);
 
       require_evaluating_to
-        ( ::boost::format ("set_erase (%1%, %2%L)")
-        % pnet::type::value::show (a)
-        % k
+        ( fmt::format ( "set_erase ({}, {}L)"
+                      , pnet::type::value::show (a)
+                      , k
+                      )
         , b
         );
 
@@ -1932,7 +1937,7 @@ BOOST_AUTO_TEST_CASE (tokens_set_empty_size_insert_erase_is_element)
     }
 
     require_evaluating_to
-      ( (::boost::format ("set_empty (%1%)") % pnet::type::value::show (a)).str()
+      ( fmt::format ("set_empty ({})", pnet::type::value::show (a))
       , true
       );
   }
@@ -1957,7 +1962,7 @@ BOOST_AUTO_TEST_CASE (tokens_set_top_pop)
       b.insert (k);
 
       require_evaluating_to
-        ( (::boost::format ("set_top (%1%)") % pnet::type::value::show (a)).str()
+        ( fmt::format ("set_top ({})", pnet::type::value::show (a))
         , *(a.begin())
         );
     }
@@ -1967,7 +1972,7 @@ BOOST_AUTO_TEST_CASE (tokens_set_top_pop)
       b.erase (b.begin());
 
       require_evaluating_to
-        ( (::boost::format ("set_pop (%1%)") % pnet::type::value::show (a)).str()
+        ( fmt::format ("set_pop ({})", pnet::type::value::show (a))
         , b
         );
 
@@ -2002,10 +2007,10 @@ BOOST_AUTO_TEST_CASE
     ( [&]
       {
         (void) expr::parse::parser
-          (str ( ::boost::format ("map_get_assignment (%1%, %2%)")
-               % pnet::type::value::show (m)
-               % pnet::type::value::show (missing_key)
-               )
+          ( fmt::format ( "map_get_assignment ({}, {})"
+                        , pnet::type::value::show (m)
+                        , pnet::type::value::show (missing_key)
+                        )
           ).eval_all();
       }
     , pnet::exception::eval (expr::token::_map_get_assignment, m, missing_key)
@@ -2041,10 +2046,10 @@ BOOST_AUTO_TEST_CASE
     ( [&]
       {
         (void) expr::parse::parser
-          (str ( ::boost::format ("map_get_assignment (%1%, %2%)")
-               % pnet::type::value::show (m)
-               % pnet::type::value::show (missing_key)
-               )
+          ( fmt::format ( "map_get_assignment ({}, {})"
+                        , pnet::type::value::show (m)
+                        , pnet::type::value::show (missing_key)
+                        )
           ).eval_all();
       }
     , pnet::exception::eval (expr::token::_map_get_assignment, m, missing_key)

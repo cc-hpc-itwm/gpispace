@@ -1,10 +1,11 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <we/type/Activity.hpp>
 #include <we/type/Transition.hpp>
 #include <we/type/net.hpp>
 #include <we/type/value.hpp>
+#include <we/type/value/name.hpp>
 #include <we/type/value/peek.hpp>
 #include <we/type/value/show.hpp>
 #include <we/type/value/unwrap.hpp>
@@ -15,17 +16,16 @@
 #include <fhg/util/next.hpp>
 
 #include <util-generic/functor_visitor.hpp>
-#include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_container.hpp>
 
-#include <boost/range/adaptor/map.hpp>
 #include <boost/range/join.hpp>
 
 #include <boost/variant/get.hpp>
 
-#include <boost/format.hpp>
-
+#include <fmt/core.h>
+#include <FMT/we/type/value/show.hpp>
 #include <algorithm>
+#include <exception>
 #include <list>
 #include <stdexcept>
 #include <unordered_set>
@@ -51,6 +51,7 @@ namespace we
         ( e
         , [] (PT const&) { return true; }
         , [] (PT_READ const&) { return true; }
+        , [] (PT_NUMBER_OF_TOKENS const&) { return true; }
         , [] (auto&) { return false; }
         );
     }
@@ -62,6 +63,10 @@ namespace we
     std::ostream& operator<< (std::ostream& os, PT_READ const&)
     {
       return os << "read";
+    }
+    std::ostream& operator<< (std::ostream& os, PT_NUMBER_OF_TOKENS const&)
+    {
+      return os << "number-of-tokens";
     }
     std::ostream& operator<< (std::ostream& os, TP const&)
     {
@@ -83,7 +88,7 @@ namespace we
         cross_type (net_type&, transition_id_type);
         bool enables();
         void write_to ( std::unordered_map< place_id_type
-                                          , std::pair<token_id_type, bool>
+                                          , net_type::SelectedToken
                                           >&
                       ) const;
         void push (place_id_type, net_type::token_by_id_type const&, bool);
@@ -130,6 +135,101 @@ namespace we
       };
     }
 
+    auto net_type::number_of_tokens_place
+      ( place_id_type place_id
+      ) const noexcept -> std::optional<place_id_type>
+    {
+      auto const number_of_tokens_place
+        {_number_of_tokens_place.find (place_id)};
+
+      if (number_of_tokens_place == std::end (_number_of_tokens_place))
+      {
+        return {};
+      }
+
+      return number_of_tokens_place->second;
+    }
+
+    auto net_type::add_number_of_tokens_place
+      ( place_id_type place_id
+      ) -> place_id_type
+    {
+      auto const number_of_tokens_place_id
+        { add_place ( place::type { "#" + _pmap.at (place_id).name()
+                                  , pnet::type::value::ULONG()
+                                  , false
+                                  , type::property::type{}
+                                  }
+                    )
+        };
+
+      if (!_number_of_tokens_place
+           . emplace (place_id, number_of_tokens_place_id)
+           . second
+         )
+      {
+        throw std::logic_error {"Duplicate number of tokens place."};
+      }
+
+      auto const tokens {_token_by_place_id.find (place_id)};
+
+      do_put_value
+        ( number_of_tokens_place_id
+        , tokens == std::end (_token_by_place_id) ? 0UL : tokens->second.size()
+        );
+
+      return number_of_tokens_place_id;
+    }
+
+    template<typename Update>
+      auto net_type::update_number_of_tokens
+        ( place_id_type number_of_tokens_place_id
+        , Update&& update
+        ) -> void
+    {
+      auto const& tokens {_token_by_place_id.at (number_of_tokens_place_id)};
+
+      fhg_assert (tokens.size() == 1);
+
+      auto const [token_id, value] {*std::cbegin (tokens)};
+
+      do_delete ({{number_of_tokens_place_id, token_id}});
+      put_value ( number_of_tokens_place_id
+                , std::invoke
+                  ( std::forward<Update> (update)
+                  , ::boost::get<unsigned long> (value)
+                  )
+                );
+    }
+
+    auto net_type::increment_number_of_tokens
+      ( place_id_type number_of_tokens_place_id
+      ) -> void
+    {
+      update_number_of_tokens
+        ( number_of_tokens_place_id
+        , [] (unsigned long number_of_tokens)
+          {
+            return number_of_tokens + 1UL;
+          }
+        );
+    }
+
+    auto net_type::decrement_number_of_tokens
+      ( place_id_type number_of_tokens_place_id
+      ) -> void
+    {
+      update_number_of_tokens
+        ( number_of_tokens_place_id
+        , [] (unsigned long number_of_tokens)
+          {
+            fhg_assert (number_of_tokens > 0UL);
+
+            return number_of_tokens - 1UL;
+          }
+        );
+    }
+
     place_id_type net_type::add_place (place::type const& place)
     {
       const place_id_type pid (_place_id++);
@@ -140,10 +240,7 @@ namespace we
       {
         //! \todo more specific exception
         throw std::invalid_argument
-          ( ( ::boost::format ("duplicate place with name '%1%'")
-            % place.name()
-            ).str()
-          );
+          {fmt::format ("duplicate place with name '{}'", place.name())};
       }
 
       return pid;
@@ -192,9 +289,8 @@ namespace we
             require_no_output_connection (_port_many_to_place, transition_id, port_id);
             _adj_tp.emplace (place_id, transition_id);
             if (!_port_to_place[transition_id].emplace
-                 ( std::piecewise_construct
-                 , std::forward_as_tuple (port_id)
-                 , std::forward_as_tuple (place_id, property)
+                 ( port_id
+                 , PlaceIDWithProperty {place_id, property}
                  ).second
                )
             {
@@ -206,9 +302,8 @@ namespace we
             require_no_output_connection (_port_to_place, transition_id, port_id);
             _adj_tp.emplace (place_id, transition_id);
             if (!_port_many_to_place[transition_id].emplace
-                 ( std::piecewise_construct
-                 , std::forward_as_tuple (port_id)
-                 , std::forward_as_tuple (place_id, property)
+                 ( port_id
+                 , PlaceIDWithProperty {place_id, property}
                  ).second
                )
             {
@@ -220,13 +315,19 @@ namespace we
             _adj_pt_consume.insert
               (adj_pt_type::value_type (place_id, transition_id));
             if (!_place_to_port[transition_id].emplace
-                 ( std::piecewise_construct
-                 , std::forward_as_tuple (place_id)
-                 , std::forward_as_tuple (port_id, property)
+                 ( place_id
+                 , PortIDWithProperty {port_id, property}
                  ).second
                )
             {
               throw std::logic_error ("duplicate connection");
+            }
+            if (!_consumed_from_places_by_port[transition_id]
+                 . emplace (port_id, place_id)
+                 . second
+               )
+            {
+              throw std::logic_error {"duplicate consume"};
             }
             update_enabled (transition_id);
           }
@@ -234,15 +335,36 @@ namespace we
           {
             _adj_pt_read.insert (adj_pt_type::value_type (place_id, transition_id));
             if (!_place_to_port[transition_id].emplace
-                 ( std::piecewise_construct
-                 , std::forward_as_tuple (place_id)
-                 , std::forward_as_tuple (port_id, property)
+                 ( place_id
+                 , PortIDWithProperty {port_id, property}
                  ).second
                )
             {
               throw std::logic_error ("duplicate read connection");
             }
             update_enabled (transition_id);
+          }
+        , [&] (edge::PT_NUMBER_OF_TOKENS)
+          {
+            return add_connection
+              ( edge::PT_READ{}
+              , transition_id
+              , std::invoke
+                ( [&]
+                  {
+                    if ( auto number_of_tokens_place_id
+                          {number_of_tokens_place (place_id)}
+                       )
+                    {
+                      return *number_of_tokens_place_id;
+                    }
+
+                    return add_number_of_tokens_place (place_id);
+                  }
+                )
+              , port_id
+              , property
+              );
           }
         );
     }
@@ -254,9 +376,8 @@ namespace we
                                 )
     {
       if (!_port_to_response[transition_id].emplace
-           ( std::piecewise_construct
-           , std::forward_as_tuple (port_id)
-           , std::forward_as_tuple (to, property)
+           ( port_id
+           , ResponseWithProperty {to, property}
            ).second
          )
       {
@@ -336,11 +457,11 @@ namespace we
       if (pid == _place_id_by_name.end())
       {
         throw std::invalid_argument
-          ( ( ::boost::format ("put_token (\"%1%\", %2%): place not found")
-            % place_name
-            % pnet::type::value::show (value)
-            ).str()
-          );
+          { fmt::format ( "put_token (\"{}\", {}): place not found"
+                        , place_name
+                        , pnet::type::value::show (value)
+                        )
+          };
       }
 
       place::type const& place (_pmap.at (pid->second));
@@ -348,20 +469,19 @@ namespace we
       if (!place.is_marked_for_put_token())
       {
         throw std::invalid_argument
-          ( ( ::boost::format
-              ("put_token (\"%1%\", %2%): place not marked with attribute"
-              " put_token=\"true\""
+          { fmt::format
+              ( "put_token (\"{}\", {}): place not marked with attribute"
+                " put_token=\"true\""
+              , place_name
+              , pnet::type::value::show (value)
               )
-            % place_name
-            % pnet::type::value::show (value)
-            ).str()
-          );
+          };
       }
 
       return put_value (pid->second, value);
     }
 
-    net_type::to_be_updated_type net_type::do_put_value
+    net_type::ToBeUpdated net_type::do_put_value
       (place_id_type pid, pnet::type::value::value_type const& value)
     {
       place::type const& place (_pmap.at (pid));
@@ -370,17 +490,21 @@ namespace we
       _token_by_place_id[pid].emplace
         (token_id, pnet::require_type (value, place.signature(), place.name()));
 
-      return {pid, token_id};
+      if (auto const number_of_tokens_place_id {number_of_tokens_place (pid)})
+      {
+        increment_number_of_tokens (*number_of_tokens_place_id);
+      }
+
+      return ToBeUpdated {pid, token_id};
     }
 
-    void net_type::do_update (to_be_updated_type const& to_be_updated)
+    void net_type::do_update (ToBeUpdated const& to_be_updated)
     {
-      for ( transition_id_type tid
+      for ( auto [_ignore, tid]
           : ::boost::join
-              ( _adj_pt_consume.left.equal_range (to_be_updated.first)
-              , _adj_pt_read.left.equal_range (to_be_updated.first)
+              ( _adj_pt_consume.left.equal_range (to_be_updated._place_id)
+              , _adj_pt_read.left.equal_range (to_be_updated._place_id)
               )
-          | ::boost::adaptors::map_values
           )
       {
         update_enabled_put_token (tid, to_be_updated);
@@ -413,10 +537,12 @@ namespace we
       auto&& push
         ([&] (adj_pt_type const& adj, bool is_read_connection)
          {
-           for ( place_id_type place_id
-               : adj.right.equal_range (tid) | ::boost::adaptors::map_values
+           for ( auto [adj_place, end] {adj.right.equal_range (tid)}
+               ; adj_place != end
+               ; ++adj_place
                )
            {
+             auto const place_id {adj_place->second};
              token_by_id_type const& tokens (_token_by_place_id[place_id]);
 
              if (tokens.empty())
@@ -449,7 +575,7 @@ namespace we
 
     void net_type::update_enabled_put_token
       ( transition_id_type tid
-      , to_be_updated_type const& to_be_updated
+      , ToBeUpdated const& to_be_updated
       )
     {
       {
@@ -469,15 +595,17 @@ namespace we
       auto&& push
         ( [&] (adj_pt_type const& adj, bool is_read_connection)
           {
-            for ( place_id_type place_id
-                : adj.right.equal_range (tid) | ::boost::adaptors::map_values
+            for ( auto [adj_place, end] {adj.right.equal_range (tid)}
+                ; adj_place != end
+                ; ++adj_place
                 )
             {
-              if (place_id == to_be_updated.first)
+              auto const place_id {adj_place->second};
+              if (place_id == to_be_updated._place_id)
               {
                 cross.push
                   ( place_id
-                  , _token_by_place_id.at (place_id).find (to_be_updated.second)
+                  , _token_by_place_id.at (place_id).find (to_be_updated._token_id)
                   , is_read_connection
                   );
               }
@@ -532,7 +660,7 @@ namespace we
       _enabled_choice.erase (tid);
     }
 
-    std::forward_list<net_type::token_to_be_deleted_type> net_type::do_extract
+    std::forward_list<net_type::ToBeDeleted> net_type::do_extract
       ( transition_id_type tid
       , std::function<void ( port_id_type
                            , pnet::type::value::value_type const&
@@ -540,25 +668,20 @@ namespace we
                       > fun
       ) const
     {
-      std::forward_list<token_to_be_deleted_type> tokens_to_be_deleted;
+      std::forward_list<ToBeDeleted> tokens_to_be_deleted;
 
-      for ( std::pair< place_id_type const
-                     , std::pair<token_id_type, bool>
-                     > const& pt
-          : _enabled_choice.at (tid)
+      for ( auto const& [pid, selected_token] : _enabled_choice.at (tid)
           )
       {
-        place_id_type const pid (pt.first);
-        token_id_type const token_id (pt.second.first);
-        bool const is_read_connection (pt.second.second);
+        auto const [token_id, is_read_connection] {selected_token};
 
-        fun ( _place_to_port.at (tid).at (pid).first
+        fun ( _place_to_port.at (tid).at (pid)._port_id
             , _token_by_place_id.at (pid).at (token_id)
             );
 
         if (!is_read_connection)
         {
-          tokens_to_be_deleted.emplace_front (pid, token_id);
+          tokens_to_be_deleted.emplace_front (ToBeDeleted {pid, token_id});
         }
       }
 
@@ -566,30 +689,31 @@ namespace we
     }
 
     void net_type::do_delete
-      (std::forward_list<token_to_be_deleted_type> const& tokens_to_be_deleted)
+      (std::forward_list<ToBeDeleted> const& tokens_to_be_deleted)
     {
       std::unordered_set<token_id_type> deleted_tokens;
 
-      for ( token_to_be_deleted_type const& token_to_be_deleted
+      for ( ToBeDeleted const& token_to_be_deleted
           : tokens_to_be_deleted
           )
       {
         _token_by_place_id
-          .at (token_to_be_deleted.first).erase (token_to_be_deleted.second);
+          . at (token_to_be_deleted._place_id)
+          . erase (token_to_be_deleted._token_id)
+          ;
 
-        deleted_tokens.emplace (token_to_be_deleted.second);
+        deleted_tokens.emplace (token_to_be_deleted._token_id);
       }
 
-      for ( token_to_be_deleted_type const& token_to_be_deleted
+      for ( ToBeDeleted const& token_to_be_deleted
           : tokens_to_be_deleted
           )
       {
-        for ( transition_id_type t
+        for ( auto [_ignore, t]
             : ::boost::join
-                ( _adj_pt_consume.left.equal_range (token_to_be_deleted.first)
-                , _adj_pt_read.left.equal_range (token_to_be_deleted.first)
+                ( _adj_pt_consume.left.equal_range (token_to_be_deleted._place_id)
+                , _adj_pt_read.left.equal_range (token_to_be_deleted._place_id)
                 )
-            | ::boost::adaptors::map_values
             )
         {
           auto const& priority (_tmap.at (t).priority());
@@ -600,9 +724,9 @@ namespace we
 
             if ( std::any_of
                  ( choices.cbegin(), choices.cend()
-                 , [&] (decltype (*choices.cbegin()) choice)
+                 , [&] (auto const& choice)
                    {
-                     return deleted_tokens.count (choice.second.first);
+                     return deleted_tokens.count (choice.second._id);
                    }
                  )
                )
@@ -731,7 +855,7 @@ namespace we
 
       expr::eval::context context;
 
-      std::forward_list<token_to_be_deleted_type> const tokens_to_be_deleted
+      std::forward_list<ToBeDeleted> const tokens_to_be_deleted
         (do_extract (tid, context_bind (context, transition)));
 
       auto const plugin_commands
@@ -807,136 +931,176 @@ namespace we
         }
       }
 
-      std::list<to_be_updated_type> pending_updates;
+      std::list<ToBeUpdated> pending_updates;
 
-      for ( we::type::Transition::PortByID::value_type const& p
-          : transition.ports_output()
-          )
+      for (auto const& [port_id, port] : transition.ports_output())
       {
         if (  _port_to_place.count (tid)
-           && _port_to_place.at (tid).count (p.first)
+           && _port_to_place.at (tid).count (port_id)
            )
         {
           pending_updates.emplace_back
             ( do_put_value
-              ( _port_to_place.at (tid).at (p.first).first
-              , context.value ({p.second.name()})
+              ( _port_to_place.at (tid).at (port_id)._place_id
+              , context.value ({port.name()})
               )
             );
         }
         else if (  _port_many_to_place.count (tid)
-                && _port_many_to_place.at (tid). count (p.first)
+                && _port_many_to_place.at (tid). count (port_id)
                 )
         {
           auto const& many_tokens
             (::boost::get<std::list<pnet::type::value::value_type>>
-              (context.value ({p.second.name()}))
+              (context.value ({port.name()}))
             );
 
           for (auto const& token : many_tokens) {
             pending_updates.emplace_back
               ( do_put_value
-                ( _port_many_to_place.at (tid).at (p.first).first
+                ( _port_many_to_place.at (tid).at (port_id)._place_id
                 , token
                 )
               );
           }
         }
         else if (  _port_to_eureka.count (tid)
-                && _port_to_eureka.at (tid) == p.first
+                && _port_to_eureka.at (tid) == port_id
                 )
         {
           auto const& ids
             ( ::boost::get<std::set<pnet::type::value::value_type>>
-              (context.value ({p.second.name()}))
+              (context.value ({port.name()}))
             );
 
           type::eureka_ids_type const eureka_ids
-            = pnet::type::value::unwrap<type::eureka_id_type>(ids);
+            = pnet::type::value::unwrap<type::eureka_id_type> (ids);
 
           if (eureka_ids.size())
           {
-            fhg::util::nest_exceptions<std::runtime_error>
-              ( [&]
-                {
-                  eureka_response (eureka_ids);
-                }
-                , "inject result: sending eureka response failed"
-              );
+            try
+            {
+              eureka_response (eureka_ids);
+            }
+            catch (...)
+            {
+              std::throw_with_nested
+                ( std::runtime_error
+                    {"inject result: sending eureka response failed"}
+                );
+            }
           }
         }
         else
         {
-          fhg::util::nest_exceptions<std::runtime_error>
-            ( [&]
-              {
-                assert (_port_to_response.at (tid).count (p.first));
+          try
+          {
+            assert (_port_to_response.at (tid).count (port_id));
 
-                std::string const to ( _port_to_response.at (tid)
-                                     . at (p.first).first
-                                     );
+            std::string const to ( _port_to_response.at (tid)
+                                 . at (port_id)._to
+                                 );
 
-                workflow_response ( context.value ({to})
-                                  , context.value ({p.second.name()})
-                                  );
-              }
-              , "fire_expression: sending workflow response failed"
-            );
+            workflow_response ( context.value ({to})
+                              , context.value ({port.name()})
+                              );
+          }
+          catch (...)
+          {
+            std::throw_with_nested
+              ( std::runtime_error
+                {"fire_expression: sending workflow response failed"}
+              );
+          }
         }
       }
 
       do_delete (tokens_to_be_deleted);
 
-      for (to_be_updated_type const& to_be_updated : pending_updates)
+      for (ToBeUpdated const& to_be_updated : pending_updates)
       {
         do_update (to_be_updated);
+      }
+
+      for (auto const [place_id, _] : tokens_to_be_deleted)
+      {
+        if ( auto const number_of_tokens_place_id
+              {number_of_tokens_place (place_id)}
+           )
+        {
+          decrement_number_of_tokens (*number_of_tokens_place_id);
+        }
       }
     }
 
     void net_type::inject ( transition_id_type tid
-                          , TokensOnPorts const& output
+                          , TokensOnPorts const& outputs
                           , TokensOnPorts const& input
                           , workflow_response_callback workflow_response
                           , eureka_response_callback eureka_response
                           )
     {
-      for (auto const& token_on_port : output)
+      {
+        auto const consumed_from_places
+          {_consumed_from_places_by_port.find (tid)};
+
+        if (consumed_from_places != std::end (_consumed_from_places_by_port))
+        {
+          for (auto const& [_, port_id] : input)
+          {
+            auto const consumed_from_place
+              {consumed_from_places->second.find (port_id)};
+
+            if (consumed_from_place != std::end (consumed_from_places->second))
+            {
+              if (auto const number_of_tokens_place_id
+                    {number_of_tokens_place (consumed_from_place->second)}
+                 )
+              {
+                decrement_number_of_tokens (*number_of_tokens_place_id);
+              }
+            }
+          }
+        }
+      }
+
+      for (auto const& output : outputs)
       {
         if (  _port_to_place.count (tid)
-           && _port_to_place.at (tid).count (token_on_port.second)
+           && _port_to_place.at (tid).count (output._port_id)
            )
         {
-          put_value ( _port_to_place.at (tid).at (token_on_port.second).first
-                    , token_on_port.first
+          put_value ( _port_to_place.at (tid).at (output._port_id)._place_id
+                    , output._token
                     );
         }
         else if (  _port_many_to_place.count (tid)
-                && _port_many_to_place.at (tid).count (token_on_port.second)
+                && _port_many_to_place.at (tid).count (output._port_id)
                 )
         {
           auto const& many_tokens
             (::boost::get<std::list<pnet::type::value::value_type>>
-              (token_on_port.first)
+              (output._token)
             );
 
           for (auto const& token : many_tokens)
           {
             put_value
-              ( _port_many_to_place.at (tid).at (token_on_port.second).first
+              ( _port_many_to_place.at (tid).at (output._port_id)._place_id
               , token
               );
           }
         }
         else if (  _port_to_eureka.count (tid)
-                && (_port_to_eureka.at (tid) == token_on_port.second)
+                && (_port_to_eureka.at (tid) == output._port_id)
                 )
         {
           std::set<type::eureka_id_type> const eureka_ids
-            ([&token_on_port]
+            ([&output]
              {
               auto const& ids
               ( ::boost::get<std::set<pnet::type::value::value_type>>
-                 (token_on_port.first)
+                 (output._token)
               );
 
               return pnet::type::value::unwrap<type::eureka_id_type>(ids);
@@ -945,50 +1109,58 @@ namespace we
 
           if (eureka_ids.size())
           {
-            fhg::util::nest_exceptions<std::runtime_error>
-              ( [&]
-                {
-                  eureka_response (eureka_ids);
-                }
-                , "inject result: sending eureka response failed"
-              );
+            try
+            {
+              eureka_response (eureka_ids);
+            }
+            catch (...)
+            {
+              std::throw_with_nested
+                ( std::runtime_error
+                    {"inject result: sending eureka response failed"}
+                );
+            }
           }
         }
         else
         {
-          fhg::util::nest_exceptions<std::runtime_error>
-            ( [&]
-              {
-                assert (_port_to_response.at (tid).count (token_on_port.second));
+          try
+          {
+            assert (_port_to_response.at (tid).count (output._port_id));
 
-               pnet::type::value::value_type const description
-                   ([this, &input, tid, &token_on_port]
-                   {
-                     std::string const to
-                       (_port_to_response.at (tid).at (token_on_port.second).first);
-                    we::port_id_type const input_port_id
-                       (_tmap.at (tid).input_port_by_name (to));
+           pnet::type::value::value_type const description
+               ([this, &input, tid, &output]
+               {
+                 std::string const to
+                   (_port_to_response.at (tid).at (output._port_id)._to);
+                we::port_id_type const input_port_id
+                   (_tmap.at (tid).input_port_by_name (to));
 
-                    return std::find_if
-                       ( input.begin(), input.end()
-                       , [&input_port_id] (TokenOnPort const& input_token_on_port)
-                         {
-                           return input_token_on_port.second == input_port_id;
-                         }
-                       )->first;
-                   }()
-                  );
-               workflow_response (description, token_on_port.first);
-              }
-            , "inject result: sending workflow response failed"
-            );
+                return std::find_if
+                   ( input.begin(), input.end()
+                   , [&input_port_id] (TokenOnPort const& input_token_on_port)
+                     {
+                       return input_token_on_port._port_id == input_port_id;
+                     }
+                   )->_token;
+               }()
+              );
+           workflow_response (description, output._token);
+          }
+          catch (...)
+          {
+            std::throw_with_nested
+              ( std::runtime_error
+                  {"inject result: sending workflow response failed"}
+              );
+          }
         }
       }
     }
 
     net_type& net_type::assert_correct_expression_types()
     {
-      for (auto& transition : _tmap | ::boost::adaptors::map_values)
+      for (auto& [_ignore, transition] : _tmap)
       {
         transition.assert_correct_expression_types();
       }
@@ -1111,7 +1283,7 @@ namespace we
     }
     std::string const& cross_type::input_port_name (place_id_type pid) const
     {
-      auto const port (_net.place_to_port().at (_tid).at (pid).first);
+      auto const port (_net.place_to_port().at (_tid).at (pid)._port_id);
 
       auto input (_transition.ports_input().find (port));
 
@@ -1155,16 +1327,15 @@ namespace we
       return false;
     }
     void cross_type::write_to
-      ( std::unordered_map< place_id_type
-                          , std::pair<token_id_type, bool>
-                          >& choice
+      ( std::unordered_map<place_id_type, net_type::SelectedToken>& choice
       ) const
     {
-      for (std::pair<place_id_type const, iterators_type> const& pits : _m)
+      for (auto const& [place_id, iterators] : _m)
       {
-        choice[pits.first] = std::make_pair ( pits.second.pos()->first
-                                            , pits.second.is_read_connection()
-                                            );
+        choice[place_id] = net_type::SelectedToken
+          { iterators.pos()->first
+          , iterators.is_read_connection()
+          };
       }
     }
     void cross_type::push ( place_id_type place_id

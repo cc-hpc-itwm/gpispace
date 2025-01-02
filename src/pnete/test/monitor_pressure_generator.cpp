@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 //! \note This "test" does not test anything, but is a pressure-generator for sdpa-gui only.
@@ -15,13 +15,14 @@
 #include <util-generic/testing/random.hpp>
 #include <util-generic/unreachable.hpp>
 
-#include <boost/format.hpp>
 #include <boost/optional.hpp>
 
 #include <algorithm>
+#include <fmt/core.h>
 #include <iostream>
 #include <list>
 #include <map>
+#include <optional>
 #include <string>
 #include <thread>
 #include <vector>
@@ -33,7 +34,7 @@ static uint64_t id_counter;
 struct activity
 {
   activity (std::string const& worker)
-    : _id ((::boost::format ("%1%") % ++id_counter).str())
+    : _id {fmt::format ("{}" , ++id_counter)}
     , _workers()
     , _act ( we::type::Transition ( "activity-" + _id
                                     , we::type::Expression()
@@ -97,7 +98,11 @@ std::string worker_gen()
   static const char* names[] = {"calc", "load", "store", "foo", "bar", "baz"};
 
   const auto r (fhg::util::testing::random<std::size_t>{}() % sizeof (names)/sizeof(*names));
-  return (::boost::format ("%1%-ip-127-0-0-1 %3% 50501-%2%") % names[r] % ++ids[r] % fhg::util::syscall::getpid()).str();
+  return fmt::format ( "{0}-ip-127-0-0-1 {2} 50501-{1}"
+                     , names[r]
+                     , ++ids[r]
+                     , fhg::util::syscall::getpid()
+                     );
 }
 
 int main (int ac, char **av)
@@ -120,7 +125,7 @@ try
 
   std::cout << emitter.local_endpoint().to_string() << "\n";
 
-  std::map<std::string, ::boost::optional<activity>> workers;
+  std::map<std::string, std::optional<activity>> workers;
 
   for (;;)
   {
@@ -135,7 +140,7 @@ try
 
     if (!workers[worker]->next_state())
     {
-      workers[worker] = ::boost::none;
+      workers[worker].reset();
     }
 
     std::this_thread::sleep_for (std::chrono::milliseconds (duration));

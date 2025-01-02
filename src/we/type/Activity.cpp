@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <we/type/Activity.hpp>
@@ -19,12 +19,12 @@
 
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
-#include <boost/format.hpp>
-#include <boost/range/adaptor/map.hpp>
 
+#include <FMT/boost/filesystem/path.hpp>
 #include <algorithm>
 #include <cassert>
 #include <exception>
+#include <fmt/core.h>
 #include <fstream>
 #include <iostream>
 #include <list>
@@ -168,9 +168,7 @@ namespace we
         catch (std::exception const& ex)
         {
           throw std::runtime_error
-            ( ( ::boost::format ("deserialization error: '%1%'") % ex.what()
-              ).str()
-            );
+            {fmt::format ("deserialization error: '{}'", ex.what())};
         }
       }
     }
@@ -182,7 +180,7 @@ namespace we
       if (!stream)
       {
         throw std::runtime_error
-          ((::boost::format ("could not open '%1%' for reading") % path).str());
+          {fmt::format ("could not open '{}' for reading", path)};
       }
 
       decode (stream, *this);
@@ -239,7 +237,7 @@ namespace we
       }
       else
       {
-        _input.emplace_back (value, port_id);
+        _input.emplace_back (TokenOnPort {value, port_id});
       }
     }
 
@@ -331,11 +329,11 @@ namespace we
     {
       std::multimap<std::string, pnet::type::value::value_type> result;
 
-      for (auto const& value_on_port : output())
+      for (auto const& output : output())
       {
         result.emplace
-          ( transition().ports_output().at (value_on_port.second).name()
-          , value_on_port.first
+          ( transition().ports_output().at (output._port_id).name()
+          , output._token
           );
       }
 
@@ -356,11 +354,11 @@ namespace we
           we::place_id_type const& pid
             (*p.second.associated_place());
 
-          for ( pnet::type::value::value_type const& token
-              : transition().net()->get_token (pid) | ::boost::adaptors::map_values
+          for ( auto const& [_ignore, token]
+              : transition().net()->get_token (pid)
               )
           {
-            output.emplace_back (token, port_id);
+            output.emplace_back (TokenOnPort {token, port_id});
           }
         }
 
@@ -384,7 +382,7 @@ namespace we
       , pnet::type::value::value_type const& value
       )
     {
-      _output.emplace_back (value, port_id);
+      _output.emplace_back (TokenOnPort {value, port_id});
     }
     void Activity::add_output (expr::eval::context const& output)
     {
@@ -416,7 +414,7 @@ namespace we
 
       std::unordered_set<port_id_type> port_ids_with_output;
 
-      for (port_id_type port_id : out | ::boost::adaptors::map_values)
+      for (auto const& [_,port_id] : out)
       {
         port_ids_with_output.emplace (port_id);
       }
@@ -473,11 +471,11 @@ namespace we
 
       expr::eval::context context;
 
-      for (auto const& token_on_port : _input)
+      for (auto const& input : _input)
       {
         context.bind_ref
-          ( transition().ports_input().at (token_on_port.second).name()
-          , token_on_port.first
+          ( transition().ports_input().at (input._port_id).name()
+          , input._token
           );
       }
 
@@ -513,7 +511,7 @@ namespace we
         (std::list<std::pair<we::local::range, we::global::range>> const& transfers)
       {
         std::list<iml::MemoryRegion> regions;
-        for (auto const& range: transfers | ::boost::adaptors::map_values)
+        for (auto const& [_ignore, range] : transfers)
         {
           regions.emplace_back
             ( iml::MemoryLocation (range.handle().name(), range.offset())
@@ -695,11 +693,14 @@ namespace we
         place_ids.emplace (wrapped_name (p.second), place_id);
       }
 
-      for (auto const& top : _input)
+      for (auto const& input : _input)
       {
-        auto const& port (transition().ports_input().at (top.second));
+        auto const& port (transition().ports_input().at (input._port_id));
 
-        net.put_value (place_ids.find (wrapped_name (port))->second, top.first);
+        net.put_value
+          ( place_ids.find (wrapped_name (port))->second
+          , input._token
+          );
       }
 
       //! \todo copy output too
@@ -733,11 +734,9 @@ namespace we
       for (auto const& p : transition_inner.ports_output())
       {
         auto const place_id
-          (net.port_to_place().at (transition_id_inner).at (p.first).first);
+          (net.port_to_place().at (transition_id_inner).at (p.first)._place_id);
 
-        for ( auto const& token
-            : net.get_token (place_id) | ::boost::adaptors::map_values
-            )
+        for (auto const& [_ignore, token] : net.get_token (place_id))
         {
           activity_inner.add_output (p.first, token);
         }

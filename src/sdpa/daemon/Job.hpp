@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -18,6 +18,7 @@
 #include <boost/optional.hpp>
 
 #include <mutex>
+#include <variant>
 
 namespace sdpa
 {
@@ -127,10 +128,10 @@ namespace sdpa
 
     //! \todo actually use in statemachine, currently used by
     //! CoallocationScheduler::Reservation only
-    using terminal_state = ::boost::variant < JobFSM_::s_finished
-                                            , JobFSM_::s_failed
-                                            , JobFSM_::s_canceled
-                                            >;
+    using terminal_state = std::variant < JobFSM_::s_finished
+                                        , JobFSM_::s_failed
+                                        , JobFSM_::s_canceled
+                                        >;
     struct job_result_type
     {
       std::map<sdpa::worker_id_t, terminal_state> individual_results;
@@ -141,13 +142,11 @@ namespace sdpa
 
     struct job_source_wfe {};
     struct job_source_client {};
-    using job_source = ::boost::variant < job_source_wfe
-                                        , job_source_client
-                                        >;
+    using job_source = std::variant<job_source_wfe, job_source_client>;
 
     struct job_handler_wfe {};
     struct job_handler_worker {};
-    using job_handler = ::boost::variant<job_handler_wfe, job_handler_worker>;
+    using job_handler = std::variant<job_handler_wfe, job_handler_worker>;
 
     class Job : public ::boost::msm::back::state_machine<JobFSM_>
     {

@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <we/expr/type/infer.hpp>
@@ -10,11 +10,15 @@
 #include <util-generic/functor_visitor.hpp>
 #include <util-generic/print_container.hpp>
 
-#include <boost/format.hpp>
-#include <boost/range/adaptor/map.hpp>
-
+#include <FMT/boost/variant.hpp>
+#include <FMT/util-generic/join.hpp>
+#include <FMT/we/expr/parse/node.hpp>
+#include <FMT/we/expr/token/show.hpp>
+#include <FMT/we/expr/type/Path.hpp>
+#include <FMT/we/expr/type/Type.hpp>
 #include <algorithm>
 #include <exception>
+#include <fmt/core.h>
 #include <functional>
 #include <iterator>
 #include <numeric>
@@ -28,7 +32,7 @@ namespace expr
   {
     namespace
     {
-      struct plus : ::boost::static_visitor<Type>
+      struct plus : private ::boost::static_visitor<Type>
       {
 #define LITERAL(T)                                      \
         Type operator() (T const& lhs, T const&) const  \
@@ -137,7 +141,7 @@ namespace expr
         return ::boost::apply_visitor (plus{}, lhs, rhs);
       }
 
-      class visitor_value_to_type : public ::boost::static_visitor<Type>
+      class visitor_value_to_type : private ::boost::static_visitor<Type>
       {
         template<typename Range>
           Type values_to_type (Range const& range) const
@@ -184,8 +188,71 @@ namespace expr
 
         Type operator() (std::map<Value, Value> const& map) const
         {
-          return Map ( values_to_type (map | ::boost::adaptors::map_keys)
-                     , values_to_type (map | ::boost::adaptors::map_values)
+          struct Keys
+          {
+            struct KeysIt
+            {
+              [[nodiscard]] auto operator*() const -> Value const&
+              {
+                return _pos->first;
+              }
+              [[nodiscard]] auto operator++() -> KeysIt&
+              {
+                ++_pos;
+                return *this;
+              }
+              [[nodiscard]] auto operator!= (KeysIt const& other) const -> bool
+              {
+                return _pos != other._pos;
+              }
+              std::map<Value, Value>::const_iterator _pos;
+              std::map<Value, Value>::const_iterator _end;
+            };
+
+            [[nodiscard]] auto begin() const -> KeysIt
+            {
+              return KeysIt {std::cbegin (_map), std::cend (_map)};
+            }
+            [[nodiscard]] auto end() const -> KeysIt
+            {
+              return KeysIt {std::cend (_map), std::cend (_map)};
+            }
+            std::map<Value, Value> const& _map;
+          };
+          struct Vals
+          {
+            struct ValsIt
+            {
+              [[nodiscard]] auto operator*() const -> Value const&
+              {
+                return _pos->second;
+              }
+              [[nodiscard]] auto operator++() -> ValsIt&
+              {
+                ++_pos;
+                return *this;
+              }
+              [[nodiscard]] auto operator!= (ValsIt const& other) const -> bool
+              {
+                return _pos != other._pos;
+              }
+              std::map<Value, Value>::const_iterator _pos;
+              std::map<Value, Value>::const_iterator _end;
+            };
+
+            [[nodiscard]] auto begin() const -> ValsIt
+            {
+              return ValsIt {std::cbegin (_map), std::cend (_map)};
+            }
+            [[nodiscard]] auto end() const -> ValsIt
+            {
+              return ValsIt {std::cend (_map), std::cend (_map)};
+            }
+            std::map<Value, Value> const& _map;
+          };
+
+          return Map ( values_to_type (Keys {map})
+                     , values_to_type (Vals {map})
                      );
         }
 
@@ -236,12 +303,13 @@ namespace expr
            )
         {
           throw exception::type::error
-            ( ::boost::format ("%1% has type '%2%' but is not of kind '%3%' == %4%")
-            % description
-            % type
-            % kind.name
-            % fhg::util::print_container ("{'", "', '", "'}", kind.types)
-            );
+            { fmt::format ( "{0} has type '{1}' but is not of kind '{2}' == {3}"
+                          , description
+                          , type
+                          , kind.name
+                          , fhg::util::print_container ("{'", "', '", "'}", kind.types)
+                          )
+            };
         }
 
         return fun (type);
@@ -300,17 +368,17 @@ namespace expr
                                      };
 
       template<typename Description, typename Required>
-        ::boost::format not_the_same
+        std::string not_the_same
           ( Description description
           , Required required
           , Type type
           )
       {
-        return ::boost::format ("%1% has type '%2%' but requires type '%3%'")
-          % description
-          % type
-          % required
-          ;
+        return fmt::format ( "{0} has type '{1}' but requires type '{2}'"
+                           , description
+                           , type
+                           , required
+                           );
       }
 
       template<typename Description>
@@ -422,7 +490,7 @@ namespace expr
       using Element = Identity;
       using Value = Second;
 
-      class visitor_infer : public ::boost::static_visitor<Type>
+      class visitor_infer : private ::boost::static_visitor<Type>
       {
       private:
         Context& _context;
@@ -445,13 +513,13 @@ namespace expr
           }
 
           throw std::runtime_error
-            (str (::boost::format ("Could not infer type of %1%") % Path {path}));
+            {fmt::format ("Could not infer type of {}", Path {path})};
         }
 
         Type operator() (parse::node::unary_t const& u) const
         {
           auto const description
-            (::boost::format ("argument '%1%' of '%2%'") % u.child % u.token);
+            {fmt::format ("argument '{}' of '{}'", u.child, u.token)};
           auto const child (::boost::apply_visitor (*this, u.child));
 
           auto const function
@@ -537,11 +605,11 @@ namespace expr
           }
 
           throw std::logic_error
-            (str ( ::boost::format ("Unknown unary token '%1%' in '%2%'")
-                 % u.token
-                 % u
-                 )
-            );
+            { fmt::format ( "Unknown unary token '{}' in ''"
+                          , u.token
+                          , expr::parse::node::type {u}
+                          )
+            };
         }
 
         Type operator() (parse::node::binary_t const& b) const
@@ -554,9 +622,9 @@ namespace expr
           }
 
           auto const description_lhs
-            (::boost::format ("left argument '%1%' of '%2%'") % b.l % b.token);
+            {fmt::format ("left argument '{}' of '{}'", b.l, b.token)};
           auto const description_rhs
-            (::boost::format ("right argument '%1%' of '%2%'") % b.r % b.token);
+            {fmt::format ("right argument '{}' of '{}'", b.r, b.token)};
 
           auto const lhs (::boost::apply_visitor (*this, b.l));
 
@@ -616,12 +684,13 @@ namespace expr
                 if (l != Any() && r != Any() && l != r)
                 {
                   throw exception::type::error
-                    ( ::boost::format ("The %1% has type '%2%' and the %3% has type '%4%' but the types should be the same")
-                    % description_lhs
-                    % l
-                    % description_rhs
-                    % r
-                    );
+                    { fmt::format ( "The {0} has type '{1}' and the {2} has type '{3}' but the types should be the same"
+                                  , description_lhs
+                                  , l
+                                  , description_rhs
+                                  , r
+                                  )
+                    };
                 }
 
                 return fun (l);
@@ -714,20 +783,21 @@ namespace expr
           }
 
           throw std::logic_error
-            (str ( ::boost::format ("Unknown binary token '%1%' in '%2%'")
-                 % b.token
-                 % b
-                 )
-            );
+            { fmt::format ( "Unknown binary token '{}' in '{}'"
+                          , b.token
+                          , expr::parse::node::type {b}
+                          )
+            };
         }
 
         Type operator() (parse::node::ternary_t const& t) const
         {
           auto const description_0
-            ( ::boost::format ("first argument '%1%' of '%2%'")
-            % t.child0
-            % t.token
-            );
+            { fmt::format ( "first argument '{}' of '{}'"
+                          , t.child0
+                          , t.token
+                          )
+            };
           auto const child0 (::boost::apply_visitor (*this, t.child0));
           auto const child1 (::boost::apply_visitor (*this, t.child1));
           auto const child2 (::boost::apply_visitor (*this, t.child2));
@@ -743,11 +813,11 @@ namespace expr
           }
 
           throw std::logic_error
-            (str ( ::boost::format ("Unknown ternary token '%1%' in '%2%'")
-                 % t.token
-                 % t
-                 )
-            );
+            { fmt::format ( "Unknown ternary token '{}' in '{}'"
+                          , t.token
+                          , expr::parse::node::type {t}
+                          )
+            };
         }
       };
     }
@@ -760,7 +830,7 @@ namespace expr
     catch (...)
     {
       std::throw_with_nested
-        (exception::type::error (::boost::format ("In '%1%'") % node));
+        (exception::type::error {fmt::format ("In '{}'", node)});
     }
   }
 }

@@ -1,21 +1,21 @@
 #! Assuming \c CMAKE_SOURCE_DIR is a git repository, list all git
 
-# Copyright (C) 2023 Fraunhofer ITWM
+# Copyright (C) 2025 Fraunhofer ITWM
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 #! submodules checked out there, their path and version in \a FILE.
 
-# Copyright (C) 2023 Fraunhofer ITWM
+# Copyright (C) 2025 Fraunhofer ITWM
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 #! \note Assumes `grep`, `git`, `sort`, `readlink` `sed` to exist and
 
-# Copyright (C) 2023 Fraunhofer ITWM
+# Copyright (C) 2025 Fraunhofer ITWM
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 #! be executable by name alone, i.e. be contained in `$PATH`.
 
-# Copyright (C) 2023 Fraunhofer ITWM
+# Copyright (C) 2025 Fraunhofer ITWM
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 function (list_and_store_git_submodules FILE)
@@ -43,22 +43,22 @@ endfunction()
 
 #! Produces the file \a NAME in \c CMAKE_BINARY_DIR either by calling
 
-# Copyright (C) 2023 Fraunhofer ITWM
+# Copyright (C) 2025 Fraunhofer ITWM
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 #! `list_and_store_git_submodules (${CMAKE_BINARY_DIR}/${NAME})`, or
 
-# Copyright (C) 2023 Fraunhofer ITWM
+# Copyright (C) 2025 Fraunhofer ITWM
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 #! if file `${CMAKE_SOURCE_DIR}/${NAME}` exists by copying that
 
-# Copyright (C) 2023 Fraunhofer ITWM
+# Copyright (C) 2025 Fraunhofer ITWM
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 #! without additional checks.
 
-# Copyright (C) 2023 Fraunhofer ITWM
+# Copyright (C) 2025 Fraunhofer ITWM
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 function (list_and_store_git_submodules_if_not_exists NAME)
@@ -72,17 +72,17 @@ endfunction()
 
 #! Generate the file \a NAME in \c CMAKE_BINARY_DIR as per rules of
 
-# Copyright (C) 2023 Fraunhofer ITWM
+# Copyright (C) 2025 Fraunhofer ITWM
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 #! \see list_and_store_git_submodules_if_not_exists() and install with
 
-# Copyright (C) 2023 Fraunhofer ITWM
+# Copyright (C) 2025 Fraunhofer ITWM
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 #! the same \a NAME to the top level in the project's installation.
 
-# Copyright (C) 2023 Fraunhofer ITWM
+# Copyright (C) 2025 Fraunhofer ITWM
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 function (install_git_submodules_information NAME)
@@ -92,22 +92,22 @@ endfunction()
 
 #! Given two file names \a HERE and \a THERE that have previously been
 
-# Copyright (C) 2023 Fraunhofer ITWM
+# Copyright (C) 2025 Fraunhofer ITWM
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 #! produced with the \see list_and_store_git_submodules() family, ensure
 
-# Copyright (C) 2023 Fraunhofer ITWM
+# Copyright (C) 2025 Fraunhofer ITWM
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 #! that if a submodule exists in both lists, they are using the exact
 
-# Copyright (C) 2023 Fraunhofer ITWM
+# Copyright (C) 2025 Fraunhofer ITWM
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 #! same revision. Submodules that only exist on one side are ignored.
 
-# Copyright (C) 2023 Fraunhofer ITWM
+# Copyright (C) 2025 Fraunhofer ITWM
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 macro (assert_same_git_submodules HERE THERE)

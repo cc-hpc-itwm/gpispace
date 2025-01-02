@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <drts/drts.hpp>
@@ -24,7 +24,6 @@
 #include <fhg/project_version.hpp>
 #include <util-generic/boost/program_options/require_all_if_one.hpp>
 #include <util-generic/make_optional.hpp>
-#include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_exception.hpp>
 #include <util-generic/read_file.hpp>
 #include <util-generic/read_lines.hpp>
@@ -32,8 +31,10 @@
 #include <util-generic/syscall.hpp>
 #include <util-generic/wait_and_collect_exceptions.hpp>
 
-#include <boost/format.hpp>
+#include <FMT/boost/filesystem/path.hpp>
 
+#include <fmt/core.h>
+#include <fmt/std.h>
 #include <memory>
 #include <ostream>
 #include <sstream>
@@ -43,16 +44,23 @@ namespace gspc
 {
   installation::installation
     (::boost::filesystem::path const& gspc_home)
-      : _gspc_home (::boost::filesystem::canonical (gspc_home))
-  {
-    ::boost::filesystem::path const path_version (_gspc_home / "version");
+      : installation {std::filesystem::path {gspc_home.string()}}
+  {}
 
-    if (!::boost::filesystem::exists (path_version))
+  installation::installation
+    (std::filesystem::path const& gspc_home)
+      : _gspc_home (std::filesystem::canonical (gspc_home))
+  {
+    auto const path_version (_gspc_home / "gspc_version");
+
+    if (!std::filesystem::exists (path_version))
     {
       throw std::invalid_argument
-        (( ::boost::format ("GSPC version mismatch: File '%1%' does not exist.")
-         % path_version
-         ).str());
+        { fmt::format
+          ( "GSPC version mismatch: File '{}' does not exist."
+          , path_version
+          )
+        };
     }
 
     std::string const version (fhg::util::read_file (path_version));
@@ -60,14 +68,14 @@ namespace gspc
     if (version != fhg::project_version())
     {
       throw std::invalid_argument
-        (( ::boost::format ( "GSPC version mismatch: Expected '%1%'"
-                         ", installation in '%2%' has version '%3%'"
-                         )
-         % fhg::project_version()
-         % _gspc_home
-         % version
-         ).str()
-        );
+        { fmt::format
+          ( "GSPC version mismatch: Expected '{}'"
+            ", installation in '{}' has version '{}'"
+          , fhg::project_version()
+          , _gspc_home
+          , version
+          )
+        };
     }
   }
   installation::installation
@@ -396,7 +404,9 @@ namespace gspc
         (
         #if GSPC_WITH_IML
            _virtual_memory_socket
-        ? std::make_unique<iml::Client> (*_virtual_memory_socket)
+        ? std::make_unique<iml::Client>
+           ( ::boost::filesystem::path {_virtual_memory_socket->string()}
+           )
         :
         #endif
          nullptr

@@ -1,12 +1,14 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <iml/rif/strategy/ssh/session.hpp>
 
 #include <iml/rif/strategy/ssh/detail.hpp>
 
-#include <util-generic/nest_exceptions.hpp>
 #include <util-generic/next.hpp>
+
+#include <exception>
+#include <stdexcept>
 
 struct _LIBSSH2_CHANNEL;
 
@@ -22,27 +24,29 @@ namespace libssh2
     : _socket_fd (socket_fd)
     , _ (detail::wrapped::session_init_ex (nullptr, nullptr, nullptr, nullptr))
   {
-    fhg::util::nest_exceptions<std::runtime_error>
-      ( [&]
-        {
-          detail::wrapped::session_handshake (_, _socket_fd);
-        }
-      , "handshake failed"
-      );
-    fhg::util::nest_exceptions<std::runtime_error>
-      ( [&]
-        {
-          detail::wrapped::userauth_publickey_fromfile_ex
-            ( _
-            , username.c_str()
-            , username.size()
-            , public_and_private_key.first.string().c_str()
-            , public_and_private_key.second.string().c_str()
-            , nullptr
-            );
-        }
-      , "authentication failed"
-      );
+    try
+    {
+      detail::wrapped::session_handshake (_, _socket_fd);
+    }
+    catch (...)
+    {
+      std::throw_with_nested (std::runtime_error {"handshake failed"});
+    }
+    try
+    {
+      detail::wrapped::userauth_publickey_fromfile_ex
+        ( _
+        , username.c_str()
+        , username.size()
+        , public_and_private_key.first.string().c_str()
+        , public_and_private_key.second.string().c_str()
+        , nullptr
+        );
+    }
+    catch (...)
+    {
+      std::throw_with_nested (std::runtime_error {"authentication failed"});
+    }
   }
   catch (...)
   {

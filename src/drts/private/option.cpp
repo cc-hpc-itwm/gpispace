@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <drts/private/option.hpp>
@@ -18,8 +18,18 @@
 
 #include <rif/strategy/meta.hpp>
 
-#include <boost/format.hpp>
+#include <FMT/boost/filesystem/path.hpp>
+#include <FMT/iml/gaspi/NetdevID.hpp>
+#include <FMT/util-generic/boost/program_options/validators/existing_directory.hpp>
+#include <FMT/util-generic/boost/program_options/validators/existing_path.hpp>
+#include <FMT/util-generic/boost/program_options/validators/integral_greater_than.hpp>
+#include <FMT/util-generic/boost/program_options/validators/is_directory_if_exists.hpp>
+#include <FMT/util-generic/boost/program_options/validators/nonempty_file.hpp>
+#include <FMT/util-generic/boost/program_options/validators/nonexisting_path_in_existing_directory.hpp>
+#include <FMT/util-generic/join.hpp>
 
+#include <fmt/core.h>
+#include <fmt/ostream.h>
 #include <exception>
 
 namespace gspc
@@ -377,13 +387,13 @@ namespace gspc
       if (!pos_and_success.second)
       {
         throw std::runtime_error
-          (( ::boost::format
-             ("Failed to set option '%1%' to '%2%': Found old value '%3%'")
-           % option_name
-           % value_string
-           % pos_and_success.first->second.as<T>()
-           ).str()
-          );
+          { fmt::format
+            ( "Failed to set option '{}' to '{}': Found old value '{}'"
+            , option_name
+            , value_string
+            , pos_and_success.first->second.as<T>()
+            )
+          };
       }
     }
 
@@ -404,14 +414,14 @@ namespace gspc
       if (!pos_and_success.second)
       {
         throw std::runtime_error
-          (( ::boost::format
-             ("Failed to set option '%1%' to '%2%': Found old value '%3%'")
-           % option_name
-           % fhg::util::join (value, ",")
-           % fhg::util::join
+          { fmt::format
+            ( "Failed to set option '{}' to '{}': Found old value '{}'"
+            , option_name
+            , fhg::util::join (value, ",")
+            , fhg::util::join
                (pos_and_success.first->second.as<std::vector<T>>(), ",")
-           ).str()
-          );
+            )
+          };
       }
     }
 
@@ -486,14 +496,12 @@ namespace gspc
   {                                                                     \
     if (vm.count (name::_name))                                         \
     {                                                                   \
-      return vm.at (name::_name).as<_as>();                             \
+      /* \note static_cast to be backward compatible in option validation */ \
+      return static_cast<_type> (vm.at (name::_name).as<_as>());        \
     }                                                                   \
                                                                         \
     throw std::logic_error                                              \
-      (( ::boost::format ("missing key '%1%' in variables map")           \
-       % name::_name                                                    \
-       ).str()                                                          \
-      );                                                                \
+      {fmt::format ("missing key '{}' in variables map", name::_name)}; \
   }
 
 #define REQUIRE_PATH(_name, _as)                \
@@ -513,10 +521,7 @@ namespace gspc
     }                                                                   \
                                                                         \
     throw std::logic_error                                              \
-      (( ::boost::format ("missing key '%1%' in variables map")           \
-       % name::_name                                                    \
-       ).str()                                                          \
-      );                                                                \
+      {fmt::format ("missing key '{}' in variables map", name::_name)}; \
   }
 
 #define ACCESS_PATH(_name, _as)                 \
@@ -611,4 +616,20 @@ namespace gspc
 #undef SET_STRING
 #undef SET_PATH
 #undef SET
+
+
+  void set_application_search_path
+    ( ::boost::program_options::variables_map& vm
+    , std::filesystem::path const& path
+    )
+  {
+    return set_application_search_path (vm, ::boost::filesystem::path {path.string()});
+  }
+  void set_gspc_home
+    ( ::boost::program_options::variables_map& vm
+    , std::filesystem::path const& path
+    )
+  {
+    return set_gspc_home (vm, ::boost::filesystem::path {path.string()});
+  }
 }

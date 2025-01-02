@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -41,7 +41,7 @@ namespace
   void failed (we::layer::id_type, std::string){}
   void canceled (we::layer::id_type){}
   void token_put (std::string, ::boost::optional<std::exception_ptr>){}
-  void workflow_response_response (std::string, ::boost::variant<std::exception_ptr, pnet::type::value::value_type>){}
+  void workflow_response_response (std::string, std::variant<std::exception_ptr, pnet::type::value::value_type>){}
 
   std::mutex generate_id_mutex;
   we::layer::id_type generate_id()

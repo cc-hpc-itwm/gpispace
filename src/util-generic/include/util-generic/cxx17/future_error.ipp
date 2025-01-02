@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -21,7 +21,7 @@ namespace fhg
               "the future category"
             );
         }
-        return make_future_error (static_cast<std::future_errc> (ec.value()));
+        return std::future_error {static_cast<std::future_errc> (ec.value())};
       }
       inline std::future_error make_future_error (std::future_errc const& errc)
       {

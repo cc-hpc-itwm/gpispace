@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -37,6 +37,7 @@
 #include <boost/program_options.hpp>
 #include <boost/test/data/test_case.hpp>
 
+#include <fmt/core.h>
 #include <future>
 #include <map>
 #include <regex>
@@ -228,11 +229,12 @@ BOOST_AUTO_TEST_CASE (workflow_response_using_secure_communication)
       if (lhs.what() != rhs_what)
       {
         throw std::logic_error
-          ( ( ::boost::format ("'%1%' != '%2%'")
-            % fhg::util::testing::detail::to_string (lhs)
-            % fhg::util::testing::detail::to_string (rhs)
-            ).str()
-          );
+          { fmt::format
+            ( "'{}' != '{}'"
+            , fhg::util::testing::detail::to_string (lhs)
+            , fhg::util::testing::detail::to_string (rhs)
+            )
+          };
       }
     }
   };

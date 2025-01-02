@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <sdpa/test/sdpa/utils.hpp>
@@ -45,7 +45,7 @@ namespace
     drts_component_observing_preferences
         ( utils::agent const& parent
         , std::string capability
-        , fhg::com::Certificates const& certificates
+        , gspc::Certificates const& certificates
         )
       : basic_drts_component (parent, {capability}, certificates)
     {}
@@ -262,7 +262,7 @@ namespace
   public:
     fake_drts_worker_notifying_implementation_reception
         ( utils::agent const& parent
-        , fhg::com::Certificates const& certificates
+        , gspc::Certificates const& certificates
         , std::string capability
         , std::promise<::boost::optional<std::string>>& job_submitted
         )

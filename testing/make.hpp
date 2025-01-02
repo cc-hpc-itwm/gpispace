@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -9,10 +9,11 @@
 #include <util-generic/temporary_path.hpp>
 
 #include <boost/filesystem.hpp>
-#include <boost/optional.hpp>
 
+#include <filesystem>
 #include <list>
 #include <memory>
+#include <optional>
 #include <string>
 
 namespace test
@@ -23,8 +24,9 @@ namespace test
     {
       generic (std::string const& key, char const* value);
       generic (std::string const& key, std::string const&);
-      generic (std::string const& key, ::boost::format const&);
+      [[deprecated ("use generic (key, std::filesystem::path")]]
       generic (std::string const& key, ::boost::filesystem::path const&);
+      generic (std::string const& key, std::filesystem::path const&);
       std::ostream& operator() (std::ostream& os) const override;
 
     private:
@@ -48,7 +50,11 @@ namespace test
 
     struct include : public generic
     {
+      [[deprecated ("use include (std::filesystem::path")]]
       include (::boost::filesystem::path const& path)
+        : generic ("search-path", path)
+      {}
+      include (std::filesystem::path const& path)
         : generic ("search-path", path)
       {}
     };
@@ -73,17 +79,23 @@ namespace test
 
       struct include : public cxx_flag
       {
+        [[deprecated ("use include (std::filesystem::path")]]
         include (::boost::filesystem::path const&);
+        include (std::filesystem::path const&);
       };
 
       struct link : public ld_flag
       {
+        [[deprecated ("use link (std::filesystem::path")]]
         link (::boost::filesystem::path const&);
+        link (std::filesystem::path const&);
       };
 
       struct library_path : public ld_flag
       {
+        [[deprecated ("use library_path (std::filesystem::path")]]
         library_path (::boost::filesystem::path const&);
+        library_path (std::filesystem::path const&);
       };
     }
   }
@@ -106,8 +118,8 @@ namespace test
     make ( gspc::installation const& installation
          , std::string const& main
          , ::boost::filesystem::path const& source_directory
-         , ::boost::optional<::boost::filesystem::path> const& lib_destdir
-           = ::boost::none
+         , std::optional<::boost::filesystem::path> const& lib_destdir
+           = std::nullopt
          , option::options const& = option::options()
          );
 

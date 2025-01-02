@@ -1,4 +1,4 @@
-# Copyright (C) 2023 Fraunhofer ITWM
+# Copyright (C) 2025 Fraunhofer ITWM
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 default namespace = ""
@@ -215,6 +215,7 @@ transition_type =
    | element connect-read { connect_type }
    | element connect-response { connect_response_type }
    | element connect-eureka { connect_eureka_type }
+   | element connect-number-of-tokens { connect_type }
    | element place-map { place_map_type }
    | element condition { xsd:string })*,
   attribute name { xsd:NCName },

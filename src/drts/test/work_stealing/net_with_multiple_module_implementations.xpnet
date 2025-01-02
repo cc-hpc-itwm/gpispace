@@ -1,4 +1,4 @@
-<!-- Copyright (C) 2023 Fraunhofer ITWM        -->
+<!-- Copyright (C) 2025 Fraunhofer ITWM        -->
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 
 <defun name="net_with_multiple_module_implementations">
@@ -50,7 +50,7 @@
                   target="A">
             <cinclude href="chrono"/>
             <cinclude href="thread"/>
-            <cxx flag="--std=c++11"/>
+            <cxx flag="--std=c++17"/>
             <code><![CDATA[
               std::this_thread::sleep_for
                 (std::chrono::seconds (worst_comp_time));

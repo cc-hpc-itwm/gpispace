@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <iml/rif/started_process_promise.hpp>
@@ -7,11 +7,13 @@
 #include <util-generic/serialization/exception.hpp>
 
 #include <boost/archive/text_oarchive.hpp>
-#include <boost/format.hpp>
 #include <boost/iostreams/device/file_descriptor.hpp>
 #include <boost/iostreams/stream.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/vector.hpp>
+
+#include <FMT/boost/filesystem/path.hpp>
+#include <fmt/core.h>
 
 namespace fhg
 {
@@ -35,10 +37,11 @@ namespace fhg
         int parse_fd (int argc, char** argv)
         {
           std::string const usage
-            (( ::boost::format ("Usage: %1% <pipefd> [args]...")
-             % fhg::util::executable_path()
-             ).str()
-            );
+            { fmt::format
+              ( "Usage: {} <pipefd> [args]..."
+              , fhg::util::executable_path()
+              )
+            };
 
           if (argc < 2)
           {

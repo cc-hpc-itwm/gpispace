@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -11,13 +11,16 @@
 #include <we/type/value/read.hpp>
 #include <we/type/value/serialize.hpp>
 
+#include <util-generic/functor_visitor.hpp>
 #include <util-generic/serialization/exception.hpp>
+#include <util-generic/serialization/std/variant.hpp>
 
 #include <boost/optional.hpp>
 
 #include <exception>
 #include <sstream>
 #include <string>
+#include <variant>
 
 namespace sdpa
 {
@@ -88,7 +91,7 @@ namespace sdpa
     {
     public:
       using value_t = pnet::type::value::value_type;
-      using content_t = ::boost::variant<value_t, std::exception_ptr>;
+      using content_t = std::variant<std::exception_ptr, value_t>;
 
       workflow_response_response ( std::string workflow_response_id
                                  , content_t content
@@ -105,13 +108,13 @@ namespace sdpa
 
       value_t const& get() const
       {
-        if (::boost::get<value_t> (&_content))
+        if (std::holds_alternative<value_t> (_content))
         {
-          return ::boost::get<value_t> (_content);
+          return std::get<value_t> (_content);
         }
         else
         {
-          std::rethrow_exception (::boost::get<std::exception_ptr> (_content));
+          std::rethrow_exception (std::get<std::exception_ptr> (_content));
         }
       }
 
@@ -127,9 +130,9 @@ namespace sdpa
         return _content;
       }
 
-      using serialized = ::boost::variant< pnet::type::value::value_type
-                                       , std::string
-                                       >;
+      using serialized = std::variant< pnet::type::value::value_type
+                                     , std::string
+                                     >;
 
     private:
       std::string _workflow_response_id;
@@ -141,22 +144,22 @@ namespace sdpa
       SAVE_MGMTEVENT_CONSTRUCT_DATA (e);
       SAVE_TO_ARCHIVE (e->workflow_response_id());
 
-      struct : public ::boost::static_visitor<workflow_response_response::serialized>
-      {
-        workflow_response_response::serialized operator()
-          (workflow_response_response::value_t const& value) const
-        {
-          return value;
-        }
-
-        workflow_response_response::serialized operator() (std::exception_ptr const& ex) const
-        {
-          return fhg::util::serialization::exception::serialize (ex);
-        }
-      } visitor;
-
       SAVE_TO_ARCHIVE_WITH_TEMPORARY
-        (workflow_response_response::serialized, ::boost::apply_visitor (visitor, e->content()))
+        ( workflow_response_response::serialized
+        , fhg::util::visit
+          ( e->content()
+          , [] ( workflow_response_response::value_t const& value
+               ) -> workflow_response_response::serialized
+            {
+              return value;
+            }
+          , [] ( std::exception_ptr const& ex
+               ) -> workflow_response_response::serialized
+            {
+              return fhg::util::serialization::exception::serialize (ex);
+            }
+          )
+        )
     }
 
     LOAD_CONSTRUCT_DATA_DEF (workflow_response_response, e)
@@ -166,24 +169,21 @@ namespace sdpa
 
       LOAD_FROM_ARCHIVE (workflow_response_response::serialized, content);
 
-      struct : public ::boost::static_visitor<workflow_response_response::content_t>
-      {
-        workflow_response_response::content_t operator()
-          (pnet::type::value::value_type const& value) const
-        {
-          return value;
-        }
-
-        workflow_response_response::content_t operator()
-          (std::string const& ex) const
-        {
-          return fhg::util::serialization::exception::deserialize (ex);
-        }
-      } visitor;
-
       ::new (e) workflow_response_response
           ( workflow_response_id
-          , ::boost::apply_visitor (visitor, content)
+          , fhg::util::visit
+            ( content
+            , [] ( pnet::type::value::value_type const& value
+                 ) -> workflow_response_response::content_t
+              {
+                return value;
+              }
+            , [] ( std::string const& ex
+                 ) -> workflow_response_response::content_t
+              {
+                return fhg::util::serialization::exception::deserialize (ex);
+              }
+            )
           );
     }
   }

@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -17,7 +17,6 @@
 #include <util-generic/testing/require_exception.hpp>
 
 #include <boost/asio/io_service.hpp>
-#include <boost/format.hpp>
 #include <boost/version.hpp>
 
 BOOST_AUTO_TEST_CASE (ctor_load_failed)

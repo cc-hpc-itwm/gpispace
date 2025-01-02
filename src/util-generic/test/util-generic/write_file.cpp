@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -13,6 +13,8 @@
 #include <util-generic/testing/test_case.hpp>
 #include <util-generic/write_file.hpp>
 
+#include <FMT/boost/filesystem/path.hpp>
+#include <fmt/core.h>
 #include <numeric>
 
 namespace
@@ -60,8 +62,7 @@ BOOST_AUTO_TEST_CASE (write_file_throws_when_file_can_not_opened)
       {
         fhg::util::write_file (file, fhg::util::testing::random<int>()());
       }
-    , std::runtime_error
-        ((::boost::format ("Could not open %1% for writing.") % file).str())
+    , std::runtime_error {fmt::format ("Could not open {} for writing.", file)}
     );
 }
 

@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <pnete/ui/log_monitor.hpp>
@@ -11,7 +11,6 @@
 #include <util-qt/overload.hpp>
 
 #include <boost/filesystem.hpp>
-#include <boost/lambda/lambda.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/vector.hpp>
 
@@ -358,7 +357,7 @@ log_monitor::log_monitor()
 
   connect
     ( filter_level_combobox, QOverload<int>::of (&QComboBox::currentIndexChanged)
-    , this, ::boost::lambda::var (_filter_level) = ::boost::lambda::_1
+    , this, [&] (auto l) { _filter_level = l; }
     );
   connect
     ( filter_level_combobox
@@ -382,7 +381,7 @@ log_monitor::log_monitor()
     (tr ("Drop filtered events instead of keeping them"));
   connect
     ( drop_filtered_box, &QCheckBox::toggled
-    , this, ::boost::lambda::var (_drop_filtered) = ::boost::lambda::_1
+    , this, [&] (auto f) { _drop_filtered = f; }
     );
 
 

@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 //! \note: that test might fail _to output_ differences as the output
@@ -9,8 +9,7 @@
 #include <util-generic/ostream/redirect.hpp>
 #include <util-generic/testing/random.hpp>
 
-#include <boost/format.hpp>
-
+#include <fmt/core.h>
 #include <iostream>
 #include <sstream>
 #include <vector>
@@ -59,7 +58,7 @@ BOOST_AUTO_TEST_CASE (prepend_lines_in_scope)
   auto prepend
     ( [] (unsigned k, std::string const& s)
       {
-        return (::boost::format ("%1%: %2%") % k % s).str();
+        return fmt::format ("{}: {}", k, s);
       }
     );
   std::ostringstream oss;
@@ -183,7 +182,7 @@ BOOST_AUTO_TEST_CASE (prepender_function_of_line)
     ( oss
     , [] (std::string const& line)
       {
-        return (::boost::format ("[%1%]: ") % line.size()).str();
+        return fmt::format ("[{}]: ", line.size());
       }
     );
 
@@ -194,7 +193,7 @@ BOOST_AUTO_TEST_CASE (prepender_function_of_line)
   oss << line << '\n';
 
   BOOST_REQUIRE_EQUAL
-    (oss.str(), (::boost::format ("[%1%]: %2%\n") % line.size() % line).str());
+    (oss.str(), fmt::format ("[{}]: {}\n", line.size(), line));
 }
 
 BOOST_AUTO_TEST_CASE (prepender_function_void)

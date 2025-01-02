@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -34,8 +34,9 @@
 #  define fhg_assert(cond, ...)
 
 #elif FHG_ASSERT_EXCEPTION == FHG_ASSERT_MODE
-#  include <boost/format.hpp>
+#  include <fmt/core.h>
 #  include <stdexcept>
+#  include <string>
 #  define FHG_ASSERT_STR_(x) #x
 #  define FHG_ASSERT_STR(x) FHG_ASSERT_STR_(x)
 
@@ -46,13 +47,14 @@
     if (! (cond))                                                       \
     {                                                                   \
       throw std::logic_error                                            \
-        ( ( ::boost::format ("[%1%:%2%] assertion '%3%' failed%4%%5%.")   \
-          % __FILE__                                                    \
-          % __LINE__                                                    \
-          % FHG_ASSERT_STR (cond)                                       \
-          % (std::string ("" __VA_ARGS__).empty() ? "" : ": ")          \
-          % std::string ("" __VA_ARGS__)                                \
-          ).str()                                                       \
+        ( fmt::format                                                   \
+          ( "[{0}:{1}] assertion '{2}' failed{3}{4}."                   \
+          , __FILE__                                                    \
+          , __LINE__                                                    \
+          , FHG_ASSERT_STR (cond)                                       \
+          , (std::string ("" __VA_ARGS__).empty() ? "" : ": ")          \
+          , std::string ("" __VA_ARGS__)                                \
+          )                                                             \
         );                                                              \
     }                                                                   \
   } while (0)

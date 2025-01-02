@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <xml/parse/type/memory_buffer.hpp>
@@ -13,13 +13,13 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <boost/format.hpp>
 #include <boost/optional.hpp>
 #include <boost/test/data/test_case.hpp>
 
 #include <sstream>
 #include <string>
 #include <vector>
+#include <fmt/core.h>
 
 namespace
 {
@@ -33,14 +33,14 @@ BOOST_DATA_TEST_CASE
   (pass_context_is_generating_correctly, tribool_values(), pass_context)
 {
   std::istringstream input_stream
-    ( str ( ::boost::format
+    ( fmt::format
               (R"EOS(
 <defun name="f">
-  <module name="m" function="f()" %1%>
+  <module name="m" function="f()" {}>
     <code/>
   </module>
-</defun>)EOS")
-          % (  pass_context &&  *pass_context ? "pass_context=\"true\""
+</defun>)EOS"
+          , (  pass_context &&  *pass_context ? "pass_context=\"true\""
             :  pass_context && !*pass_context ? "pass_context=\"false\""
             : !pass_context                   ? ""
                                               : "<unreachable>"
@@ -49,36 +49,36 @@ BOOST_DATA_TEST_CASE
     );
 
   auto const expected_generated_cpp
-    ( str ( ::boost::format
+    ( fmt::format
               (R"EOS(#include <we/loader/macros.hpp>
 
 #include <pnetc/op/m/f.hpp>
 
 namespace pnetc
-{
+{{
   namespace op
-  {
+  {{
     namespace m
-    {
+    {{
       static void f
-        ( drts::worker::context *%1%
+        ( drts::worker::context *{0}
         , expr::eval::context const&
         , expr::eval::context&
         , std::map<std::string, void*> const&
         )
-      {
-        ::pnetc::op::m::f (%1%);
-      }
-    }
-  }
-}
+      {{
+        ::pnetc::op::m::f ({0});
+      }}
+    }}
+  }}
+}}
 WE_MOD_INITIALIZE_START()
-{
+{{
   WE_REGISTER_FUN_AS (::pnetc::op::m::f,"f");
-}
+}}
 WE_MOD_INITIALIZE_END()
-)EOS")
-          % (  pass_context &&  *pass_context ? "_pnetc_context"
+)EOS"
+          , (  pass_context &&  *pass_context ? "_pnetc_context"
             :  pass_context && !*pass_context ? ""
             : !pass_context                   ? ""
                                               : "<unreachable>"
@@ -108,14 +108,14 @@ BOOST_DATA_TEST_CASE
   (pass_context_is_linking_correctly, tribool_values(), pass_context)
 {
   std::istringstream input_stream
-    ( str ( ::boost::format
+    ( fmt::format
               (R"EOS(
 <defun name="f">
-  <module name="m" function="f()" %1%>
+  <module name="m" function="f()" {}>
     <code/>
   </module>
-</defun>)EOS")
-          % (  pass_context &&  *pass_context ? "pass_context=\"true\""
+</defun>)EOS"
+          , (  pass_context &&  *pass_context ? "pass_context=\"true\""
             :  pass_context && !*pass_context ? "pass_context=\"false\""
             : !pass_context                   ? ""
                                               : "<unreachable>"

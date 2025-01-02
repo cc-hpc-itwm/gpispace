@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -26,11 +26,9 @@
 #include <util-generic/testing/require_container_is_permutation.hpp>
 
 #include <boost/filesystem.hpp>
-#include <boost/format.hpp>
 #include <boost/program_options.hpp>
-#include <boost/range/adaptor/map.hpp>
-#include <boost/range/adaptor/transformed.hpp>
 
+#include <fmt/core.h>
 #include <algorithm>
 #include <iterator>
 #include <string>
@@ -116,10 +114,11 @@ BOOST_AUTO_TEST_CASE (share_example_subnetwork)
   gspc::scoped_runtime_system const drts
     ( vm
     , installation
-    , str ( ::boost::format ("produce:2,%1% process:1,%2%")
-          % (1 * block_size)
-          % (2 * block_size)
-          )
+    , fmt::format
+      ( "produce:2,{} process:1,{}"
+       , 1 * block_size
+       , 2 * block_size
+       )
     , rifds.entry_points()
     );
 

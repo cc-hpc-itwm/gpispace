@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -34,9 +34,10 @@
 
 #include <fhg/util/xml.hpp>
 
-#include <boost/format.hpp>
 #include <boost/optional/optional_io.hpp>
 
+#include <FMT/we/type/value/show.hpp>
+#include <fmt/core.h>
 #include <sstream>
 
 using pnet::type::value::structured_type;
@@ -73,12 +74,25 @@ BOOST_AUTO_TEST_CASE (num_type)
   using pnet::type::value::value_type;
   using fhg::util::num_type;
 
-  BOOST_CHECK_EQUAL (value_type (23), value_type (num_type (23)));
-  BOOST_CHECK_EQUAL (value_type (23U), value_type (num_type (23U)));
-  BOOST_CHECK_EQUAL (value_type (23L), value_type (num_type (23L)));
-  BOOST_CHECK_EQUAL (value_type (23UL), value_type (num_type (23UL)));
-  BOOST_CHECK_EQUAL (value_type (23.0), value_type (num_type (23.0)));
-  BOOST_CHECK_EQUAL (value_type (23.0f), value_type (num_type (23.0f)));
+  auto mk_value
+    { [] (auto const& n)
+      {
+        return std::visit
+          ( [] (auto const& v)
+            {
+              return value_type {v};
+            }
+          , n
+          );
+      }
+    };
+
+  BOOST_CHECK_EQUAL (value_type (23), mk_value (num_type (23)));
+  BOOST_CHECK_EQUAL (value_type (23U), mk_value (num_type (23U)));
+  BOOST_CHECK_EQUAL (value_type (23L), mk_value (num_type (23L)));
+  BOOST_CHECK_EQUAL (value_type (23UL), mk_value (num_type (23UL)));
+  BOOST_CHECK_EQUAL (value_type (23.0), mk_value (num_type (23.0)));
+  BOOST_CHECK_EQUAL (value_type (23.0f), mk_value (num_type (23.0f)));
 }
 
 BOOST_AUTO_TEST_CASE (show_and_read_showed)
@@ -914,10 +928,10 @@ namespace
     fhg::util::testing::require_exception
       ( [&os, &value] { pnet::type::value::dump (os, value); }
       , std::runtime_error
-          ( ( ::boost::format ("cannot dump the plain value '%1%'")
-            % pnet::type::value::show (value)
-            ).str()
-          )
+          { fmt::format ( "cannot dump the plain value '{}'"
+                        , pnet::type::value::show (value)
+                        )
+          }
       );
   }
 
@@ -932,11 +946,12 @@ namespace
     fhg::util::testing::require_exception
       ( [&os, &v] { pnet::type::value::dump (os, pnet::type::value::read (v)); }
       , std::runtime_error
-          ( ( ::boost::format ( "cannot dump the single level property"
-                              " with key '%1%' and value '%2%'"
-                            ) % key % val
-            ).str()
-          )
+          { fmt::format ( "cannot dump the single level property"
+                          " with key '{}' and value '{}'"
+                        , key
+                        , val
+                        )
+          }
       );
   }
 }

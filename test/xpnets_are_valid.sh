@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright (C) 2023 Fraunhofer ITWM
+# Copyright (C) 2025 Fraunhofer ITWM
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 set -euo pipefail
@@ -18,7 +18,11 @@ function find_xpnets()
   # - install/share/GPISpace/xml/xsd/schemas.xml (ci installs into source dir)
   # - share/xml/xsd/schemas.xml
 
+  # in CI the build is in the PROJECT_DIRECTORY and it contains
+  # 3rdparty non-xpnet xml files
+
   (cd "${repo_dir}" && find * -name '*.xpnet' -or -name '*.xml' -type f) \
+    | grep -v '3rdparty' \
     | grep -v 'install/share/GPISpace/xml/xsd/schemas.xml$' \
     | grep -v 'share/xml/xsd/schemas.xml$' \
     | grep -v 'src/xml/tests/xpnets/diagnostics/error_duplicate_template.xpnet$'

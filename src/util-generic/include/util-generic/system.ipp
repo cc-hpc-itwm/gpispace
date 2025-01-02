@@ -1,7 +1,8 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <util-generic/nest_exceptions.hpp>
+#include <exception>
+#include <stdexcept>
 
 namespace fhg
 {
@@ -16,13 +17,14 @@ namespace fhg
     template<typename Exception, typename Command>
       void system (Description description, Command command)
     {
-      return nest_exceptions<Exception>
-        ( [&command]
-          {
-            system (command);
-          }
-        , "Could not " + description
-        );
+      try
+      {
+        return system (command);
+      }
+      catch (...)
+      {
+        std::throw_with_nested (Exception {"Could not " + description});
+      }
     }
   }
 }

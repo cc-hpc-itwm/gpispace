@@ -7,7 +7,7 @@ CXXFLAGS+=-I $(SWH_PREFIX)/example
 CXXFLAGS+=-I $(GMP_PREFIX)/include
 CXXFLAGS+=-I $(GSPC_PREFIX)/include
 CXXFLAGS+=-I $(GSPC_PREFIX)/external/boost/include
-CXXFLAGS+=--std=c++11
+CXXFLAGS+=--std=c++17
 CXXFLAGS+=-fPIC
 
 LDFLAGS+=-L $(GSPC_PREFIX)/lib

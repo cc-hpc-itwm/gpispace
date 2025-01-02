@@ -1,7 +1,6 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <util-generic/cxx17/future_error.hpp>
 #include <util-generic/finally.hpp>
 
 #include <boost/asio/local/connect_pair.hpp>
@@ -148,7 +147,7 @@ namespace fhg
 
       if (_state->_content != detail::content::not_yet_set)
       {
-        throw util::cxx17::make_future_error
+        throw std::future_error
           (std::future_errc::promise_already_satisfied);
       }
 
@@ -164,7 +163,7 @@ namespace fhg
 
       if (_state->_content != detail::content::not_yet_set)
       {
-        throw util::cxx17::make_future_error
+        throw std::future_error
           (std::future_errc::promise_already_satisfied);
       }
 
@@ -179,7 +178,7 @@ namespace fhg
       std::lock_guard<std::mutex> const _ (_state->_guard);
       if (_state->_future_created)
       {
-        throw util::cxx17::make_future_error
+        throw std::future_error
           (std::future_errc::future_already_retrieved);
       }
       _state->_future_created = true;

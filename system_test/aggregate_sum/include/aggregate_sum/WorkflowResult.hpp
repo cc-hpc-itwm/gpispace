@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -15,7 +15,7 @@ namespace aggregate_sum
      using ValuesOnPorts::ValuesOnPorts;
 
      // asserts there is exactly one occurence of key
-     template<typename T> T const& get (Key key) const;
+     template<typename T> T const& at (Key key) const;
 
   private:
      void assert_key_count
@@ -24,8 +24,8 @@ namespace aggregate_sum
       ) const;
 
      template<typename T, typename TypeDescription>
-       T const& get_impl (Key key, TypeDescription type_description) const;
+       T const& at_implementation (Key, TypeDescription) const;
   };
 
-  template<> int const& WorkflowResult::get (Key key) const;
+  template<> int const& WorkflowResult::at (Key key) const;
 }

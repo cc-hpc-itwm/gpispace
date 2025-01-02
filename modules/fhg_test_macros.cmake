@@ -1,4 +1,4 @@
-# Copyright (C) 2023 Fraunhofer ITWM
+# Copyright (C) 2025 Fraunhofer ITWM
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 include (util-cmake/add_unit_test)
@@ -67,7 +67,7 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/libexec/gspc/agent"
   "${CMAKE_INSTALL_PREFIX}/libexec/gspc/drts-kernel"
   #! \note This does not include bundled libraries!
-  "${CMAKE_INSTALL_PREFIX}/version"
+  "${CMAKE_INSTALL_PREFIX}/gspc_version"
   "${CMAKE_INSTALL_PREFIX}/${GSPC_SHARE_INSTALL_DIR}/README.md"
   "${CMAKE_INSTALL_PREFIX}/${GSPC_SHARE_INSTALL_DIR}/man/man5/xpnet.5"
   "${CMAKE_INSTALL_PREFIX}/${GSPC_SHARE_INSTALL_DIR}/xml/lib/4.xml"

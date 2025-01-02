@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <iml/vmem/gaspi/pc/container/manager.hpp>
@@ -6,10 +6,8 @@
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/format.hpp>
 #include <boost/variant/static_visitor.hpp>
 
-#include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_exception.hpp>
 #include <util-generic/syscall.hpp>
 
@@ -19,6 +17,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <exception>
+#include <fmt/core.h>
 #include <functional>
 #include <stdexcept>
 #include <utility>
@@ -347,14 +347,14 @@ namespace gpi
                 //! communication_threads
 
                 throw std::runtime_error
-                  (str ( ::boost::format
-                           ("io_exact: unable to %1% %2% bytes, %3% %4%")
-                       % what
-                       % size
-                       % got
-                       % bytes
-                       )
-                  );
+                  { fmt::format
+                      ( "io_exact: unable to {} {} bytes, {} {}"
+                      , what
+                      , size
+                      , got
+                      , bytes
+                      )
+                  };
               }
 
               missing -= bytes;
@@ -392,56 +392,66 @@ namespace gpi
           {
             gpi::pc::proto::message_t request;
 
-            fhg::util::nest_exceptions<std::runtime_error>
-              ( [&]
-                {
-                  gpi::pc::proto::header_t header;
-                  read_exact (socket, &header, sizeof (header));
+            try
+            {
+              gpi::pc::proto::header_t header;
+              read_exact (socket, &header, sizeof (header));
 
-                  std::vector<char> buffer (header.length);
-                  read_exact (socket, buffer.data(), buffer.size());
+              std::vector<char> buffer (header.length);
+              read_exact (socket, buffer.data(), buffer.size());
 
-                  fhg::util::nest_exceptions<std::runtime_error>
-                    ( [&]
-                      {
-                        std::stringstream sstr
-                          (std::string (buffer.data(), buffer.size()));
-                        ::boost::archive::binary_iarchive ia (sstr);
-                        ia & request;
-                      }
-                    , "could not decode message"
-                    );
-                }
-              , "could not receive message"
-              );
+              try
+              {
+                std::stringstream sstr
+                  (std::string (buffer.data(), buffer.size()));
+                ::boost::archive::binary_iarchive ia (sstr);
+                ia & request;
+              }
+              catch (...)
+              {
+                std::throw_with_nested
+                  ( std::runtime_error {"could not decode message"}
+                  );
+              };
+            }
+            catch (...)
+            {
+              std::throw_with_nested
+                (std::runtime_error {"could not receive message"});
+            };
 
             gpi::pc::proto::message_t const reply
               (handle_message (process_id, request, _memory_manager, _topology));
 
-            fhg::util::nest_exceptions<std::runtime_error>
-              ( [&]
-                {
-                  std::string data;
-                  gpi::pc::proto::header_t header;
+            try
+            {
+              std::string data;
+              gpi::pc::proto::header_t header;
 
-                  fhg::util::nest_exceptions<std::runtime_error>
-                    ( [&]
-                      {
-                        std::stringstream sstr;
-                        ::boost::archive::text_oarchive oa (sstr);
-                        oa & reply;
-                        data = sstr.str();
-                      }
-                    , "could not encode message"
-                    );
+              try
+              {
+                std::stringstream sstr;
+                ::boost::archive::text_oarchive oa (sstr);
+                oa & reply;
+                data = sstr.str();
+              }
+              catch (...)
+              {
+                std::throw_with_nested
+                  (std::runtime_error {"could not encode message"});
+              };
 
-                  header.length = data.size();
+              header.length = data.size();
 
-                  write_exact (socket, &header, sizeof (header));
-                  write_exact (socket, data.data(), data.size());
-                }
-              , "could not send message"
-              );
+              write_exact (socket, &header, sizeof (header));
+              write_exact (socket, data.data(), data.size());
+            }
+            catch (...)
+            {
+              std::throw_with_nested
+                ( std::runtime_error {"could not send message"}
+                );
+            }
           }
           catch (...)
           {
@@ -491,21 +501,29 @@ namespace gpi
                     , std::move (topology_rpc_server)
                     )
       {
-        fhg::util::nest_exceptions<std::runtime_error>
-          ( [&]
-            {
-              safe_unlink (m_path);
-            }
-          , "could not unlink path '" + m_path + "'"
-          );
+        try
+        {
+          safe_unlink (m_path);
+        }
+        catch (...)
+        {
+          std::throw_with_nested
+            ( std::runtime_error
+              {"could not unlink path '" + m_path + "'"}
+            );
+        }
 
-        fhg::util::nest_exceptions<std::runtime_error>
-          ( [&]
-            {
-              m_socket = fhg::util::syscall::socket (AF_UNIX, SOCK_STREAM, 0);
-            }
-          , "could not create process-container communication socket"
-          );
+        try
+        {
+          m_socket = fhg::util::syscall::socket (AF_UNIX, SOCK_STREAM, 0);
+        }
+        catch (...)
+        {
+          std::throw_with_nested
+            ( std::runtime_error
+              {"could not create process-container communication socket"}
+            );
+        };
 
         struct close_socket_on_error
         {
@@ -541,14 +559,20 @@ namespace gpi
                 , sizeof (my_addr.sun_path) - 1
                 );
 
-        fhg::util::nest_exceptions<std::runtime_error>
-          ( [&]
-            {
-              fhg::util::syscall::bind
-                (m_socket, reinterpret_cast<struct sockaddr *> (&my_addr), sizeof (struct sockaddr_un));
-            }
-          , "could not bind process-container communication socket to path " + m_path
-          );
+        try
+        {
+          fhg::util::syscall::bind
+            (m_socket, reinterpret_cast<struct sockaddr *> (&my_addr), sizeof (struct sockaddr_un));
+        }
+        catch (...)
+        {
+          std::throw_with_nested
+            ( std::runtime_error
+              { "could not bind process-container communication socket to path "
+              + m_path
+              }
+            );
+        }
 
         struct delete_socket_file_on_error
         {

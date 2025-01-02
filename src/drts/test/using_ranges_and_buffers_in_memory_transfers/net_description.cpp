@@ -1,12 +1,11 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <drts/test/using_ranges_and_buffers_in_memory_transfers/net_description.hpp>
 
 #include <util-generic/testing/random.hpp>
 
-#include <boost/format.hpp>
-
+#include <fmt/core.h>
 #include <cmath>
 
 namespace drts
@@ -19,8 +18,7 @@ namespace drts
       , bool with_alignment
       )
     {
-      return
-        (::boost::format
+      return fmt::format
           (R"EOS(<defun name="net">
             <include-structs href="memory/global/range.xpnet"/>
             <in name="global" type="global_memory_range" place="global"/>
@@ -45,24 +43,24 @@ namespace drts
                   <out name="done" type="control"/>
                   <memory-buffer name="local">
                     <size>
-                      ${buffer_size}
+                      ${{buffer_size}}
                     </size>
-                    %1%
+                    {0}
                   </memory-buffer>
-                  <memory-%2%%3%>
+                  <memory-{1}{2}>
                     <global>
-                      ${range.handle} := ${global.handle};
-                      ${range.offset} := 0UL;
-                      ${range.size} := ${range_size};
-                      stack_push (List(), ${range})
+                      ${{range.handle}} := ${{global.handle}};
+                      ${{range.offset}} := 0UL;
+                      ${{range.size}} := ${{range_size}};
+                      stack_push (List(), ${{range}})
                     </global>
                     <local>
-                      ${range.buffer} := "local";
-                      ${range.offset} := ${offset};
-                      ${range.size} := ${range_size};
-                      stack_push (List(), ${range})
+                      ${{range.buffer}} := "local";
+                      ${{range.offset}} := ${{offset}};
+                      ${{range.size}} := ${{range_size}};
+                      stack_push (List(), ${{range}})
                     </local>
-                  </memory-%2%>
+                  </memory-{1}>
                   <module name="test_module" function="done task (local)">
                     <cinclude href="stdexcept"/>
                     <code><![CDATA[
@@ -78,21 +76,23 @@ namespace drts
                 <connect-out port="done" place="done"/>
               </transition>
             </net>
-          </defun>)EOS")
-          % ( with_alignment
-            ? ( ::boost::format ("<alignment>%1%UL</alignment>")
-              % std::pow (2, fhg::util::testing::random<std::size_t>{} (4, 0))
-              ).str()
+          </defun>)EOS"
+         , ( with_alignment
+            ? fmt::format
+              ( "<alignment>{}UL</alignment>"
+              , std::pow (2, fhg::util::testing::random<std::size_t>{} (4, 0))
+              )
             : ""
             )
-          % type
-          % ( allow_empty_ranges
-            ? ( ::boost::format (" allow-empty-ranges=\"%1%\"")
-              % (*allow_empty_ranges ? "true" : "false")
-              ).str()
+          , type
+          , ( allow_empty_ranges
+            ? fmt::format
+              ( " allow-empty-ranges=\"{}\""
+              , (*allow_empty_ranges ? "true" : "false")
+              )
             : ""
             )
-          ).str();
+          );
     }
   }
 }

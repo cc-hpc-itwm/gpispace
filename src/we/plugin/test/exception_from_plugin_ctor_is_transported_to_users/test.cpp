@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -23,9 +23,12 @@
 #include <util-generic/testing/require_exception.hpp>
 
 #include <boost/filesystem.hpp>
-#include <boost/format.hpp>
 #include <boost/program_options.hpp>
 
+#include <FMT/boost/filesystem/path.hpp>
+#include <FMT/we/expr/eval/context.hpp>
+#include <filesystem>
+#include <fmt/core.h>
 #include <stdexcept>
 
 BOOST_AUTO_TEST_CASE (exception_from_plugin_ctor_is_transported_to_users)
@@ -100,7 +103,7 @@ BOOST_AUTO_TEST_CASE (exception_from_plugin_ctor_is_transported_to_users)
 
   auto const plugin_path (option_plugin_path.get_from (vm));
   ::pnet::type::value::value_type const plugin_path_value
-      (plugin_path.string());
+      (static_cast<std::filesystem::path> (plugin_path).string());
 
   auto const job
     (client.submit (workflow.pnet(), {{"plugin_path", plugin_path_value}}));
@@ -114,15 +117,14 @@ BOOST_AUTO_TEST_CASE (exception_from_plugin_ctor_is_transported_to_users)
         client.wait (job);
       }
     , std::runtime_error
-      (str ( ::boost::format ("Job %1%: failed: error-message :="
-                           " workflow interpretation:"
-                           " Plugins::create (%2%, %3%):"
-                           " Exception in gspc_we_plugin_create: D::D()"
-                           )
-           % job
-           % plugin_path
-           % context
-           )
-      )
+      { fmt::format ( "Job {}: failed: error-message :="
+                      " workflow interpretation:"
+                      " Plugins::create ({}, {}):"
+                      " Exception in gspc_we_plugin_create: D::D()"
+                    , job
+                    , static_cast<boost::filesystem::path> (plugin_path)
+                    , context
+                    )
+      }
     );
 }

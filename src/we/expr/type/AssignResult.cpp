@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <we/expr/type/AssignResult.hpp>
@@ -7,8 +7,10 @@
 
 #include <util-generic/join.hpp>
 
-#include <boost/format.hpp>
-
+#include <FMT/util-generic/join.hpp>
+#include <FMT/we/expr/type/Path.hpp>
+#include <FMT/we/expr/type/Type.hpp>
+#include <fmt/core.h>
 #include <iostream>
 #include <iterator>
 
@@ -115,14 +117,15 @@ namespace expr
             if (l->_name != r->_name)
             {
               throw exception::type::error
-                ( ::boost::format
-                    ("Can not assign a value of type '%2%' to a value of type '%1%' at %3%: Missing field '%4%', found '%5%' instead")
-                % lhs
-                % rhs
-                % _path
-                % l->_name
-                % r->_name
-                );
+                { fmt::format
+                    ( "Can not assign a value of type '{1}' to a value of type '{0}' at {2}: Missing field '{3}', found '{4}' instead"
+                    , lhs
+                    , rhs
+                    , _path
+                    , l->_name
+                    , r->_name
+                    )
+                };
             }
 
             fields.emplace_back
@@ -134,39 +137,41 @@ namespace expr
           if (l != std::end (lhs._fields))
           {
             throw exception::type::error
-              ( ::boost::format
-                  ("Can not assign a value of type '%2%' to a value of type '%1%' at %3%: Missing field(s) {'%4%'}")
-              % lhs
-              % rhs
-              % _path
-              % fhg::util::join
-                ( Struct::Fields {l, std::end (lhs._fields)}
-                , "', '"
-                , [] (auto& os, auto const& field) -> decltype (os)
-                  {
-                    return os << field._name;
-                  }
-                )
-              );
+              { fmt::format
+                  ( "Can not assign a value of type '{1}' to a value of type '{0}' at {2}: Missing field(s) {{'{3}'}}"
+                  , lhs
+                  , rhs
+                  , _path
+                  , fhg::util::join
+                    ( Struct::Fields {l, std::end (lhs._fields)}
+                    , "', '"
+                    , [] (auto& os, auto const& field) -> decltype (os)
+                      {
+                        return os << field._name;
+                      }
+                    )
+                  )
+              };
           }
 
           if (r != std::end (rhs._fields))
           {
             throw exception::type::error
-              ( ::boost::format
-                  ("Can not assign a value of type '%2%' to a value of type '%1%' at %3%: Additional field(s) {'%4%'}")
-              % lhs
-              % rhs
-              % _path
-              % fhg::util::join
-                ( Struct::Fields {r, std::end (rhs._fields)}
-                , "', '"
-                , [] (auto& os, auto const& field) -> decltype (os)
-                  {
-                    return os << field._name;
-                  }
-                )
-              );
+              { fmt::format
+                  ( "Can not assign a value of type '{1}' to a value of type '{0}' at {2}: Additional field(s) {{'{3}'}}"
+                  , lhs
+                  , rhs
+                  , _path
+                  , fhg::util::join
+                    ( Struct::Fields {r, std::end (rhs._fields)}
+                    , "', '"
+                    , [] (auto& os, auto const& field) -> decltype (os)
+                      {
+                        return os << field._name;
+                      }
+                    )
+                  )
+              };
           }
 
           return Struct (fields);
@@ -179,8 +184,8 @@ namespace expr
           (void) rhs;
 
           // std::clog
-          //   << ( ::boost::format
-          //          ("At %1%: Type '%2%' overwritten with type '%3%'")
+          //   << ( fmt::format
+          //          ("At {0}: Type '{1}' overwritten with type '{2}'")
           //      % _path
           //      % lhs
           //      % rhs
@@ -194,7 +199,7 @@ namespace expr
           (void) rhs;
 
           // std::clog
-          //   << ( ::boost::format ("At %1%: Multi-type '%2%'")
+          //   << ( fmt::format ("At {0}: Multi-type '{1}'")
           //      % _path
           //      % rhs
           //      )
@@ -240,14 +245,14 @@ namespace expr
           Type operator() (LHS const& lhs, RHS const& rhs) const
         {
           throw exception::type::error
-            ( ::boost::format
-               ("At %3%: Can not assign a value of type '%2%'"
-               " to a value of type '%1%'"
+            { fmt::format
+               ( "At {2}: Can not assign a value of type '{1}'"
+                 " to a value of type '{0}'"
+               , lhs
+               , rhs
+               , _path
                )
-            % lhs
-            % rhs
-            % _path
-            );
+            };
         }
       };
     }

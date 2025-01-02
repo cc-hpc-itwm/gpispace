@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <we/type/Transition.hpp>
@@ -15,9 +15,12 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <boost/format.hpp>
 #include <boost/test/data/test_case.hpp>
 
+#include <FMT/boost/variant.hpp>
+#include <FMT/we/expr/type/Type.hpp>
+#include <FMT/we/type/Expression.hpp>
+#include <fmt/core.h>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -32,14 +35,11 @@ namespace
       , expr::Type expected
       )
   {
-    return str
-      ( ::boost::format
-          ("Expression '%1%' has incompatible type '%2%'."
-          " Expected type '%3%'."
-          )
-      % expression
-      % type
-      % expected
+    return fmt::format
+      ( "Expression '{}' has incompatible type '{}'. Expected type '{}'."
+      , expression
+      , type
+      , expected
       );
   }
 }
@@ -67,10 +67,8 @@ BOOST_DATA_TEST_CASE
       }
     , fhg::util::testing::make_nested
       ( std::runtime_error
-        ( str ( ::boost::format ("In the <condition> expression '%1%'")
-              % td.expression
-              )
-        )
+        { fmt::format ("In the <condition> expression '{}'", td.expression)
+        }
       , type_error (td.expression, td.type, expr::type::Boolean{})
       )
     );
@@ -124,7 +122,7 @@ BOOST_DATA_TEST_CASE
   {
     auto const port_name (fhg::util::testing::random_identifier());
     we::type::Expression const expression
-      (str (::boost::format ("${%1%_out} := ${%1%_in}") % port_name));
+      {fmt::format ("${{{0}_out}} := ${{{0}_in}}", port_name)};
     we::type::Transition transition
       ( fhg::util::testing::random_identifier()
       , expression
@@ -158,16 +156,14 @@ BOOST_DATA_TEST_CASE
         }
       , fhg::util::testing::make_nested
         ( pnet::exception::type_error
-            (str ( ::boost::format ("In expression '%1%'")
-                 % expression
-                 )
-            )
+            { fmt::format ("In expression '{}'", expression)
+            }
         , std::runtime_error
-            (str ( ::boost::format ("Output port '%1%' expects type '%2%'")
-                 % (port_name + "_out")
-                 % tdOut.type
-                 )
-            )
+            { fmt::format ( "Output port '{}' expects type '{}'"
+                          , port_name + "_out"
+                          , tdOut.type
+                          )
+            }
         )
       );
   }
@@ -228,12 +224,12 @@ BOOST_DATA_TEST_CASE
         transition.assert_correct_expression_types();
       }
     , pnet::exception::type_error
-      (str ( ::boost::format
-               ("'plugin_path' has type '%1%' but expected is type '%2%'")
-           % td.type
-           % expr::type::String{}
-           )
-      )
+        { fmt::format
+            ( "'plugin_path' has type '{}' but expected is type '{}'"
+            , td.type
+            , expr::type::String{}
+            )
+        }
     );
 }
 
@@ -292,12 +288,12 @@ BOOST_DATA_TEST_CASE
         transition.assert_correct_expression_types();
       }
     , pnet::exception::type_error
-      (str ( ::boost::format
-               ("'plugin_id' has type '%1%' but expected is type '%2%'")
-           % td.type
-           % expr::type::ULong{}
-           )
-      )
+        { fmt::format
+            ( "'plugin_id' has type '{}' but expected is type '{}'"
+            , td.type
+            , expr::type::ULong{}
+            )
+        }
     );
 }
 
@@ -388,10 +384,10 @@ BOOST_DATA_TEST_CASE
       }
     , fhg::util::testing::make_nested
       ( std::runtime_error
-         (str ( ::boost::format ("In the <eureka-group> expression '%1%'")
-              % td.expression
-              )
-        )
+         { fmt::format ( "In the <eureka-group> expression '{}'"
+                       , td.expression
+                       )
+         }
       , type_error (td.expression, td.type, expr::type::String{})
       )
     );

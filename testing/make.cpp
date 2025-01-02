@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <testing/make.hpp>
@@ -7,9 +7,12 @@
 
 #include <fhg/util/system_with_blocked_SIGCHLD.hpp>
 
-#include <boost/format.hpp>
 #include <boost/version.hpp>
 
+#include <FMT/boost/filesystem/path.hpp>
+#include <filesystem>
+#include <fmt/core.h>
+#include <fmt/std.h>
 #include <sstream>
 
 namespace test
@@ -17,11 +20,11 @@ namespace test
   //! \todo configure
   namespace
   {
-    ::boost::filesystem::path pnet_compiler (gspc::installation const& installation)
+    std::filesystem::path pnet_compiler (gspc::installation const& installation)
     {
       return installation.gspc_home() / "bin" / "pnetc";
     }
-    ::boost::filesystem::path workflow_library
+    std::filesystem::path workflow_library
       (gspc::installation const& installation)
     {
       return installation.gspc_home() / "share" / "GPISpace" / "xml" / "lib";
@@ -31,7 +34,7 @@ namespace test
   make::make ( gspc::installation const& installation
              , std::string const& main
              , ::boost::filesystem::path const& source_directory
-             , ::boost::optional<::boost::filesystem::path> const& lib_destdir
+             , std::optional<::boost::filesystem::path> const& lib_destdir
              , option::options const& options
              )
     : _main (main)
@@ -57,7 +60,7 @@ namespace test
         << options
         ;
 
-      if (!!lib_destdir)
+      if (lib_destdir.has_value())
       {
         command << option::generic ("path-to-cpp", wrapper_directory);
       }
@@ -65,7 +68,7 @@ namespace test
       fhg::util::system_with_blocked_SIGCHLD (command.str());
     }
 
-    if (!!lib_destdir)
+    if (lib_destdir.has_value())
     {
       std::ostringstream command;
 
@@ -83,7 +86,7 @@ namespace test
         << " -DGSPC_WITH_IML=" << GSPC_WITH_IML << "\""
         << " CXX=\"" << cmake_cxx_compiler << "\""
         << " make "
-        << " LIB_DESTDIR=" << lib_destdir.get()
+        << " LIB_DESTDIR=" << *lib_destdir
         << " -C " << wrapper_directory
         << " install"
         ;
@@ -101,13 +104,15 @@ namespace test
       : _key (key)
       , _value (value)
     {}
-    generic::generic (std::string const& key, ::boost::format const& format)
-      : generic (key, format.str())
-    {}
     generic::generic ( std::string const& key
                      , ::boost::filesystem::path const& path
                      )
-      : generic (key, ::boost::format ("%1%") % path)
+      : generic {key, fmt::format ("{}", path)}
+    {}
+    generic::generic ( std::string const& key
+                     , std::filesystem::path const& path
+                     )
+      : generic {key, fmt::format ("{}", path)}
     {}
     std::ostream& generic::operator() (std::ostream& os) const
     {
@@ -127,13 +132,22 @@ namespace test
     namespace gen
     {
       include::include (::boost::filesystem::path const& path)
-        : cxx_flag (::boost::format ("'-I %1%'") % path)
+        : cxx_flag {fmt::format ("'-I {}'",  path)}
+      {}
+      include::include (std::filesystem::path const& path)
+        : cxx_flag {fmt::format ("'-I {}'",  path)}
       {}
       link::link (::boost::filesystem::path const& path)
         : ld_flag (path.string())
       {}
+      link::link (std::filesystem::path const& path)
+        : ld_flag (path.string())
+      {}
       library_path::library_path (::boost::filesystem::path const& path)
-        : ld_flag (::boost::format ("'-L %1%'") % path)
+        : ld_flag {fmt::format ("'-L {}'", path)}
+      {}
+      library_path::library_path (std::filesystem::path const& path)
+        : ld_flag {fmt::format ("'-L {}'", path)}
       {}
     }
   }

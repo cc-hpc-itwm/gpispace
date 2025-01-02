@@ -1,13 +1,13 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
 
 #include <rif/strategy/ssh/context.hpp>
 
-#include <boost/filesystem/path.hpp>
 #include <boost/variant.hpp>
 
+#include <filesystem>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -22,7 +22,7 @@ namespace libssh2
     session ( context&
             , int socket_fd
             , std::string const& username
-            , std::pair<::boost::filesystem::path, ::boost::filesystem::path>
+            , std::pair<std::filesystem::path, std::filesystem::path>
                 const& public_and_private_key
             );
 

@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <iml/rif/EntryPoint.hpp>
@@ -12,7 +12,6 @@
 #include <util-generic/exit_status.hpp>
 #include <util-generic/hostname.hpp>
 #include <util-generic/join.hpp>
-#include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_exception.hpp>
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 #include <util-generic/syscall.hpp>
@@ -40,6 +39,8 @@
 #include <boost/system/system_error.hpp>
 #include <boost/thread/scoped_thread.hpp>
 
+#include <FMT/boost/filesystem/path.hpp>
+#include <fmt/core.h>
 #include <fstream>
 #include <stdexcept>
 
@@ -218,12 +219,12 @@ try
             if (!nodefile_stream)
             {
               throw std::runtime_error
-                ( ( ::boost::format ("Could not create nodefile %1%: %2%")
-                  % nodefile
-                  % strerror (errno)
+                { fmt::format
+                  ( "Could not create nodefile {}: {}"
+                  , nodefile
+                  , strerror (errno)
                   )
-                . str()
-                );
+                };
             }
 
             for (std::string const& node : nodes)
@@ -234,12 +235,12 @@ try
             if (!nodefile_stream)
             {
               throw std::runtime_error
-                ( ( ::boost::format ("Could not write to nodefile %1%: %2%")
-                  % nodefile
-                  % strerror (errno)
+                { fmt::format
+                  ( "Could not write to nodefile {}: {}"
+                  , nodefile
+                  , strerror (errno)
                   )
-                . str()
-                );
+                };
             }
           }
 

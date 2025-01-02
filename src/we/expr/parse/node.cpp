@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <we/expr/parse/node.hpp>
@@ -9,8 +9,8 @@
 
 #include <we/type/value/show.hpp>
 
-#include <boost/format.hpp>
-
+#include <FMT/we/expr/token/show.hpp>
+#include <fmt/core.h>
 #include <stdexcept>
 
 namespace expr
@@ -106,10 +106,10 @@ namespace expr
                   ;
                 break;
               default: throw std::runtime_error
-                  (( ::boost::format ("show_parse_node_ternary (%1%)")
-                   % expr::token::show (t.token)
-                   ).str()
-                  );
+                  { fmt::format ( "show_parse_node_ternary ({})"
+                                , expr::token::show (t.token)
+                                )
+                  };
               }
           }
         };

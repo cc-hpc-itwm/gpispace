@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <xml/parse/type/port.hpp>
@@ -13,8 +13,8 @@
 #include <fhg/assert.hpp>
 #include <util-generic/cxx17/holds_alternative.hpp>
 
-#include <boost/format.hpp>
-
+#include <FMT/we/type/port/direction.hpp>
+#include <fmt/core.h>
 #include <tuple>
 
 namespace xml
@@ -41,7 +41,7 @@ namespace xml
       std::size_t port_type::unique_key_type::hash_value() const
       {
         return std::hash<std::string>{}
-          (str (::boost::format ("%1%%2%") % _name % _port_direction));
+          (fmt::format ("{}{}", _name, _port_direction));
       }
 
       port_type::port_type ( util::position_type const& position_of_definition
@@ -253,7 +253,7 @@ namespace xml
       {
         void dump (::fhg::util::xml::xmlstream& s, port_type const& p)
         {
-          s.open (str (::boost::format ("%1%") % p.direction()));
+          s.open (fmt::format ("{}", p.direction()));
           s.attr ("name", p.name());
           s.attr ("type", p.type());
           s.attr ("place", p.place);

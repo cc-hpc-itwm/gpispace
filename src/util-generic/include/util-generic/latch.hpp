@@ -1,10 +1,11 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
 
 #include <condition_variable>
 #include <mutex>
+#include <stdexcept>
 
 namespace fhg
 {

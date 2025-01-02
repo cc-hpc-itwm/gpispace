@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -19,6 +19,7 @@ namespace fhg
       //! provide that exposition only constructor though, so that
       //! there is a way to actually construct it.
       std::future_error make_future_error (std::error_code const&);
+      [[deprecated ("use std::future_error ctor instead, will be removed after 2025/12/31")]]
       std::future_error make_future_error (std::future_errc const&);
     }
   }

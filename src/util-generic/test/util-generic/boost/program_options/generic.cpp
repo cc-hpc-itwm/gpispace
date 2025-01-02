@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <util-generic/boost/program_options/generic.hpp>
@@ -6,9 +6,9 @@
 #include <util-generic/testing/require_exception.hpp>
 #include <util-generic/testing/random.hpp>
 
-#include <boost/format.hpp>
 #include <boost/test/unit_test.hpp>
 
+#include <fmt/core.h>
 #include <string>
 #include <vector>
 
@@ -43,7 +43,8 @@ BOOST_AUTO_TEST_CASE (option)
   fhg::util::testing::require_exception
     ( [&option, &vm] { option.get_from (vm); }
      , std::logic_error
-       ((::boost::format ("missing key '%1%' in variables map") % name).str())
+       { fmt::format ("missing key '{}' in variables map", name)
+       }
     );
 
   std::string const value {fhg::util::testing::random_identifier()};
@@ -66,12 +67,12 @@ BOOST_AUTO_TEST_CASE (option)
         option.set (vm, other_value);
       }
     , std::logic_error
-      ((::boost::format ("Failed to set option '%1%' to '%2%': Found value '%3%'")
-       % name
-       % other_value
-       % value
-       ).str()
-      )
+      { fmt::format ( "Failed to set option '{0}' to '{1}': Found value '{2}'"
+                    , name
+                    , other_value
+                    , value
+                    )
+      }
     );
 }
 
@@ -140,7 +141,7 @@ BOOST_AUTO_TEST_CASE (options_no_options_are_added)
     , [&s] (exception<::boost::program_options::unknown_option> const& e)
       {
         return std::string (e.what()) ==
-          (::boost::format ("unrecognised option '--%1%'") % s).str();
+          fmt::format ("unrecognised option '--{}'", s);
       }
     );
 }
@@ -174,13 +175,13 @@ BOOST_AUTO_TEST_CASE (options_header_is_stored)
 
   fhg::util::testing::require_exception
     ( [&header] { po::options (header).store_and_notify (options ({"-h"})); }
-    , std::runtime_error ( ( ::boost::format (R"EOS(%1%:
+    , std::runtime_error ( fmt::format (R"EOS({}:
 
 Common:
   -h [ --help ]          show the options description
-)EOS")
-                           % header
-                           ).str()
+)EOS"
+                           , header
+                           )
                          )
     );
 }
@@ -251,14 +252,16 @@ BOOST_AUTO_TEST_CASE (options_repeated_version_must_be_unique)
   fhg::util::testing::require_exception
     ( [&v1, &v2] { po::options ({}).version (v1).version (v2); }
     , std::invalid_argument
-      ((::boost::format ("Different versions: '%1%' vs '%2%'") % v1 % v2).str())
+      { fmt::format ("Different versions: '{0}' vs '{1}'", v1, v2)
+      }
     );
 
   fhg::util::testing::require_exception
     ( [&v1, &v2]
       { po::options ({}).version (v1).add (po::options ({}).version (v2)); }
     , std::invalid_argument
-      ((::boost::format ("Different versions: '%1%' vs '%2%'") % v1 % v2).str())
+      { fmt::format ("Different versions: '{0}' vs '{1}'", v1, v2)
+      }
     );
 }
 
@@ -538,7 +541,8 @@ BOOST_AUTO_TEST_CASE (options_embedded_must_have_unique_marker)
     fhg::util::testing::require_exception
       ( [&] { po::options ({}).embed (embedded1).embed (embedded2); }
       , std::invalid_argument
-        ((::boost::format ("Duplicate marker '%1%'") % marker_on).str())
+        { fmt::format ("Duplicate marker '{}'", marker_on)
+        }
       );
   }
 
@@ -557,7 +561,8 @@ BOOST_AUTO_TEST_CASE (options_embedded_must_have_unique_marker)
             ;
             }
       , std::invalid_argument
-        ((::boost::format ("Duplicate marker '%1%'") % marker_on).str())
+        { fmt::format ("Duplicate marker '{}'", marker_on)
+        }
       );
   }
 }
@@ -660,7 +665,7 @@ BOOST_AUTO_TEST_CASE (guessing_is_disabled)
       , [&s] (exception<::boost::program_options::unknown_option> const& e)
         {
           return std::string (e.what()) ==
-            (::boost::format ("unrecognised option '--%1%'") % s).str();
+            fmt::format ("unrecognised option '--{}'", s);
         }
       );
   }

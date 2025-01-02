@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE (emulate_share_example_ping_pong)
 
     activity.add_output_TESTING_ONLY
       ( "seq"
-      , activity.input().front().first
+      , activity.input().front()._token
       );
     layer.finished ( std::move (current_activity->first)
                    , std::move (activity)

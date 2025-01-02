@@ -1,11 +1,9 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
 
 #include <util-generic/callable_signature.hpp>
-
-#include <boost/format.hpp>
 
 #include <list>
 #include <string>
@@ -95,18 +93,6 @@ namespace fhg
           );
 
       //! Equivalent to \see require_exception_with_message_in(), but
-      //! taking \c whats in form of \a fmts, for convenience in
-      //! construction.
-      //! \note what() is a C string, implying that any messages
-      //! containing zero bytes (e.g. from \c random_string()) will
-      //! lead to incomplete comparison
-      template<typename Exception, typename Fun>
-        void require_exception_with_message_in
-          ( Fun&& fun
-          , std::list<::boost::format> const& fmts
-          );
-
-      //! Equivalent to \see require_exception_with_message_in(), but
       //! with just one option \a what.
       //! \note what() is a C string, implying that any messages
       //! containing zero bytes (e.g. from \c random_string()) will
@@ -114,16 +100,6 @@ namespace fhg
       template<typename Exception, typename Fun>
         void require_exception_with_message ( Fun&& fun
                                             , std::string const& what
-                                            );
-
-      //! Equivalent to \see require_exception_with_message_in(), but
-      //! with just one option for \c what, in form of \a fmt.
-      //! \note what() is a C string, implying that any messages
-      //! containing zero bytes (e.g. from \c random_string()) will
-      //! lead to incomplete comparison
-      template<typename Exception, typename Fun>
-        void require_exception_with_message ( Fun&& fun
-                                            , ::boost::format const& fmt
                                             );
     }
   }

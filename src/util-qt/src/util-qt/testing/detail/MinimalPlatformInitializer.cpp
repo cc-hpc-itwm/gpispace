@@ -1,10 +1,11 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <util-qt/testing/detail/MinimalPlatformInitializer.hpp>
 
-#include <util-generic/getenv.hpp>
 #include <util-generic/syscall.hpp>
+
+#include <cstdlib>
 
 namespace fhg
 {
@@ -22,7 +23,7 @@ namespace fhg
           }
 
           MinimalPlatformInitializer::MinimalPlatformInitializer()
-            : _previous (fhg::util::getenv (var))
+            : _previous (std::getenv (var))
           {
             fhg::util::syscall::setenv (var, "minimal", 1);
           }
@@ -30,7 +31,7 @@ namespace fhg
           {
             if (_previous)
             {
-              fhg::util::syscall::setenv (var, _previous->c_str(), 1);
+              fhg::util::syscall::setenv (var, _previous, 1);
             }
           }
         }

@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <testing/make.hpp>
@@ -73,7 +73,10 @@
     , installation_dir                                                  \
     , test::option::options()                                           \
     . add<test::option::gen::include> (test::source_directory (vm))     \
-    . add<test::option::gen::link> (jobserver_client.get_from (vm))     \
+    . add<test::option::gen::link>                                      \
+       ( static_cast<std::filesystem::path>                             \
+          (jobserver_client.get_from (vm))                              \
+       )                                                                \
     );                                                                  \
                                                                         \
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}            \

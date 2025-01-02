@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -13,13 +13,17 @@
 #include <util-generic/testing/random/string.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
+#include <FMT/xml/parse/util/position.hpp>
+#include <fmt/core.h>
+#include <string>
+
 namespace
 {
   struct fixture : parser_fixture
   {
     template<typename Ex>
     void require_exception_from_generate_cpp
-      (::boost::format const& expected_what)
+      (std::string const& expected_what)
     {
       ::boost::filesystem::path const path
         (fhg::util::executable_path().parent_path() / "gen");
@@ -30,20 +34,20 @@ namespace
           {
             ::xml::parse::generate_cpp (*function, state);
           }
-        , expected_what.str()
+        , expected_what
         );
     }
 
     template<typename Ex>
     void require_exception_from_parse
-      (::boost::format const& expected_what)
+      (std::string const& expected_what)
     {
       fhg::util::testing::require_exception_with_message<Ex>
         ( [this]
           {
             parse();
           }
-        , expected_what.str()
+        , expected_what
         );
     }
   };
@@ -54,17 +58,17 @@ BOOST_AUTO_TEST_CASE (warning_struct_redefined)
   std::string const name_struct (fhg::util::testing::random_identifier());
 
   std::string const input
-    ( ( ::boost::format (R"EOS(
-<defun name="%1%">
-  <struct name="%2%"><field name="%3%" type="%4%"/></struct>
-  <struct name="%2%"><field name="%3%" type="%4%"/></struct>
+    ( fmt::format (R"EOS(
+<defun name="{0}">
+  <struct name="{1}"><field name="{2}" type="{3}"/></struct>
+  <struct name="{1}"><field name="{2}" type="{3}"/></struct>
   <expression/>
-</defun>)EOS")
-      % fhg::util::testing::random_identifier()
-      % name_struct
-      % fhg::util::testing::random_identifier()
-      % fhg::util::testing::random_identifier()
-      ).str()
+</defun>)EOS"
+      , fhg::util::testing::random_identifier()
+      , name_struct
+      , fhg::util::testing::random_identifier()
+      , fhg::util::testing::random_identifier()
+      )
     );
 
   fhg::util::testing::require_exception_with_message
@@ -77,10 +81,11 @@ BOOST_AUTO_TEST_CASE (warning_struct_redefined)
         auto function (xml::parse::just_parse (state, input_stream));
         xml::parse::post_processing_passes (function, &state);
       }
-    , ::boost::format ("WARNING: struct %1% at %2% redefined at %3%")
-    % name_struct
-    % "[<stdin>:3:3]"
-    % "[<stdin>:4:3]"
+    , fmt::format ( "WARNING: struct {0} at {1} redefined at {2}"
+                  , name_struct
+                  , "[<stdin>:3:3]"
+                  , "[<stdin>:4:3]"
+                  )
     );
 }
 
@@ -89,16 +94,16 @@ BOOST_AUTO_TEST_CASE (error_struct_redefined)
   std::string const name_struct (fhg::util::testing::random_identifier());
 
   std::string const input
-    ( ( ::boost::format (R"EOS(
-<defun name="%1%">
-  <struct name="%2%"><field name="a" type="%3%"/></struct>
-  <struct name="%2%"><field name="b" type="%3%"/></struct>
+    ( fmt::format (R"EOS(
+<defun name="{0}">
+  <struct name="{1}"><field name="a" type="{2}"/></struct>
+  <struct name="{1}"><field name="b" type="{2}"/></struct>
   <expression/>
-</defun>)EOS")
-      % fhg::util::testing::random_identifier()
-      % name_struct
-      % fhg::util::testing::random_identifier()
-      ).str()
+</defun>)EOS"
+      , fhg::util::testing::random_identifier()
+      , name_struct
+      , fhg::util::testing::random_identifier()
+      )
     );
 
   fhg::util::testing::require_exception_with_message
@@ -109,10 +114,11 @@ BOOST_AUTO_TEST_CASE (error_struct_redefined)
         auto function (xml::parse::just_parse (state, input_stream));
         xml::parse::post_processing_passes (function, &state);
       }
-    , ::boost::format ("ERROR: struct %1% at %2% redefined at %3%")
-    % name_struct
-    % "[<stdin>:3:3]"
-    % "[<stdin>:4:3]"
+    , fmt::format ( "ERROR: struct {0} at {1} redefined at {2}"
+                  , name_struct
+                  , "[<stdin>:3:3]"
+                  , "[<stdin>:4:3]"
+                  )
     );
 }
 
@@ -121,21 +127,21 @@ BOOST_AUTO_TEST_CASE (warning_struct_field_redefined)
   std::string const name_field {fhg::util::testing::random_identifier()};
 
   std::string const input
-    ( ( ::boost::format (R"EOS(
-<defun name="%1%">
-  <struct name="%2%">
-    <field name="%3%" type="%4%"/>
-    <field name="%3%" type="%5%"/>
+    ( fmt::format (R"EOS(
+<defun name="{0}">
+  <struct name="{1}">
+    <field name="{2}" type="{3}"/>
+    <field name="{2}" type="{4}"/>
   </struct>
   <expression/>
 </defun>
-)EOS")
-      % fhg::util::testing::random_identifier()
-      % fhg::util::testing::random_identifier()
-      % name_field
-      % fhg::util::testing::random_identifier()
-      % fhg::util::testing::random_identifier()
-      ).str()
+)EOS"
+      , fhg::util::testing::random_identifier()
+      , fhg::util::testing::random_identifier()
+      , name_field
+      , fhg::util::testing::random_identifier()
+      , fhg::util::testing::random_identifier()
+      )
     );
 
   fhg::util::testing::require_exception_with_message
@@ -145,9 +151,10 @@ BOOST_AUTO_TEST_CASE (warning_struct_field_redefined)
         std::istringstream input_stream (input);
         xml::parse::just_parse (state, input_stream);
       }
-    , ::boost::format ("ERROR: struct field '%1%' redefined in %2%")
-    % name_field
-    % ::boost::filesystem::path ("<stdin>")
+    , fmt::format ( "ERROR: struct field '{0}' redefined in {1}"
+                  , name_field
+                  , "<stdin>"
+                  )
     );
 }
 
@@ -160,11 +167,11 @@ BOOST_FIXTURE_TEST_CASE (warning_duplicate_external_function, fixture)
 
   require_exception_from_generate_cpp
     <xml::parse::warning::duplicate_external_function>
-    ( ::boost::format ( "WARNING: the external function f in module m"
-                      " has multiple occurences in %1% and %2%"
-                    )
-    % xml::parse::util::position_type (nullptr, nullptr, xpnet, 10, 9)
-    % xml::parse::util::position_type (nullptr, nullptr, xpnet, 5, 9)
+    ( fmt::format ( "WARNING: the external function f in module m"
+                    " has multiple occurences in {0} and {1}"
+                  , xml::parse::util::position_type (nullptr, nullptr, xpnet, 10, 9)
+                  , xml::parse::util::position_type (nullptr, nullptr, xpnet, 5, 9)
+                  )
     );
 }
 
@@ -173,22 +180,22 @@ BOOST_AUTO_TEST_CASE (error_connect_response_with_unknown_port)
   std::string const port (fhg::util::testing::random_identifier());
 
   std::string const input
-    ( ( ::boost::format (R"EOS(
-<defun name="%1%">
+    ( fmt::format (R"EOS(
+<defun name="{0}">
   <net>
-    <transition name="%2%">
+    <transition name="{1}">
       <defun>
         <expression/>
       </defun>
-      <connect-response port="%3%" to="%4%"/>
+      <connect-response port="{2}" to="{3}"/>
     </transition>
   </net>
-</defun>)EOS")
-      % fhg::util::testing::random_identifier()
-      % fhg::util::testing::random_identifier_without_leading_underscore()
-      % port
-      % fhg::util::testing::random_identifier()
-      ).str()
+</defun>)EOS"
+      , fhg::util::testing::random_identifier()
+      , fhg::util::testing::random_identifier_without_leading_underscore()
+      , port
+      , fhg::util::testing::random_identifier()
+      )
     );
 
   fhg::util::testing::require_exception_with_message
@@ -199,10 +206,11 @@ BOOST_AUTO_TEST_CASE (error_connect_response_with_unknown_port)
         auto function (xml::parse::just_parse (state, input_stream));
         xml::parse::post_processing_passes (function, &state);
       }
-    , ::boost::format
-      ("ERROR: connect-response from unknown output port '%1%' in %2%")
-    % port
-    % "[<stdin>:8:7]"
+    , fmt::format
+      ( "ERROR: connect-response from unknown output port '{0}' in {1}"
+      , port
+      , "[<stdin>:8:7]"
+      )
     );
 }
 
@@ -211,23 +219,23 @@ BOOST_AUTO_TEST_CASE (error_connect_response_with_unknown_to)
   std::string const to (fhg::util::testing::random_identifier());
 
   std::string const input
-    ( ( ::boost::format (R"EOS(
-<defun name="%1%">
+    ( fmt::format (R"EOS(
+<defun name="{0}">
   <net>
-    <transition name="%2%">
+    <transition name="{1}">
       <defun>
-        <out name="%3%" type="string"/>
+        <out name="{2}" type="string"/>
         <expression/>
       </defun>
-      <connect-response port="%3%" to="%4%"/>
+      <connect-response port="{2}" to="{3}"/>
     </transition>
   </net>
-</defun>)EOS")
-      % fhg::util::testing::random_identifier()
-      % fhg::util::testing::random_identifier_without_leading_underscore()
-      % fhg::util::testing::random_identifier_without_leading_underscore()
-      % to
-      ).str()
+</defun>)EOS"
+      , fhg::util::testing::random_identifier()
+      , fhg::util::testing::random_identifier_without_leading_underscore()
+      , fhg::util::testing::random_identifier_without_leading_underscore()
+      , to
+      )
     );
 
   fhg::util::testing::require_exception_with_message
@@ -238,11 +246,11 @@ BOOST_AUTO_TEST_CASE (error_connect_response_with_unknown_to)
         auto function (xml::parse::just_parse (state, input_stream));
         xml::parse::post_processing_passes (function, &state);
       }
-    , ::boost::format ("ERROR: unknown input port '%1%' in attribute 'to'"
-                    " of connect-response in %2%"
-                    )
-    % to
-    % "[<stdin>:9:7]"
+    , fmt::format ( "ERROR: unknown input port '{0}' in attribute 'to'"
+                    " of connect-response in {1}"
+                  , to
+                  , "[<stdin>:9:7]"
+                  )
     );
 }
 
@@ -253,26 +261,26 @@ BOOST_AUTO_TEST_CASE (error_connect_response_invalid_signature)
   std::string const name (fhg::util::testing::random_identifier());
 
   std::string const input
-    ( ( ::boost::format (R"EOS(
-<defun name="%1%">
+    ( fmt::format (R"EOS(
+<defun name="{0}">
   <net>
-    <struct name="%2%"/>
-    <transition name="%3%">
+    <struct name="{1}"/>
+    <transition name="{2}">
       <defun>
-        <in name="%4%" type="%2%"/>
-        <out name="%5%" type="string"/>
+        <in name="{3}" type="{1}"/>
+        <out name="{4}" type="string"/>
         <expression/>
       </defun>
-      <connect-response port="%5%" to="%4%"/>
+      <connect-response port="{4}" to="{3}"/>
     </transition>
   </net>
-</defun>)EOS")
-      % fhg::util::testing::random_identifier()
-      % name
-      % fhg::util::testing::random_identifier_without_leading_underscore()
-      % to
-      % fhg::util::testing::random_identifier_without_leading_underscore()
-      ).str()
+</defun>)EOS"
+      , fhg::util::testing::random_identifier()
+      , name
+      , fhg::util::testing::random_identifier_without_leading_underscore()
+      , to
+      , fhg::util::testing::random_identifier_without_leading_underscore()
+      )
     );
 
   fhg::util::testing::require_exception_with_message
@@ -283,14 +291,14 @@ BOOST_AUTO_TEST_CASE (error_connect_response_invalid_signature)
         auto function (xml::parse::just_parse (state, input_stream));
         xml::parse::post_processing_passes (function, &state);
       }
-    , ::boost::format
-      ("ERROR: invalid signature for response to port '%1%'."
-      " The type '%2%' with the signature '%2% :: []' does not provide"
-      " the field 'response_id :: string' in %3%"
+    , fmt::format
+      ( "ERROR: invalid signature for response to port '{0}'."
+        " The type '{1}' with the signature '{1} :: []' does not provide"
+        " the field 'response_id :: string' in {2}"
+      , to
+      , name
+      , "[<stdin>:11:7]"
       )
-    % to
-    % name
-    % "[<stdin>:11:7]"
     );
 }
 
@@ -300,12 +308,12 @@ BOOST_FIXTURE_TEST_CASE (error_duplicate_external_function, fixture)
 
   require_exception_from_generate_cpp
     <xml::parse::error::duplicate_external_function>
-    ( ::boost::format ( "ERROR: duplicate external function f in module m"
-                      " has conflicting definition at %1%"
-                      ", earlier definition is at %2%"
-                    )
-    % xml::parse::util::position_type (nullptr, nullptr, xpnet, 5, 9)
-    % xml::parse::util::position_type (nullptr, nullptr, xpnet, 10, 9)
+    ( fmt::format ( "ERROR: duplicate external function f in module m"
+                    " has conflicting definition at {0}"
+                    ", earlier definition is at {1}"
+                  , xml::parse::util::position_type (nullptr, nullptr, xpnet, 5, 9)
+                  , xml::parse::util::position_type (nullptr, nullptr, xpnet, 10, 9)
+                  )
     );
 }
 
@@ -313,11 +321,11 @@ BOOST_FIXTURE_TEST_CASE (error_duplicate_external_function, fixture)
   set_parse_input (_file);                                              \
                                                                         \
   require_exception_from_parse<xml::parse::error::duplicate_ ## _type>  \
-  ( ::boost::format ( "ERROR: duplicate " _msg " at %1%"                  \
-                    ", earlier definition is at %2%"                    \
+  ( fmt::format ( "ERROR: duplicate " _msg " at {0}"                \
+                    ", earlier definition is at {1}"                    \
+                  , xml::parse::util::position_type (nullptr, nullptr, xpnet, _ll, _cl)       \
+                  , xml::parse::util::position_type (nullptr, nullptr, xpnet, _le, _ce)       \
                   )                                                     \
-  % xml::parse::util::position_type (nullptr, nullptr, xpnet, _ll, _cl)       \
-  % xml::parse::util::position_type (nullptr, nullptr, xpnet, _le, _ce)       \
   )
 
 BOOST_FIXTURE_TEST_CASE (error_duplicate_connect_in_read, fixture)
@@ -387,7 +395,7 @@ BOOST_FIXTURE_TEST_CASE (error_duplicate_transition, fixture)
 
 BOOST_FIXTURE_TEST_CASE (error_duplicate_template, fixture)
 {
-  GENERIC_DUPLICATE (template,"template  t",3,5,6,5);
+  GENERIC_DUPLICATE (template,"template t",3,5,6,5);
 }
 
 BOOST_FIXTURE_TEST_CASE (error_duplicate_port, fixture)
@@ -405,12 +413,12 @@ BOOST_FIXTURE_TEST_CASE (error_duplicate_place_map, fixture)
 BOOST_FIXTURE_TEST_CASE (err1_invalid_closing_tag_name, fixture)
 {
   std::string const input
-    ( ( ::boost::format (R"EOS(
-<defun name="%1%">
+    ( fmt::format (R"EOS(
+<defun name="{0}">
   <expression>
-</defun>)EOS")
-      % fhg::util::testing::random_identifier()
-      ).str()
+</defun>)EOS"
+      , fhg::util::testing::random_identifier()
+      )
     );
 
   fhg::util::testing::require_exception_with_message
@@ -420,7 +428,8 @@ BOOST_FIXTURE_TEST_CASE (err1_invalid_closing_tag_name, fixture)
         std::istringstream input_stream (input);
         xml::parse::just_parse (state_empty, input_stream);
       }
-    , ::boost::format ("Parse error: %1%: invalid closing tag name")
-    % "[<stdin>:4:7]"
+    , fmt::format ( "Parse error: {0}: invalid closing tag name"
+                  , "[<stdin>:4:7]"
+                  )
     );
 }

@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <fhg/util/signal_handler_manager.hpp>
@@ -9,7 +9,6 @@
 #include <util-generic/boost/program_options/validators/existing_path.hpp>
 #include <util-generic/boost/program_options/validators/nonempty_string.hpp>
 #include <util-generic/connectable_to_address_string.hpp>
-#include <util-generic/getenv.hpp>
 #include <util-generic/print_exception.hpp>
 
 #include <boost/filesystem/path.hpp>
@@ -18,6 +17,7 @@
 #include <csignal>
 #include <fstream>
 #include <iostream>
+#include <optional>
 #include <sstream>
 
 namespace bfs = ::boost::filesystem;
@@ -42,8 +42,8 @@ int main (int argc, char **argv)
 
     std::string agentName;
     std::string agentUrl;
-    ::boost::optional<bfs::path> vmem_socket;
-    fhg::com::Certificates ssl_certificates;
+    std::optional<bfs::path> vmem_socket;
+    gspc::Certificates ssl_certificates;
 
     po::options_description desc("Allowed options");
     desc.add_options()

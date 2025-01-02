@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <sdpa/daemon/Agent.hpp>
@@ -31,7 +31,7 @@ namespace
 {
   struct network_strategy
   {
-    network_strategy (fhg::com::Certificates const& certificates)
+    network_strategy (gspc::Certificates const& certificates)
       : _event_received()
       , _network
         ( [this] (fhg::com::p2p::address_t const&, sdpa::events::SDPAEvent::Ptr e)
@@ -129,7 +129,7 @@ BOOST_DATA_TEST_CASE
     ( agent_name
     , "localhost"
     , std::make_unique<::boost::asio::io_service>()
-    , ::boost::none
+    , std::nullopt
     , certificates
     );
 

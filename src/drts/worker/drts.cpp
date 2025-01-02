@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <drts/worker/drts.hpp>
@@ -24,17 +24,13 @@
 #include <we/loader/module_call.hpp>
 #include <we/type/Activity.hpp>
 
-#include <fhg/util/macros.hpp>
 #include <util-generic/hostname.hpp>
-#include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_exception.hpp>
 #include <util-generic/wait_and_collect_exceptions.hpp>
 
-#include <boost/range/adaptor/filtered.hpp>
-#include <boost/range/adaptor/map.hpp>
-
 #include <cstdlib>
 #include <random>
+#include <stdexcept>
 
 struct wfe_task_t
 {
@@ -74,13 +70,13 @@ DRTSImpl::mark_remaining_tasks_as_canceled_helper::~mark_remaining_tasks_as_canc
     (_currently_executed_tasks_mutex);
   std::lock_guard<std::mutex> const jobs_lock (_jobs_guard);
 
-  for (auto& task : _currently_executed_tasks | ::boost::adaptors::map_values)
+  for (auto& [_ignore, task] : _currently_executed_tasks)
   {
     task->state = wfe_task_t::CANCELED_DUE_TO_WORKER_SHUTDOWN;
     task->context.module_call_do_cancel();
   }
 
-  for (auto& job : _jobs | ::boost::adaptors::map_values)
+  for (auto& [_ignore, job] : _jobs)
   {
     job->state = Job::state_t::CANCELED_DUE_TO_WORKER_SHUTDOWN;
   }
@@ -97,7 +93,7 @@ DRTSImpl::DRTSImpl
     , std::vector<std::string> const& capability_names
     , std::vector<::boost::filesystem::path> const& library_path
     , fhg::logging::stream_emitter& log_emitter
-    , fhg::com::Certificates const& certificates
+    , gspc::Certificates const& certificates
     )
   : _request_stop (request_stop)
   , m_my_name (kernel_name)
@@ -438,13 +434,14 @@ try
                  : task.state == wfe_task_t::CANCELED ? sdpa::daemon::NotificationEvent::STATE_CANCELED
                  : task.state == wfe_task_t::CANCELED_DUE_TO_WORKER_SHUTDOWN ? sdpa::daemon::NotificationEvent::STATE_FAILED
                  : task.state == wfe_task_t::FAILED ? sdpa::daemon::NotificationEvent::STATE_FAILED
-                 : INVALID_ENUM_VALUE (wfe_task_t::state_t, task.state)
+                 : throw std::logic_error {"invalid enum value"}
                  );
       job->state = task.state == wfe_task_t::FINISHED ? DRTSImpl::Job::FINISHED
                  : task.state == wfe_task_t::CANCELED ? DRTSImpl::Job::CANCELED
                  : task.state == wfe_task_t::CANCELED_DUE_TO_WORKER_SHUTDOWN ? DRTSImpl::Job::CANCELED_DUE_TO_WORKER_SHUTDOWN
                  : task.state == wfe_task_t::FAILED ? DRTSImpl::Job::FAILED
-                 : INVALID_ENUM_VALUE (wfe_task_t::state_t, task.state);
+                 : throw std::logic_error {"invalid enum value"}
+                 ;
 
     }
     catch (...)
@@ -484,7 +481,7 @@ try
       break;
 
     default:
-      INVALID_ENUM_VALUE (DRTSImpl::Job::state_t, job->state);
+      throw std::logic_error {"invalid enum value"};
     }
   }
 }

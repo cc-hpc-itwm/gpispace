@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <iml/rif/bootstrap.hpp>
@@ -17,6 +17,9 @@
 
 #include <iostream>
 #include <vector>
+
+#include <FMT/util-generic/join.hpp>
+#include <fmt/core.h>
 
 namespace
 {
@@ -88,19 +91,21 @@ try
   if (std::find (strategies.begin(), strategies.end(), strategy) == strategies.end())
   {
     throw std::invalid_argument
-      (( ::boost::format ("invalid argument '%1%' for --%2%: one of %3%")
-       % strategy
-       % option::strategy
-       % fhg::util::join (strategies, ", ")
-       ).str()
-      );
+      { fmt::format ( "invalid argument '{}' for --{}: one of {}"
+                    , strategy
+                    , option::strategy
+                    , fhg::util::join (strategies, ", ")
+                    )
+      };
   }
 
   auto const result
     ( iml::rif::bootstrap
           ( fhg::util::read_lines
-              ( vm.at (option::hostfile)
-              . as<fhg::util::boost::program_options::nonempty_file>()
+              ( static_cast<std::filesystem::path>
+                ( vm.at (option::hostfile)
+                . as<fhg::util::boost::program_options::nonempty_file>()
+                )
               )
           , strategy
           , vm.at (option::strategy_parameters)

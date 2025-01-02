@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <we/loader/module_call.hpp>
@@ -21,8 +21,7 @@
 #include <gspc/iml/MemorySize.hpp>
 #include <gspc/iml/SharedMemoryAllocation.hpp>
 
-#include <boost/format.hpp>
-
+#include <fmt/core.h>
 #include <functional>
 #include <unordered_map>
 
@@ -206,33 +205,31 @@ namespace we
         if (!virtual_memory_api)
         {
           throw std::logic_error
-            ( ( ::boost::format
-                  ( "module call '%1%::%2%' with %3% memory transfers "
-                    "scheduled to worker '%4%' that is unable to manage "
+            { fmt::format
+                  ( "module call '{}::{}' with {} memory transfers "
+                    "scheduled to worker '{}' that is unable to manage "
                     "memory: no handler for the virtual memory was provided."
+                  , module_call.module()
+                  , module_call.function()
+                  , module_call.memory_buffers().size()
+                  , context->worker_name()
                   )
-              % module_call.module()
-              % module_call.function()
-              % module_call.memory_buffers().size()
-              % context->worker_name()
-              ).str()
-            );
+            };
           }
 
         if (!shared_memory)
         {
           throw std::logic_error
-            ( ( ::boost::format
-                  ( "module call '%1%::%2%' with %3% memory transfers "
-                    "scheduled to worker '%4%' that is unable to manage "
+            { fmt::format
+                  ( "module call '{}::{}' with {} memory transfers "
+                    "scheduled to worker '{}' that is unable to manage "
                     "memory: no local shared memory was allocated."
+                  , module_call.module()
+                  , module_call.function()
+                  , module_call.memory_buffers().size()
+                  , context->worker_name()
                   )
-              % module_call.module()
-              % module_call.function()
-              % module_call.memory_buffers().size()
-              % context->worker_name()
-              ).str()
-            );
+            };
         }
 
         std::size_t const shared_memory_size (shared_memory->size());
@@ -241,14 +238,13 @@ namespace we
         if (total_size_required > shared_memory_size)
         {
           throw std::runtime_error
-            ( ( ::boost::format
-                  ("not enough local memory allocated: %1% bytes required, "
-                   "only %2% bytes allocated"
+            { fmt::format
+                  ( "not enough local memory allocated: {} bytes required, "
+                    "only {} bytes allocated"
+                  , total_size_required
+                  , shared_memory_size
                   )
-              % total_size_required
-              % shared_memory_size
-              ).str()
-            );
+            };
          }
 
         char* const local_memory (shared_memory->pointer());
@@ -264,15 +260,14 @@ namespace we
           if (!align (alignment, size, buffer_ptr, space))
           {
             throw std::runtime_error
-              ( ( ::boost::format
-                    ("Not enough local memory: %1% > %2%. "
-                     "Please take into account also the buffer alignments "
-                     "when allocating local shared memory!"
+              { fmt::format
+                    ( "Not enough local memory: {} > {}. "
+                      "Please take into account also the buffer alignments "
+                      "when allocating local shared memory!"
+                    , buffer_ptr + size + alignment - local_memory
+                    , shared_memory_size
                     )
-                % (buffer_ptr + size + alignment - local_memory)
-                % shared_memory_size
-                ).str()
-	      );
+	      };
        	  }
 
           memory_buffer.emplace

@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <xml/parse/type/transition.hpp>
@@ -151,7 +151,7 @@ namespace xml
       function_type const& transition_type::resolved_function() const
       {
         //! \note assume post processing pass (resolve_function_use_recursive)
-        return ::boost::get<function_type> (_function_or_use);
+        return std::get<function_type> (_function_or_use);
       }
 
       std::string const& transition_type::name() const
@@ -189,7 +189,7 @@ namespace xml
 
       namespace
       {
-        class transition_specialize : public ::boost::static_visitor<void>
+        class transition_specialize
         {
         private:
           type::type_map_type const& map;
@@ -224,7 +224,7 @@ namespace xml
                                        , state::type & state
                                        )
       {
-        ::boost::apply_visitor
+        std::visit
           ( transition_specialize ( map
                                   , get
                                   , known_structs
@@ -357,8 +357,20 @@ namespace xml
             (*this, connect);
         }
 
+        auto const is_number_of_tokens
+          { [] ( we::edge::type direction
+               , std::string const& port_type
+               )
+            {
+              return (  fhg::util::cxx17::holds_alternative<we::edge::PT_NUMBER_OF_TOKENS> (direction)
+                     && port_type == pnet::type::value::ULONG()
+                     );
+            }
+          };
+
         if (  place->signature() != port->signature()
            && not is_connect_tp_many (connect.direction(), port->type())
+           && not is_number_of_tokens (connect.direction(), port->type())
            )
         {
           throw error::connect_type_error ( *this
@@ -371,7 +383,7 @@ namespace xml
 
       namespace
       {
-        class transition_type_check : public ::boost::static_visitor<void>
+        class transition_type_check
         {
         private:
           state::type const& state;
@@ -405,16 +417,16 @@ namespace xml
           type_check (eureka, state);
         }
 
-        ::boost::apply_visitor (transition_type_check (state), _function_or_use);
+        std::visit (transition_type_check (state), _function_or_use);
       }
 
       void transition_type::resolve_function_use_recursive
         (std::unordered_map<std::string, function_type const&> known)
       {
-        if (!!::boost::get<use_type> (&_function_or_use))
+        if (std::holds_alternative<use_type> (_function_or_use))
         {
           std::string const name
-            (::boost::get<use_type> (_function_or_use).name());
+            (std::get<use_type> (_function_or_use).name());
           auto const it (known.find (name));
           if (it == known.end())
           {
@@ -424,7 +436,7 @@ namespace xml
         }
         else
         {
-          ::boost::get<function_type> (_function_or_use)
+          std::get<function_type> (_function_or_use)
             .resolve_function_use_recursive (known);
         }
       }
@@ -432,9 +444,9 @@ namespace xml
       void transition_type::resolve_types_recursive
         (std::unordered_map<std::string, pnet::type::signature::signature_type> known)
       {
-        if (!!::boost::get<function_type> (&_function_or_use))
+        if (std::holds_alternative<function_type> (_function_or_use))
         {
-          ::boost::get<function_type> (_function_or_use)
+          std::get<function_type> (_function_or_use)
             .resolve_types_recursive (known);
         }
       }
@@ -862,7 +874,7 @@ namespace xml
       {
         namespace
         {
-          class dump_visitor : public ::boost::static_visitor<void>
+          class dump_visitor
           {
           private:
             ::fhg::util::xml::xmlstream & s;
@@ -892,7 +904,7 @@ namespace xml
           ::we::type::property::dump::dump (s, t.properties());
           ::xml::parse::type::dump::dump (s, t.requirements);
 
-          ::boost::apply_visitor (dump_visitor (s), t.function_or_use());
+          std::visit (dump_visitor (s), t.function_or_use());
 
           dumps (s, t.place_map());
           dumps (s, t.connections());

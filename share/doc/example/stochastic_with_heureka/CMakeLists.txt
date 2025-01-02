@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.16)
 project (stochastic_with_heureka VERSION 1 LANGUAGES CXX)
-set (CMAKE_CXX_STANDARD 14)
+set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set (SWH_DEPLOYMENT_STRATEGIES
@@ -29,24 +29,14 @@ include ("deployment/${SWH_DEPLOYMENT_STRATEGY}.cmake")
 
 include (CTest)
 
+include (FetchContent)
+
 find_package (GPISpace REQUIRED)
 _swh_deployment_gpispace()
 
 find_package (Boost 1.61 REQUIRED
-  COMPONENTS filesystem
-             program_options
-             unit_test_framework
+  COMPONENTS program_options
 )
-
-# boost::unit_test_framework, when linked using a shared library,
-# needs to be explicitly told to generate `main()` as well. CMake's
-# FindBoost does not do that, so detect what type of library it gave
-# us and fix up that flag if needed.
-if (Boost_UNIT_TEST_FRAMEWORK_LIBRARY MATCHES "[.]so[0-9.]*$")
-  target_compile_definitions (Boost::unit_test_framework
-    INTERFACE BOOST_TEST_DYN_LINK
-  )
-endif()
 
 include_directories ("${PROJECT_SOURCE_DIR}")
 
@@ -55,8 +45,13 @@ install (FILES interface.hpp DESTINATION include/stochastic_with_heureka)
 # Avoid building modules that don't unload on dlclose().
 add_compile_options ($<$<AND:$<COMPILE_LANGUAGE:CXX>,$<STREQUAL:GNU,$<CXX_COMPILER_ID>>>:-fno-gnu-unique>)
 
+
+if (   NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU"
+    OR NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9
+   )
 # Don't re-export symbols from libraries linked against.
 add_link_options (LINKER:--exclude-libs,ALL)
+endif()
 # Only export symbols explicitly marked as exported.
 set (CMAKE_PROPERTIES CXX_VISIBILITY_PRESET hidden)
 # Don't export inline class member functions.
@@ -73,7 +68,7 @@ function (swh_add_implementation_module)
   list (APPEND _arg_LIBRARIES PRIVATE GPISpace::workflow_development)
 
   add_library (${_arg_NAME} MODULE ${_arg_SOURCES})
-  target_link_libraries (${_arg_NAME} ${_arg_LIBRARIES})
+  target_link_libraries (${_arg_NAME} ${_arg_LIBRARIES} PRIVATE fmt)
   install (TARGETS ${_arg_NAME} LIBRARY DESTINATION "implementation")
   _swh_deployment_implementation_module (${_arg_NAME})
 endfunction()
@@ -89,6 +84,7 @@ function (swh_add_implementation_exe)
   add_executable (run-${_arg_NAME} ${_arg_SOURCES})
   target_link_libraries (run-${_arg_NAME} ${_arg_LIBRARIES}
     PRIVATE stochastic_with_heureka_util_print_exception
+    PRIVATE fmt
   )
   install (TARGETS run-${_arg_NAME} RUNTIME DESTINATION "bin")
   _swh_deployment_implementation_exe (run-${_arg_NAME})
@@ -103,6 +99,7 @@ target_link_libraries (run-stochastic_with_heureka
   PUBLIC GPISpace::execution
   PRIVATE Boost::program_options
   PRIVATE Boost::filesystem
+  PRIVATE fmt
 )
 target_compile_definitions (run-stochastic_with_heureka
   PRIVATE SWH_DEPLOYMENT_STRATEGY_${SWH_DEPLOYMENT_STRATEGY}

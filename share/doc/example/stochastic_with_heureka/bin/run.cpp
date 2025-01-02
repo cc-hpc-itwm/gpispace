@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <bin/run.hpp>
@@ -8,45 +8,74 @@
 #include <drts/scoped_rifd.hpp>
 #include <we/type/value/show.hpp>
 
-#include <boost/filesystem.hpp>
-#include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 
 #include <exception>
+#include <filesystem>
+#include <fmt/core.h>
+#include <fmt/ostream.h>
+#include <fmt/std.h>
 #include <sstream>
 #include <stdexcept>
 #include <vector>
+
+namespace fmt
+{
+  template<>
+    struct formatter<pnet::type::value::show> : fmt::ostream_formatter
+  {};
+}
 
 namespace stochastic_with_heureka
 {
   namespace
   {
-    struct existing_path_in_installation : public ::boost::filesystem::path
+    struct existing_path_in_installation
     {
-      existing_path_in_installation (::boost::filesystem::path const& path)
-        : ::boost::filesystem::path (path)
+      existing_path_in_installation (std::filesystem::path const& path)
+        : _path {path}
       {
-        if (!::boost::filesystem::exists (*this))
+        if (!std::filesystem::exists (_path))
         {
           throw std::logic_error
-            (( ::boost::format ("'%1%' does not exist: Installation incomplete!?")
-             % *this
-             ).str()
-            );
+            { fmt::format
+                ( "'{}' does not exist: Installation incomplete!?"
+                , _path
+                )
+            };
         }
       }
+      operator std::filesystem::path() const
+      {
+        return _path;
+      }
+
+    private:
+      std::filesystem::path _path;
     };
-    struct existing_path : public ::boost::filesystem::path
+
+    struct existing_path
     {
-      existing_path (::boost::filesystem::path const& path)
-        : ::boost::filesystem::path (path)
+      existing_path (std::filesystem::path const& path)
+        : _path {path}
       {
-        if (!::boost::filesystem::exists (*this))
+        if (!std::filesystem::exists (_path))
         {
           throw std::logic_error
-            ((::boost::format ("'%1%' does not exist") % *this).str());
+            { fmt::format ( "'{}' does not exist"
+                          , _path
+                          )
+            };
         }
       }
+
+      operator std::filesystem::path() const
+      {
+        return _path;
+      }
+
+    private:
+      std::filesystem::path _path;
     };
 
     template<typename T>
@@ -76,12 +105,13 @@ namespace stochastic_with_heureka
         oss << "}";
 
         throw std::runtime_error
-          (str ( ::boost::format ("Extract: %1% key '%2%' in '%3%'")
-               % (r.count (key) ? "Duplicate" : "Missing")
-               % key
-               % oss.str()
-               )
-          );
+          { fmt::format
+              ( "Extract: {} key '{}' in '{}'"
+              , (r.count (key) ? "Duplicate" : "Missing")
+              , key
+              , oss.str()
+              )
+          };
       }
 
       auto const& value (r.find (key)->second);
@@ -94,11 +124,11 @@ namespace stochastic_with_heureka
       {
         std::throw_with_nested
           ( std::runtime_error
-              (str ( ::boost::format ("Extract: Key '%1%', value '%2%'")
-                   % key
-                   % pnet::type::value::show (value)
-                   )
-              )
+              { fmt::format ( "Extract: Key '{}', value '{}'"
+                            , key
+                            , pnet::type::value::show (value)
+                            )
+              }
           );
       }
 
@@ -129,7 +159,7 @@ namespace stochastic_with_heureka
         if (!(_value > 0))
         {
           throw ::boost::program_options::invalid_option_value
-            ((::boost::format ("'%1%' not positive.") % _value).str());
+            {fmt::format ("'{}' not positive.", _value)};
         }
       }
       operator unsigned long const& () const
@@ -164,7 +194,7 @@ namespace stochastic_with_heureka
   workflow_result run
     ( int argc
     , char** argv
-    , ::boost::optional<::boost::program_options::options_description> options
+    , std::optional<::boost::program_options::options_description> options
     , std::string const implementation
     , std::function< we::type::bytearray
                        (::boost::program_options::variables_map const&)
@@ -175,13 +205,15 @@ namespace stochastic_with_heureka
                , argv
                , options
                , [implementation] ( ::boost::program_options::variables_map const&
-                                  , ::boost::filesystem::path installation_dir
+                                  , std::filesystem::path installation_dir
                                   )
                  {
-                   return existing_path_in_installation
-                     ( installation_dir
-                     / "implementation"
-                     / ("lib" + implementation + ".so")
+                   return static_cast<std::filesystem::path>
+                     ( existing_path_in_installation
+                       ( installation_dir
+                       / "implementation"
+                       / ("lib" + implementation + ".so")
+                       )
                      );
                  }
                , user_data
@@ -191,11 +223,11 @@ namespace stochastic_with_heureka
   workflow_result run
     ( int argc
     , char** argv
-    , ::boost::optional<::boost::program_options::options_description>
+    , std::optional<::boost::program_options::options_description>
         implementation_options
-    , std::function< ::boost::filesystem::path
+    , std::function< std::filesystem::path
                        ( ::boost::program_options::variables_map const&
-                       , ::boost::filesystem::path installation_dir
+                       , std::filesystem::path installation_dir
                        )
                    > implementation
     , std::function< we::type::bytearray
@@ -203,12 +235,12 @@ namespace stochastic_with_heureka
                    > implementation_bytearray
     )
   {
-    ::boost::filesystem::path const binary_path
-      (::boost::filesystem::canonical (argv[0]).parent_path());
-    ::boost::filesystem::path const workflow_path
+    std::filesystem::path const binary_path
+      (std::filesystem::canonical (argv[0]).parent_path());
+    std::filesystem::path const workflow_path
       (binary_path.parent_path() / "workflow");
 
-    ::boost::filesystem::path const gspc_home
+    std::filesystem::path const gspc_home
 #if defined SWH_DEPLOYMENT_STRATEGY_InstallationCanNotBeMovedAndRefersToDependenciesUsingAbsolutePaths
       (GSPC_HOME);
 #elif defined SWH_DEPLOYMENT_STRATEGY_LocationAndHostIndependentBundle
@@ -217,13 +249,13 @@ namespace stochastic_with_heureka
       );
 #endif
 
-    if (!::boost::filesystem::is_directory (workflow_path))
+    if (!std::filesystem::is_directory (workflow_path))
     {
       throw std::logic_error
-        (( ::boost::format ("'%1%' is not a directory: Installation incomplete!?")
-         % workflow_path
-         ).str()
-        );
+        { fmt::format ( "'{}' is not a directory: Installation incomplete!?"
+                      , workflow_path
+                      )
+        };
     }
 
     existing_path_in_installation const workflow
@@ -326,10 +358,12 @@ namespace stochastic_with_heureka
     auto worker
       ( [&vm] (std::string const& name, char const* const option) -> std::string
         {
-          return ( ::boost::format ("%1%:%2%,0")
-                 % name
-                 % vm[option].as<positive_unsigned_long>()
-                 ).str();
+          return fmt::format
+            ( "{}:{},0"
+            , name
+            , static_cast<unsigned long>
+                (vm[option].as<positive_unsigned_long>())
+            );
         }
       );
 
@@ -352,11 +386,11 @@ namespace stochastic_with_heureka
 
     return
       { gspc::client (drts).put_and_run
-        ( workflow
+        ( static_cast<std::filesystem::path> (workflow)
         , { {"number_of_rolls", number_of_rolls}
           , {"rolls_at_once", rolls_at_once}
           , {"seed", seed}
-          , {"implementation", implementation_so.string()}
+          , {"implementation", static_cast<std::filesystem::path> (implementation_so).string()}
           , {"user_data", user_data}
           , { "parallel_rolls"
             , roll_and_heureka_per_node * rifds.hosts().size()

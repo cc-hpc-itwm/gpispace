@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -13,6 +13,9 @@
 
 #include <boost/filesystem/path.hpp>
 
+#include <FMT/boost/filesystem/path.hpp>
+#include <FMT/we/expr/eval/context.hpp>
+#include <fmt/core.h>
 #include <stdexcept>
 #include <string>
 
@@ -129,11 +132,11 @@ namespace gspc
             }
           , fhg::util::testing::make_nested
             ( std::runtime_error
-              (str ( ::boost::format ("Plugins::before_eval (%1%, %2%)")
-                   % to_string (pid)
-                   % context
-                   )
-              )
+              { fmt::format ( "Plugins::before_eval ({}, {})"
+                            , to_string (pid)
+                            , context
+                            )
+              }
             , std::invalid_argument ("Plugins: Unknown " + to_string (pid))
             )
           );
@@ -144,11 +147,11 @@ namespace gspc
             }
           , fhg::util::testing::make_nested
             ( std::runtime_error
-              (str ( ::boost::format ("Plugins::after_eval (%1%, %2%)")
-                   % to_string (pid)
-                   % context
-                   )
-              )
+              { fmt::format ("Plugins::after_eval ({}, {})"
+                            , to_string (pid)
+                            , context
+                            )
+              }
             , std::invalid_argument ("Plugins: Unknown " + to_string (pid))
             )
           );
@@ -294,11 +297,11 @@ namespace gspc
             }
           , fhg::util::testing::make_nested
             ( std::runtime_error
-              (str ( ::boost::format ("Plugins::before_eval (%1%, %2%)")
-                   % to_string (pid)
-                   % context
-                   )
-              )
+              { fmt::format ( "Plugins::before_eval ({}, {})"
+                            , to_string (pid)
+                            , context
+                            )
+              }
             , std::runtime_error ("C::before_eval()")
             )
           );
@@ -309,11 +312,11 @@ namespace gspc
             }
           , fhg::util::testing::make_nested
             ( std::runtime_error
-              (str ( ::boost::format ("Plugins::after_eval (%1%, %2%)")
-                   % to_string (pid)
-                   % context
-                   )
-              )
+              { fmt::format ( "Plugins::after_eval ({}, {})"
+                            , to_string (pid)
+                            , context
+                            )
+              }
             , std::runtime_error ("C::after_eval()")
             )
           );
@@ -328,11 +331,11 @@ namespace gspc
             }
           , fhg::util::testing::make_nested
             ( std::runtime_error
-              (str ( ::boost::format ("Plugins::create (%1%, %2%)")
-                   % ::boost::filesystem::path {D}
-                   % context
-                   )
-              )
+              { fmt::format ( "Plugins::create ({}, {})"
+                            , ::boost::filesystem::path {D}
+                            , context
+                            )
+              }
             , std::runtime_error ("Exception in gspc_we_plugin_create: D::D()")
             )
           );

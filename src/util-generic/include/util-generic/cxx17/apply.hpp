@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -34,6 +34,7 @@ namespace fhg
       //! * does not work with a generic Callable (doesn't use std::invoke)
       //! \todo cxx14: decltype (auto)
       template <typename Callable, typename Tuple>
+        [[deprecated ("use std::apply instead, will be removed after 2025/12/31")]]
         constexpr auto apply (Callable&& f, Tuple&& t)
         -> decltype (detail::apply_impl
                        ( std::forward<Callable> (f)

@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
@@ -51,8 +51,6 @@ namespace fhg
     }                                                                          \
     while (false)
 
-    namespace
-    {
       template<typename T>
         struct base
       {
@@ -69,7 +67,6 @@ namespace fhg
       using A = base<unsigned int>;
       using B = base<std::string>;
       using C = base<long>;
-    }
 
     BOOST_AUTO_TEST_CASE (to_same_types)
     {

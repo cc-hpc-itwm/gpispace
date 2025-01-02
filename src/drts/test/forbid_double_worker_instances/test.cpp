@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -17,7 +17,6 @@
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/optional.hpp>
 
-#include <boost/range/adaptor/map.hpp>
 #include <boost/test/data/test_case.hpp>
 
 BOOST_DATA_TEST_CASE
@@ -69,11 +68,11 @@ BOOST_DATA_TEST_CASE
     < gspc::rifd_entry_point
     , std::list<std::exception_ptr>
     , gspc::rifd_entry_point_hash
-    > const errors (drts.add_worker (rifds.entry_points(), ::boost::none));
+    > const errors (drts.add_worker (rifds.entry_points()));
 
   BOOST_REQUIRE_EQUAL (rifds.hosts().size(), errors.size());
 
-  for (auto const& exceptions : errors | ::boost::adaptors::map_values)
+  for (auto const& [_ignore, exceptions] : errors)
   {
     //! \todo do not collect the exceptions but make a longer list
     BOOST_REQUIRE (!exceptions.empty());

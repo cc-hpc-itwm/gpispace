@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -18,6 +18,13 @@
 #include <util-generic/testing/random.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
+#include <FMT/boost/variant.hpp>
+#include <FMT/util-generic/join.hpp>
+#include <FMT/we/expr/parse/node.hpp>
+#include <FMT/we/expr/type/Type.hpp>
+#include <FMT/we/type/value/show.hpp>
+#include <fmt/core.h>
+#include <fmt/ostream.h>
 #include <functional>
 #include <limits>
 #include <random>
@@ -37,7 +44,7 @@ namespace expr
         template<typename E>
           Expression (E const& e)
             : _ast ( parse::parser::DisableConstantFolding{}
-                   , str (::boost::format ("%1%") % e)
+                   , fmt::format ("{}", e)
                    )
         {}
 
@@ -80,9 +87,9 @@ namespace expr
         //!   require (e.string() == "double(4)")
         //!   require (e.expression() == "4.00000")
         //! we have that
-        //!   format ("List (%1%)") % e.string()
+        //!   format ("List ({})") % e.string()
         //! fails to parse but
-        //!   format ("List (%1%)") % e.expression()
+        //!   format ("List ({})") % e.expression()
         //! correctly parses.
         std::string expression() const
         {
@@ -94,7 +101,23 @@ namespace expr
       private:
         parse::parser _ast;
       };
+    }
+  }
+}
 
+namespace fmt
+{
+  template<>
+    struct formatter<expr::type::Expression> : fmt::ostream_formatter
+  {};
+}
+
+namespace expr
+{
+  namespace type
+  {
+    namespace
+    {
       BOOST_AUTO_TEST_CASE (expression_leads_to_flexible_input)
       {
         Expression const expression ("double (4)");
@@ -108,8 +131,27 @@ namespace expr
         BOOST_REQUIRE_EQUAL (expression.expression(), "4.00000");
       }
 
+      template<typename T>
+        struct RandomT
+      {
+        auto operator()() const -> T { return _gen(); }
+        fhg::util::testing::random<T> _gen;
+      };
+      template<> struct RandomT<double>
+      {
+        // prevent from producing too big numbers (as those make the
+        // integral parser complain) and, at the same time, also try
+        // to produce numbers with a fractional part.
+        auto operator()() const -> double
+        {
+          return double (_random_int()) / std::pow (10, _random_int (5, 0));
+        }
+
+        fhg::util::testing::random<int> _random_int;
+      };
+
       template< typename T
-              , typename Generator = fhg::util::testing::random<T>
+              , typename Generator = RandomT<T>
               >
         struct RandomExpression : public fhg::util::ostream::modifier
       {
@@ -120,52 +162,50 @@ namespace expr
         std::ostream& operator() (std::ostream& os) const override
         {
           return os
-            << Expression ( ::boost::format (_format)
-                          % ::boost::io::group (std::boolalpha, _generator())
-                          ).expression()
+            << Expression (fmt::format (_format, _generator())).expression()
             ;
         }
 
       private:
-        std::string _format;
+        fmt::format_string<T> _format;
         Generator _generator;
       };
 
       template< typename T
-              , typename Generator = fhg::util::testing::random<T>
+              , typename Generator = RandomT<T>
               > RandomExpression<T, Generator> random_expression();
       template<> RandomExpression<int> random_expression<int>()
       {
-        return "%1%";
+        return "{}";
       }
       template<> RandomExpression<unsigned int> random_expression<unsigned int>()
       {
-        return "%1%u";
+        return "{}u";
       }
       template<> RandomExpression<long> random_expression<long>()
       {
-        return "%1%l";
+        return "{}l";
       }
       template<> RandomExpression<unsigned long> random_expression<unsigned long>()
       {
-        return "%1%ul";
+        return "{}ul";
       }
       template<> RandomExpression<double> random_expression<double>()
       {
         //! \note explicit cast as random might return an integral number
-        return "double (%1%)";
+        return "double ({})";
       }
       template<> RandomExpression<float> random_expression<float>()
       {
-        return "%1%f";
+        return "{}f";
       }
       template<> RandomExpression<char> random_expression<char>()
       {
-        return "'%1%'";
+        return "'{}'";
       }
       template<> RandomExpression<bool> random_expression<bool>()
       {
-        return "%1%";
+        return "{}";
       }
       namespace
       {
@@ -185,8 +225,25 @@ namespace expr
       template<> RandomExpression<std::string, IdentifierWithoutLeadingUnderscore>
         random_expression<std::string, IdentifierWithoutLeadingUnderscore>()
       {
-        return R"EOS("%1%")EOS";
+        return R"EOS("{}")EOS";
       }
+    }
+  }
+}
+
+namespace fmt
+{
+  template<typename T>
+    struct formatter<expr::type::RandomExpression<T>> : fmt::ostream_formatter
+  {};
+}
+
+namespace expr
+{
+  namespace type
+  {
+    namespace
+    {
       namespace
       {
         std::string random_bitset()
@@ -202,13 +259,14 @@ namespace expr
             bs.ins (random_ulong());
           }
 
-          return Expression (bs).expression();
+          return Expression (pnet::type::value::show (bs)).expression();
         }
         std::string random_bytearray()
         {
           fhg::util::testing::random<std::string> rand_string;
 
-          return Expression (we::type::bytearray (rand_string())).expression();
+          return Expression
+            (pnet::type::value::show (we::type::bytearray (rand_string()))).expression();
         }
       }
 
@@ -254,9 +312,10 @@ namespace expr
             }
           , fhg::util::testing::make_nested
             ( exception::type::error
-              ( ::boost::format ("In '%1%'")
-              % expression.last() // assume the last node causes the error
-              )
+              { fmt::format ( "In '{}'"
+                            , expr::parse::node::type {expression.last()}
+                            ) // assume the last node causes the error
+              }
             , exception
             )
           );
@@ -295,9 +354,10 @@ namespace expr
       template<typename Operation, typename Value>
         auto unary (Operation operation, Value value)
       {
-        return ::boost::format ("%1% (%2%)")
-          % operation
-          % value
+        return fmt::format ( "{} ({})"
+                           , operation
+                           , value
+                           )
           ;
       }
       //! \todo type inference shall not depend on notation,
@@ -305,19 +365,21 @@ namespace expr
       template<typename Operation, typename LHS, typename RHS>
         auto binary_infix (Operation operation, LHS lhs, RHS rhs)
       {
-        return ::boost::format ("%2% %1% %3%")
-          % operation
-          % lhs
-          % rhs
+        return fmt::format ( "{1} {0} {2}"
+                           , operation
+                           , lhs
+                           , rhs
+                           )
           ;
       }
       template<typename Operation, typename LHS, typename RHS>
         auto binary_prefix (Operation operation, LHS lhs, RHS rhs)
       {
-        return ::boost::format ("%1% (%2%, %3%)")
-          % operation
-          % lhs
-          % rhs
+        return fmt::format ( "{} ({}, {})"
+                           , operation
+                           , lhs
+                           , rhs
+                           )
           ;
       }
 
@@ -360,13 +422,15 @@ namespace expr
         require_inference_exception
           ( expression
           , exception::type::error
-            ( ::boost::format ("The left argument '%2%' of ' %1% ' has type '%3%' and the right argument '%4%' of ' %1% ' has type '%5%' but the types should be the same")
-            % op
-            % Expression (lhs.value())
-            % lhs.type()
-            % Expression (rhs.value())
-            % rhs.type()
-            )
+            { fmt::format
+                ( "The left argument '{1}' of ' {0} ' has type '{2}' and the right argument '{3}' of ' {0} ' has type '{4}' but the types should be the same"
+                , op
+                , Expression (lhs.value())
+                , lhs.type()
+                , Expression (rhs.value())
+                , rhs.type()
+                )
+            }
           );
       }
     }
@@ -644,24 +708,24 @@ namespace expr
       void type_check_compare_ops
         (std::string lhs, std::string rhs)
       {
-        require_type_to (::boost::format ("%1% < %2%") % lhs % rhs, Boolean{});
-        require_type_to (::boost::format ("%1% <= %2%") % lhs % rhs, Boolean{});
-        require_type_to (::boost::format ("%1% > %2%") % lhs % rhs, Boolean{});
-        require_type_to (::boost::format ("%1% >= %2%") % lhs % rhs, Boolean{});
+        require_type_to (fmt::format ("{0} < {1}", lhs, rhs), Boolean{});
+        require_type_to (fmt::format ("{0} <= {1}", lhs, rhs), Boolean{});
+        require_type_to (fmt::format ("{0} > {1}", lhs, rhs), Boolean{});
+        require_type_to (fmt::format ("{0} >= {1}", lhs, rhs), Boolean{});
 
-        require_type_to (::boost::format ("%1% :lt: %2%") % lhs % rhs, Boolean{});
-        require_type_to (::boost::format ("%1% :le: %2%") % lhs % rhs, Boolean{});
-        require_type_to (::boost::format ("%1% :gt: %2%") % lhs % rhs, Boolean{});
-        require_type_to (::boost::format ("%1% :ge: %2%") % lhs % rhs, Boolean{});
+        require_type_to (fmt::format ("{0} :lt: {1}", lhs, rhs), Boolean{});
+        require_type_to (fmt::format ("{0} :le: {1}", lhs, rhs), Boolean{});
+        require_type_to (fmt::format ("{0} :gt: {1}", lhs, rhs), Boolean{});
+        require_type_to (fmt::format ("{0} :ge: {1}", lhs, rhs), Boolean{});
       }
 
       void type_check_equality_ops (std::string lhs, std::string rhs)
       {
-        require_type_to (::boost::format ("%1% != %2%") % lhs % rhs, Boolean{});
-        require_type_to (::boost::format ("%1% == %2%") % lhs % rhs, Boolean{});
+        require_type_to (fmt::format ("{0} != {1}", lhs, rhs), Boolean{});
+        require_type_to (fmt::format ("{0} == {1}", lhs, rhs), Boolean{});
 
-        require_type_to (::boost::format ("%1% :ne: %2%") % lhs % rhs, Boolean{});
-        require_type_to (::boost::format ("%1% :eq: %2%") % lhs % rhs, Boolean{});
+        require_type_to (fmt::format ("{0} :ne: {1}", lhs, rhs), Boolean{});
+        require_type_to (fmt::format ("{0} :eq: {1}", lhs, rhs), Boolean{});
       }
     }
 
@@ -1060,7 +1124,7 @@ namespace expr
 
       for (int i (0); i < 100; ++i)
       {
-        require_type_to (::boost::format ("%1%f") % random_int(), Float{});
+        require_type_to (fmt::format ("{}f", random_int()), Float{});
       }
     }
 
@@ -1077,10 +1141,10 @@ namespace expr
       auto const bs ("{0 0 0 0 128}");
 
       require_type_to
-        (::boost::format ("bitset_tohex (%1%)") % bs, String{});
+        (fmt::format ("bitset_tohex ({})", bs), String{});
 
       require_type_to
-        (::boost::format ("bitset_fromhex (bitset_tohex (%1%))") % bs, Bitset{});
+        (fmt::format ("bitset_fromhex (bitset_tohex ({}))", bs), Bitset{});
     }
 
     BOOST_AUTO_TEST_CASE (token_bitset_logical)
@@ -1088,11 +1152,11 @@ namespace expr
       auto const l ("{0 0 0 0 0 0 0 0 0 0 0 65536}");
       auto const r ("{2099204 738871880977536 594475511590158864}");
       require_type_to
-        (::boost::format ("bitset_or (%1%, %2%)") % l % r, Bitset{});
+        (fmt::format ("bitset_or ({}, {})", l, r), Bitset{});
       require_type_to
-        (::boost::format ("bitset_and (%1%, %2%)") % l % r, Bitset{});
+        (fmt::format ("bitset_and ({}, {})", l, r), Bitset{});
       require_type_to
-        (::boost::format ("bitset_xor (%1%, %2%)") % l % r, Bitset{});
+        (fmt::format ("bitset_xor ({}, {})", l, r), Bitset{});
     }
 
     BOOST_AUTO_TEST_CASE (token_bitset_ins_del_is_elem)
@@ -1100,13 +1164,13 @@ namespace expr
       auto const bs ("{0 0 0 0 128}");
       auto const elem ("128UL");
       require_type_to
-        (::boost::format ("bitset_insert (%1%, %2%)") % bs % elem, Bitset{});
+        (fmt::format ("bitset_insert ({}, {})", bs, elem), Bitset{});
 
       require_type_to
-        (::boost::format ("bitset_is_element (%1%, %2%)") % bs % elem, Boolean{});
+        (fmt::format ("bitset_is_element ({}, {})", bs, elem), Boolean{});
 
       require_type_to
-        (::boost::format ("bitset_delete (%1%, %2%)") % bs % elem, Bitset{});
+        (fmt::format ("bitset_delete ({}, {})", bs, elem), Bitset{});
     }
 
     BOOST_AUTO_TEST_CASE (empty_list_has_type_list_any)
@@ -1124,7 +1188,7 @@ namespace expr
       )
     {
       require_type_to
-        ( ::boost::format ("List (%1%)") % tv.value()
+        ( fmt::format ("List ({})", tv.value())
         , List (tv.type())
         );
     }
@@ -1137,7 +1201,7 @@ namespace expr
       )
     {
       require_type_to
-        ( ::boost::format ("List (%1%, %2%)") % tvA.value() % tvB.value()
+        ( fmt::format ("List ({0}, {1})", tvA.value(), tvB.value())
         , List (collection ({tvA.type(), tvB.type()}))
         );
     }
@@ -1156,12 +1220,14 @@ namespace expr
       )
     {
       require_type_to
-        ( ::boost::format ("stack_empty (List (%1%))")
-        % fhg::util::join
-          ( std::vector<std::string>
-              (fhg::util::testing::random<int>{} (100, 1), tv.value())
-          , ", "
-          )
+        ( fmt::format
+            ( "stack_empty (List ({0}))"
+            , fhg::util::join
+              ( std::vector<std::string>
+                  (fhg::util::testing::random<int>{} (100, 1), tv.value())
+              , ", "
+              )
+            )
         , Boolean{}
         );
     }
@@ -1180,11 +1246,13 @@ namespace expr
       )
     {
       require_type_to
-        ( ::boost::format ("stack_size (List (%1%))")
-        % fhg::util::join
-          ( std::vector<std::string>
-              (fhg::util::testing::random<int>{} (100, 1), tv.value())
-          , ", "
+        ( fmt::format
+          ( "stack_size (List ({0}))"
+          , fhg::util::join
+            ( std::vector<std::string>
+                (fhg::util::testing::random<int>{} (100, 1), tv.value())
+            , ", "
+            )
           )
         , ULong{}
         );
@@ -1197,7 +1265,7 @@ namespace expr
       )
     {
       require_type_to
-        ( ::boost::format ("stack_pop (List (%1%, %1%))") % tv.value()
+        ( fmt::format ("stack_pop (List ({0}, {0}))", tv.value())
         , List (tv.type())
         );
     }
@@ -1209,7 +1277,7 @@ namespace expr
       )
     {
       require_type_to
-        ( ::boost::format ("stack_top (List(%1%, %1%))") % tv.value()
+        ( fmt::format ("stack_top (List({0}, {0}))", tv.value())
         , tv.type()
         );
     }
@@ -1225,10 +1293,11 @@ namespace expr
       )
     {
       require_type_to
-        ( ::boost::format ("stack_join (List (%1%, %2%), List (%3%))")
-          % valA.value()
-          % valB.value()
-          % valC.value()
+        ( fmt::format ( "stack_join (List ({0}, {1}), List ({2}))"
+                      , valA.value()
+                      , valB.value()
+                      , valC.value()
+                      )
         ,  List (collection ({valA.type(), valB.type(), valC.type()}))
         );
     }
@@ -1278,7 +1347,7 @@ namespace expr
       )
     {
       require_type_to
-        ( ::boost::format ("Set {%1%}") % x.value()
+        ( fmt::format ("Set {{{0}}}", x.value())
         , Set (x.type())
         );
     }
@@ -1291,7 +1360,7 @@ namespace expr
       )
     {
       require_type_to
-        ( ::boost::format ("Set {%1%, %2%}") % x.value() % y.value()
+        ( fmt::format ("Set {{{0}, {1}}}", x.value(), y.value())
         , Set (collection ({x.type(), y.type()}))
         );
     }
@@ -1303,7 +1372,7 @@ namespace expr
       )
     {
       require_type_to
-        ( ::boost::format ("set_empty (Set {%1%})") % x.value()
+        ( fmt::format ("set_empty (Set {{0}})", x.value())
         , Boolean{}
         );
     }
@@ -1315,7 +1384,7 @@ namespace expr
       )
     {
       require_type_to
-        ( ::boost::format ("set_size (Set {%1%})") % x.value()
+        ( fmt::format ("set_size (Set {{{0}}})", x.value())
         , ULong{}
         );
     }
@@ -1327,10 +1396,12 @@ namespace expr
       )
     {
       require_type_to
-        ( ::boost::format ("set_is_subset (Set {%1%, %2%}, Set {%3%})")
-          % x.value()
-          % x.value()
-          % x.value()
+        ( fmt::format
+          ( "set_is_subset (Set {{{0}, {1}}}, Set {{{2}}})"
+          , x.value()
+          , x.value()
+          , x.value()
+          )
         , Boolean{}
         );
     }
@@ -1342,7 +1413,7 @@ namespace expr
       )
     {
       require_type_to
-        ( ::boost::format ("set_pop (Set {%1%})") % x.value()
+        ( fmt::format ("set_pop (Set {{{0}}})", x.value())
         , Set (x.type())
         );
     }
@@ -1538,16 +1609,18 @@ namespace expr
       )
     {
       require_inference_exception
-        ( ::boost::format ("%1% (%2%)")
-          % cast_func_type.cast_func()
-          % value.value()
+        ( fmt::format ( "{0} ({1})"
+                      , cast_func_type.cast_func()
+                      , value.value()
+                      )
         , exception::type::error
-          ( ::boost::format
-            ("argument '%2%' of '%1%' has type '%3%' but is not of kind 'Number' == {'int', 'long', 'unsigned int', 'unsigned long', 'float', 'double'}")
-          % cast_func_type.cast_func()
-          % Expression (value.value())
-          % value.type()
-          )
+          { fmt::format
+            ( "argument '{1}' of '{0}' has type '{2}' but is not of kind 'Number' == {{'int', 'long', 'unsigned int', 'unsigned long', 'float', 'double'}}"
+            , cast_func_type.cast_func()
+            , Expression (value.value())
+            , value.type()
+            )
+          }
         );
     }
 
@@ -1567,12 +1640,13 @@ namespace expr
       require_inference_exception
         ( binary_infix (op, lhs.value(), rhs.value())
         , exception::type::error
-          ( ::boost::format
-            ("left argument '%2%' of ' %1% ' has type '%3%' but is not of kind 'Number' == {'int', 'long', 'unsigned int', 'unsigned long', 'float', 'double'}")
-          % op
-          % Expression (lhs.value())
-          % lhs.type()
-          )
+          { fmt::format
+            ( "left argument '{1}' of ' {0} ' has type '{2}' but is not of kind 'Number' == {{'int', 'long', 'unsigned int', 'unsigned long', 'float', 'double'}}"
+            , op
+            , Expression (lhs.value())
+            , lhs.type()
+            )
+          }
         );
     }
 
@@ -1588,12 +1662,13 @@ namespace expr
       require_inference_exception
         ( binary_infix (op, lhs.value(), rhs.value())
         , exception::type::error
-          ( ::boost::format
-            ("right argument '%2%' of ' %1% ' has type '%3%' but is not of kind 'Number' == {'int', 'long', 'unsigned int', 'unsigned long', 'float', 'double'}")
-          % op
-          % Expression (rhs.value())
-          % rhs.type()
-          )
+          { fmt::format
+            ( "right argument '{1}' of ' {0} ' has type '{2}' but is not of kind 'Number' == {{'int', 'long', 'unsigned int', 'unsigned long', 'float', 'double'}}"
+            , op
+            , Expression (rhs.value())
+            , rhs.type()
+            )
+          }
         );
     }
 
@@ -1608,12 +1683,13 @@ namespace expr
       require_inference_exception
         ( binary_prefix (op, lhs.value(), rhs.value())
         , exception::type::error
-          ( ::boost::format
-            ("left argument '%2%' of '%1%' has type '%3%' but is not of kind 'Number' == {'int', 'long', 'unsigned int', 'unsigned long', 'float', 'double'}")
-          % op
-          % Expression (lhs.value())
-          % lhs.type()
-          )
+          { fmt::format
+            ( "left argument '{1}' of '{0}' has type '{2}' but is not of kind 'Number' == {{'int', 'long', 'unsigned int', 'unsigned long', 'float', 'double'}}"
+            , op
+            , Expression (lhs.value())
+            , lhs.type()
+            )
+          }
         );
     }
 
@@ -1628,11 +1704,13 @@ namespace expr
       require_inference_exception
         ( binary_prefix (op, lhs.value(), rhs.value())
         , exception::type::error
-          ( ::boost::format ("right argument '%2%' of '%1%' has type '%3%' but is not of kind 'Number' == {'int', 'long', 'unsigned int', 'unsigned long', 'float', 'double'}")
-          % op
-          % Expression (rhs.value())
-          % rhs.type()
-          )
+          { fmt::format
+            ( "right argument '{1}' of '{0}' has type '{2}' but is not of kind 'Number' == {{'int', 'long', 'unsigned int', 'unsigned long', 'float', 'double'}}"
+            , op
+            , Expression (rhs.value())
+            , rhs.type()
+            )
+          }
         );
     }
 
@@ -1667,11 +1745,13 @@ namespace expr
       require_inference_exception
         ( binary_infix (op, lhs.value(), rhs.value())
         , exception::type::error
-          ( ::boost::format ("left argument '%2%' of ' %1% ' has type '%3%' but is not of kind 'Integer' == {'int', 'long', 'unsigned int', 'unsigned long'}")
-          % op
-          % Expression (lhs.value())
-          % lhs.type()
-          )
+          { fmt::format
+            ( "left argument '{1}' of ' {0} ' has type '{2}' but is not of kind 'Integer' == {{'int', 'long', 'unsigned int', 'unsigned long'}}"
+            , op
+            , Expression (lhs.value())
+            , lhs.type()
+            )
+          }
         );
     }
 
@@ -1686,12 +1766,13 @@ namespace expr
       require_inference_exception
         ( binary_infix (op, lhs.value(), rhs.value())
         , exception::type::error
-          ( ::boost::format
-            ("right argument '%2%' of ' %1% ' has type '%3%' but is not of kind 'Integer' == {'int', 'long', 'unsigned int', 'unsigned long'}")
-          % op
-          % Expression (rhs.value())
-          % rhs.type()
-          )
+          { fmt::format
+            ( "right argument '{1}' of ' {0} ' has type '{2}' but is not of kind 'Integer' == {{'int', 'long', 'unsigned int', 'unsigned long'}}"
+            , op
+            , Expression (rhs.value())
+            , rhs.type()
+            )
+          }
         );
     }
 
@@ -1716,12 +1797,13 @@ namespace expr
         require_inference_exception
           ( binary_infix (op, lhs.value(), rhs.value())
           , exception::type::error
-            ( ::boost::format
-              ("left argument '%2%' of ' %1% ' has type '%3%' but requires type 'bool'")
-            % op
-            % Expression (lhs.value())
-            % lhs.type()
-            )
+            { fmt::format
+              ( "left argument '{1}' of ' {0} ' has type '{2}' but requires type 'bool'"
+              , op
+              , Expression (lhs.value())
+              , lhs.type()
+              )
+            }
           );
       }
       else if (rhs.type() != Type {Boolean{}})
@@ -1729,12 +1811,13 @@ namespace expr
         require_inference_exception
           ( binary_infix (op, lhs.value(), rhs.value())
           , exception::type::error
-            ( ::boost::format
-              ("right argument '%2%' of ' %1% ' has type '%3%' but requires type 'bool'")
-            % op
-            % Expression (rhs.value())
-            % rhs.type()
-            )
+            { fmt::format
+              ( "right argument '{1}' of ' {0} ' has type '{2}' but requires type 'bool'"
+              , op
+              , Expression (rhs.value())
+              , rhs.type()
+              )
+            }
           );
       }
     }
@@ -1776,7 +1859,7 @@ namespace expr
       )
     {
       require_type_to
-        ( ::boost::format ("Map [%1% -> %2%]") % lhs.value() % rhs.value()
+        ( fmt::format ("Map [{0} -> {1}]", lhs.value(), rhs.value())
         , Map (lhs.type(), rhs.type())
         );
     }
@@ -1806,11 +1889,11 @@ namespace expr
       )
     {
       require_type_to
-        ( ::boost::format ("${s.x} := %1%") % x.value()
+        ( fmt::format ("${{s.x}} := {0}", x.value())
         , x.type()
         );
       require_type_to
-        ( ::boost::format ("${s.x} := %1%; ${s}") % x.value()
+        ( fmt::format ("${{s.x}} := {0}; ${{s}}", x.value())
         , Struct ({{"x", x.type()}})
         );
     }
@@ -1822,18 +1905,24 @@ namespace expr
       )
     {
       require_inference_exception
-        ( ::boost::format ("${s} := Struct [a := 12, b := false]; ${s} := %1%")
-        % x.value()
+        ( fmt::format
+          ( "${{s}} := Struct [a := 12, b := false]; ${{s}} := {0}"
+          , x.value()
+          )
         , fhg::util::testing::make_nested
           ( exception::type::error
-            ( ::boost::format ("expr::type::Context::bind (${s}, '%1%')")
-            % x.type()
-            )
+            { fmt::format
+              ( "expr::type::Context::bind (${{s}}, '{0}')"
+              , x.type()
+              )
+            }
           , exception::type::error
-            ( ::boost::format ("At ${s}: Can not assign a value of type '%1%' to a value of type '%2%'")
-            % x.type()
-            % Struct ({{"a", Int{}}, {"b", Boolean{}}})
-            )
+            { fmt::format
+              ( "At ${{s}}: Can not assign a value of type '{0}' to a value of type '{1}'"
+              , x.type()
+              , Struct ({{"a", Int{}}, {"b", Boolean{}}})
+              )
+            }
           )
         );
     }
@@ -1845,12 +1934,13 @@ namespace expr
       )
     {
       require_inference_exception
-        ( ::boost::format ("set_size (stack_push (List(), %1%))") % tv.value()
+        ( fmt::format ("set_size (stack_push (List(), {0}))", tv.value())
         , exception::type::error
-          ( ::boost::format ("argument 'stack_push(List (), %1%)' of 'set_size' has type 'List [%2%]' but requires type 'Set'")
-          % Expression (tv.value())
-          % tv.type()
-          )
+          { fmt::format ( "argument 'stack_push(List (), {0})' of 'set_size' has type 'List [{1}]' but requires type 'Set'"
+                        , Expression (tv.value())
+                        , tv.type()
+                        )
+          }
         );
     }
   }

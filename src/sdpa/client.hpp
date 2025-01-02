@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -35,7 +35,7 @@ namespace sdpa
       Client ( fhg::com::host_t const& top_level_agent_host
              , fhg::com::port_t const& top_level_agent_port
              , std::unique_ptr<::boost::asio::io_service> peer_io_service
-             , fhg::com::Certificates const& certificates
+             , gspc::Certificates const& certificates
              );
       ~Client();
       Client (Client const&) = delete;

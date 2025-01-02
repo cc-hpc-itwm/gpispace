@@ -1,16 +1,16 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
 
+#include <gspc/detail/dllexport.hpp>
+#include <we/type/value.hpp>
 #include <we/type/value/from_value.hpp>
-#include <we/type/value/path/join.hpp>
 #include <we/type/value/peek.hpp>
-#include <we/type/value/show.hpp>
 
-#include <boost/format.hpp>
 #include <boost/optional.hpp>
 
+#include <list>
 #include <stdexcept>
 
 namespace pnet
@@ -19,6 +19,15 @@ namespace pnet
   {
     namespace value
     {
+      namespace error
+      {
+        auto GSPC_DLLEXPORT could_not_peek
+          ( value_type const& store
+          , std::list<std::string> const& path
+          ) -> std::logic_error
+          ;
+      }
+
       template<typename T>
         T peek_or_die ( value_type const& store
                       , std::list<std::string> const& path
@@ -28,12 +37,7 @@ namespace pnet
 
         if (!value)
         {
-          throw std::logic_error
-            (( ::boost::format ("Could not peek '%1%' from '%2%'")
-             % path::join (path)
-             % show (store)
-             ).str()
-            );
+          throw error::could_not_peek (store, path);
         }
 
         return from_value<T> (value.get());

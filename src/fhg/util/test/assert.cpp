@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -7,6 +7,8 @@
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/require_exception.hpp>
+
+#include <fmt/core.h>
 
 BOOST_AUTO_TEST_CASE (assert_true)
 {
@@ -18,14 +20,15 @@ BOOST_AUTO_TEST_CASE (assert_false)
   fhg::util::testing::require_exception
     ( []() { fhg_assert (1 == 0, "util_assert_false"); }
     , std::logic_error
-        ( ( ::boost::format ("[%1%:%2%] assertion '%3%' failed%4%%5%.")
-          % __FILE__
-          % (__LINE__ - 4)
-          % "1 == 0"
-          % ": "
-          % "util_assert_false"
-          ).str()
-        )
+        { fmt::format
+          ( "[{}:{}] assertion '{}' failed{}{}."
+          , __FILE__
+          , __LINE__ - 5
+          , "1 == 0"
+          , ": "
+          , "util_assert_false"
+          )
+        }
     );
 }
 
@@ -39,13 +42,14 @@ BOOST_AUTO_TEST_CASE (assert_false_empty_message)
   fhg::util::testing::require_exception
     ( []() { fhg_assert (1 == 0); }
     , std::logic_error
-        ( ( ::boost::format ("[%1%:%2%] assertion '%3%' failed%4%%5%.")
-          % __FILE__
-          % (__LINE__ - 4)
-          % "1 == 0"
-          % ""
-          % ""
-          ).str()
-        )
+        { fmt::format
+          ( "[{}:{}] assertion '{}' failed{}{}."
+          , __FILE__
+          , __LINE__ - 5
+          , "1 == 0"
+          , ""
+          , ""
+          )
+        }
     );
 }

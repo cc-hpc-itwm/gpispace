@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -15,7 +15,7 @@ namespace fhg
     public:
       channel ( std::unique_ptr<::boost::asio::io_service>
               , port_t const& port
-              , Certificates const& certificates
+              , gspc::Certificates const& certificates
               , host_t const& other_end_host
               , port_t const& other_end_port
               );

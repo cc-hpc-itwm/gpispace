@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <sdpa/events/ErrorEvent.hpp>
@@ -44,7 +44,7 @@ namespace
 {
   struct drts_component : utils::basic_drts_component_no_logic
   {
-    drts_component (fhg::com::Certificates const&);
+    drts_component (gspc::Certificates const&);
 
     template<typename Component>
       fhg::com::p2p::address_t connect_to_TESTING_ONLY (Component const& component);
@@ -67,7 +67,7 @@ namespace
     basic_drts_component_no_logic::event_thread _ = {*this};
   };
 
-  drts_component::drts_component (fhg::com::Certificates const& certificates)
+  drts_component::drts_component (gspc::Certificates const& certificates)
     : utils::basic_drts_component_no_logic (certificates)
   {}
 

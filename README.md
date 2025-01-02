@@ -11,12 +11,11 @@ transfer and distributed task execution.
 ## Installation
 
 GPI-Space targets x86-64 Linux systems. Other architectures are not
-supported at this point. It is built and tested daily on
+supported at this point. It is built and tested continuously on
 
-* Centos 7
-* Oracle Linux 8
-* Ubuntu 18.04 LTS
-* Ubuntu 20.04 LTS
+* Oracle Linux: {8, 9}
+* Rocky Linux: {8, 9}
+* Ubuntu: {20.04, 22.04, 24.04}
 
 The virtual memory layer can be backed with either Ethernet,
 Infiniband or BeeOND.
@@ -67,7 +66,7 @@ Note that some GPI-Space components can be disabled, which may remove
 some dependencies needed. Also see the "Building GPI-Space" section
 and subsection "Optional Components" below.
 
-* [GCC](https://gcc.gnu.org/) (>= 5.5.0), or compatible compiler
+* [GCC](https://gcc.gnu.org/) (>= 8.5.0), or compatible compiler
 * [CMake](https://cmake.org/) (>= 3.16)
   * Some distributions name the binary `cmake3` while others use
     `cmake`. Snippets below assume `cmake`.
@@ -197,7 +196,12 @@ self-test example as follows:
 # and SWH_INSTALL_DIR:
 #   export SWH_INSTALL_DIR=<a-shared-directory-visible-on-all-nodes>
 
-"<gpispace-install-prefix>/share/GPISpace/doc/example/stochastic_with_heureka/selftest"
+# for GPI-Space installations using Spack
+spack load gpi-space
+$(spack location -i gpi-space)/share/GPISpace/doc/example/stochastic_with_heureka/selftest
+
+# for manual GPI-Space installations:
+#   <gpispace-install-prefix>/share/GPISpace/doc/example/stochastic_with_heureka/selftest
 ```
 
 If GPI-Space has been built with testing enabled, then `ctest` can be

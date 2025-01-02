@@ -1,12 +1,11 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
 
 #include <drts/worker/context.hpp>
 
-#include <boost/format.hpp>
-
+#include <fmt/core.h>
 #include <stdexcept>
 #include <string>
 
@@ -21,21 +20,20 @@ namespace
     if (workers.size() != 1)
     {
       throw std::runtime_error
-        ( ( ::boost::format ("Unexpected number of workers: %1%!")
-          % workers.size()
-          ).str()
-        );
+        { fmt::format ("Unexpected number of workers: {}!", workers.size())
+        };
     }
 
     auto const worker (context->worker_name());
     if (worker.find (expected_implementation) == std::string::npos)
     {
       throw std::runtime_error
-        ( ( ::boost::format ("Worker %1%: missing capability %2%!")
-          % worker
-          % expected_implementation
-          ).str()
-        );
+        { fmt::format
+            ( "Worker {}: missing capability {}!"
+            , worker
+            , expected_implementation
+            )
+        };
     }
   }
 }

@@ -1,12 +1,12 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
 
 #include <iml/AllocationHandle.hpp>
 
-#include <boost/format.hpp>
-
+#include <FMT/iml/AllocationHandle.hpp>
+#include <fmt/core.h>
 #include <map>
 #include <stdexcept>
 #include <unordered_map>
@@ -34,15 +34,15 @@ namespace iml_client
       class invalid_argument : public std::invalid_argument
       {
       public:
-        invalid_argument (::boost::format const& f)
-          : std::invalid_argument (f.str())
+        invalid_argument (std::string const& message)
+          : std::invalid_argument {message}
         {}
       };
       class runtime_error : public std::runtime_error
       {
       public:
-        runtime_error (::boost::format const& f)
-          : std::runtime_error (f.str())
+        runtime_error (std::string const& message)
+          : std::runtime_error {message}
         {}
       };
 
@@ -52,9 +52,7 @@ namespace iml_client
 
      public:
         unknown_handle (Handle_t handle)
-          : invalid_argument ( ::boost::format ("Unknown Handle '%1%'")
-                             % handle
-                             )
+          : invalid_argument {fmt::format ("Unknown Handle '{}'", handle)}
           , _handle (handle)
         {}
       };
@@ -67,9 +65,7 @@ namespace iml_client
 
         public:
           duplicate_handle (Handle_t handle)
-            : invalid_argument ( ::boost::format ("Duplicate Handle '%1%'")
-                               % handle
-                               )
+            : invalid_argument {fmt::format ("Duplicate Handle '{}'", handle)}
           {}
         };
 
@@ -87,16 +83,17 @@ namespace iml_client
                                          , MemSize_t mem_free
                                          )
             : runtime_error
-              ( ::boost::format ("Insufficient contiguous memory:"
-                              " Trying to alloc '%2%' (aligned: '%3%') bytes"
-                              " for handle '%1%' and mem_free '%4%',"
-                              " but no free block of memory is large enough"
-                              )
-              % handle
-              % size_unaligned
-              % size_aligned
-              % mem_free
-              )
+              { fmt::format
+                  ( "Insufficient contiguous memory:"
+                    " Trying to alloc '{1}' (aligned: '{2}') bytes"
+                    " for handle '{0}' and mem_free '{3}',"
+                    " but no free block of memory is large enough"
+                  , handle
+                  , size_unaligned
+                  , size_aligned
+                  , mem_free
+                  )
+              }
             , _handle (handle)
             , _size_unaligned (size_unaligned)
             , _size_aligned (size_aligned)
@@ -118,15 +115,16 @@ namespace iml_client
                               , MemSize_t mem_free
                               )
             : runtime_error
-              ( ::boost::format ("Insufficient memory:"
-                              " Trying to alloc '%2%' (aligned: '%3%') bytes"
-                              " for handle '%1%', but mem_free is '%4%'"
-                              )
-              % handle
-              % size_unaligned
-              % size_aligned
-              % mem_free
-              )
+              { fmt::format
+                 ( "Insufficient memory:"
+                   " Trying to alloc '{1}' (aligned: '{2}') bytes"
+                   " for handle '{0}', but mem_free is '{3}'"
+                 , handle
+                 , size_unaligned
+                 , size_aligned
+                 , mem_free
+                 )
+              }
             , _handle (handle)
             , _size_unaligned (size_unaligned)
             , _size_aligned (size_aligned)
@@ -151,15 +149,16 @@ namespace iml_client
                          , MemSize_t mem_free
                          )
             : runtime_error
-              ( ::boost::format ("Resize below memory used:"
-                              " Trying to resize to '%1%' (aligned: '%2%') bytes"
-                              " but mem_size is '%3%' and mem_free '%4%'"
-                              )
-              % new_size_unaligned
-              % new_size_aligned
-              % mem_size
-              % mem_free
-              )
+              { fmt::format
+                  ( "Resize below memory used:"
+                    " Trying to resize to '{}' (aligned: '{}') bytes"
+                    " but mem_size is '{}' and mem_free '{}'"
+                  , new_size_unaligned
+                  , new_size_aligned
+                  , mem_size
+                  , mem_free
+                  )
+              }
             , _new_size_unaligned (new_size_unaligned)
             , _new_size_aligned (new_size_aligned)
             , _mem_size (mem_size)
@@ -179,14 +178,15 @@ namespace iml_client
                            , MemSize_t high_water
                            )
             : runtime_error
-              ( ::boost::format ("Resize below high water:"
-                              " Trying to resize to '%1%' (aligned: '%2%') bytes"
-                              " but high_water is '%3%'"
-                              )
-              % new_size_unaligned
-              % new_size_aligned
-              % high_water
-              )
+              { fmt::format
+                 ( "Resize below high water:"
+                   " Trying to resize to '{}' (aligned: '{}') bytes"
+                   " but high_water is '{}'"
+                 , new_size_unaligned
+                 , new_size_aligned
+                 , high_water
+                 )
+              }
             , _new_size_unaligned (new_size_unaligned)
             , _new_size_aligned (new_size_aligned)
             , _high_water (high_water)

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright (C) 2023 Fraunhofer ITWM
+# Copyright (C) 2025 Fraunhofer ITWM
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 set -euo pipefail
@@ -14,7 +14,7 @@ cxx_args+=("-x" "c++")
 cxx_args+=("-o" "/dev/null")
 cxx_args+=("-c")
 cxx_args+=("-E")
-cxx_args+=("--std=c++14")
+cxx_args+=("--std=c++17")
 cxx_args+=("-I" "${install_prefix}/include")
 cxx_args+=("-I" "${install_prefix}/external/boost/include")
 

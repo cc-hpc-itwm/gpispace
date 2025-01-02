@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <iml/rif/strategy/ssh.hpp>
@@ -9,16 +9,16 @@
 #include <util-generic/boost/program_options/validators/nonempty_file.hpp>
 #include <util-generic/boost/program_options/validators/nonempty_string.hpp>
 #include <util-generic/boost/program_options/validators/positive_integral.hpp>
-#include <util-generic/getenv.hpp>
-#include <util-generic/nest_exceptions.hpp>
 #include <util-generic/syscall.hpp>
 #include <util-generic/wait_and_collect_exceptions.hpp>
 
 #include <iml/rif/strategy/ssh/session.hpp>
 
 #include <boost/filesystem/operations.hpp>
-#include <boost/format.hpp>
 
+#include <FMT/boost/filesystem/path.hpp>
+#include <fmt/core.h>
+#include <cstdlib>
 #include <future>
 #include <stdexcept>
 
@@ -131,10 +131,10 @@ namespace fhg
                   auto const name ("ssh-username");
                   auto const description ("username to use for remote host");
 
-                  ::boost::optional<std::string> const user (util::getenv ("USER"));
-                  if (user && !user->empty())
+                  auto const user (std::getenv ("USER"));
+                  if (user && !std::string {user}.empty())
                   {
-                    return {name, description, *user};
+                    return {name, description, std::string {user}};
                   }
                   else
                   {
@@ -145,10 +145,10 @@ namespace fhg
                 ::boost::optional<::boost::filesystem::path> maybe_default_key
                   (std::string suffix)
                 {
-                  auto const home (util::getenv ("HOME"));
+                  auto const home (std::getenv ("HOME"));
                   if (home)
                   {
-                    auto const key_path ( ::boost::filesystem::path (*home)
+                    auto const key_path ( ::boost::filesystem::path (home)
                                         / ".ssh"
                                         / ("id_rsa" + suffix)
                                         );
@@ -237,16 +237,15 @@ namespace fhg
                                            , {public_key, private_key}
                                            );
                   out << session.execute_and_require_success_and_no_stderr_output
-                           (( ::boost::format
-                                ( "%1% %2% --register-host %3% --register-port %4%"
-                                  " --register-key %5%"
+                           ( fmt::format
+                                ( "{} {} --register-host {} --register-port {}"
+                                  " --register-key {}"
+                                , binary
+                                , (port ? "--port " + std::to_string (*port) : "")
+                                , register_host
+                                , register_port
+                                , hostname
                                 )
-                            % binary
-                            % (port ? "--port " + std::to_string (*port) : "")
-                            % register_host
-                            % register_port
-                            % hostname
-                            ).str()
                            );
                 }
               ).second;
@@ -279,9 +278,9 @@ namespace fhg
                                            , {public_key, private_key}
                                            );
                   session.execute_and_require_success_and_no_output
-                    (( ::boost::format ("/bin/kill -TERM %1%")
-                     % entry_point.second.pid
-                     ).str()
+                    ( fmt::format ( "/bin/kill -TERM {}"
+                                  , entry_point.second.pid
+                                  )
                     );
                 }
               );

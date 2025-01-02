@@ -1,9 +1,9 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <fhg/util/remove_prefix.hpp>
 
-#include <boost/format.hpp>
+#include <fmt/core.h>
 
 namespace fhg
 {
@@ -13,12 +13,12 @@ namespace fhg
                                                , std::string prefix
                                                )
       : std::runtime_error
-        ( ( ::boost::format
-            ("remove_prefix failed, rest: prefix = %1%, word = %2%")
-          % word
-          % prefix
-          ).str()
-        )
+        { fmt::format
+          ( "remove_prefix failed, rest: prefix = {}, word = {}"
+          , word
+          , prefix
+          )
+        }
       , _word (word)
       , _prefix (prefix)
     { }

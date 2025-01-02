@@ -58,6 +58,9 @@ if (BUILD_TESTING)
     TYPE STATIC
     SOURCES "certificates_data.cpp"
     LIBRARIES Boost::base Boost::filesystem
+              PUBLIC GPISpace-header-only
+              PRIVATE fmt
+              PRIVATE Util::Generic
     INCLUDE_DIRECTORIES PUBLIC "${CMAKE_SOURCE_DIR}"
     COMPILE_DEFINITIONS GSPC_SSL_CERTIFICATES_FOR_TESTS="${GSPC_SSL_CERTIFICATES_FOR_TESTS}"
     DEPENDS test-certificates
@@ -71,6 +74,7 @@ if (BUILD_TESTING)
             "scoped_nodefile_from_environment.cpp"
             "shared_directory.cpp"
             "source_directory.cpp"
+            "fmt_directory.cpp"
             "virtual_memory_socket_name_for_localhost.cpp"
     INCLUDE_DIRECTORIES PUBLIC "${CMAKE_SOURCE_DIR}"
                         PRIVATE "${CMAKE_BINARY_DIR}"

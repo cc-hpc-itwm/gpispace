@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -18,9 +18,9 @@
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/printer/optional.hpp>
 
-#include <boost/format.hpp>
 #include <boost/test/data/test_case.hpp>
 
+#include <fmt/core.h>
 #include <regex>
 #include <sstream>
 #include <vector>
@@ -163,30 +163,29 @@ BOOST_DATA_TEST_CASE
 
     BOOST_REQUIRE_EQUAL
       ( info_output[3]
-      , ( ::boost::format ("I: starting agent: agent-%1%-0"
-                        " on rif entry point %1%"
-                        )
-        % entry_point_parent
-        ).str()
+      , fmt::format
+         ( "I: starting agent: agent-{0}-0 on rif entry point {0}"
+         , entry_point_parent
+         )
       );
 
     BOOST_REQUIRE
       ( std::regex_match
         ( info_output[4]
-        , std::regex { ( ::boost::format ("terminating agent on %1%: [0-9]+")
-                       % entry_point_parent
-                       ).str()
-                     }
+        , std::regex
+          {fmt::format ("terminating agent on {}: [0-9]+", entry_point_parent)}
         )
       );
 
     BOOST_REQUIRE
       ( std::regex_match
         ( info_output[5]
-        , std::regex { ( ::boost::format ("terminating logging-demultiplexer on %1%: [0-9]+")
-                       % entry_point_parent
-                       ).str()
-                     }
+        , std::regex
+            { fmt::format
+              ( "terminating logging-demultiplexer on {}: [0-9]+"
+              , entry_point_parent
+              )
+            }
         )
       );
   }
@@ -297,11 +296,10 @@ BOOST_DATA_TEST_CASE
 
     BOOST_REQUIRE_EQUAL
       ( info_output[3]
-      , ( ::boost::format ("I: starting agent: agent-%1%-0"
-                        " on rif entry point %1%"
-                        )
-        % entry_point_parent
-        ).str()
+      , fmt::format
+          ( "I: starting agent: agent-{0}-0 on rif entry point {0}"
+          , entry_point_parent
+          )
       );
 
     std::string const entry_point_worker
@@ -314,15 +312,15 @@ BOOST_DATA_TEST_CASE
              ( info_output[4]
              , match
              , std::regex
-               ( ( ::boost::format ("I: starting %2% workers"
-                                 " \\(parent agent-%1%-0, 1/host, unlimited, 0 SHM\\)"
-                                 " with parent agent-%1%-0"
-                                 " on rif entry point ((.+) [0-9]+ [0-9]+)"
-                                 )
-                 % entry_point_parent
-                 % worker
-                 ).str()
-               )
+               { fmt::format
+                 ( "I: starting {1} workers"
+                   " \\(parent agent-{0}-0, 1/host, unlimited, 0 SHM\\)"
+                   " with parent agent-{0}-0"
+                   " on rif entry point ((.+) [0-9]+ [0-9]+)"
+                 , entry_point_parent
+                 , worker
+                 )
+               }
              )
            );
          BOOST_REQUIRE_EQUAL (match.size(), 3);
@@ -335,30 +333,33 @@ BOOST_DATA_TEST_CASE
     BOOST_REQUIRE
       ( std::regex_match
         ( info_output[5]
-        , std::regex { ( ::boost::format ("terminating drts-kernel on %1%: [0-9]+")
-                       % entry_point_worker
-                       ).str()
-                     }
+        , std::regex
+          { fmt::format
+              ( "terminating drts-kernel on {}: [0-9]+"
+              , entry_point_worker
+              )
+          }
         )
       );
 
     BOOST_REQUIRE
       ( std::regex_match
         ( info_output[6]
-        , std::regex { ( ::boost::format ("terminating agent on %1%: [0-9]+")
-                       % entry_point_parent
-                       ).str()
-                     }
+        , std::regex
+          { fmt::format ("terminating agent on {}: [0-9]+", entry_point_parent)
+          }
         )
       );
 
     BOOST_REQUIRE
       ( std::regex_match
         ( info_output[7]
-        , std::regex { ( ::boost::format ("terminating logging-demultiplexer on %1%: [0-9]+")
-                       % entry_point_parent
-                       ).str()
-                     }
+        , std::regex
+          { fmt::format
+            ( "terminating logging-demultiplexer on {}: [0-9]+"
+            , entry_point_parent
+            )
+          }
         )
       );
   }

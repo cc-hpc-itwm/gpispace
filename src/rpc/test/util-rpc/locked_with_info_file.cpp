@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <util-rpc/locked_with_info_file.hpp>
@@ -18,8 +18,10 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/thread/scoped_thread.hpp>
 
-#include <future>
+#include <FMT/boost/filesystem/path.hpp>
+#include <fmt/core.h>
 #include <fstream>
+#include <future>
 #include <memory>
 
 BOOST_AUTO_TEST_CASE (two_server_on_same_lock_is_impossible)
@@ -44,10 +46,10 @@ BOOST_AUTO_TEST_CASE (two_server_on_same_lock_is_impossible)
     , fhg::util::testing::make_nested
         ( fhg::rpc::locked_with_info_file::error::failed_to_create_server (path)
         , std::logic_error
-            ( ( ::boost::format ("Temporary file %1% already exists.")
-              % (path / "server")
-              ).str()
-            )
+          { fmt::format ( "Temporary file {} already exists."
+                        , path / "server"
+                        )
+          }
         )
     );
 }
@@ -65,10 +67,8 @@ BOOST_AUTO_TEST_CASE (create_client_on_nonexisting_path_fails)
     , fhg::util::testing::make_nested
         ( fhg::rpc::locked_with_info_file::error::failed_to_create_client (path)
         , std::runtime_error
-            ( ( ::boost::format ("could not open %1%")
-              % (path / "server")
-              ).str()
-            )
+            { fmt::format ("could not open {}", path / "server")
+            }
         )
     );
 }

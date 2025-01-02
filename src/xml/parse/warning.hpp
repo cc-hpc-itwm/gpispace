@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -18,9 +18,11 @@
 
 #include <util-generic/join.hpp>
 
-#include <boost/format.hpp>
 #include <boost/optional.hpp>
 #include <boost/optional/optional_io.hpp>
+
+#include <FMT/boost/filesystem/path.hpp>
+#include <fmt/core.h>
 
 namespace xml
 {
@@ -33,9 +35,6 @@ namespace xml
       public:
         generic (std::string const& msg)
           : std::runtime_error ("WARNING: " + msg)
-        {}
-        generic (::boost::format const& bf)
-          : std::runtime_error ("WARNING: " + bf.str())
         {}
       };
 
@@ -563,11 +562,11 @@ namespace xml
         virtual_place_not_tunneled ( std::string const& name
                                    , ::boost::filesystem::path const& file
                                    )
-          : generic ( ::boost::format ( "the virtual place %1%"
-                                      " is not tunneled in %2%."
-                                    )
-                    % name
-                    % file
+          : generic ( fmt::format ( "the virtual place {}"
+                                    " is not tunneled in {}."
+                                  , name
+                                  , file
+                                  )
                     )
         {}
       };
@@ -581,12 +580,12 @@ namespace xml
                                      , std::string const& tn
                                      , ::boost::filesystem::path const& file
                                      )
-          : generic ( ::boost::format ( "duplicate typename %2%"
-                                      " in the definition of %1% in %3%"
-                                    )
-                    % (name ? *name : "<<noname>>")
-                    % tn
-                    % file
+          : generic ( fmt::format ( "duplicate typename {1}"
+                                    " in the definition of {0} in {2}"
+                                  , name ? *name : "<<noname>>"
+                                  , tn
+                                  , file
+                                  )
                     )
         {}
       };

@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <we/type/ModuleCall.fwd.hpp>
@@ -7,12 +7,9 @@
 #include <we/expr/parse/parser.hpp>
 #include <we/type/value.hpp>
 
-#include <util-generic/nest_exceptions.hpp>
-
-#include <boost/format.hpp>
-
 #include <algorithm>
 #include <exception>
+#include <fmt/core.h>
 #include <iterator>
 #include <list>
 #include <numeric>
@@ -178,60 +175,67 @@ namespace we
     {
       for (auto const& buffer : _memory_buffers)
       {
-        fhg::util::nest_exceptions<std::runtime_error>
-          ( [&]
-            {
-              buffer.second.assert_correct_expression_types
-                (context_before_eval);
-            }
-          , str ( ::boost::format ("In the <buffer> with name '%1%'")
-                % buffer.first
-                )
-          );
+        try
+        {
+          buffer.second.assert_correct_expression_types (context_before_eval);
+        }
+        catch (...)
+        {
+          std::throw_with_nested
+            ( std::runtime_error
+              {fmt::format ("In the <buffer> with name '{}'", buffer.first)}
+            );
+        }
       }
 
       for (auto const& memory_get : _memory_gets)
       {
-        fhg::util::nest_exceptions<std::runtime_error>
-          ( [&]
-            {
-              memory_get.assert_correct_expression_types
-                (context_before_eval);
-            }
-          , "In <memory-get>"
-          );
+        try
+        {
+          memory_get.assert_correct_expression_types (context_before_eval);
+        }
+        catch (...)
+        {
+          std::throw_with_nested
+            ( std::runtime_error {"In <memory-get>"}
+            );
+        }
       }
 
       for (auto const& memory_put : _memory_puts)
       {
-        fhg::util::nest_exceptions<std::runtime_error>
-          ( [&]
-            {
-              memory_put.assert_correct_expression_types
-                ( memory_put.not_modified_in_module_call().get_value_or (false)
-                ? context_before_eval
-                : context_after_eval
-                );
-            }
-          , str
-            ( ::boost::format ("In <memory-put>, evaluated %1% execution")
-            % ( memory_put.not_modified_in_module_call().get_value_or (false)
-              ? "before"
-              : "after"
-              )
-            )
-          );
+        try
+        {
+          memory_put.assert_correct_expression_types
+            ( memory_put.not_modified_in_module_call().get_value_or (false)
+              ? context_before_eval
+              : context_after_eval
+            );
+        }
+        catch (...)
+        {
+          std::throw_with_nested
+            ( std::runtime_error
+              { fmt::format
+                ( "In <memory-put>, evaluated {} execution"
+                , memory_put.not_modified_in_module_call().get_value_or (false)
+                  ? "before"
+                  : "after"
+                )
+              }
+            );
+        }
       }
     }
     catch (...)
     {
       std::throw_with_nested
         ( std::runtime_error
-          (str ( ::boost::format ("In the function '%1%' of module '%2%'")
-               % function_
-               % module_
-               )
-          )
+          { fmt::format ( "In the function '{}' of module '{}'"
+                        , function_
+                        , module_
+                        )
+          }
         );
     }
 

@@ -1,11 +1,11 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <util-generic/testing/random.hpp>
 
 #include <util-generic/join.hpp>
 
-#include <boost/format.hpp>
+#include <fmt/core.h>
 
 namespace
 {
@@ -67,19 +67,18 @@ namespace
         + pnet_module_suffix
       );
 
-    return
-      ( ::boost::format (R"EOS(
+    return fmt::format ( R"EOS(
         <defun name="n_preferences">
           <modules>
-          %1%
-          %3%
-          %2%
+          {0}
+          {2}
+          {1}
           </modules>
-        </defun>)EOS")
-        % pnet_target_list
-        % pnet_module_list
-        % add_trans_content.value_or ("")
-      ).str();
+        </defun>)EOS"
+                  , pnet_target_list
+                  , pnet_module_list
+                  , add_trans_content.value_or ("")
+        );
   }
 
   pnet_with_multi_modules::pnet_with_multi_modules

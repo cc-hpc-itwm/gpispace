@@ -5,7 +5,7 @@
 # arguments: (optional) rif strategy to use, defaults to ssh.
 # arguments: (optional) additional parameters to pass to the drts
 #            started by the selftest, e.g. --rif-strategy-parameters.
-# requires: $CXX is compiler with --std=c++11 available
+# requires: $CXX is compiler with --std=c++17 available
 # requires: $GPISpace_ROOT or $CMAKE_PREFIX_PATH or $GPISpace_DIR set
 # optional: $GSPC_NODEFILE_FOR_TESTS pointing to a path of a nodefile
 #           to use. If not set, the current host is used.

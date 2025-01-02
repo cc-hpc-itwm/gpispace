@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Fraunhofer ITWM
+// Copyright (C) 2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
@@ -33,6 +33,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 
+#include <filesystem>
 #include <map>
 
 BOOST_AUTO_TEST_CASE (share_example_map_log)
@@ -120,8 +121,8 @@ BOOST_AUTO_TEST_CASE (share_example_map_log)
     . add<test::option::gen::include> (test::source_directory (vm))
     );
 
-  ::boost::filesystem::path const implementation
-    ( ::boost::filesystem::canonical
+  auto const implementation
+    ( std::filesystem::canonical
       (vm.at (option_implementation).as<validators::executable>())
     );
   unsigned long const size_input
