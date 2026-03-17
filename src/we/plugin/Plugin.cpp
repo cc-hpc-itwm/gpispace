@@ -1,21 +1,19 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2019,2021,2023-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/plugin/Plugin.hpp>
+#include <gspc/we/plugin/Plugin.hpp>
 
-#include <util-generic/print_exception.hpp>
+#include <gspc/util/print_exception.hpp>
 
-#include <FMT/util-generic/exception_printer.hpp>
+#include <gspc/util/exception_printer.formatter.hpp>
 #include <exception>
 #include <fmt/core.h>
 #include <stdexcept>
 #include <utility>
 
-namespace gspc
-{
-  namespace we
-  {
-    namespace plugin
+
+
+    namespace gspc::we::plugin
     {
       namespace
       {
@@ -33,13 +31,13 @@ namespace gspc
           throw std::runtime_error
             { fmt::format
                 ( "Exception in gspc_we_plugin_create: {}"
-                , fhg::util::exception_printer (std::current_exception())
+                , util::exception_printer (std::current_exception())
                 )
             };
         }
       }
 
-      Plugin::Plugin ( ::boost::filesystem::path path
+      Plugin::Plugin ( std::filesystem::path path
                      , Context const& context
                      , PutToken put_token
                      )
@@ -62,5 +60,3 @@ namespace gspc
         _->after_eval (context);
       }
     }
-  }
-}

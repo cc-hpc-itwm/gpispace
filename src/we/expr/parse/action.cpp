@@ -1,22 +1,20 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2012-2013,2020-2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/expr/parse/action.hpp>
+#include <gspc/we/expr/parse/action.hpp>
 
-#include <we/expr/exception.hpp>
-#include <we/expr/token/assoc.hpp>
-#include <we/expr/token/prec.hpp>
-#include <we/expr/token/prop.hpp>
+#include <gspc/we/expr/exception.hpp>
+#include <gspc/we/expr/token/assoc.hpp>
+#include <gspc/we/expr/token/prec.hpp>
+#include <gspc/we/expr/token/prop.hpp>
 
-#include <util-generic/unreachable.hpp>
+#include <gspc/util/unreachable.hpp>
 
 #include <iostream>
 
-namespace expr
-{
-  namespace parse
-  {
-    namespace action
+
+
+    namespace gspc::we::expr::parse::action
     {
       std::ostream& operator<< (std::ostream& s, type const& action)
       {
@@ -126,5 +124,3 @@ namespace expr
         return reduce;
       }
     }
-  }
-}

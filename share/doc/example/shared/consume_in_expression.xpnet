@@ -1,0 +1,54 @@
+<!-- Copyright (C) 2026 Fraunhofer ITWM                            -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
+
+<!--
+  Demonstrate consuming the last shared reference in an expression.
+
+  This example shows that cleanup is triggered even when the final
+  consumption happens in a pure expression (no module call). The
+  expression takes the shared as input but does not produce
+  it as output, causing the reference count to drop to zero.
+-->
+
+<defun name="shared_consume_in_expression">
+
+  <in name="value" type="string" place="value"/>
+  <out name="result" type="string" place="cleanup"/>
+
+  <net>
+    <place name="value" type="string"/>
+    <place name="cleanup" type="string" shared_sink="true"/>
+
+    <place name="shared" type="shared_cleanup"/>
+
+    <!-- Create a shared from a regular string -->
+    <transition name="create">
+      <defun>
+        <in name="s" type="string"/>
+        <out name="shared" type="shared_cleanup"/>
+        <module name="shared_consume_in_expression"
+                function="shared create (s)">
+          <cinclude href="gspc/we/type/shared.hpp"/>
+          <code><![CDATA[
+            return gspc::we::type::shared {s, "cleanup"};
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="s" place="value"/>
+      <connect-out port="shared" place="shared"/>
+    </transition>
+
+    <!-- Consume the shared in an expression (refcount -> 0)       -->
+    <!-- The shared is consumed but not produced as output,        -->
+    <!-- so the reference count drops and cleanup is triggered.    -->
+    <transition name="consume">
+      <defun>
+        <in name="shared" type="shared_cleanup"/>
+        <expression/>
+      </defun>
+      <connect-in port="shared" place="shared"/>
+    </transition>
+
+  </net>
+
+</defun>

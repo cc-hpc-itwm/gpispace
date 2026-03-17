@@ -1,0 +1,122 @@
+// Copyright (C) 2014-2016,2018-2023,2026 Fraunhofer ITWM
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+#include <gspc/drts/private/scheduler_types_implementation.hpp>
+
+#include <gspc/scheduler/daemon/GetSchedulerType.hpp>
+#include <test/scheduler/scheduler/utils.hpp>
+#include <gspc/scheduler/types.hpp>
+
+#include <gspc/testing/certificates_data.hpp>
+
+#include <gspc/testing/flatten_nested_exceptions.hpp>
+#include <gspc/testing/printer/optional.hpp>
+#include <gspc/testing/random.hpp>
+
+#include <boost/test/unit_test.hpp>
+
+#include <boost/test/data/monomorphic.hpp>
+#include <boost/test/data/monomorphic/generators/xrange.hpp>
+#include <boost/test/data/test_case.hpp>
+
+#include <future>
+#include <memory>
+#include <string>
+#include <vector>
+
+namespace
+{
+  auto const boolean_test_data {::boost::unit_test::data::make ({false, true})};
+}
+
+BOOST_DATA_TEST_CASE
+  ( restart_worker_with_dummy_workflow
+  , certificates_data * boolean_test_data
+  , certificates
+  , might_require_multiple_workers
+  )
+{
+  const utils::agent agent (certificates);
+
+  utils::client client (agent, certificates);
+  auto const activity
+    ( utils::module_call
+        ( gspc::testing::random_string()
+        , might_require_multiple_workers
+        )
+    );
+
+  gspc::scheduler::job_id_t const job_id (client.submit_job (activity));
+
+  gspc::scheduler::worker_id_t worker_id;
+
+  {
+    std::promise<void> job_submitted;
+
+    const utils::fake_drts_worker_waiting_for_finished_ack worker
+      ( [&job_submitted] (std::string) { job_submitted.set_value(); }
+      , agent
+      , certificates
+      );
+
+    worker_id = worker.name();
+
+    job_submitted.get_future().wait();
+  }
+
+  std::promise<std::string> job_submitted_to_restarted_worker;
+  utils::fake_drts_worker_waiting_for_finished_ack restarted_worker
+    ( utils::reused_component_name (worker_id)
+    , [&job_submitted_to_restarted_worker] (std::string s)
+      { job_submitted_to_restarted_worker.set_value (s); }
+    , agent
+    , certificates
+    );
+
+  restarted_worker.finish_and_wait_for_ack
+    (job_submitted_to_restarted_worker.get_future().get());
+
+  BOOST_REQUIRE_EQUAL
+    (client.wait_for_terminal_state (job_id), gspc::scheduler::status::FINISHED);
+
+  client.delete_job (job_id);
+}
+
+BOOST_DATA_TEST_CASE
+  ( retry_job_a_specified_number_of_times
+  , certificates_data
+  , certificates
+  )
+{
+  unsigned long const maximum_number_of_retries (2);
+
+  utils::agent const agent (certificates);
+
+  utils::client client (agent, certificates);
+  auto const activity
+    (utils::module_call_with_max_num_retries (maximum_number_of_retries));
+
+  gspc::scheduler::job_id_t const job_id (client.submit_job (activity));
+
+  for (unsigned long i {0}; i <= maximum_number_of_retries; ++i)
+  {
+    std::promise<void> job_submitted;
+
+    const utils::fake_drts_worker_notifying_module_call_submission worker
+      ( [&job_submitted] (std::string) { job_submitted.set_value(); }
+      , agent
+      , certificates
+      );
+
+    job_submitted.get_future().wait();
+  }
+
+  gspc::scheduler::client::job_info_t job_info;
+
+  BOOST_REQUIRE_EQUAL
+    (client.wait_for_terminal_state (job_id, job_info), gspc::scheduler::status::FAILED);
+
+  BOOST_REQUIRE_EQUAL (job_info.error_message, "Number of retries exceeded!");
+
+  client.delete_job (job_id);
+}

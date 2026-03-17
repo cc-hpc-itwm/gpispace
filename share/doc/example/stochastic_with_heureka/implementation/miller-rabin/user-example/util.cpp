@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2020-2021,2023,2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <miller-rabin/util.hpp>
@@ -63,18 +63,18 @@ namespace miller_rabin
     return true;
   }
 
-  we::type::bytearray generate_user_data (std::string const& number)
+  gspc::we::type::bytearray generate_user_data (std::string const& number)
   {
     std::size_t count;
     void* buffer
       ( mpz_export
         (NULL, &count, 1, sizeof (char), 0, 0, mpz_class (number).get_mpz_t())
       );
-    return we::type::bytearray
+    return gspc::we::type::bytearray
       (std::string (static_cast<char*> (buffer), count));
   }
 
-  void show_result (std::ostream& os, we::type::bytearray const& output)
+  void show_result (std::ostream& os, gspc::we::type::bytearray const& output)
   {
     bool result;
     output.copy (&result);

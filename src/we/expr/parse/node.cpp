@@ -1,23 +1,21 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2012-2014,2019-2021,2023-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/expr/parse/node.hpp>
+#include <gspc/we/expr/parse/node.hpp>
 
-#include <we/expr/token/prop.hpp>
+#include <gspc/we/expr/token/prop.hpp>
 
-#include <we/expr/exception.hpp>
+#include <gspc/we/expr/exception.hpp>
 
-#include <we/type/value/show.hpp>
+#include <gspc/we/type/value/show.hpp>
 
-#include <FMT/we/expr/token/show.hpp>
+#include <gspc/we/expr/token/show.formatter.hpp>
 #include <fmt/core.h>
 #include <stdexcept>
 
-namespace expr
-{
-  namespace parse
-  {
-    namespace node
+
+
+    namespace gspc::we::expr::parse::node
     {
       unary_t::unary_t (token::type const& _token, type const& _child)
         : token (_token), child (_child)
@@ -83,7 +81,18 @@ namespace expr
 
           void operator () (binary_t const& b) const
           {
-            if (token::is_prefix (b.token))
+            if (b.token == token::_shared)
+              {
+                // Print as shared_PLACENAME (value)
+                // Left operand is the cleanup place name (string value)
+                auto const& cleanup_place
+                  { ::boost::get<std::string>
+                      ( ::boost::get<pnet::type::value::value_type> (b.l)
+                      )
+                  };
+                s << "shared_" << cleanup_place << " (" << b.r << ")";
+              }
+            else if (token::is_prefix (b.token))
               {
                 s << b.token << "(" << b.l << ", " <<  b.r << ")";
               }
@@ -107,7 +116,7 @@ namespace expr
                 break;
               default: throw std::runtime_error
                   { fmt::format ( "show_parse_node_ternary ({})"
-                                , expr::token::show (t.token)
+                                , token::show (t.token)
                                 )
                   };
               }
@@ -280,5 +289,3 @@ namespace expr
         ::boost::apply_visitor (visitor_collect_key_roots (roots), node);
       }
     }
-  }
-}

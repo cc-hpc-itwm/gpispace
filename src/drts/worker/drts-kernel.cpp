@@ -1,21 +1,22 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2014-2015,2018-2024,2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <drts/worker/drts.hpp>
+#include <gspc/drts/worker/drts.hpp>
 
-#include <fhg/util/signal_handler_manager.hpp>
-#include <util-generic/boost/program_options/validators/existing_path.hpp>
-#include <util-generic/print_exception.hpp>
+#include <gspc/util/signal_handler_manager.hpp>
+#include <gspc/util/boost/program_options/validators/existing_path.hpp>
+#include <gspc/util/print_exception.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/program_options.hpp>
 #include <boost/tokenizer.hpp>
 
-#include <rif/started_process_promise.hpp>
+#include <gspc/rif/started_process_promise.hpp>
 
 #include <hwloc.h>
 
 #include <fmt/core.h>
+#include <filesystem>
 #include <memory>
 #include <set>
 #include <sstream>
@@ -109,92 +110,93 @@ namespace
 
 int main (int ac, char **av)
 {
-  fhg::rif::started_process_promise promise (ac, av);
+  gspc::rif::started_process_promise promise (ac, av);
 
   try
   {
-    namespace po = ::boost::program_options;
-
-    po::options_description desc("options");
+    ::boost::program_options::options_description desc("options");
 
     std::string kernel_name;
     unsigned short comm_port;
 
     desc.add_options()
-      ("name,n", po::value<std::string>(&kernel_name), "give the kernel a name")
+      ("name,n", ::boost::program_options::value<std::string>(&kernel_name), "give the kernel a name")
       ( option_name::virtual_memory_socket
-      , po::value<fhg::util::boost::program_options::existing_path>()
+      , ::boost::program_options::value<gspc::util::boost::program_options::existing_path>()
       , "socket file to communicate with the virtual memory manager"
         ", if given the virtual memory manager is required to be running"
         ", if not given, the kernel can not manage memory"
       )
       ( option_name::shared_memory_size
-      , po::value<unsigned long>()
+      , ::boost::program_options::value<unsigned long>()
       , "size of shared memory associated with the kernel"
       )
       ( "port,p"
-      , po::value<unsigned short>(&comm_port)->default_value(0)
+      , ::boost::program_options::value<unsigned short>(&comm_port)->default_value(0)
       , "workers's communication port"
       )
       ( option_name::capability
-      , po::value<std::vector<std::string>>()
+      , ::boost::program_options::value<std::vector<std::string>>()
         ->default_value (std::vector<std::string>(), "{}")
       , "capabilities of worker"
       )
       ( option_name::library_search_path
-      , po::value<std::vector<::boost::filesystem::path>>()
-        ->default_value (std::vector<::boost::filesystem::path>(), "{}")
+      , ::boost::program_options::value<std::vector<std::filesystem::path>>()
+        ->default_value (std::vector<std::filesystem::path>(), "{}")
       , "paths to search for module call libraries"
       )
       ( option_name::socket
-      , po::value<std::size_t>()
+      , ::boost::program_options::value<std::size_t>()
       , "socket to pin worker on"
       )
       ( option_name::parent
-      , po::value<std::string>()->required()
+      , ::boost::program_options::value<std::string>()->required()
       , "parent to connect to (unique_name%host%port)"
       )
       ( option_name::certificates
-      , po::value<::boost::filesystem::path>()
+      , ::boost::program_options::value<std::filesystem::path>()
       , "folder containing SSL certificates"
       )
       ;
 
-    po::variables_map vm;
+    ::boost::program_options::variables_map vm;
 
-    po::store (po::command_line_parser (ac, av).options (desc).run(), vm);
-    po::notify (vm);
+    ::boost::program_options::store
+      ( ::boost::program_options::command_line_parser (ac, av)
+          .options (desc)
+          .run()
+      , vm
+      );
+    ::boost::program_options::notify (vm);
 
-    fhg::logging::stream_emitter log_emitter;
+    gspc::logging::stream_emitter log_emitter;
 
-    fhg::util::signal_handler_manager signal_handlers;
-    fhg::util::scoped_log_backtrace_and_exit_for_critical_errors const
+    gspc::util::signal_handler_manager signal_handlers;
+    gspc::util::scoped_log_backtrace_and_exit_for_critical_errors const
       crit_error_handler (signal_handlers, log_emitter);
 
-    fhg::util::Execution execution (signal_handlers);
+    gspc::util::Execution execution (signal_handlers);
 
-    std::unique_ptr<iml::Client> const virtual_memory_api
+    std::unique_ptr<gspc::iml::Client> const virtual_memory_api
       (
       #if GSPC_WITH_IML
         vm.count (option_name::virtual_memory_socket)
-      ? std::make_unique<iml::Client>
-          ( static_cast<::boost::filesystem::path>
-              ( vm.at (option_name::virtual_memory_socket)
-              .as<fhg::util::boost::program_options::existing_path>()
-              )
+      ? std::make_unique<gspc::iml::Client>
+          ( vm.at (option_name::virtual_memory_socket)
+          . as<gspc::util::boost::program_options::existing_path>()
           )
       :
       #endif
         nullptr
       );
-    std::unique_ptr<iml::SharedMemoryAllocation> const shared_memory
+    std::unique_ptr<gspc::iml::SharedMemoryAllocation> const shared_memory
       (
       #if GSPC_WITH_IML
         ( virtual_memory_api
         && vm.count (option_name::shared_memory_size)
         && vm.at (option_name::shared_memory_size).as<unsigned long>() > 0
         )
-      ? std::make_unique<iml::SharedMemoryAllocation>
+      ? std::make_unique<gspc::iml::SharedMemoryAllocation>
         ( *virtual_memory_api
         , vm.at (option_name::shared_memory_size).as<unsigned long>()
         )
@@ -204,7 +206,7 @@ int main (int ac, char **av)
       );
 
     auto const parent_info
-      ( [&]() -> std::tuple<fhg::com::host_t, fhg::com::port_t>
+      ( [&]() -> std::tuple<gspc::com::host_t, gspc::com::port_t>
         {
           ::boost::tokenizer<::boost::char_separator<char>> const tok
             ( vm.at (option_name::parent).as<std::string>()
@@ -224,7 +226,7 @@ int main (int ac, char **av)
           iss >> port;
 
           return std::make_tuple
-            (fhg::com::host_t (parts[1]), fhg::com::port_t {port});
+            (gspc::com::host_t (parts[1]), gspc::com::port_t {port});
         }()
       );
 
@@ -237,7 +239,7 @@ int main (int ac, char **av)
 
     if (vm.count (option_name::certificates))
     {
-      certificates = vm.at (option_name::certificates).as<::boost::filesystem::path>();
+      certificates = vm.at (option_name::certificates).as<std::filesystem::path>();
     }
 
     DRTSImpl const plugin
@@ -251,7 +253,7 @@ int main (int ac, char **av)
       , vm.at (option_name::capability)
       .as<std::vector<std::string>>()
       , vm.at (option_name::library_search_path)
-      .as<std::vector<::boost::filesystem::path>>()
+      .as<std::vector<std::filesystem::path>>()
       , log_emitter
       , certificates
       );

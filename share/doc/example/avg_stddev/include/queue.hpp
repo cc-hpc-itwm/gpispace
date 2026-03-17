@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2012,2016,2021,2023,2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -7,9 +7,8 @@
 #include <deque>
 #include <mutex>
 
-namespace fhg
-{
-  namespace thread
+
+  namespace fhg::thread
   {
     template < typename T
              , template < typename
@@ -48,4 +47,3 @@ namespace fhg
       std::mutex _guard_container;
     };
   }
-}

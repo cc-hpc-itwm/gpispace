@@ -1,16 +1,14 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2013,2020-2021,2023,2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/type/literal/control.hpp>
+#include <gspc/we/type/literal/control.hpp>
 
 #include <iostream>
 #include <string>
 
-namespace we
-{
-  namespace type
-  {
-    namespace literal
+
+
+    namespace gspc::we::type::literal
     {
       bool operator== (control const&, control const&)
       {
@@ -32,5 +30,3 @@ namespace we
         return false;
       }
     }
-  }
-}

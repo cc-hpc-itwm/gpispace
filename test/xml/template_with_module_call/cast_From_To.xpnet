@@ -1,0 +1,16 @@
+<!-- Copyright (C) 2021,2023,2026 Fraunhofer ITWM                       -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
+
+<template name="cast_From_To">
+  <template-parameter type="From"/>
+  <template-parameter type="To"/>
+  <defun>
+    <in name="from" type="From"/>
+    <out name="to" type="To"/>
+    <module name="cast_From_To" function="to cast (from)">
+      <code><![CDATA[
+      return from;
+      ]]></code>
+    </module>
+  </defun>
+</template>

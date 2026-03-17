@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2022-2024,2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -6,7 +6,7 @@
 #include <preferences_and_multimodules/parameters.hpp>
 #include <preferences_and_multimodules/WorkflowResult.hpp>
 
-#include <we/type/value.hpp>
+#include <gspc/we/type/value.hpp>
 
 #include <array>
 #include <cstddef>

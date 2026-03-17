@@ -1,24 +1,25 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2012-2016,2020-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/expr/eval/eval.hpp>
+#include <gspc/we/expr/eval/eval.hpp>
 
-#include <we/expr/token/assoc.hpp>
-#include <we/expr/token/prop.hpp>
+#include <gspc/we/expr/token/assoc.hpp>
+#include <gspc/we/expr/token/prop.hpp>
+#include <gspc/we/expr/token/type.hpp>
 
-#include <we/expr/exception.hpp>
+#include <gspc/we/expr/exception.hpp>
 
-#include <we/type/value/function.hpp>
-#include <we/type/value/show.hpp>
+#include <gspc/we/type/shared.hpp>
+#include <gspc/we/type/value/function.hpp>
+#include <gspc/we/type/value/show.hpp>
 
-#include <FMT/we/expr/token/show.hpp>
-#include <FMT/we/type/value/show.hpp>
+#include <gspc/we/expr/token/show.formatter.hpp>
+#include <gspc/we/type/value/show.formatter.hpp>
 #include <fmt/core.h>
 #include <stdexcept>
 
-namespace expr
-{
-  namespace eval
+
+  namespace gspc::we::expr::eval
   {
     namespace
     {
@@ -40,14 +41,14 @@ namespace expr
           return c.value (key);
         }
 
-        pnet::type::value::value_type operator () (expr::parse::node::unary_t const& u) const
+        pnet::type::value::value_type operator () (parse::node::unary_t const& u) const
         {
           pnet::type::value::value_type c0 (::boost::apply_visitor (*this, u.child));
 
           return pnet::type::value::unary (u.token, c0);
         }
 
-        pnet::type::value::value_type operator () (expr::parse::node::binary_t const& b) const
+        pnet::type::value::value_type operator () (parse::node::binary_t const& b) const
         {
           if (is_define (b.token))
             {
@@ -59,6 +60,15 @@ namespace expr
                 );
 
               return c1;
+            }
+          else if (b.token == token::_shared)
+            {
+              return we::type::shared
+                { ::boost::apply_visitor (*this, b.r) // value
+                , ::boost::get<std::string>           // cleanup place
+                  ( ::boost::apply_visitor (*this, b.l)
+                  )
+                };
             }
           else if (is_or_boolean (b.token))
             {
@@ -112,11 +122,11 @@ namespace expr
 
         }
 
-        pnet::type::value::value_type operator () (expr::parse::node::ternary_t const& t) const
+        pnet::type::value::value_type operator () (parse::node::ternary_t const& t) const
         {
           switch (t.token)
             {
-            case expr::token::_map_assign:
+            case token::_map_assign:
               {
                 pnet::type::value::value_type c0 (::boost::apply_visitor (*this, t.child0));
                 pnet::type::value::value_type c1 (::boost::apply_visitor (*this, t.child1));
@@ -136,7 +146,7 @@ namespace expr
                   }
                 catch (...)
                   {
-                    throw expr::exception::eval::type_error
+                    throw exception::eval::type_error
                       { fmt::format ( "map_assign ({}, {}, {})"
                                     , pnet::type::value::show (c0)
                                     , pnet::type::value::show (c1)
@@ -147,7 +157,7 @@ namespace expr
               }
             default: throw std::runtime_error
                 { fmt::format ( "eval-ternary ({})"
-                              , expr::token::show (t.token)
+                              , token::show (t.token)
                               )
                 };
             }
@@ -155,9 +165,8 @@ namespace expr
       };
     }
 
-    pnet::type::value::value_type eval (context& c, expr::parse::node::type const& nd)
+    pnet::type::value::value_type eval (context& c, parse::node::type const& nd)
     {
       return ::boost::apply_visitor (visitor_eval (c), nd);
     }
   }
-}

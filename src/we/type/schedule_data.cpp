@@ -1,35 +1,33 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2013-2015,2021-2023,2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/type/schedule_data.hpp>
+#include <gspc/we/type/schedule_data.hpp>
 
 #include <stdexcept>
 
-namespace we
-{
-  namespace type
+
+  namespace gspc::we::type
   {
     schedule_data::schedule_data
-      ( ::boost::optional<unsigned long> const& num_worker
-      , ::boost::optional<unsigned long> const& maximum_number_of_retries
+      ( std::optional<unsigned long> const& num_worker
+      , std::optional<unsigned long> const& maximum_number_of_retries
       )
         : _num_worker (num_worker)
         , _max_num_retries (maximum_number_of_retries)
     {
-      if (!!_num_worker && _num_worker.get() == 0UL)
+      if (!!_num_worker && _num_worker.value() == 0UL)
       {
         throw std::logic_error ("schedule_data: num_worker == 0UL");
       }
     }
 
-    const ::boost::optional<unsigned long>& schedule_data::num_worker() const
+    const std::optional<unsigned long>& schedule_data::num_worker() const
     {
       return _num_worker;
     }
 
-    ::boost::optional<unsigned long> const& schedule_data::maximum_number_of_retries() const
+    std::optional<unsigned long> const& schedule_data::maximum_number_of_retries() const
     {
       return _max_num_retries;
     }
   }
-}

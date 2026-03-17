@@ -1,23 +1,21 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2013-2015,2020-2021,2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/type/signature/dump.hpp>
-#include <we/type/signature/traverse.hpp>
+#include <gspc/we/type/signature/dump.hpp>
+#include <gspc/we/type/signature/traverse.hpp>
 
-#include <fhg/util/xml.hpp>
+#include <gspc/util/xml.hpp>
 
-namespace pnet
-{
-  namespace type
-  {
-    namespace signature
+
+
+    namespace gspc::pnet::type::signature
     {
       namespace
       {
         class printer
         {
         public:
-          printer (fhg::util::xml::xmlstream& os)
+          printer (util::xml::xmlstream& os)
             : _os (os)
           {}
           void _struct (std::pair<std::string, structure_type> const& s) const
@@ -43,7 +41,7 @@ namespace pnet
             traverse (*this, s);
           }
         private:
-          fhg::util::xml::xmlstream& _os;
+          util::xml::xmlstream& _os;
         };
       }
 
@@ -52,7 +50,7 @@ namespace pnet
       {}
       std::ostream& dump::operator() (std::ostream& os) const
       {
-        fhg::util::xml::xmlstream s (os);
+        util::xml::xmlstream s (os);
 
         traverse (printer (s), _structured);
 
@@ -63,12 +61,10 @@ namespace pnet
         return d (os);
       }
 
-      void dump_to ( fhg::util::xml::xmlstream& s
+      void dump_to ( util::xml::xmlstream& s
                    , structured_type const& structured
                    )
       {
         traverse (printer (s), structured);
       }
     }
-  }
-}

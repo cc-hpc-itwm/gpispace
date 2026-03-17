@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2014-2015,2021,2023,2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -7,7 +7,7 @@
 #include <limits>
 #include <string>
 
-namespace fhg
+namespace gspc
 {
   namespace util
   {

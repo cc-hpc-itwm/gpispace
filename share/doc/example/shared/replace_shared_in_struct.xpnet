@@ -1,0 +1,103 @@
+<!-- Copyright (C) 2026 Fraunhofer ITWM                            -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
+
+<!--
+  Demonstrate that replacing a shared field in a struct properly decrements
+  the reference count of the original shared value.
+
+  Sequence:
+  1. Create a struct with a shared field containing the original value
+  2. Process the struct, replacing the shared field with a different shared
+  3. Original shared should have refcount decremented and be cleaned up
+  4. Consume the modified struct (triggers cleanup of the replacement shared)
+-->
+
+<defun name="shared_replace_shared_in_struct">
+
+  <struct name="example_struct">
+    <field name="id" type="long"/>
+    <field name="data" type="shared_cleanup"/>
+  </struct>
+
+  <in name="original_value" type="int" place="original_value"/>
+  <in name="replacement_value" type="int" place="replacement_value"/>
+  <out name="result" type="int" place="cleanup"/>
+
+  <net>
+    <place name="original_value" type="int"/>
+    <place name="replacement_value" type="int"/>
+
+    <!-- Cleanup place receives int values when shared is cleaned up -->
+    <place name="cleanup" type="int" shared_sink="true"/>
+
+    <!-- Intermediate places for the struct -->
+    <place name="struct_with_original" type="example_struct"/>
+    <place name="struct_with_replacement" type="example_struct"/>
+
+    <!-- Create the initial struct with the original shared value -->
+    <transition name="create_struct">
+      <defun>
+        <in name="orig" type="int"/>
+        <out name="s" type="example_struct"/>
+        <module name="shared_replace_shared_in_struct"
+                function="create_struct (orig, s)">
+          <cinclude href="gspc/we/type/shared.hpp"/>
+          <cinclude href="iostream"/>
+          <code><![CDATA[
+            s.id = 1L;
+            s.data = gspc::we::type::shared {orig, "cleanup"};
+            std::cout << "Created struct with original shared: "
+                      << orig << std::endl;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="orig" place="original_value"/>
+      <connect-out port="s" place="struct_with_original"/>
+    </transition>
+
+    <!-- Replace the shared field in the struct with a different shared -->
+    <transition name="replace_shared_field">
+      <defun>
+        <in name="s_in" type="example_struct"/>
+        <in name="repl" type="int"/>
+        <out name="s_out" type="example_struct"/>
+        <module name="shared_replace_shared_in_struct"
+                function="replace_shared_field (s_in, repl, s_out)">
+          <cinclude href="gspc/we/type/shared.hpp"/>
+          <cinclude href="gspc/we/type/value/show.hpp"/>
+          <cinclude href="iostream"/>
+          <code><![CDATA[
+            std::cout << "Replacing shared field (original: "
+                      << gspc::pnet::type::value::show (s_in.data.value())
+                      << ") with new value: " << repl << std::endl;
+            s_out.id = s_in.id;
+            s_out.data = gspc::we::type::shared {repl, "cleanup"};
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="s_in" place="struct_with_original"/>
+      <connect-in port="repl" place="replacement_value"/>
+      <connect-out port="s_out" place="struct_with_replacement"/>
+    </transition>
+
+    <!-- Consume the final struct (triggers cleanup of replacement shared) -->
+    <transition name="consume_struct">
+      <defun>
+        <in name="s" type="example_struct"/>
+        <module name="shared_replace_shared_in_struct"
+                function="consume_struct (s)">
+          <cinclude href="gspc/we/type/value/show.hpp"/>
+          <cinclude href="iostream"/>
+          <code><![CDATA[
+            std::cout << "Consumed struct with id=" << s.id
+                      << ", replacement shared value: "
+                      << gspc::pnet::type::value::show (s.data.value())
+                      << std::endl;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="s" place="struct_with_replacement"/>
+    </transition>
+
+  </net>
+</defun>

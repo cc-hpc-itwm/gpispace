@@ -1,22 +1,21 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2013-2014,2016,2020-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/exception.hpp>
+#include <gspc/we/exception.hpp>
 
-#include <we/signature_of.hpp>
-#include <we/type/signature/show.hpp>
-#include <we/type/value/path/join.hpp>
-#include <we/type/value/show.hpp>
+#include <gspc/we/signature_of.hpp>
+#include <gspc/we/type/signature/show.hpp>
+#include <gspc/we/type/value/path/join.hpp>
+#include <gspc/we/type/value/show.hpp>
 
-#include <FMT/util-generic/join.hpp>
-#include <FMT/we/expr/token/show.hpp>
-#include <FMT/we/type/signature/show.hpp>
-#include <FMT/we/type/value/show.hpp>
+#include <gspc/util/join.formatter.hpp>
+#include <gspc/we/expr/token/show.formatter.hpp>
+#include <gspc/we/type/signature/show.formatter.hpp>
+#include <gspc/we/type/value/show.formatter.hpp>
 #include <fmt/core.h>
 
-namespace pnet
-{
-  namespace exception
+
+  namespace gspc::pnet::exception
   {
     type_error::type_error (std::string const& msg)
       : std::runtime_error {fmt::format ("type error: {}", msg)}
@@ -69,7 +68,7 @@ namespace pnet
       , _value (value)
       , _path (path)
     {}
-    eval::eval ( const ::expr::token::type& token
+    eval::eval ( const ::gspc::we::expr::token::type& token
                , type::value::value_type const& x
                )
       : type_error
@@ -83,13 +82,13 @@ namespace pnet
     {
       _values.push_back (x);
     }
-    eval::eval ( const ::expr::token::type& token
+    eval::eval ( const ::gspc::we::expr::token::type& token
                , type::value::value_type const& l
                , type::value::value_type const& r
                )
       : type_error
         { fmt::format ( "eval {} ({}, {})"
-                      , ::expr::token::show (token)
+                      , ::gspc::we::expr::token::show (token)
                       , type::value::show (l)
                       , type::value::show (r)
                       )
@@ -117,6 +116,22 @@ namespace pnet
       , _path (path)
     {}
 
+    generator_place_overflow::generator_place_overflow
+      ( std::string const& place_name
+      , std::string const& type_name
+      )
+      : std::runtime_error
+        { fmt::format
+          ( "generator place '{}' overflow:"
+            " {} maximum value reached"
+          , place_name
+          , type_name
+          )
+        }
+      , _place_name (place_name)
+      , _type_name (type_name)
+    {}
+
     namespace port
     {
       unknown::unknown ( std::string const& transition_name
@@ -133,4 +148,3 @@ namespace pnet
       {}
     }
   }
-}

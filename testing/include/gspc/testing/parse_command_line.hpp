@@ -1,0 +1,24 @@
+// Copyright (C) 2015,2020-2021,2023,2026 Fraunhofer ITWM
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+#pragma once
+
+#include <boost/program_options/options_description.hpp>
+#include <boost/program_options/variables_map.hpp>
+
+#include <string>
+#include <vector>
+
+namespace gspc::testing
+{
+  ::boost::program_options::variables_map parse_command_line
+    ( std::vector<std::string> args
+    , ::boost::program_options::options_description const& options
+    );
+
+  ::boost::program_options::variables_map parse_command_line
+    ( int argc
+    , char** argv
+    , ::boost::program_options::options_description const& options
+    );
+}

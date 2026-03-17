@@ -1,22 +1,21 @@
 math (EXPR size_slot "2 << 10")
 math (EXPR num_slots "20")
 
-fhg_add_test (NAME doc_example_stream_two_module_calls
+gspc_add_test (NAME doc_example_stream_two_module_calls
   SOURCES stream.two_module_calls.cpp
   USE_BOOST
   INCLUDE_DIRECTORIES
      PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../..
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
        --source-directory "${PROJECT_SOURCE_DIR}/share/doc/example/stream"
-       --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
+       --shared-directory "${GSPC_SHARED_DIRECTORY_FOR_TESTS}"
        --virtual-memory-startup-timeout 60
        --num-slots ${num_slots}
        --size-slot ${size_slot}
   LIBRARIES gspc
-            test-utilities
-            fhg-util
+            gspc_testing
+            gspc_util
             Boost::program_options
-            Boost::filesystem
             fmt
   REQUIRES_INSTALLATION
   REQUIRES_VIRTUAL_MEMORY
@@ -25,22 +24,21 @@ fhg_add_test (NAME doc_example_stream_two_module_calls
              # don't want to ignore
 )
 
-fhg_add_test (NAME doc_example_stream_one_module_call
+gspc_add_test (NAME doc_example_stream_one_module_call
   SOURCES stream.one_module_call.cpp
   USE_BOOST
   INCLUDE_DIRECTORIES
      PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../..
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
        --source-directory "${PROJECT_SOURCE_DIR}/share/doc/example/stream"
-       --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
+       --shared-directory "${GSPC_SHARED_DIRECTORY_FOR_TESTS}"
        --virtual-memory-startup-timeout 60
        --num-slots ${num_slots}
        --size-slot ${size_slot}
   LIBRARIES gspc
-            test-utilities
-            fhg-util
+            gspc_testing
+            gspc_util
             Boost::program_options
-            Boost::filesystem
             fmt
   REQUIRES_INSTALLATION
   REQUIRES_VIRTUAL_MEMORY

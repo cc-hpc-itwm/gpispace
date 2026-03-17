@@ -1,11 +1,13 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2013-2015,2020-2021,2023,2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/signature_of.hpp>
+#include <gspc/we/signature_of.hpp>
 
-#include <we/type/value/name_of.hpp>
+#include <gspc/we/type/shared.hpp>
+#include <gspc/we/type/value/name.hpp>
+#include <gspc/we/type/value/name_of.hpp>
 
-namespace pnet
+namespace gspc::pnet
 {
   namespace
   {
@@ -62,6 +64,12 @@ namespace pnet
         operator() (type::value::structured_type const& v) const
       {
         return structured ("struct", v);
+      }
+
+      type::signature::signature_type
+        operator() (we::type::shared const& s) const
+      {
+        return type::value::SHARED() + "_" + s.cleanup_place();
       }
 
       template<typename T>

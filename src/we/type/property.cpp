@@ -1,25 +1,23 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2012-2016,2020-2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/type/property.hpp>
+#include <gspc/we/type/property.hpp>
 
-#include <we/type/value/dump.hpp>
-#include <we/type/value/peek.hpp>
-#include <we/type/value/poke.hpp>
+#include <gspc/we/type/value/dump.hpp>
+#include <gspc/we/type/value/peek.hpp>
+#include <gspc/we/type/value/poke.hpp>
 
-#include <fhg/util/xml.hpp>
+#include <gspc/util/xml.hpp>
 
-#include <boost/optional.hpp>
+#include <optional>
 #include <boost/utility.hpp>
 
 #include <functional>
 #include <iterator>
 
-namespace we
-{
-  namespace type
-  {
-    namespace property
+
+
+    namespace gspc::we::type::property
     {
       type::type ()
         : _value (pnet::type::value::structured_type())
@@ -40,7 +38,7 @@ namespace we
         pnet::type::value::poke (path.begin(), path.end(), _value, val);
       }
 
-      ::boost::optional<value_type const&>
+      std::optional<std::reference_wrapper<value_type const>>
         type::get (path_type const& path) const
       {
         return pnet::type::value::peek (path.begin(), path.end(), _value);
@@ -50,12 +48,12 @@ namespace we
       {
         auto const value (get (path));
 
-        return !!value && ::boost::get<bool> (*value);
+        return !!value && ::boost::get<bool> (value->get());
       }
 
       namespace dump
       {
-        void dump (::fhg::util::xml::xmlstream& s, type const& p)
+        void dump (::gspc::util::xml::xmlstream& s, type const& p)
         {
           pnet::type::value::dump (s, p.value());
         }
@@ -63,12 +61,10 @@ namespace we
 
       std::ostream& operator << (std::ostream& s, type const& t)
       {
-        ::fhg::util::xml::xmlstream xs (s);
+        ::gspc::util::xml::xmlstream xs (s);
 
         dump::dump (xs, t);
 
         return s;
       }
     }
-  }
-}

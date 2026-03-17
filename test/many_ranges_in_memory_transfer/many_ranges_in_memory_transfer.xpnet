@@ -1,5 +1,5 @@
-<!-- Copyright (C) 2025 Fraunhofer ITWM        -->
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- Copyright (C) 2020-2021,2023-2024,2026 Fraunhofer ITWM             -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
 
 <defun name="many_ranges_in_memory_transfer">
   <in name="data" type="bytearray" place="data"/>
@@ -75,7 +75,7 @@
             }
           }
 
-          return we::type::literal::control();
+          return gspc::we::type::literal::control();
           ]]></code>
         </module>
       </defun>

@@ -1,21 +1,21 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2015-2016,2018-2024,2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <rif/entry_point.hpp>
+#include <gspc/rif/entry_point.hpp>
 
-#include <fhg/project_info.hpp>
+#include <gspc/configuration/info.hpp>
 
-#include <util-generic/boost/program_options/separated_argument_list_parser.hpp>
-#include <util-generic/boost/program_options/validators/existing_path.hpp>
-#include <util-generic/join.hpp>
-#include <util-generic/print_exception.hpp>
-#include <util-generic/read_lines.hpp>
+#include <gspc/util/boost/program_options/separated_argument_list_parser.hpp>
+#include <gspc/util/boost/program_options/validators/existing_path.hpp>
+#include <gspc/util/join.hpp>
+#include <gspc/util/print_exception.hpp>
+#include <gspc/util/read_lines.hpp>
 
-#include <rif/strategy/meta.hpp>
+#include <gspc/rif/strategy/meta.hpp>
 
 #include <boost/program_options.hpp>
 
-#include <FMT/util-generic/join.hpp>
+#include <gspc/util/join.formatter.hpp>
 #include <fmt/core.h>
 #include <iostream>
 #include <vector>
@@ -39,19 +39,19 @@ int main (int argc, char** argv)
 try
 {
   std::vector<std::string> const strategies
-    {fhg::rif::strategy::available_strategies()};
+    {gspc::rif::strategy::available_strategies()};
 
   ::boost::program_options::options_description options_description;
   options_description.add_options()
     ("help", "this message")
     ( option::entry_points_file
     , ::boost::program_options::value
-        <fhg::util::boost::program_options::existing_path>()->required()
+        <gspc::util::boost::program_options::existing_path>()->required()
     , "entry_points file"
     )
     ( option::strategy
     , ::boost::program_options::value<std::string>()->required()
-    , ("strategy: one of " + fhg::util::join (strategies, ", ").string()).c_str()
+    , ("strategy: one of " + gspc::util::join (strategies, ", ").string()).c_str()
     )
     ( option::strategy_parameters
     , ::boost::program_options::value<option::strategy_parameters_type>()
@@ -65,7 +65,7 @@ try
     ( ::boost::program_options::command_line_parser (argc, argv)
       .options (options_description)
     . extra_style_parser
-        ( fhg::util::boost::program_options::separated_argument_list_parser
+        ( gspc::util::boost::program_options::separated_argument_list_parser
             ("RIF", "FIR", option::strategy_parameters)
         )
       .run()
@@ -74,9 +74,9 @@ try
 
   if (vm.count ("help"))
   {
-    std::cerr << fhg::project_info ( std::string (argv[0])
-                                   + ": tear down the gspc rif deamon"
-                                   ) << "\n";
+    std::cerr << gspc::configuration::info ( std::string (argv[0])
+                                            + ": tear down the gspc rif deamon"
+                                            ) << "\n";
     std::cerr << options_description << "\n";
     return 0;
   }
@@ -92,18 +92,18 @@ try
           ( "invalid argument '{}' for --{}: one of {}"
           , strategy
           , option::strategy
-          , fhg::util::join (strategies, ", ")
+          , gspc::util::join (strategies, ", ")
           )
       };
   }
 
-  std::unordered_map<std::string, fhg::rif::entry_point> entry_points;
+  std::unordered_map<std::string, gspc::rif::entry_point> entry_points;
 
   for ( std::string line
-      : fhg::util::read_lines
+      : gspc::util::read_lines
           ( static_cast<std::filesystem::path>
             ( vm.at (option::entry_points_file)
-            . as<fhg::util::boost::program_options::existing_path>()
+            . as<gspc::util::boost::program_options::existing_path>()
             )
           )
       )
@@ -121,7 +121,7 @@ try
   }
 
   auto const result
-    ( fhg::rif::strategy::teardown
+    ( gspc::rif::strategy::teardown
         ( strategy
         , entry_points
         , vm.at (option::strategy_parameters)
@@ -133,14 +133,14 @@ try
   {
     std::cout << failure.first << ' ' << entry_points.at (failure.first) << '\n';
     std::cerr << failure.first << ": "
-              << fhg::util::exception_printer (failure.second) << "\n";
+              << gspc::util::exception_printer (failure.second) << "\n";
   }
 
   return result.second.empty() ? 0 : 1;
 }
 catch (...)
 {
-  std::cerr << "EX: " << fhg::util::current_exception_printer() << '\n';
+  std::cerr << "EX: " << gspc::util::current_exception_printer() << '\n';
 
   return 1;
 }

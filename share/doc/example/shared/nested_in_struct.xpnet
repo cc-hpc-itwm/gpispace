@@ -1,0 +1,67 @@
+<!-- Copyright (C) 2026 Fraunhofer ITWM                            -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
+
+<!--
+  Demonstrate a shared value nested in a struct field.
+
+  A struct is created where one of its fields is a shared value.
+  When the struct is consumed, the shared field is also consumed,
+  triggering cleanup.
+-->
+
+<defun name="shared_nested_in_struct">
+
+  <in name="value" type="int" place="value"/>
+  <in name="other" type="long" place="other"/>
+  <out name="result" type="int" place="cleanup"/>
+
+  <net>
+    <place name="value" type="int"/>
+    <place name="other" type="long"/>
+    <place name="cleanup" type="int" shared_sink="true"/>
+
+    <struct name="data_container">
+      <field name="regular_field" type="long"/>
+      <field name="shared_field" type="shared_cleanup"/>
+    </struct>
+
+    <place name="struct_with_shared" type="data_container"/>
+
+    <!-- Create a struct with a shared field -->
+    <transition name="create_struct">
+      <defun>
+        <in name="v" type="int"/>
+        <in name="o" type="long"/>
+        <out name="s" type="data_container"/>
+        <module name="shared_nested_in_struct"
+                function="create_struct (v, o, s)">
+          <cinclude href="gspc/we/type/shared.hpp"/>
+          <code><![CDATA[
+            s.regular_field = o;
+            s.shared_field = gspc::we::type::shared {v, "cleanup"};
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="v" place="value"/>
+      <connect-in port="o" place="other"/>
+      <connect-out port="s" place="struct_with_shared"/>
+    </transition>
+
+    <!-- Consume the struct (triggers cleanup of nested shared field) -->
+    <transition name="consume_struct">
+      <defun>
+        <in name="s" type="data_container"/>
+        <module name="shared_nested_in_struct"
+                function="consume_struct (s)">
+          <cinclude href="iostream"/>
+          <code><![CDATA[
+            std::cout << "Consumed struct with regular_field="
+                      << s.regular_field << std::endl;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="s" place="struct_with_shared"/>
+    </transition>
+
+  </net>
+</defun>

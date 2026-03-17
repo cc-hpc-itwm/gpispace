@@ -1,19 +1,18 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2021,2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/expr/type/Type.hpp>
+#include <gspc/we/expr/type/Type.hpp>
 
-#include <we/type/value/name.hpp>
+#include <gspc/we/type/value/name.hpp>
 
-#include <util-generic/functor_visitor.hpp>
-#include <util-generic/print_container.hpp>
+#include <gspc/util/functor_visitor.hpp>
+#include <gspc/util/print_container.hpp>
 
 #include <ostream>
 #include <tuple>
 
-namespace expr
-{
-  namespace type
+
+  namespace gspc::we::expr::type
   {
 #define IMPLEMENT_OPERATOR_STREAM(T, x, os)                     \
     std::ostream& operator<< (std::ostream& os, T const& x)
@@ -21,7 +20,7 @@ namespace expr
 #define IMPLEMENT_OPERATOR_STREAM_FALLBACK(T,S)                 \
     IMPLEMENT_OPERATOR_STREAM(T,,os)                            \
     {                                                           \
-      return os << ::pnet::type::value::S();                    \
+      return os << pnet::type::value::S();                    \
     }
 
     IMPLEMENT_OPERATOR_STREAM_FALLBACK (Control, CONTROL)
@@ -36,6 +35,12 @@ namespace expr
     IMPLEMENT_OPERATOR_STREAM_FALLBACK (String, STRING)
     IMPLEMENT_OPERATOR_STREAM_FALLBACK (Bitset, BITSET)
     IMPLEMENT_OPERATOR_STREAM_FALLBACK (Bytearray, BYTEARRAY)
+    IMPLEMENT_OPERATOR_STREAM_FALLBACK (Bigint, BIGINT)
+
+    IMPLEMENT_OPERATOR_STREAM (Shared, s, os)
+    {
+      return os << pnet::type::value::SHARED() << "_" << s.cleanup_place;
+    }
 
 #undef IMPLEMENT_OPERATOR_STREAM_FALLBACK
 
@@ -58,7 +63,7 @@ namespace expr
     {
       return os
         << "Struct "
-        << fhg::util::print_container
+        << util::print_container
            ( "[", ", ", "]", st._fields
            , [] (auto& s, auto const& field) -> decltype (s)
              {
@@ -80,16 +85,15 @@ namespace expr
         return os << *type;
       }
 
-      return os << fhg::util::print_container ("{", ", ", "}", types._types);
+      return os << util::print_container ("{", ", ", "}", types._types);
     }
 
 #undef IMPLEMENT_OPERATOR_STREAM
   }
-}
 
-namespace expr
-{
-  namespace type
+
+
+  namespace gspc::we::expr::type
   {
 #define IMPLEMENT_OPERATOR_EQUAL(T, lhs, rhs)           \
     bool operator!= (T const& _lhs, T const& _rhs)      \
@@ -123,6 +127,16 @@ namespace expr
     IMPLEMENT_LITERAL_OPERATORS (String)
     IMPLEMENT_LITERAL_OPERATORS (Bitset)
     IMPLEMENT_LITERAL_OPERATORS (Bytearray)
+    IMPLEMENT_LITERAL_OPERATORS (Bigint)
+
+    IMPLEMENT_OPERATOR_EQUAL (Shared, lhs, rhs)
+    {
+      return lhs.cleanup_place == rhs.cleanup_place;
+    }
+    IMPLEMENT_OPERATOR_LESS (Shared, lhs, rhs)
+    {
+      return lhs.cleanup_place < rhs.cleanup_place;
+    }
 
 #undef IMPLEMENT_LITERAL_OPERATORS
 
@@ -164,11 +178,10 @@ namespace expr
 #undef IMPLEMENT_OPERATOR_LESS
 #undef IMPLEMENT_OPERATOR_EQUAL
   }
-}
 
-namespace expr
-{
-  namespace type
+
+
+  namespace gspc::we::expr::type
   {
     template<> ListT<Type>::ListT (Type element)
       : _element (element)
@@ -206,7 +219,7 @@ namespace expr
     {
       return _types.empty();
     }
-    template<> ::boost::optional<Type> TypesT<Type>::singleton() const
+    template<> std::optional<Type> TypesT<Type>::singleton() const
     {
       if (_types.size() == 1)
       {
@@ -220,11 +233,10 @@ namespace expr
       return _types.size() > 1;
     }
   }
-}
 
-namespace expr
-{
-  namespace type
+
+
+  namespace gspc::we::expr::type
   {
     Type Any()
     {
@@ -233,7 +245,7 @@ namespace expr
 
     bool is_any (Type const& type)
     {
-      return fhg::util::visit<bool>
+      return util::visit<bool>
         ( type
         , [] (Types const& types)
           {
@@ -247,7 +259,7 @@ namespace expr
     }
     bool is_singleton (Type const& type)
     {
-      return fhg::util::visit<bool>
+      return util::visit<bool>
         ( type
         , [] (Types const& types)
           {
@@ -261,7 +273,7 @@ namespace expr
     }
     bool is_multi (Type const& type)
     {
-      return fhg::util::visit<bool>
+      return util::visit<bool>
         ( type
         , [] (Types const& types)
           {
@@ -274,4 +286,3 @@ namespace expr
         );
     }
   }
-}

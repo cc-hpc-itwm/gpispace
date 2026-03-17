@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2021,2023-2024,2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <aggregate_sum/parse_parameters_from_commandline.hpp>
@@ -6,7 +6,7 @@
 #include <aggregate_sum/Parameters.hpp>
 #include <aggregate_sum/Workflow.hpp>
 
-#include <util-generic/print_exception.hpp>
+#include <gspc/util/print_exception.hpp>
 
 #include <cstdlib>
 #include <iostream>
@@ -35,7 +35,7 @@ try
 }
 catch (...)
 {
-  std::cerr << "FAILURE: " << fhg::util::current_exception_printer() << std::endl;
+  std::cerr << "FAILURE: " << gspc::util::current_exception_printer() << std::endl;
 
   return EXIT_FAILURE;
 }

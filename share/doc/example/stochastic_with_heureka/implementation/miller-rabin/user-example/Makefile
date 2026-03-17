@@ -16,7 +16,7 @@ LDFLAGS+=-Wl,-rpath-link $(GSPC_PREFIX)/external/boost/lib
 LDFLAGS+=-Wl,-rpath $(GSPC_PREFIX)/lib
 LDFLAGS+=-Wl,-rpath $(GMP_PREFIX)/lib
 LDFLAGS+=-Wl,--no-undefined
-LDFLAGS+=-lwe-dev
+LDFLAGS+=-lgspc_we
 LDFLAGS+=-lgmp
 LDFLAGS+=-lgmpxx
 

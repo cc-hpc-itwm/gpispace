@@ -1,0 +1,43 @@
+<!-- Copyright (C) 2026 Fraunhofer ITWM                            -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
+
+<!-- Example demonstrating generator places for unique task ID
+     assignment. Each task_data string token is paired with a
+     unique ID from a generator place into a task struct. -->
+
+<defun name="assign_task_ids">
+
+  <struct name="task">
+    <field name="id" type="unsigned long"/>
+    <field name="data" type="string"/>
+  </struct>
+
+  <in name="task_data" type="string" place="task_data"/>
+  <out name="task" type="task" place="task"/>
+
+  <net>
+
+    <place name="task_data" type="string"/>
+    <place name="id_generator" type="unsigned long"
+                               generator="true"/>
+    <place name="task" type="task"/>
+
+    <!-- Assign unique IDs to tasks -->
+    <transition name="assign">
+      <defun>
+        <in name="data" type="string"/>
+        <in name="id" type="unsigned long"/>
+        <out name="task" type="task"/>
+        <expression>
+          ${task.id} := ${id};
+          ${task.data} := ${data};
+        </expression>
+      </defun>
+      <connect-in port="data" place="task_data"/>
+      <connect-in port="id" place="id_generator"/>
+      <connect-out port="task" place="task"/>
+    </transition>
+
+  </net>
+
+</defun>

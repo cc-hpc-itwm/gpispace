@@ -1,19 +1,21 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2015-2017,2020-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <drts/scoped_rifd.hpp>
+#include <gspc/drts/scoped_rifd.hpp>
 
-#include <drts/drts.hpp>
-#include <drts/private/option.hpp>
-#include <drts/private/pimpl.hpp>
-#include <drts/private/rifd_entry_points_impl.hpp>
+#include <gspc/drts/drts.hpp>
+#include <gspc/drts/private/option.hpp>
+#include <gspc/drts/private/pimpl.hpp>
+#include <gspc/drts/private/rifd_entry_points_impl.hpp>
 
-#include <util-generic/read_lines.hpp>
-#include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
-#include <util-generic/wait_and_collect_exceptions.hpp>
+#include <gspc/util/read_lines.hpp>
+#include <gspc/util/scoped_boost_asio_io_service_with_threads.hpp>
+#include <gspc/util/wait_and_collect_exceptions.hpp>
 
-#include <rif/client.hpp>
-#include <rif/strategy/meta.hpp>
+#include <gspc/rif/client.hpp>
+#include <gspc/rif/strategy/meta.hpp>
+
+#include <optional>
 
 #include <boost/serialization/unordered_map.hpp>
 
@@ -29,7 +31,7 @@ namespace gspc
       (strategy, std::pair<std::string, std::vector<std::string>>)
     PIMPL_IMPLEMENTATION (hostnames, std::vector<std::string>)
     PIMPL_IMPLEMENTATION (hostname, std::string)
-    PIMPL_IMPLEMENTATION (port, ::boost::optional<unsigned short>)
+    PIMPL_IMPLEMENTATION (port, std::optional<unsigned short>)
 
     strategy::strategy (::boost::program_options::variables_map const& vm)
       : _ ( new implementation
@@ -41,7 +43,7 @@ namespace gspc
     {}
 
     hostnames::hostnames (::boost::program_options::variables_map const& vm)
-      : _ (new implementation (fhg::util::read_lines (require_nodefile (vm))))
+      : _ (new implementation (gspc::util::read_lines (require_nodefile (vm))))
     {}
     hostnames::hostnames (std::vector<std::string> const& hostnames_)
       : _ (new implementation (hostnames_))
@@ -56,7 +58,7 @@ namespace gspc
   }
 
   using entry_point_by_host =
-    std::unordered_map<std::string, fhg::rif::entry_point>;
+    std::unordered_map<std::string, gspc::rif::entry_point>;
 
   struct rifds::implementation
   {
@@ -134,11 +136,11 @@ namespace gspc
                 , std::unordered_map<std::string, std::exception_ptr>
                 , std::unordered_map<std::string, std::string>
                 > const boot
-        ( fhg::rif::strategy::bootstrap
+        ( gspc::rif::strategy::bootstrap
           ( _strategy
           , no_duplicates
           , _port
-          , ::boost::filesystem::path {_installation.gspc_home().string()}
+          , _installation.gspc_home()
           , _parameters
           , out
           )
@@ -176,7 +178,7 @@ namespace gspc
               > teardown (entry_point_by_host const entry_points)
     {
       auto const result
-        (fhg::rif::strategy::teardown (_strategy, entry_points, _parameters));
+        (gspc::rif::strategy::teardown (_strategy, entry_points, _parameters));
 
       for (auto const& entry_point : entry_points)
       {
@@ -198,7 +200,7 @@ namespace gspc
              , std::unordered_map<std::string, std::exception_ptr>
              >
       execute ( std::unordered_set<std::string> const& hostnames
-              , ::boost::filesystem::path const& command
+              , std::filesystem::path const& command
               , std::vector<std::string> const& arguments
               , std::unordered_map<std::string, std::string> const& environment
               ) const
@@ -207,9 +209,9 @@ namespace gspc
                , std::unordered_map<std::string, std::exception_ptr>
                > results;
 
-      fhg::util::scoped_boost_asio_io_service_with_threads io_service (64);
+      gspc::util::scoped_boost_asio_io_service_with_threads io_service (64);
 
-      std::list<fhg::rif::client> clients;
+      std::list<gspc::rif::client> clients;
       std::unordered_map<std::string, std::future<std::vector<std::string>>> futures;
       for (std::string const& hostname : hostnames)
       {
@@ -253,7 +255,7 @@ namespace gspc
 
     std::string _strategy;
     std::vector<std::string> _parameters;
-    ::boost::optional<unsigned short> _port;
+    std::optional<unsigned short> _port;
     installation _installation;
 
     entry_point_by_host _entry_points;
@@ -342,7 +344,7 @@ namespace gspc
            >
     rifds::execute
       ( std::unordered_set<std::string> const& hostnames
-      , ::boost::filesystem::path const& command
+      , std::filesystem::path const& command
       , std::vector<std::string> const& arguments
       , std::unordered_map<std::string, std::string> const& environment
       ) const
@@ -364,7 +366,7 @@ namespace gspc
     {
       teardown();
 
-      fhg::util::throw_collected_exceptions (values (failed));
+      gspc::util::throw_collected_exceptions (values (failed));
     }
   }
   scoped_rifd::~scoped_rifd()
@@ -390,7 +392,7 @@ namespace gspc
     {
       teardown();
 
-      fhg::util::throw_collected_exceptions (values (failed));
+      gspc::util::throw_collected_exceptions (values (failed));
     }
   }
   scoped_rifds::~scoped_rifds()

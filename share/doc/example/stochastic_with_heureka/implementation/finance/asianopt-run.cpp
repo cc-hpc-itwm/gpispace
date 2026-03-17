@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2020-2021,2023-2024,2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <implementation/finance/asianopt.hpp>
@@ -107,7 +107,7 @@ try
           //! \todo use validators instead of throwing ctor
           try
           {
-            return we::type::bytearray
+            return gspc::we::type::bytearray
               ( asianopt::Parameters
                 ( vm[option::S].as<double>()
                 , vm[option::K].as<double>()

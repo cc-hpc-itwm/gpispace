@@ -5,27 +5,60 @@ project (gspc VERSION ${GSPC_VERSION} LANGUAGES CXX)
 set (FMT_DIR "${CMAKE_BINARY_DIR}/3rdparty/fmt")
 add_subdirectory (3rdparty)
 
-# Sane default build type with optimizations enabled.
-if (NOT CMAKE_BUILD_TYPE)
-  set (_default_build_type "Release")
-  message (STATUS "Defaulting to CMAKE_BUILD_TYPE='${_default_build_type}'.")
-  set (CMAKE_BUILD_TYPE "${_default_build_type}" CACHE
-    STRING "Specifies the build type on single-configuration generators." FORCE
-  )
-endif()
-
 # Do not deploy with relocatable bundle by default: Users/application
 # developers need to be aware of how they deploy, so the default
 # should be as plain as possible.
 # \note Done before including cmake/add_macros.cmake to overwrite default
 # given there.
-if (NOT INSTALL_DO_NOT_BUNDLE)
-  set (INSTALL_DO_NOT_BUNDLE ON CACHE BOOL "")
+# Compatibility shim for deprecated CMake cache variables.
+function (_gspc_dep_var
+            old_name
+            new_name
+            cache_type
+         )
+  if (DEFINED ${old_name})
+    message (DEPRECATION
+        "CMake cache variable '${old_name}' is deprecated and will be "
+        "removed by the end of 2026. Use '${new_name}' instead."
+      )
+    if (NOT DEFINED ${new_name})
+      set (${new_name} "${${old_name}}" CACHE ${cache_type} "" FORCE)
+      set (${new_name} "${${old_name}}" PARENT_SCOPE)
+    endif()
+  endif()
+endfunction()
+
+_gspc_dep_var (INSTALL_DO_NOT_BUNDLE
+  GSPC_INSTALL_DO_NOT_BUNDLE
+  BOOL
+  )
+_gspc_dep_var (INSTALL_RPATH_DIRS
+  GSPC_INSTALL_RPATH_DIRS
+  STRING
+  )
+_gspc_dep_var (SHARED_DIRECTORY_FOR_TESTS
+  GSPC_SHARED_DIRECTORY_FOR_TESTS
+  PATH
+  )
+_gspc_dep_var (TESTING_RIF_STRATEGY
+  GSPC_TESTING_RIF_STRATEGY
+  STRING
+  )
+_gspc_dep_var (TESTING_RIF_STRATEGY_PARAMETERS
+  GSPC_TESTING_RIF_STRATEGY_PARAMETERS
+  STRING
+  )
+_gspc_dep_var (IML_TESTING_BEEGFS_DIRECTORY
+  GSPC_IML_TESTING_BEEGFS_DIRECTORY
+  PATH
+  )
+
+if (NOT GSPC_INSTALL_DO_NOT_BUNDLE)
+  set (GSPC_INSTALL_DO_NOT_BUNDLE ON CACHE BOOL "")
 endif()
 
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
-list (APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/modules")
 list (APPEND CMAKE_MODULE_PATH "$ENV{CMAKE_MODULE_PATH}")
 
 option (GSPC_WITH_MONITOR_APP "Enable the 'gspc-monitor' execution and logging \
@@ -36,85 +69,43 @@ option (GSPC_WITH_IML
   ON
 )
 
+option (GSPC_WITH_EXPRESSION_SHELL
+  "Enable the gspc-expression-shell utility."
+  OFF
+)
+
 include (GNUInstallDirs)
 
 set (GSPC_SHARE_INSTALL_DIR "${CMAKE_INSTALL_DATAROOTDIR}/GPISpace")
+set (GSPC_LIBRARY_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}")
 set (GSPC_CONFIG_INSTALL_DIR "${GSPC_SHARE_INSTALL_DIR}/cmake")
 
-set (BUILD_TESTING OFF CACHE BOOL "")
+file (MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/include/gspc")
+configure_file (
+    "${PROJECT_SOURCE_DIR}/include/gspc/installation_path.hpp.in"
+    "${PROJECT_BINARY_DIR}/include/gspc/installation_path.hpp"
+    @ONLY
+  )
 
-# TODO: temporary fix, should be removed once everything is standalone
-set (UTIL_CMAKE_INSTALL ON)
-set (UTIL_GENERIC_INSTALL ON)
-set (UTIL_RPC_INSTALL ON)
-set (UTIL_GENERIC_BUILD_TESTING OFF CACHE BOOL "Build util-generic tests")
-set (UTIL_RPC_BUILD_TESTING OFF CACHE BOOL "Build util-rpc tests")
-if (GSPC_WITH_MONITOR_APP)
-  set (UTIL_QT_INSTALL ON)
-  set (UTIL_QT_BUILD_TESTING OFF CACHE BOOL "Build util-qt tests")
-endif()
-if (GSPC_WITH_IML)
-  set (IML_INSTALL ON)
-  set (IML_BUILD_TESTING ON CACHE BOOL "Build iml tests")
-endif()
+set (GSPC_TEST OFF CACHE BOOL "Build GPI-Space tests")
 
 add_subdirectory (cmake)
 
-include (util-cmake/add_macros)
-include (util-cmake/beautify_find_boost)
-include (util-cmake/require_compiler_version)
-
-include (CTest)
-
-if (BUILD_TESTING)
-  set (required_string_option_sentinel_value "required_string_option_sentinel_value-NOT_SET")
-
-  SET (SHARED_DIRECTORY_FOR_TESTS ${required_string_option_sentinel_value} CACHE PATH
-    "shared directory for tests"
-  )
-  if (SHARED_DIRECTORY_FOR_TESTS STREQUAL ${required_string_option_sentinel_value})
-    message (FATAL_ERROR "required variable SHARED_DIRECTORY_FOR_TESTS not set")
-  endif()
-
-  # The strategy tests use to start gspc-rifd.
-  SET (TESTING_RIF_STRATEGY "ssh"
-    CACHE STRING "strategy to use for starting scoped rif daemons"
-  )
-  # Additional options for the gspc-rifd startup strategy.
-  SET (TESTING_RIF_STRATEGY_PARAMETERS ""
-    CACHE STRING "strategy parameters to use for starting scoped rif daemons"
-  )
-
-  if (GSPC_WITH_IML)
-    set (IML_TESTING_RIF_STRATEGY ${TESTING_RIF_STRATEGY}
-      CACHE STRING
-      "FORCE-set by GPI-Space, modify TESTING_RIF_STRATEGY instead."
-      FORCE
-    )
-    set (IML_TESTING_RIF_STRATEGY_PARAMETERS ${TESTING_RIF_STRATEGY_PARAMETERS}
-      CACHE STRING
-      "FORCE-set by GPI-Space, modify TESTING_RIF_STRATEGY_PARAMETERS instead."
-      FORCE
-    )
-    # Might not be a BeeGFS directory, but IML will check that.
-    set (IML_TESTING_BEEGFS_DIRECTORY ${SHARED_DIRECTORY_FOR_TESTS}
-      CACHE PATH
-      "(Shared) directory to use for BeeGFS tests."
-    )
-  endif()
-endif()
+include (add_macros)
+include (add_unit_test)
+include (beautify_find_boost)
 
 set (Boost_NO_SYSTEM_PATHS ON)
 
-if (NOT FHG_ASSERT_MODE)
+if (NOT GSPC_ASSERT_MODE)
   if (CMAKE_BUILD_TYPE STREQUAL "Release")
-    set (FHG_ASSERT_MODE 0 CACHE STRING "FHG_ASSERT_MODE")
+    set (GSPC_ASSERT_MODE 0 CACHE STRING "GSPC_ASSERT_MODE")
   else()
-    set (FHG_ASSERT_MODE 1 CACHE STRING "FHG_ASSERT_MODE")
+    set (GSPC_ASSERT_MODE 1 CACHE STRING "GSPC_ASSERT_MODE")
   endif()
 endif()
 
-add_definitions ("-DFHG_ASSERT_MODE=${FHG_ASSERT_MODE}")
+add_definitions ("-DGSPC_ASSERT_MODE=${GSPC_ASSERT_MODE}")
 
 set (PNETC_LIB_DIR "${GSPC_SHARE_INSTALL_DIR}/xml/lib")
 
@@ -130,14 +121,22 @@ add_definitions (-DBOOST_THREAD_THROW_IF_PRECONDITION_NOT_SATISFIED)
 add_definitions ("-DBOOST_MPL_CFG_NO_PREPROCESSED_HEADERS")
 add_definitions ("-DBOOST_MPL_LIMIT_VECTOR_SIZE=40")
 
-require_compiler_version_ge (COMPILER "GNU" VERSION 8.5)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.5")
+    message (FATAL_ERROR
+      "${PROJECT_NAME} requires compiler GNU"
+      " to be of version >= 8.5"
+      " (got ${CMAKE_CXX_COMPILER_VERSION})."
+    )
+  endif()
+endif()
 
 set (_boost_minimum_version 1.61.0)
 set (_boost_maximum_version 1.63.0)
 find_boost (${_boost_minimum_version} REQUIRED COMPONENTS
   chrono
+  coroutine
   date_time
-  filesystem
   iostreams
   program_options
   random
@@ -153,6 +152,9 @@ if (Boost_VERSION VERSION_GREATER ${_boost_maximum_version})
 endif()
 
 find_package (HWLOC REQUIRED)
+if (GSPC_WITH_EXPRESSION_SHELL)
+  find_package (LibReadline REQUIRED)
+endif()
 find_package (LibRT REQUIRED)
 if (GSPC_WITH_MONITOR_APP)
   find_package (Qt5 COMPONENTS Core Gui Widgets Xml Network REQUIRED)
@@ -162,7 +164,6 @@ find_package (OpenSSL REQUIRED)
 
 include (CompilerFlags)
 include (InstallRequiredSystemLibraries)
-include (fhg_test_macros)
 
 include (gspc_add_executable)
 include (gspc_add_library)
@@ -170,11 +171,16 @@ include (gspc_add_library)
 add_library (GPISpace-header-only INTERFACE)
 add_library (GPISpace::header-only ALIAS GPISpace-header-only)
 target_include_directories (GPISpace-header-only
-  INTERFACE "${PROJECT_SOURCE_DIR}/include"
+  INTERFACE
+    "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>"
+    "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 
 include_directories ("${PROJECT_SOURCE_DIR}/share")
 include_directories ("${PROJECT_SOURCE_DIR}/src")
+include_directories ("${PROJECT_SOURCE_DIR}")
+include_directories ("${PROJECT_BINARY_DIR}/include")
 
 if (CMAKE_USE_PTHREADS_INIT)
   link_libraries (${CMAKE_THREAD_LIBS_INIT} rt)
@@ -198,40 +204,49 @@ check_cxx_source_runs ([[
 )
 
 bundle_boost (DESTINATION "external/boost")
-list (APPEND INSTALL_RPATH_DIRS "lib")
+list (APPEND GSPC_INSTALL_RPATH_DIRS "${GSPC_LIBRARY_INSTALL_DIR}")
 
-include (${PROJECT_SOURCE_DIR}/meta/meta.cmake OPTIONAL)
-
-add_subdirectory (external)
 add_subdirectory (share)
 add_subdirectory (src)
-add_subdirectory (test)
-add_subdirectory (testing)
-add_subdirectory (system_test)
 
-add_test (NAME installed_headers_are_selfcontained
-  COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/test/installed_headers_are_selfcontained.sh"
-          "${CMAKE_INSTALL_PREFIX}"
-          "${CMAKE_CXX_COMPILER}"
-          "-DGSPC_WITH_IML=$<BOOL:${GSPC_WITH_IML}>"
-)
-set_property (TEST installed_headers_are_selfcontained
-  APPEND PROPERTY LABELS "requires_installation"
-)
-set_property (TEST installed_headers_are_selfcontained
-  APPEND PROPERTY REQUIRED_FILES ${FILES_REQUIRED_IN_INSTALLATION}
-)
+if (GSPC_TEST)
+  include (CTest)
 
-find_program (_xmllint_exe NAMES "xmllint")
-if (_xmllint_exe)
-  add_test (NAME xpnets_are_valid
-    COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/test/xpnets_are_valid.sh"
-            "${CMAKE_CURRENT_SOURCE_DIR}"
-            "${_xmllint_exe}"
+  set (required_string_option_sentinel_value "required_string_option_sentinel_value-NOT_SET")
+
+  SET (GSPC_SHARED_DIRECTORY_FOR_TESTS
+    ${required_string_option_sentinel_value}
+    CACHE PATH
+    "shared directory for tests"
   )
-  set_property (TEST xpnets_are_valid
-    APPEND PROPERTY RUN_SERIAL 1
+  if (GSPC_SHARED_DIRECTORY_FOR_TESTS STREQUAL
+      ${required_string_option_sentinel_value})
+    message (FATAL_ERROR
+      "required variable GSPC_SHARED_DIRECTORY_FOR_TESTS not set"
+    )
+  endif()
+
+  # The strategy tests use to start gspc-rifd.
+  SET (GSPC_TESTING_RIF_STRATEGY "ssh"
+    CACHE STRING "strategy to use for starting scoped rif daemons"
   )
+  # Additional options for the gspc-rifd startup strategy.
+  SET (GSPC_TESTING_RIF_STRATEGY_PARAMETERS ""
+    CACHE STRING "strategy parameters to use for starting scoped rif daemons"
+  )
+
+  if (GSPC_WITH_IML)
+    # Might not be a BeeGFS directory, but IML will check that.
+    set (GSPC_IML_TESTING_BEEGFS_DIRECTORY
+      ${GSPC_SHARED_DIRECTORY_FOR_TESTS}
+      CACHE PATH
+      "(Shared) directory to use for BeeGFS tests."
+    )
+  endif()
+
+  add_subdirectory (test)
+  add_subdirectory (testing)
+  add_subdirectory (system_test)
 endif()
 
 install (
@@ -280,9 +295,15 @@ install (FILES "${CMAKE_CURRENT_BINARY_DIR}/GPISpaceConfig.cmake"
   DESTINATION "${GSPC_CONFIG_INSTALL_DIR}"
 )
 
-install (
-  DIRECTORY
-    "${PROJECT_SOURCE_DIR}/include/"
+install (FILES
+  include/gspc/detail/export.hpp
+  include/gspc/detail/export.ipp
   DESTINATION
-    "${CMAKE_INSTALL_INCLUDEDIR}"
+    "${CMAKE_INSTALL_INCLUDEDIR}/gspc/detail"
+)
+install (FILES
+  include/gspc/iml/macros.hpp
+  include/gspc/iml/stubs.hpp
+  DESTINATION
+    "${CMAKE_INSTALL_INCLUDEDIR}/gspc/iml"
 )

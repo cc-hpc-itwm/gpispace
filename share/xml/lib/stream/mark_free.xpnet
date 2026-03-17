@@ -1,5 +1,5 @@
-<!-- Copyright (C) 2025 Fraunhofer ITWM        -->
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- Copyright (C) 2014,2021,2023-2024 Fraunhofer ITWM             -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
 
 <defun>
   <include-structs href="work_package.xpnet"/>
@@ -23,7 +23,7 @@
   </memory-put>
   <module name="stream"
           function="free (work_package, ptr_flag)">
-    <cinclude href="drts/stream.hpp"/>
+    <cinclude href="gspc/drts/stream.hpp"/>
     <cxx flag="--std=c++17"/>
     <ld flag="-lgspc"/>
     <code><![CDATA[

@@ -1,5 +1,5 @@
-<!-- Copyright (C) 2025 Fraunhofer ITWM        -->
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- Copyright (C) 2022-2023,2026 Fraunhofer ITWM                  -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
 
 <defun name="preferences_and_multimodules">
   <in name="num_tasks" type="long" place="num_tasks"/>

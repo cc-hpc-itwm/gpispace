@@ -1,7 +1,0 @@
-<!-- Copyright (C) 2025 Fraunhofer ITWM        -->
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-
-<defun>
-  <in name="in" type="control"/>
-  <module name="dummy" function="dummy"/>
-</defun>

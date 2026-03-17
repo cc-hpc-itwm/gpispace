@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright (C) 2025 Fraunhofer ITWM
+# Copyright (C) 2019-2024,2026 Fraunhofer ITWM
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 set -euo pipefail
@@ -18,7 +18,7 @@ cxx_args+=("--std=c++17")
 cxx_args+=("-I" "${install_prefix}/include")
 cxx_args+=("-I" "${install_prefix}/external/boost/include")
 
-width=$(cd "${install_prefix}/include"; find -name "*" -type f -not -path "*/util-qt/*" | sed -e 's,.,X,g' | sort | tail -n 1 | wc -c)
+width=$(cd "${install_prefix}/include"; find -name "*" -type f -not -path "*/gspc/util/qt/*" | sed -e 's,.,X,g' | sort | tail -n 1 | wc -c)
 
 process_pool_locks=()
 outputs=()
@@ -46,7 +46,7 @@ do
   pids+=(${!})
 
   lock_id=$(((lock_id + 1) % ${#process_pool_locks[@]}))
-done < <(cd "${install_prefix}/include"; find -name "*" -type f -not -path "*/util-qt/*" | grep -v 'ipp$')
+done < <(cd "${install_prefix}/include"; find -name "*" -type f -not -path "*/gspc/util/qt/*" | grep -v 'ipp$')
 
 ec=0
 for ((i = 0; i < ${#pids[@]}; ++i))

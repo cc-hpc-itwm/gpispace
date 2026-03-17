@@ -1,14 +1,13 @@
-fhg_add_test (NAME doc_example_credit
+gspc_add_test (NAME doc_example_credit
   SOURCES test.cpp
   USE_BOOST
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
        --source-directory "${PROJECT_SOURCE_DIR}/share/doc/example/credit"
-       --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
+       --shared-directory "${GSPC_SHARED_DIRECTORY_FOR_TESTS}"
   LIBRARIES gspc
-            test-utilities
-            fhg-util
+            gspc_testing
+            gspc_util
             Boost::program_options
-            Boost::filesystem
   REQUIRES_INSTALLATION
   START_SCOPED_RIF
 )

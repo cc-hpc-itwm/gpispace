@@ -1,11 +1,11 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2020-2021,2023,2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <miller-rabin/util.hpp>
 
 #include <util/print_exception.hpp>
 
-#include <we/type/value/show.hpp>
+#include <gspc/we/type/value/show.hpp>
 
 #include <cstddef>
 #include <iostream>
@@ -21,8 +21,8 @@ try
     return 1;
   }
 
-  std::cout << pnet::type::value::show
-                 ( pnet::type::value::value_type
+  std::cout << gspc::pnet::type::value::show
+                 ( gspc::pnet::type::value::value_type
                      (miller_rabin::generate_user_data (argv[1]))
                  )
             << std::endl;

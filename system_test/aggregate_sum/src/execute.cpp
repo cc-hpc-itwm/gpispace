@@ -1,15 +1,16 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2021,2023-2024,2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <aggregate_sum/execute.hpp>
 #include <aggregate_sum/Workflow.hpp>
 
-#include <drts/client.hpp>
-#include <drts/drts.hpp>
-#include <drts/scoped_rifd.hpp>
+#include <gspc/drts/client.hpp>
+#include <gspc/drts/drts.hpp>
+#include <gspc/drts/scoped_rifd.hpp>
 
-#include <util-generic/executable_path.hpp>
+#include <gspc/util/executable_path.hpp>
 
+#include <filesystem>
 #include <string>
 
 namespace aggregate_sum
@@ -34,8 +35,8 @@ namespace aggregate_sum
 
   WorkflowResult execute (Parameters parameters, Workflow const& workflow)
   {
-    auto const aggregate_sum_installation_path
-      {fhg::util::executable_path().parent_path().parent_path()};
+    std::filesystem::path const aggregate_sum_installation_path
+      {gspc::util::executable_path().parent_path().parent_path().string()};
 
     gspc::installation installation {parameters};
     gspc::scoped_rifds rifds

@@ -1,56 +1,50 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2020,2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <drts/drts_iml.hpp>
+#include <gspc/drts/drts_iml.hpp>
 
-#include <we/type/value.hpp>
-#include <we/type/value/poke.hpp>
+#include <gspc/we/type/value.hpp>
+#include <gspc/we/type/value/poke.hpp>
 
-#include <sstream>
-
-namespace gspc
+namespace gspc::pnet::type::value
 {
-  namespace pnet
+  template<>
+    value_type
+      to_value<gspc::iml::AllocationHandle>
+        (gspc::iml::AllocationHandle const& handle)
   {
-    namespace vmem
-    {
-      ::pnet::type::value::value_type handle_to_value
-        (iml::AllocationHandle handle)
-      {
-        return handle.to_string();
-      }
+    return handle.to_string();
+  }
 
-      ::pnet::type::value::value_type memory_region_to_value
-        (iml::MemoryRegion region)
-      {
-        ::pnet::type::value::value_type result;
+  template<>
+    value_type
+      to_value<gspc::iml::MemoryRegion>
+        (gspc::iml::MemoryRegion const& region)
+  {
+    value_type result;
 
-        ::pnet::type::value::poke
-            ("handle.name", result, handle_to_value (region.allocation));
-        ::pnet::type::value::poke ("offset", result, region.offset);
-        ::pnet::type::value::poke ("size", result, region.size);
+    poke ( "handle.name"
+         , result
+         , to_value (region.allocation)
+         );
+    poke ("offset", result, region.offset);
+    poke ("size", result, region.size);
 
-        return result;
-      }
+    return result;
+  }
 
-      ::pnet::type::value::value_type stream_slot_to_value
-        ( iml::MemoryRegion const& metadata
-        , iml::MemoryRegion const& data
-        , char const flag
-        , std::size_t const id
-        )
-      {
-        ::pnet::type::value::value_type result;
+  template<>
+    value_type
+      to_value<gspc::StreamSlot>
+        (gspc::StreamSlot const& slot)
+  {
+    value_type result;
 
-        ::pnet::type::value::poke
-            ("meta", result, memory_region_to_value (metadata));
-        ::pnet::type::value::poke
-            ("data", result, memory_region_to_value (data));
-        ::pnet::type::value::poke ("flag", result, flag);
-        ::pnet::type::value::poke ("id", result, id);
+    poke ("meta", result, to_value (slot.metadata));
+    poke ("data", result, to_value (slot.data));
+    poke ("flag", result, slot.flag);
+    poke ("id", result, slot.id);
 
-        return result;
-      }
-    }
+    return result;
   }
 }

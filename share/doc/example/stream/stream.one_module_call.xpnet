@@ -1,5 +1,5 @@
-<!-- Copyright (C) 2025 Fraunhofer ITWM        -->
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- Copyright (C) 2014-2015,2021,2023-2024,2026 Fraunhofer ITWM   -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
 
 <defun name="stream_one_module_call">
   <include-structs href="stream/work_package.xpnet"/>
@@ -101,13 +101,13 @@
                                   , statistic
                                   , package
                                   )">
-          <cinclude href="drts/stream.hpp"/>
+          <cinclude href="gspc/drts/stream.hpp"/>
           <cinclude href="process.hpp"/>
           <cinclude href="statistic.hpp"/>
           <cxx flag="--std=c++17"/>
           <ld flag="-lgspc"/>
           <code><![CDATA[
-          static fhg::util::statistic delta ("mark_free: delta");
+          static gspc::util::statistic delta ("mark_free: delta");
 
           std::pair< unsigned long
                    , std::chrono::high_resolution_clock::rep

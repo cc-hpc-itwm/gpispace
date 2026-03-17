@@ -1,231 +1,202 @@
-cmake_minimum_required (VERSION 3.16)
+###############################################################################
+# IML - part of GPI-Space (not a standalone project)
+###############################################################################
 
-project (iml
-  VERSION 1.0.0
-  LANGUAGES CXX
+include (parse_arguments)
+
+find_package (GASPI 1.5 REQUIRED)
+
+add_library (BeeGFS-ClientDevel INTERFACE)
+add_library (BeeGFS::ClientDevel ALIAS BeeGFS-ClientDevel)
+target_include_directories (BeeGFS-ClientDevel
+  SYSTEM INTERFACE
+    "${PROJECT_SOURCE_DIR}/3rdparty/beegfs-client-devel"
 )
-
-###############################################################################
-# Bootstrap packages
-###############################################################################
-
-# temporary compatibility fix
-# if the project is not root skip bootstrapping
-# NOTE: the find_package call can move to the find dependencies section later on
-if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
-  include (${PROJECT_SOURCE_DIR}/bootstrap/packages.cmake)
-  find_package (util-cmake 1.0.0 EXACT REQUIRED)
-  find_package (util-generic 1.0.0 EXACT REQUIRED)
-  find_package (util-rpc 1.0.0 EXACT REQUIRED)
-endif ()
-
-###############################################################################
-# Set module paths
-###############################################################################
-
-list (APPEND CMAKE_MODULE_PATH
-  "${PROJECT_SOURCE_DIR}/cmake"
-)
-
-###############################################################################
-# Includes
-###############################################################################
-
-include (CMakePackageConfigHelpers)
-include (CTest)
-include (GNUInstallDirs)
-
-include (util-cmake/parse_arguments)
-include (util-cmake/projects)
-
-include (iml/add_macros)
-
-###############################################################################
-# Meta information
-###############################################################################
-
-util_cmake_is_project_root (_project_is_root)
-util_cmake_project_entry_name (_project_entry)
-
-###############################################################################
-# Options
-###############################################################################
-
-if (NOT DEFINED ${_project_entry}_BUILD_TESTING)
-  if (BUILD_TESTING)
-    set (${_project_entry}_BUILD_TESTING ${BUILD_TESTING} CACHE BOOL "Build ${PROJECT_NAME} tests")
-  else ()
-    set (${_project_entry}_BUILD_TESTING OFF CACHE BOOL "Build ${PROJECT_NAME} tests")
-  endif ()
-endif ()
-
-option (${_project_entry}_INSTALL
-  "Install ${PROJECT_NAME}"
-  ${_project_is_root}
-)
-mark_as_advanced (${_project_entry}_INSTALL)
-
-set (${_project_entry}_CONFIG_INSTALL_DIR
-  "${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake"
-  CACHE PATH
-  "${PROJECT_NAME} package configuration and cmake scripts installation path prefix. \
-  (default: ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake)"
-)
-mark_as_advanced (${_project_entry}_CONFIG_INSTALL_DIR)
-set (_project_config_install_dir ${${_project_entry}_CONFIG_INSTALL_DIR})
-
-set (${_project_entry}_CXX_STANDARD
-  14
-  CACHE STRING
-  "${PROJECT_NAME} C++ standard"
-)
-mark_as_advanced (${_project_entry}_CXX_STANDARD)
-set (_project_cxx_std "cxx_std_${${_project_entry}_CXX_STANDARD}")
-
-if (${_project_entry}_BUILD_TESTING)
-  set (IML_TESTING_RIF_STRATEGY
-    "ssh"
-    CACHE STRING
-    "The strategy to bootstrap passed to --iml-rif-strategy in tests."
-  )
-
-  set (IML_TESTING_RIF_STRATEGY_PARAMETERS
-    ""
-    CACHE STRING
-    "A semicolon-separated list of parameters to pass to
-    --iml-rif-strategy-parameters in tests."
-  )
-
-  set (IML_TESTING_BEEGFS_DIRECTORY
-    ""
-    CACHE PATH
-    "(Shared) directory to use for BeeGFS tests."
-  )
-endif()
 
 ###############################################################################
 # Definitions
 ###############################################################################
 
 set (iml_devel_files_in_installation
-  "include/iml/AllocationHandle.hpp"
-  "include/iml/AllocationHandle.ipp"
-  "include/iml/Client.hpp"
-  "include/iml/MemcpyID.hpp"
-  "include/iml/MemoryLocation.hpp"
-  "include/iml/MemoryLocation.ipp"
-  "include/iml/MemoryOffset.hpp"
-  "include/iml/MemoryRegion.hpp"
-  "include/iml/MemoryRegion.ipp"
-  "include/iml/MemorySize.hpp"
-  "include/iml/Rifs.hpp"
-  "include/iml/RuntimeSystem.hpp"
-  "include/iml/SegmentAndAllocation.hpp"
-  "include/iml/SegmentDescription.hpp"
-  "include/iml/SegmentHandle.hpp"
-  "include/iml/SegmentHandle.ipp"
-  "include/iml/SharedMemoryAllocation.hpp"
-  "include/iml/SharedMemoryAllocationHandle.hpp"
-  "include/iml/SharedMemoryAllocationHandle.ipp"
-  "include/iml/beegfs/SegmentDescription.hpp"
-  "include/iml/beegfs/SegmentDescription.ipp"
-  "include/iml/detail/dllexport.hpp"
-  "include/iml/detail/dllexport.ipp"
-  "include/iml/gaspi/NetdevID.hpp"
-  "include/iml/gaspi/NetdevID.ipp"
-  "include/iml/gaspi/SegmentDescription.hpp"
-  "include/iml/gaspi/SegmentDescription.ipp"
-  "include/iml/rif/EntryPoint.hpp"
-  "include/iml/rif/EntryPoint.ipp"
-  "include/iml/rif/EntryPoints.hpp"
-  "include/iml/rif/bootstrap.hpp"
-  "include/iml/rif/strategies.hpp"
-  "include/iml/rif/teardown.hpp"
+  "include/gspc/iml/AllocationHandle.hpp"
+  "include/gspc/iml/AllocationHandle.ipp"
+  "include/gspc/iml/Client.hpp"
+  "include/gspc/iml/MemcpyID.hpp"
+  "include/gspc/iml/MemoryLocation.hpp"
+  "include/gspc/iml/MemoryLocation.ipp"
+  "include/gspc/iml/MemoryOffset.hpp"
+  "include/gspc/iml/MemoryRegion.hpp"
+  "include/gspc/iml/MemoryRegion.ipp"
+  "include/gspc/iml/MemorySize.hpp"
+  "include/gspc/iml/Rifs.hpp"
+  "include/gspc/iml/RuntimeSystem.hpp"
+  "include/gspc/iml/SegmentAndAllocation.hpp"
+  "include/gspc/iml/SegmentDescription.hpp"
+  "include/gspc/iml/SegmentHandle.hpp"
+  "include/gspc/iml/SegmentHandle.ipp"
+  "include/gspc/iml/SharedMemoryAllocation.hpp"
+  "include/gspc/iml/SharedMemoryAllocationHandle.hpp"
+  "include/gspc/iml/SharedMemoryAllocationHandle.ipp"
+  "include/gspc/iml/beegfs/SegmentDescription.hpp"
+  "include/gspc/iml/beegfs/SegmentDescription.ipp"
+  "include/gspc/iml/gaspi/NetdevID.hpp"
+  "include/gspc/iml/gaspi/NetdevID.ipp"
+  "include/gspc/iml/gaspi/SegmentDescription.hpp"
+  "include/gspc/iml/gaspi/SegmentDescription.ipp"
+  "include/gspc/iml/rif/EntryPoints.hpp"
 )
 
 set (iml_files_in_installation
-  "bin/iml-bootstrap-rifd"
-  "bin/iml-teardown-rifd"
-  "lib/libIML-Client.so"
-  "libexec/iml/iml-gpi-server"
-  "libexec/iml/iml-rifd"
-  "libexec/iml/libIMLPrivate-Installation.so"
-  "${_project_config_install_dir}/iml-config.cmake"
-  "${_project_config_install_dir}/iml-config-version.cmake"
+  "${GSPC_LIBRARY_INSTALL_DIR}/libgspc_iml_client.so"
+  "libexec/iml/gspc-iml-gpi-server"
+  "libexec/iml/libgspc_iml_installation.so"
   ${iml_devel_files_in_installation}
 )
 
 ###############################################################################
-# Find dependencies
+# Project targets
 ###############################################################################
 
-find_package (Boost 1.61 REQUIRED
-  COMPONENTS
-    filesystem
-    iostreams
-    program_options
-    serialization
-    system
-    thread
+gspc_add_library (NAME gspc_iml_headers
+  TYPE INTERFACE
+  INCLUDE_DIRECTORIES
+    INTERFACE
+      $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    INTERFACE
+      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
-# BeeGFS: "found" via ${PROJECT_SOURCE_DIR}/external/
-find_package (GASPI 1.5 REQUIRED)
-find_package (Libssh2 REQUIRED)
-find_package (OpenSSL REQUIRED)
-
-###############################################################################
-# Project targets and tests
-###############################################################################
-
-extended_add_library (NAME Headers
-  NAMESPACE IML
-  INCLUDE_DIRECTORIES INTERFACE $<BUILD_INTERFACE: ${PROJECT_SOURCE_DIR}/include>
-                      INTERFACE $<INSTALL_INTERFACE: ${CMAKE_INSTALL_INCLUDEDIR}>
-)
-target_compile_features (IML-Headers
-  INTERFACE "${_project_cxx_std}"
+target_compile_features (gspc_iml_headers
+  INTERFACE cxx_std_17
 )
 
-add_subdirectory (external)
-add_subdirectory (src/iml)
-
-if (${_project_entry}_BUILD_TESTING)
-  add_subdirectory (test/iml)
-endif()
-
-include (${PROJECT_SOURCE_DIR}/meta/meta.cmake OPTIONAL)
-
 ###############################################################################
-# Install and configure package find script
+# IML libraries and executables
 ###############################################################################
 
-if (${_project_entry}_INSTALL)
-  install (
-    DIRECTORY
-      "${PROJECT_SOURCE_DIR}/include/"
-    DESTINATION
-      "${CMAKE_INSTALL_INCLUDEDIR}"
-  )
+gspc_add_library (
+  NAME gspc_iml_shared
+  TYPE STATIC
+  SOURCES "vmem/gaspi/pc/segment/segment.cpp"
+  LIBRARIES
+    PUBLIC gspc_iml_headers
+    PRIVATE gspc_util
+    PUBLIC Boost::base
+    PRIVATE Boost::system
+  INCLUDE_DIRECTORIES
+    PUBLIC "${PROJECT_SOURCE_DIR}/include"
+  POSITION_INDEPENDENT
+)
 
-  set (_origin ".")
-  configure_package_config_file (
-    ${PROJECT_NAME}-config.cmake.in
-    ${PROJECT_NAME}-config.cmake
-    INSTALL_DESTINATION ${_project_config_install_dir}
-    PATH_VARS
-      _origin
-  )
+gspc_add_library (
+  NAME gspc_iml_client
+  TYPE SHARED
+  SOURCES "AllocationHandle.cpp"
+          "Client.cpp"
+          "MemoryLocation.cpp"
+          "MemoryRegion.cpp"
+          "Rifs.cpp"
+          "RuntimeSystem.cpp"
+          "SegmentAndAllocation.cpp"
+          "SegmentHandle.cpp"
+          "SharedMemoryAllocation.cpp"
+          "SharedMemoryAllocationHandle.cpp"
+          "beegfs/SegmentDescription.cpp"
+          "gaspi/NetdevID.cpp"
+          "gaspi/SegmentDescription.cpp"
+          "detail/startup_and_shutdown.cpp"
+  LIBRARIES
+    PRIVATE gspc_iml_headers
+    PRIVATE gspc_iml_installation
+    PRIVATE gspc_iml_shared
+    PRIVATE gspc_rpc
+    PRIVATE gspc_rif_entry_point
+    PRIVATE gspc_rif_strategies
+    PRIVATE gspc_logging
+    PRIVATE gspc_util
+    PUBLIC Boost::program_options
+    PUBLIC Boost::serialization
+    PRIVATE Boost::thread
+    PUBLIC fmt
+  INCLUDE_DIRECTORIES
+    PUBLIC "${PROJECT_SOURCE_DIR}/include"
+  INSTALL
+    INSTALL_DESTINATION "${GSPC_LIBRARY_INSTALL_DIR}"
+    CREATE_BUNDLE_INFO
+    RPATH "$ORIGIN/../libexec/iml"
+)
 
-  write_basic_package_version_file (
-    ${PROJECT_NAME}-config-version.cmake
-    COMPATIBILITY SameMajorVersion
-  )
+gspc_add_library (
+  NAME gspc_iml_server
+  TYPE STATIC
+  SOURCES "vmem/dtmmgr.cpp"
+          "vmem/gaspi/gpi/gaspi.cpp"
+          "vmem/gaspi/pc/container/manager.cpp"
+          "vmem/gaspi/pc/global/topology.cpp"
+          "vmem/gaspi/pc/memory/beegfs_area.cpp"
+          "vmem/gaspi/pc/memory/gaspi_area.cpp"
+          "vmem/gaspi/pc/memory/handle_generator.cpp"
+          "vmem/gaspi/pc/memory/manager.cpp"
+          "vmem/gaspi/pc/memory/memory_area.cpp"
+          "vmem/gaspi/pc/memory/shm_area.cpp"
+          "vmem/gaspi_context.cpp"
+          "vmem/segment/beegfs.cpp"
+          "vmem/tmmgr.cpp"
+  LIBRARIES
+    PUBLIC gspc_iml_client
+    PUBLIC gspc_iml_headers
+    PUBLIC gspc_iml_shared
+    PUBLIC gspc_rpc
+    PRIVATE gspc_util
+    PRIVATE BeeGFS::ClientDevel
+    PRIVATE GASPI::static
+    PUBLIC Boost::serialization
+    PRIVATE Boost::system
+    PUBLIC Boost::thread
+    PRIVATE fmt
+)
 
+gspc_add_executable (
+  NAME gspc-iml-gpi-server
+  RUNTIME
+  SOURCES "server/iml-gpi-server.cpp"
+  LIBRARIES gspc_iml_headers
+            gspc_iml_server
+            gspc_rif_started_process_promise
+            gspc_util
+            Boost::program_options
+            Boost::serialization
+            Boost::thread
+            Boost::system
+  INSTALL_DESTINATION "libexec/iml"
+  CREATE_BUNDLE_INFO
+  RPATH "$ORIGIN/../../${GSPC_LIBRARY_INSTALL_DIR}"
+)
+
+gspc_add_library (
+  NAME gspc_iml_installation
+  TYPE SHARED
+  SOURCES "detail/Installation.cpp"
+  LIBRARIES
+    PUBLIC gspc_iml_headers
+    PRIVATE gspc_util
+  COMPILE_DEFINITIONS
+    PRIVATE
+      "-DIML_INSTALLATION_SENTINEL_SUBDIR_COUNT=3"
+  INSTALL
+    INSTALL_DESTINATION "libexec/iml"
+    CREATE_BUNDLE_INFO
+)
+
+###############################################################################
+# Install IML headers
+###############################################################################
+
+foreach (_header ${iml_devel_files_in_installation})
+  get_filename_component (_dir "${_header}" DIRECTORY)
   install (
     FILES
-      ${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
-      ${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake
+      "${PROJECT_SOURCE_DIR}/${_header}"
     DESTINATION
-      ${_project_config_install_dir}
+      "${_dir}"
   )
-endif ()
+endforeach()

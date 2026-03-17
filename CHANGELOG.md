@@ -1,3 +1,704 @@
+# [26.3] - 2026-03-17
+
+## Most users should read this first
+
+- This release contains major API migration work. Expect changes in
+  include paths, namespaces, CMake target names, and some
+  binary/library names.
+- Read the migration guide first if you maintain C++ client code:
+  [share/doc/migration_v24.12_to_v26.3.md](share/doc/migration_v24.12_to_v26.3.md).
+- CMake cache variables are now prefixed with `GSPC_`. Old names still
+  work with deprecation warnings, but support is planned to end in
+  2026.
+- New workflow features are available: generator places, the `shared`
+  type for reference-counted cleanup, and `bigint` in the expression
+  language.
+- Packaging/install behavior changed: libraries now use
+  `CMAKE_INSTALL_LIBDIR` (for example `lib64` on some systems), and
+  bundling metadata was updated for renamed runtime libraries.
+- Runtime fix: `drts` now handles `start_workers_for` with an empty
+  entry-point list correctly.
+
+## Generator places for unique value generation
+
+Added support for generator places - special places in a Petri
+net that automatically produce unique values. When a token is
+consumed from a generator place, the runtime system automatically
+puts a new token with a different, unique value back to the place.
+
+Generator places are declared using the `generator="true"`
+attribute:
+
+```xml
+<place name="unique_id" type="int" generator="true"/>
+```
+
+Supported types include `int`, `long`, `unsigned int`,
+`unsigned long`, `char`, `string`, and `bigint`. For
+finite-domain types, overflow is detected at runtime. For
+`string` and `bigint`, the domain is effectively infinite.
+
+Generator places have restrictions enforced at compile time:
+- No `<token>` elements allowed (initial token is automatic)
+- No `put_token="true"` attribute allowed
+- No `shared_sink="true"` attribute allowed
+- No read connections (`connect-read`) allowed
+- No incoming connections (`connect-out`, `connect-inout`,
+  `connect-out-many`) allowed
+- Only the listed types are supported
+
+For complete documentation, see
+[share/doc/generator_places.md](share/doc/generator_places.md).
+
+Working examples are available in
+`share/doc/example/generator/`.
+
+## Shared type with garbage collection
+
+Added the `shared` type for automatic garbage collection in
+Petri net workflows. The `shared` type wraps any value together
+with a cleanup place name. When all references to a shared value
+are consumed, the wrapped value is automatically placed on the
+designated cleanup place for user-defined cleanup.
+
+Key features:
+- Reference counting across transition firings
+- Nested shared values in structs, lists, sets, and maps
+- Compile-time validation of cleanup places
+- Performance optimization via transition annotations
+  (`produce_shared`, `consume_shared`,
+  `passthrough_shared`)
+
+For complete documentation, see
+[share/doc/reference_counted_tokens.md](share/doc/reference_counted_tokens.md).
+
+Working examples are available in
+`share/doc/example/shared/`.
+
+## Add support for bigint in the expression language
+
+Add support for arbitrary precision integers, called "bigint"
+to the expression language. They behave like the existing
+integral types and use 'a' or 'A' as literal suffix. Internally
+bigint uses `boost::multiprecision::cpp_int` which provides
+arbitrary precision limited by available memory only.
+
+Example:
+
+    $ echo "2a^100a" | gspc-expression-shell
+    clear context: #
+    list state: ?
+    > 2a^100a
+    type: bigint
+    value: 1267650600228229401496703205376A
+    $ echo "1267650600228229401496703205376A" \
+    | gspc-expression-shell
+    clear context: #
+    list state: ?
+    > 1267650600228229401496703205376A
+    type: bigint
+    value: 1267650600228229401496703205376A
+
+Example:
+
+    $ cat > fib.sh
+    #!/bin/bash
+    n=${1:?"usage: ./fib.sh N"}
+    ( echo -n '${x} := 0a; ${y} := 1a;'
+      for ((i=0; i< $n; ++i))
+      do
+        echo -n '${z} := ${x} + ${y};'
+        echo -n '${x} := ${y}; ${y} := ${z};'
+      done
+      echo '${x}'
+    ) | gspc-expression-shell | grep value
+    ^D
+    $ chmod +x fib.sh
+    $ ./fib.sh 0
+    value: 1A
+    $ ./fib.sh 10
+    value: 89A
+    $ ./fib.sh 50
+    value: 20365011074A
+    $ ./fib.sh 100
+    value: 573147844013817084101A
+
+Example:
+
+    $ echo "bigint (1) + 41a" | gspc-expression-shell
+    clear context: #
+    list state: ?
+    > bigint (1) + 41a
+    type: bigint
+    value: 42A
+    >
+
+In `share/doc/example/fibonacci` there is a Petri net that
+computes Fibonacci numbers in arbitrary precision. It is tested
+in `test/share/doc/example/fibonacci`.
+
+## Add the expression shell
+
+The expression shell is a small utility that allows to evaluate
+expressions on top of a context, interactively or in scripts.
+It is an optional component disabled by default. Enable it
+with `-DGSPC_WITH_EXPRESSION_SHELL=ON` at CMake configure
+time. It requires `libreadline`.
+
+Example interactive session:
+
+    $ gspc-expression-shell
+    clear context: #
+    list state: ?
+    > 0UL
+    type: unsigned long
+    value: 0UL
+    > "Beep"
+    type: string
+    value: "Beep"
+    > ${a.x} := 1.0; ${a.y} := 23l; ${a}
+    type: Struct [x :: double, y :: long]
+    value: Struct [x := 1.00000, y := 23L]
+    > ${a.x} := 4
+    type: EXCEPTION: type error: In '(${a.x} := 4)'
+     type error: expr::type::Context::bind (${a.x}, 'int')
+      type error: At ${a.x}: Can not assign a value
+      of type 'int' to a value of type 'double'
+    > ?
+    eval context (delete with #):
+    a -> Struct [x := 1.00000, y := 23L]
+    type context (delete with #):
+    a :: Struct [x :: double, y :: long]
+    > #
+    context deleted
+    > ${a}
+    type: EXCEPTION: type error: In '${a}'
+     Could not infer type of ${a}
+    > ^D
+    $
+
+Example usage in a script:
+
+    $ echo "cos (pi)" | gspc-expression-shell
+    clear context: #
+    list state: ?
+    > cos (pi)
+    type: double
+    value: -1.00000
+    >
+    $
+
+## Improved and custom (dynamic) GANTT monitor annotations
+
+The GANTT monitor now shows the name of the transition that is
+represented by a box.
+
+Also, transitions in xpnet files can now be annotated by users
+with static or dynamic properties that control how they are
+displayed in the GANTT monitor.
+
+The following properties are supported under
+`<properties name="gspc"><properties name="monitor">`:
+
+- **color.started**: An `int` specifying the color for started
+  state (e.g., `16711680` for red, `255` for blue). The value
+  is used `mod 0xFFFFFF`.
+- **color.finished**: An `int` specifying the color for finished
+  state.
+- **color.failed**: An `int` specifying the color for failed
+  state.
+- **color.canceled**: An `int` specifying the color for canceled
+  state.
+- **tooltip**: A string providing additional tooltip information.
+
+All properties are evaluated as expressions with the input
+tokens in context, allowing dynamic values based on input data.
+All properties are optional.
+
+The four different colors represent the state of the transition.
+If no color for a state is provided by the xpnet, then the
+default colors are used.
+
+If a tooltip is given, then its value is showed in addition to
+the name and the status of the transition.
+
+The expressions are evaluated with the transition input tokens
+bound to the evaluation context and can use information from the
+input tokens.
+
+EXAMPLE:
+
+```xml
+<transition name="task">
+  <defun>
+    <properties name="gspc">
+      <properties name="monitor">
+        <properties name="color">
+          <property key="started">
+            "int (0x220000L * (${i} + 1L))"
+          </property>
+          <property key="finished">"0xbdb768"</property>
+          <property key="failed">"0xff6984"</property>
+        </properties>
+        <property key="tooltip">
+          "${tooltip.i} := ${i};"
+          " ${tooltip.id} := ${id};"
+          " ${tooltip}"
+        </property>
+      </properties>
+    </properties>
+    <in name="id" type="long"/>
+    <in name="i" type="long"/>
+    ...
+  </defun>
+</transition>
+```
+
+The dialog to change colors has been removed from the GANTT
+monitor.
+
+## Detect unconnected output ports at compile time
+
+The Petri net compiler `pnetc` now detects output ports that
+are not connected to any place, response, or eureka. Previously,
+such unconnected output ports would silently be ignored at
+runtime. Now, an error is reported at compile time, helping to
+catch configuration mistakes early.
+
+## Fixes and packaging improvements
+
+- Fixed a runtime issue in `drts` where `start_workers_for` could fail
+  when called with an empty list of entry points.
+
+- Libraries are now installed using `CMAKE_INSTALL_LIBDIR` instead of
+  the literal `lib/` directory. This improves compatibility with
+  layouts that use `lib64/`.
+
+- The public utility library is now installed as `libgspc_util.so`
+  instead of the old static-only `util_generic.a` installation.
+
+- Bundle filtering and bundle metadata were updated for the renamed
+  runtime libraries so `libgspc_rpc` and `libgspc_util.so` are handled
+  correctly.
+
+## Prefix GPI-Space CMake cache variables with `GSPC_`
+
+The following cache variables are now prefixed with `GSPC_`:
+
+| Old variable                      | New variable                           |
+|-----------------------------------|----------------------------------------|
+| `INSTALL_DO_NOT_BUNDLE`           | `GSPC_INSTALL_DO_NOT_BUNDLE`           |
+| `INSTALL_RPATH_DIRS`              | `GSPC_INSTALL_RPATH_DIRS`              |
+| `SHARED_DIRECTORY_FOR_TESTS`      | `GSPC_SHARED_DIRECTORY_FOR_TESTS`      |
+| `TESTING_RIF_STRATEGY`            | `GSPC_TESTING_RIF_STRATEGY`            |
+| `TESTING_RIF_STRATEGY_PARAMETERS` | `GSPC_TESTING_RIF_STRATEGY_PARAMETERS` |
+| `IML_TESTING_BEEGFS_DIRECTORY`    | `GSPC_IML_TESTING_BEEGFS_DIRECTORY`    |
+
+A compatibility layer still accepts the old names, but emits a
+deprecation warning for each old variable that is used. Support for
+the old variable names will be removed by the end of 2026.
+
+## Breaking API changes
+
+This release contains several breaking API changes that affect
+include paths, namespaces, CMake targets, and function
+signatures. For detailed step-by-step migration instructions,
+see
+[share/doc/migration_v24.12_to_v26.3.md](share/doc/migration_v24.12_to_v26.3.md).
+
+### Complete namespace and include path restructuring
+
+All public headers and namespaces have been reorganized under a
+unified `gspc/` prefix. This affects every include directive,
+namespace reference, and most CMake target names. The sections
+below list all changes grouped by component.
+
+#### Include path migration
+
+All installed headers now live under `include/gspc/`. Every
+`#include` directive in C++ source files **and** every
+`<cinclude>` element in `.xpnet` files must be updated:
+
+| Old include path           | New include path                |
+|----------------------------|---------------------------------|
+| `<drts/…>`                 | `<gspc/drts/…>`                 |
+| `<we/…>`                   | `<gspc/we/…>`                   |
+| `<iml/…>`                  | `<gspc/iml/…>`                  |
+| `<rif/…>`                  | `<gspc/rif/…>`                  |
+| `<logging/…>`              | `<gspc/logging/…>`              |
+| `<sdpa/…>`                 | `<gspc/scheduler/…>`            |
+| `<fhgcom/…>`               | `<gspc/com/…>`                  |
+| `<util-generic/…>`         | `<gspc/util/…>`                 |
+| `<fhg/util/…>`             | `<gspc/util/…>`                 |
+| `<util-rpc/…>`             | `<gspc/rpc/…>`                  |
+| `<util-qt/…>`              | `<gspc/util/qt/…>`              |
+| `<pnete/ui/…>`             | `<gspc/monitor/…>`              |
+| `<xml/parse/…>`            | `<gspc/xml/parse/…>`            |
+| `<fhg/assert.hpp>`         | `<gspc/assert.hpp>`             |
+| `<fhg/project_info.hpp>`   | `<gspc/configuration/info.hpp>` |
+| `<installation_path.hpp>`  | `<gspc/installation_path.hpp>`  |
+
+Example for C++:
+
+```cpp
+// Before (v24.12)
+#include <drts/drts.hpp>
+#include <we/type/value.hpp>
+#include <util-generic/dynamic_linking.hpp>
+#include <logging/endpoint.hpp>
+
+// After (v26.3)
+#include <gspc/drts/drts.hpp>
+#include <gspc/we/type/value.hpp>
+#include <gspc/util/dynamic_linking.hpp>
+#include <gspc/logging/endpoint.hpp>
+```
+
+Example for `.xpnet` files:
+
+```xml
+<!-- Before (v24.12) -->
+<cinclude href="we/type/shared.hpp"/>
+<cinclude href="util-generic/dynamic_linking.hpp"/>
+<cinclude href="drts/stream.hpp"/>
+
+<!-- After (v26.3) -->
+<cinclude href="gspc/we/type/shared.hpp"/>
+<cinclude href="gspc/util/dynamic_linking.hpp"/>
+<cinclude href="gspc/drts/stream.hpp"/>
+```
+
+#### FMT formatter include path migration
+
+The separate `FMT/` directory for `fmt` formatters has been
+eliminated. Formatters are now co-located as `.formatter.hpp`
+files next to the types they format. Generic formatters for
+`std` and `boost` types have moved under `gspc/util/fmt/`.
+
+| Old include path                   | New include path                                                  |
+|------------------------------------|-------------------------------------------------------------------|
+| `<FMT/we/type/value/show.hpp>`     | `<gspc/we/type/value/show.formatter.hpp>`                         |
+| `<FMT/rif/entry_point.hpp>`        | `<gspc/rif/entry_point.formatter.hpp>`                            |
+| `<FMT/iml/gaspi/NetdevID.hpp>`     | `<gspc/iml/gaspi/NetdevID.formatter.hpp>`                         |
+| `<FMT/sdpa/events/error_code.hpp>` | `<gspc/scheduler/events/error_code.formatter.hpp>`                |
+| `<FMT/std/filesystem/path.hpp>`    | `<gspc/util/fmt/std/filesystem/path.formatter.hpp>`               |
+| `<FMT/std/optional.hpp>`           | `<gspc/util/fmt/std/optional.formatter.hpp>`                      |
+| `<FMT/std/variant.hpp>`            | `<gspc/util/fmt/std/variant.formatter.hpp>`                       |
+| `<FMT/std/exception.hpp>`          | `<gspc/util/fmt/std/exception.formatter.hpp>`                     |
+| `<FMT/boost/variant.hpp>`          | `<gspc/util/fmt/boost/variant.formatter.hpp>`                     |
+| `<FMT/boost/blank.hpp>`            | `<gspc/util/fmt/boost/blank.formatter.hpp>`                       |
+| `<FMT/boost/filesystem/path.hpp>`  | Removed (use `<gspc/util/fmt/std/filesystem/path.formatter.hpp>`) |
+| `<FMT/boost/optional.hpp>`         | Removed (use `<gspc/util/fmt/std/optional.formatter.hpp>`)        |
+
+The naming convention is
+`<path/to/Type.formatter.hpp>` instead of
+`<FMT/path/to/Type.hpp>`.
+
+#### Namespace migration
+
+Public-facing namespaces have been consolidated under `gspc::`:
+
+| Old namespace                           | New namespace                                                            |
+|-----------------------------------------|--------------------------------------------------------------------------|
+| `fhg::util`                             | `gspc::util`                                                             |
+| `fhg::util::boost::program_options`     | `gspc::util::boost::program_options`                                     |
+| `fhg::com`, `fhg::com::p2p`             | `gspc::com`, `gspc::com::p2p`                                            |
+| `fhg::rif`                              | `gspc::rif`                                                              |
+| `fhg::logging`                          | `gspc::logging`                                                          |
+| `fhg::pnete::ui`                        | `gspc::monitor`                                                          |
+| `we::type`, `we::type::literal`, etc.   | `gspc::we::type`, `gspc::we::type::literal`, etc.                        |
+| `iml`                                   | `gspc::iml`                                                              |
+| `sdpa`, `sdpa::daemon`, `sdpa::client`  | `gspc::scheduler`, `gspc::scheduler::daemon`, `gspc::scheduler::client`  |
+| `xml::parse`, `xml::parse::type`        | `gspc::xml::parse`, `gspc::xml::parse::type`                             |
+| `rpc`                                   | `gspc::rpc`                                                              |
+| `pnet::type::value`, `pnet::type`       | `gspc::pnet::type::value`, `gspc::pnet::type`                            |
+| `bitsetofint::type`                     | `gspc::pnet::type::bitsetofint::type`                                    |
+
+Example:
+
+```cpp
+// Before (v24.12)
+we::type::value::value_type val;
+we::type::literal::control();
+we::type::bytearray ba;
+fhg::util::scoped_dlhandle handle (path);
+fhg::rif::entry_point ep;
+fhg::logging::endpoint le;
+
+// After (v26.3)
+gspc::we::type::value::value_type val;
+gspc::we::type::literal::control();
+gspc::we::type::bytearray ba;
+gspc::util::scoped_dlhandle handle (path);
+gspc::rif::entry_point ep;
+gspc::logging::endpoint le;
+```
+
+#### Renamed types
+
+| Old name                                          | New name                                                          |
+|---------------------------------------------------|-------------------------------------------------------------------|
+| `sdpa::events::SDPAEvent`                         | `gspc::scheduler::events::SchedulerEvent`                         |
+| `sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN`   | `gspc::scheduler::events::ErrorEvent::SCHEDULER_ENODE_SHUTDOWN`   |
+| `sdpa::events::ErrorEvent::SDPA_EUNKNOWN`         | `gspc::scheduler::events::ErrorEvent::SCHEDULER_EUNKNOWN`         |
+
+The unqualified `Requirements_and_preferences` and
+`null_transfer_cost` names (previously available via `using`
+declarations in the `sdpa` namespace) have been removed. Use
+the fully qualified
+`gspc::we::type::Requirements_and_preferences` and
+`gspc::we::type::null_transfer_cost`.
+
+#### Assert macro migration
+
+| Old                                  | New                          |
+|--------------------------------------|------------------------------|
+| `#include <fhg/assert.hpp>`          | `#include <gspc/assert.hpp>` |
+| `fhg_assert (…)`                     | `gspc_assert (…)`            |
+| CMake option `-DFHG_ASSERT_MODE=…`   | `-DGSPC_ASSERT_MODE=…`       |
+| `FHG_ASSERT_DISABLED`                | `GSPC_ASSERT_DISABLED`       |
+| `FHG_ASSERT_EXCEPTION`               | `GSPC_ASSERT_EXCEPTION`      |
+
+#### Configuration / project info migration
+
+| Old                               | New                                      |
+|-----------------------------------|------------------------------------------|
+| `#include <fhg/project_info.hpp>` | `#include <gspc/configuration/info.hpp>` |
+| `fhg::project_info (…)`           | `gspc::configuration::info (…)`          |
+
+#### Linker flags in `.xpnet` files
+
+Workflow modules that link against the workflow engine shared
+library must update linker flags:
+
+```xml
+<!-- Before (v24.12) -->
+<ld flag="-lwe-dev"/>
+
+<!-- After (v26.3) -->
+<ld flag="-lgspc_we"/>
+```
+
+#### CMake target changes
+
+The public-facing CMake targets `GPISpace::header-only`,
+`GPISpace::workflow_development`, `GPISpace::execution`,
+and `GPISpace::pnetc` remain unchanged.
+
+The following previously-available imported targets have been
+renamed:
+
+| Old target                      | New target                             |
+|---------------------------------|----------------------------------------|
+| `GPISpacePrivate::we-dev`       | `GPISpacePrivate::gspc_we`             |
+| `GPISpace::APIGuard`            | `GPISpace::api_guard`             |
+| `GPISpacePrivate::drts-context` | `GPISpacePrivate::gspc_worker_context` |
+| `drts-context`                  | `gspc_worker_context`                  |
+| `IML::Client`                   | `gspc_iml_client`                      |
+| `Util::Generic`                 | `gspc_util`                            |
+| `Util::RPC`                     | `gspc_rpc`                             |
+| `Util::Qt`                      | `gspc_util_qt`                         |
+
+The installed shared library `libwe-dev.so` has been renamed
+to `libgspc_we.so`.
+
+The installed shared library `libgspc_api_guard.so` has
+replaced `libGPISpace-APIGuard.so`.
+
+The installed shared library `libdrts-context.so` has been
+renamed to `libgspc_worker_context.so`.
+
+The installed `libexec/gspc` binaries have been renamed to
+use the `gspc-` prefix:
+
+| Old binary                           | New binary                                |
+|--------------------------------------|-------------------------------------------|
+| `libexec/gspc/agent`                 | `libexec/gspc/gspc-agent`                 |
+| `libexec/gspc/drts-kernel`           | `libexec/gspc/gspc-drts-kernel`           |
+
+The separate `find_dependency` calls for `util-generic`,
+`util-rpc`, `util-qt`, and `iml` have been removed. These
+libraries are now imported directly in
+`GPISpaceConfig.cmake`. Users who relied on
+`find_package (util-generic)` or similar must remove those
+calls and link the new target names instead.
+
+#### Environment variable change for tests
+
+The environment variable `IML_NODEFILE_FOR_TESTS` has been
+removed. Use `GSPC_NODEFILE_FOR_TESTS` instead (which was
+already supported in v24.12 as a fallback).
+
+### Removal of `boost::filesystem::path`
+
+All public APIs have been migrated from
+`boost::filesystem::path` to `std::filesystem::path`. All
+previously deprecated `boost::filesystem::path` overloads have
+been removed.
+
+To migrate, replace `boost::filesystem::path` with
+`std::filesystem::path` and include `<filesystem>` instead of
+`<boost/filesystem.hpp>`. Where an existing
+`boost::filesystem::path` value is needed, convert with
+`std::filesystem::path{boost_path.string()}`.
+
+#### GPI-Space runtime (`gspc::`)
+
+The following constructors and functions no longer accept
+`boost::filesystem::path`. Use `std::filesystem::path`.
+
+- `gspc::installation (path)`: Constructor.
+- `gspc::workflow (path)`: Constructor.
+- `gspc::Certificates (path)`: Constructor.
+- `gspc::set_application_search_path (vm, path)`
+- `gspc::set_gspc_home (vm, path)`
+- `gspc::set_remote_iml_vmem_socket (vm, path)`: Signature
+  changed (was not previously deprecated).
+- `gspc::rifd_entry_points (path)`: Constructor signature
+  changed (was not previously deprecated).
+- `gspc::rifd_entry_points::write_to_file (path)`: Signature
+  changed (was not previously deprecated).
+- `gspc::rifds::execute (hostnames, path, ...)`: The command
+  parameter changed (was not previously deprecated).
+
+#### Utilities (`gspc::util::`)
+
+- `gspc::util::executable_path()`: Now returns
+  `std::filesystem::path` instead of
+  `boost::filesystem::path`.
+- `gspc::util::currently_loaded_libraries()`: Now returns
+  `std::vector<std::filesystem::path>`.
+- `gspc::util::scoped_dlhandle (path, flags)`: Constructor
+  no longer accepts `boost::filesystem::path`.
+- `gspc::util::read_file (path)` and
+  `gspc::util::read_file_as (path)`: The
+  `boost::filesystem::path` overloads have been removed.
+- `gspc::util::write_file (path, content)`: The
+  `boost::filesystem::path` overload has been removed.
+- `gspc::util::read_lines (path)`: The
+  `boost::filesystem::path` overload has been removed.
+- `gspc::util::unique_path()`: No longer a template
+  forwarding to `boost::filesystem::unique_path`. Now a
+  simple function returning `std::filesystem::path`.
+- `gspc::util::syscall::directory (path)`: Constructor now
+  takes `std::filesystem::path`.
+
+#### Program option validators
+
+All validators in
+`gspc/util/boost/program_options/validators/` no longer
+accept or convert to `boost::filesystem::path`. The removed
+overloads are:
+
+- `executable (boost::filesystem::path)` and
+  `operator boost::filesystem::path()`
+- `existing_directory (boost::filesystem::path)` and
+  `operator boost::filesystem::path()`
+- `existing_path (boost::filesystem::path)` and
+  `operator boost::filesystem::path()`
+- `is_directory_if_exists(boost::filesystem::path)` and
+  `operator boost::filesystem::path()`
+- `nonempty_file (boost::filesystem::path)` and
+  `operator boost::filesystem::path()`
+- `nonexisting_path (boost::filesystem::path)` and
+  `operator boost::filesystem::path()`
+- `nonexisting_path_in_existing_directory
+  (boost::filesystem::path)` and
+  `operator boost::filesystem::path()`
+
+Use the `std::filesystem::path` constructors and
+`operator std::filesystem::path()` conversions instead.
+
+### Other API changes and removals
+
+#### Removed headers
+
+The following headers have been deleted entirely. Remove any
+`#include` directives for them. The paths listed are those
+from v24.12; they have no replacement under `gspc/`.
+
+- `util-generic/getenv.hpp`: Use `std::getenv` from
+  `<cstdlib>` instead.
+- `util-generic/nest_exceptions.hpp`: Use
+  `std::throw_with_nested` directly.
+- `util-generic/hash/boost/filesystem/path.hpp`: Use
+  `std::hash<std::filesystem::path>` instead.
+- `util-generic/serialization/boost/filesystem/path.hpp`:
+  Use `gspc/util/serialization/std/filesystem/path.hpp`
+  instead.
+- `FMT/boost/filesystem/path.hpp`: Use
+  `gspc/util/fmt/std/filesystem/path.formatter.hpp` instead.
+- `util-generic/variant_cast.hpp`: Use `std::visit` with a
+  converting visitor instead.
+- `util-generic/cxx17/apply.hpp`: Use `std::apply` from
+  `<tuple>` instead.
+- `util-generic/cxx17/logical_operator_type_traits.hpp`: Use
+  `std::conjunction`, `std::disjunction`, and
+  `std::negation` from `<type_traits>` instead.
+
+#### Removed deprecated functions
+
+- `fhg::util::cxx17::make_future_error
+  (std::future_errc const&)`: Use the `std::future_error`
+  constructor directly.
+- `util-generic::temporary_return_value_holder` has been
+  removed.
+
+#### `gspc::we::type::bytearray` trivially copyable assertion
+
+The `gspc::we::type::bytearray` constructors for `T` and
+`T*` as well as `gspc::we::type::bytearray::copy (T*)` now
+statically assert that `T` is `std::is_trivially_copyable`.
+Note that a `std::tuple` made of trivially copyable types is
+not trivially copyable. Define a custom struct instead, e.g.
+(https://godbolt.org/z/Mbvfb9Gfn)
+
+```
+using T = std::tuple<bool, double>;
+static_assert (!std::is_trivially_copyable_v<T>);
+
+struct S { bool _0; double _1; };
+static_assert ( std::is_trivially_copyable_v<S>);
+```
+
+## Supported OS
+
+- Removed support for ubuntu20.04, the system has reached
+  its end of life
+- Removed support for rockylinux8, the system has reached
+  its end of life
+
+## Updated dependencies
+
+- Bump to GPI-2 v1.6.0.
+- Bump fmt to version 12.0.0.
+
+## Internal changes
+
+- Use `std::optional` instead of `boost::optional`.
+- Use `std::variant` instead of `boost::variant`.
+- Use `std::random` instead of `boost::random`.
+- Use `std::filesystem` instead of `boost::filesystem`.
+- Use `std::shared_ptr` instead of `boost::shared_ptr`.
+
+The internal `gspc::option` functions now return
+`std::filesystem::path`. The following internal components
+have also been migrated:
+
+- `gspc::util::procfs`
+- `gpi::pc::memory::beegfs_area_t::path_t`
+- `gspc::iml::vmem::segment::beegfs`
+
+## License installation layout
+
+License installation no longer generates one aggregated
+`LICENSES` file.
+
+- The project license is installed as
+  `share/GPISpace/LICENSE`.
+- Third-party licenses are installed as
+  `share/GPISpace/licenses/<Dependency>/LICENSE`.
+
 # [24.12] - 2024-12-27
 
 ## List of supported OS:
@@ -154,9 +855,9 @@ well as build time.
 This change makes `GPI-2` an optional dependency of GPI-Space.
 The following options can be given to CMake or Spack to enable or disable the IML:
 
-| Spack | CMake |
-| - | - |
-| `[+\|~]iml` | `-D GSPC_WITH_IML=[ON\|OFF]` |
+| Spack          | CMake                         |
+|----------------|-------------------------------|
+| `[+\|~]iml`   | `-D GSPC_WITH_IML=[ON\|OFF]`  |
 
 By default the IML is enabled for backward compatibility.
 
@@ -265,7 +966,7 @@ to note:
 - The target `RPC` is now called `Util::RPC`.
 - Compilation now requires a C++14 capable compiler.
 - In `GPISpace` `util-rpc`'s tests are disabled by default, to enable them
-  `UTIL_RPC_BUILD_TESTING` needs to be set to `ON`.
+  `GSPC_TEST` needs to be set to `ON`.
 
 ## API CHANGE: `fhg/util/boost/program_options` has been merged into `util-generic`
 
@@ -293,7 +994,7 @@ configuration file. A few more things to note:
   target for the public headers.
 - Compilation now requires a C++14 capable compiler.
 - In `GPISpace` `util-qt`'s tests are disabled by default, to enable them
-  `UTIL_QT_BUILD_TESTING` needs to be set to `ON`.
+  `GSPC_TEST` needs to be set to `ON`.
 
 ## New System Testing Functionality
 
@@ -476,7 +1177,7 @@ package configuration file. A few more things to note:
   - cxx14/enum_hash.hpp
   - cxx14/get_by_type.hpp
 - In `GPISpace` `util-generic`'s tests are disabled by default, to enable them
-  `UTIL_GENERIC_BUILD_TESTING` needs to be set to `ON`.
+  `GSPC_TEST` needs to be set to `ON`.
 
 ## API CHANGE: Fix: Allow recursive lists and sets in expressions
 
@@ -664,7 +1365,7 @@ complex eureka group:
 
 To avoid implementation details leaking into user code, GPI-Space's
 libraries now no longer export all symbols but instead explicitly
-export the intended API. Only symbols marked `GSPC_DLLEXPORT` in the
+export the intended API. Only symbols marked `GSPC_EXPORT` in the
 headers are part of the API and other symbols may vanish or change
 without notice.
 
@@ -760,7 +1461,7 @@ fatal error during configuration time.
 ## Miscellaneous
 
 - Applications that link `pnetc` generated libraries can now link
-  `GPISpace::APIGuard` instead of defining `WE_GUARD_SYMBOL`
+  `GPISpace::api_guard` instead of defining `WE_GUARD_SYMBOL`
   themselves.
 - Removed the attribute `children_allowed` from workers. The agent can
   have only terminal components as workers now.

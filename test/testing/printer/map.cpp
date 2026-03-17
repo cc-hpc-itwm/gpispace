@@ -1,0 +1,38 @@
+#include <gspc/testing/printer/map.hpp>
+
+#include <gspc/testing/printer/require_printed_as.hpp>
+
+#include <boost/test/unit_test.hpp>
+
+BOOST_AUTO_TEST_CASE (empty)
+{
+  GSPC_TESTING_REQUIRE_PRINTED_AS ("map []", std::map<std::string, int>{});
+  GSPC_TESTING_REQUIRE_PRINTED_AS ("map []", std::map<int, int>{});
+  GSPC_TESTING_REQUIRE_PRINTED_AS ("map []", std::map<float, int>{});
+}
+
+BOOST_AUTO_TEST_CASE (one_element)
+{
+  GSPC_TESTING_REQUIRE_PRINTED_AS
+    ("map [<foo, 1>]", std::map<std::string, int> {{"foo", 1}});
+  GSPC_TESTING_REQUIRE_PRINTED_AS
+    ("map [<1, 16.3999996>]", std::map<int, float> {{1, 16.4f}});
+  GSPC_TESTING_REQUIRE_PRINTED_AS
+    ("map [<1, bar>]", std::map<float, std::string> {{1.0f, "bar"}});
+}
+
+BOOST_AUTO_TEST_CASE (multiple_elements)
+{
+  GSPC_TESTING_REQUIRE_PRINTED_AS
+    ( "map [<bar, 1>, <baz, 2>]"
+    , std::map<std::string, int> {{"baz", 2}, {"bar", 1}}
+    );
+  GSPC_TESTING_REQUIRE_PRINTED_AS
+    ( "map [<1, 16.3999996>, <63, 1>]"
+    , std::map<int, float> {{1, 16.4f}, {63, 1.0f}}
+    );
+  GSPC_TESTING_REQUIRE_PRINTED_AS
+    ( "map [<1, bar>, <2, baz>]"
+    , std::map<float, std::string> {{2.0f, "baz"}, {1.0f, "bar"}}
+    );
+}

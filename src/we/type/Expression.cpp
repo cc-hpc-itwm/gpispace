@@ -1,22 +1,18 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2012-2013,2021-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/type/Expression.hpp>
+#include <gspc/we/type/Expression.hpp>
 
-#include <we/exception.hpp>
-#include <we/expr/type/AssignResult.hpp>
+#include <gspc/we/exception.hpp>
+#include <gspc/we/expr/type/AssignResult.hpp>
 
-#include <boost/algorithm/string.hpp>
-
-#include <FMT/boost/variant.hpp>
-#include <FMT/we/expr/type/Type.hpp>
+#include <gspc/util/fmt/boost/variant.formatter.hpp>
+#include <gspc/we/expr/type/Type.formatter.hpp>
 #include <exception>
 #include <fmt/core.h>
 #include <ostream>
 
-namespace we
-{
-  namespace type
+  namespace gspc::we::type
   {
     Expression::Expression ()
       : _expr ("")
@@ -26,17 +22,13 @@ namespace we
     Expression::Expression (std::string const& expr)
       : _expr (expr)
       , _ast (expr)
-   {
-     ::boost::trim (_expr);
-   }
+   {}
 
     // should correspond!
     Expression::Expression (std::string const& expr, expr::parse::parser const& ast)
       : _expr (expr)
       , _ast (ast)
-    {
-      ::boost::trim (_expr);
-    }
+    {}
 
     std::string const& Expression::expression() const
     {
@@ -88,7 +80,11 @@ namespace we
 
     std::ostream& operator<< (std::ostream& os, Expression const& e)
     {
-      return os << e.expression();
+      return os << to_string (e);
+    }
+
+    auto to_string (Expression const& expression) -> std::string
+    {
+      return expression.expression();
     }
   }
-}

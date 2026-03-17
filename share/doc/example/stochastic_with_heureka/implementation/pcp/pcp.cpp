@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2020-2021,2023-2024,2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <interface.hpp>
@@ -42,7 +42,7 @@ namespace pcp
       ;
   }
 
-  we::type::bytearray pcp::bytearray() const
+  gspc::we::type::bytearray pcp::bytearray() const
   {
     std::ostringstream oss;
 
@@ -58,7 +58,7 @@ namespace pcp
     return oss.str();
   }
 
-  pcp::pcp (we::type::bytearray const& ba)
+  pcp::pcp (gspc::we::type::bytearray const& ba)
   {
     std::string s (ba.to_string());
     std::size_t pos;
@@ -80,8 +80,8 @@ namespace pcp
 }
 
 extern "C"
-  std::pair<we::type::bytearray, bool> stochastic_with_heureka_roll_and_heureka
-    (unsigned long n, unsigned long seed, we::type::bytearray pcp_bytearray)
+  std::pair<gspc::we::type::bytearray, bool> stochastic_with_heureka_roll_and_heureka
+    (unsigned long n, unsigned long seed, gspc::we::type::bytearray pcp_bytearray)
 {
   pcp::pcp const pcp {pcp_bytearray};
 
@@ -123,25 +123,25 @@ extern "C"
 
       if (configuration.is_solution())
       {
-        return {we::type::bytearray {path}, true};
+        return {gspc::we::type::bytearray {path}, true};
       }
     }
   }
 
-  return {we::type::bytearray {std::string()}, false};
+  return {gspc::we::type::bytearray {std::string()}, false};
 };
 
 extern "C"
-  we::type::bytearray stochastic_with_heureka_reduce
-    ( we::type::bytearray partial_resultL_bytearray
-    , we::type::bytearray partial_resultR_bytearray
-    , we::type::bytearray
+  gspc::we::type::bytearray stochastic_with_heureka_reduce
+    ( gspc::we::type::bytearray partial_resultL_bytearray
+    , gspc::we::type::bytearray partial_resultR_bytearray
+    , gspc::we::type::bytearray
     )
 {
   std::string const pathL (partial_resultL_bytearray.to_string());
   std::string const pathR (partial_resultR_bytearray.to_string());
 
-  return we::type::bytearray
+  return gspc::we::type::bytearray
     { (pathL.size() && pathR.size()) ? ( pathL.size() < pathR.size()
                                        ? pathL
                                        : pathR
@@ -153,10 +153,10 @@ extern "C"
 }
 
 extern "C"
-  we::type::bytearray stochastic_with_heureka_post_process
+  gspc::we::type::bytearray stochastic_with_heureka_post_process
     ( unsigned long
-    , we::type::bytearray result_bytearray
-    , we::type::bytearray
+    , gspc::we::type::bytearray result_bytearray
+    , gspc::we::type::bytearray
     )
 {
   return result_bytearray;

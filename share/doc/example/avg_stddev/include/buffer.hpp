@@ -1,13 +1,12 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2012,2021-2023,2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
 
 #include <cstddef>
 
-namespace fhg
-{
-  namespace buffer
+
+  namespace fhg::buffer
   {
     //! \todo use std::span
     template<typename T>
@@ -33,4 +32,3 @@ namespace fhg
       const std::size_t& size () const { return _size; }
     };
   }
-}

@@ -1,15 +1,14 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2012-2014,2020-2021,2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/expr/token/type.hpp>
+#include <gspc/we/expr/token/type.hpp>
 
-#include <util-generic/unreachable.hpp>
+#include <gspc/util/unreachable.hpp>
 
 #include <iostream>
 
-namespace expr
-{
-  namespace token
+
+  namespace gspc::we::expr::token
   {
     show::show (type const& token)
       : _token (token)
@@ -53,6 +52,7 @@ namespace expr
         case _toulong: return os << "ulong";
         case _tofloat: return os << "float";
         case _todouble: return os << "double";
+        case _tobigint: return os << "bigint";
         case _bitset_insert: return os << "bitset_insert";
         case _bitset_delete: return os << "bitset_delete";
         case _bitset_is_element: return os << "bitset_is_element";
@@ -82,6 +82,7 @@ namespace expr
         case _set_empty: return os << "set_empty";
         case _set_size: return os << "set_size";
         case _set_is_subset: return os << "set_is_subset";
+        case _shared: return os << "shared";
         case abs: return os << "abs";
         case sep: return os << ", ";
         case lpr: return os << "(";
@@ -102,4 +103,3 @@ namespace expr
       return os << show (x);
     }
   }
-}

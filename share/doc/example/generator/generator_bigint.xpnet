@@ -1,0 +1,52 @@
+<!-- Copyright (C) 2026 Fraunhofer ITWM                            -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
+
+<!-- Example network demonstrating generator places with bigint type.
+     The generator place produces unique bigint values: 0, 1, 2, ...
+     This workflow consumes n tokens from the generator and outputs
+     them as individual tokens.
+     Note: bigint has an infinite domain, so it never overflows. -->
+
+<defun name="generator_bigint">
+
+  <in name="n" type="unsigned long" place="count"/>
+  <out name="id" type="bigint" place="out"/>
+
+  <net>
+
+    <place name="count" type="unsigned long"/>
+    <place name="generator" type="bigint" generator="true"/>
+    <place name="out" type="bigint"/>
+
+    <transition name="consume">
+      <defun>
+        <inout name="count" type="unsigned long"/>
+        <in name="id" type="bigint"/>
+        <out name="out" type="bigint"/>
+        <expression>
+          ${out} := ${id};
+          ${count} := ${count} - 1UL;
+        </expression>
+      </defun>
+      <condition>
+        ${count} :gt: 0UL
+      </condition>
+      <connect-inout port="count" place="count"/>
+      <connect-in port="id" place="generator"/>
+      <connect-out port="out" place="out"/>
+    </transition>
+
+    <transition name="done">
+      <defun>
+        <in name="count" type="unsigned long"/>
+        <expression/>
+      </defun>
+      <condition>
+        ${count} :le: 0UL
+      </condition>
+      <connect-in port="count" place="count"/>
+    </transition>
+
+  </net>
+
+</defun>

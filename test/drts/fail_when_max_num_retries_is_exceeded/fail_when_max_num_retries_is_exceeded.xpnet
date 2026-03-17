@@ -1,0 +1,53 @@
+<!-- Copyright (C) 2022-2024,2026 Fraunhofer ITWM                       -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
+
+<defun name="test_fail_when_max_num_retries_is_exceeded">
+  <properties name="fhg">
+    <properties name="drts">
+      <properties name="schedule">
+        <property key="maximum_number_of_retries">"1UL"</property>
+      </properties>
+    </properties>
+  </properties>
+  <in name="start" type="control"/>
+  <in name="host" type="string"/>
+  <in name="port" type="unsigned int"/>
+  <out name="done" type="control"/>
+  <module name="test_fail_when_max_num_retries_is_exceeded"
+          function="done test(host, port)"
+          pass_context="true">
+    <cinclude href="test_callback.hpp"/>
+    <cinclude href="gspc/rpc/remote_function.hpp"/>
+    <cinclude href="gspc/rpc/remote_tcp_endpoint.hpp"/>
+    <cinclude href="gspc/util/scoped_boost_asio_io_service_with_threads.hpp"/>
+    <cinclude href="chrono"/>
+    <cinclude href="vector"/>
+    <cinclude href="thread"/>
+    <cxx flag="--std=c++17"/>
+    <code><![CDATA[
+
+      gspc::util::scoped_boost_asio_io_service_with_threads io_service (1);
+      gspc::rpc::remote_tcp_endpoint endpoint (io_service, host, port);
+      gspc::rpc::sync_remote_function<protocol::callback> {endpoint}();
+
+      std::this_thread::sleep_for (std::chrono::seconds (2));
+
+      try
+      {
+        _pnetc_context->execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FROM_WITHIN
+          ( []()
+            {
+              while (1) {}
+            }
+          )
+          ;
+      }
+      catch (drts::worker::context::cancelled const&)
+      {
+        return gspc::we::type::literal::control();
+      }
+
+      return gspc::we::type::literal::control();
+    ]]></code>
+  </module>
+</defun>

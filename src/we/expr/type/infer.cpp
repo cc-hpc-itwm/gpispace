@@ -1,21 +1,21 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2021-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/expr/type/infer.hpp>
+#include <gspc/we/expr/type/infer.hpp>
 
-#include <we/expr/exception.hpp>
-#include <we/expr/token/prop.hpp>
-#include <we/type/value.hpp>
+#include <gspc/we/expr/exception.hpp>
+#include <gspc/we/expr/token/prop.hpp>
+#include <gspc/we/type/value.hpp>
 
-#include <util-generic/functor_visitor.hpp>
-#include <util-generic/print_container.hpp>
+#include <gspc/util/functor_visitor.hpp>
+#include <gspc/util/print_container.hpp>
 
-#include <FMT/boost/variant.hpp>
-#include <FMT/util-generic/join.hpp>
-#include <FMT/we/expr/parse/node.hpp>
-#include <FMT/we/expr/token/show.hpp>
-#include <FMT/we/expr/type/Path.hpp>
-#include <FMT/we/expr/type/Type.hpp>
+#include <gspc/util/fmt/boost/variant.formatter.hpp>
+#include <gspc/util/join.formatter.hpp>
+#include <gspc/we/expr/parse/node.formatter.hpp>
+#include <gspc/we/expr/token/show.formatter.hpp>
+#include <gspc/we/expr/type/Path.formatter.hpp>
+#include <gspc/we/expr/type/Type.formatter.hpp>
 #include <algorithm>
 #include <exception>
 #include <fmt/core.h>
@@ -26,9 +26,8 @@
 #include <stdexcept>
 #include <string>
 
-namespace expr
-{
-  namespace type
+
+  namespace gspc::we::expr::type
   {
     namespace
     {
@@ -52,6 +51,8 @@ namespace expr
         LITERAL (String)
         LITERAL (Bitset)
         LITERAL (Bytearray)
+        LITERAL (Bigint)
+        LITERAL (Shared)
 
 #undef LITERAL
 
@@ -156,7 +157,7 @@ namespace expr
             );
         }
 
-        using Value = ::pnet::type::value::value_type;
+        using Value = pnet::type::value::value_type;
 
       public:
 #define LITERAL(R,T...) Type operator() (T const&) const { return R{}; }
@@ -171,8 +172,14 @@ namespace expr
         LITERAL (Double, double)
         LITERAL (Char, char)
         LITERAL (String, std::string)
-        LITERAL (Bitset, bitsetofint::type)
+        LITERAL (Bitset, pnet::type::bitsetofint::type)
         LITERAL (Bytearray, we::type::bytearray)
+        LITERAL (Bigint, pnet::type::value::bigint_type)
+
+        Type operator() (we::type::shared const& s) const
+        {
+          return Shared {s.cleanup_place()};
+        }
 
 #undef LITERAL
 
@@ -256,7 +263,7 @@ namespace expr
                      );
         }
 
-        Type operator() (::pnet::type::value::structured_type const& s) const
+        Type operator() (pnet::type::value::structured_type const& s) const
         {
           Struct::Fields field_types;
 
@@ -281,7 +288,7 @@ namespace expr
         -> decltype (fun (type))
       {
         auto const types
-          ( fhg::util::visit<Types>
+          ( util::visit<Types>
             ( type
             , [] (Types const& ts)
               {
@@ -307,7 +314,7 @@ namespace expr
                           , description
                           , type
                           , kind.name
-                          , fhg::util::print_container ("{'", "', '", "'}", kind.types)
+                          , util::print_container ("{'", "', '", "'}", kind.types)
                           )
             };
         }
@@ -322,6 +329,7 @@ namespace expr
                                    , Long{}
                                    , ULong{}
                                    , UInt{}
+                                   , Bigint{}
                                    }
                                  };
       static Kind const Signed = { "Signed"
@@ -329,6 +337,7 @@ namespace expr
                                    , Double{}
                                    , Float{}
                                    , Long{}
+                                   , Bigint{}
                                    }
                                  };
       static Kind const Integer =  { "Integer"
@@ -336,6 +345,7 @@ namespace expr
                                      , Long{}
                                      , ULong{}
                                      , UInt{}
+                                     , Bigint{}
                                      }
                                    };
       static Kind const Ord = { "Ordered"
@@ -348,6 +358,7 @@ namespace expr
                                 , Long{}
                                 , ULong{}
                                 , UInt{}
+                                , Bigint{}
                                 }
                               };
       static Kind const Addable = { "Addable"
@@ -359,6 +370,7 @@ namespace expr
                                     , Long{}
                                     , ULong{}
                                     , UInt{}
+                                    , Bigint{}
                                     }
                                   };
       static Kind const Fractional = { "Fractional"
@@ -397,7 +409,7 @@ namespace expr
       {
         using Ret = decltype (fun (std::declval<T>()));
 
-        return fhg::util::visit<Ret>
+        return util::visit<Ret>
           ( type
           , [&] (T const& x)
             {
@@ -600,6 +612,7 @@ namespace expr
           case token::_toulong:  return with_kind (Number, Const (ULong{}));
           case token::_tofloat:  return with_kind (Number, Const (Float{}));
           case token::_todouble: return with_kind (Number, Const (Double{}));
+          case token::_tobigint: return with_kind (Number, Const (Bigint{}));
 
           default: break;
           }
@@ -607,7 +620,7 @@ namespace expr
           throw std::logic_error
             { fmt::format ( "Unknown unary token '{}' in ''"
                           , u.token
-                          , expr::parse::node::type {u}
+                          , parse::node::type {u}
                           )
             };
         }
@@ -779,13 +792,21 @@ namespace expr
           case token::_map_get_assignment:
             return with_map (Value{});
 
+          case token::_shared:
+            require (description_lhs, lhs, String{});
+
+            return Shared
+              { ::boost::get<std::string>
+                  (::boost::get<pnet::type::value::value_type> (b.l))
+              };
+
           default: break;
           }
 
           throw std::logic_error
             { fmt::format ( "Unknown binary token '{}' in '{}'"
                           , b.token
-                          , expr::parse::node::type {b}
+                          , parse::node::type {b}
                           )
             };
         }
@@ -815,7 +836,7 @@ namespace expr
           throw std::logic_error
             { fmt::format ( "Unknown ternary token '{}' in '{}'"
                           , t.token
-                          , expr::parse::node::type {t}
+                          , parse::node::type {t}
                           )
             };
         }
@@ -833,4 +854,3 @@ namespace expr
         (exception::type::error {fmt::format ("In '{}'", node)});
     }
   }
-}

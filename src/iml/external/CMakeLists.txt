@@ -1,7 +1,0 @@
-extended_add_library (
- NAME ClientDevel
- NAMESPACE BeeGFS
- TYPE INTERFACE
- SYSTEM_INCLUDE_DIRECTORIES INTERFACE
-  "${CMAKE_CURRENT_SOURCE_DIR}/beegfs-client-devel"
-)

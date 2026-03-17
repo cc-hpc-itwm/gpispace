@@ -1,8 +1,8 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2013-2015,2020-2023,2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/type/value/path/split.hpp>
-#include <we/type/value/poke.hpp>
+#include <gspc/we/type/value/path/split.hpp>
+#include <gspc/we/type/value/poke.hpp>
 
 #include <algorithm>
 #include <iterator>
@@ -10,11 +10,9 @@
 #include <string>
 #include <utility>
 
-namespace pnet
-{
-  namespace type
-  {
-    namespace value
+
+
+    namespace gspc::pnet::type::value
     {
       namespace
       {
@@ -110,5 +108,3 @@ namespace pnet
         return poke (path::split (path), node, value);
       }
     }
-  }
-}

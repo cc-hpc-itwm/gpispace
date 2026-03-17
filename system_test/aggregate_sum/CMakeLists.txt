@@ -7,8 +7,6 @@ set (CMAKE_CXX_STANDARD 14)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package (GPISpace REQUIRED)
-find_package (util-generic REQUIRED)
-find_package (util-cmake REQUIRED)
 find_package (Boost 1.61.0 REQUIRED
   COMPONENTS
      program_options
@@ -16,7 +14,7 @@ find_package (Boost 1.61.0 REQUIRED
 
 include (FetchContent)
 
-include (util-cmake/add_macros)
+include (add_macros)
 
 set (BUNDLE_ROOT "libexec/bundle")
 bundle_GPISpace (DESTINATION "${BUNDLE_ROOT}/gpispace"
@@ -69,7 +67,7 @@ extended_add_executable (NAME "${DRIVER_BINARY}"
     src/WorkflowResult.cpp
     src/ValuesOnPorts.cpp
   INCLUDE_DIRECTORIES PRIVATE include
-  LIBRARIES PRIVATE Util::Generic
+  LIBRARIES PRIVATE gspc_util
                     GPISpace::execution
                     Boost::headers
                     Boost::program_options

@@ -1,0 +1,73 @@
+<!-- Copyright (C) 2023,2026 Fraunhofer ITWM                       -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
+
+<defun name="fibonacci">
+  <struct name="fib">
+    <field name="n" type="bigint"/>
+    <field name="value" type="bigint"/>
+  </struct>
+
+  <in name="n" type="bigint" place="n"/>
+  <out name="result" type="fib" place="result"/>
+
+  <net>
+    <place name="n" type="bigint"/>
+    <place name="result" type="fib"/>
+
+    <struct name="state">
+      <field name="i" type="bigint"/>
+      <field name="n" type="bigint"/>
+      <field name="x" type="bigint"/>
+      <field name="y" type="bigint"/>
+    </struct>
+
+    <place name="state" type="state"/>
+
+    <transition name="init">
+      <defun>
+        <in name="n" type="bigint"/>
+        <out name="state" type="state"/>
+        <expression>
+          ${state.i} := 0A;
+          ${state.n} := ${n};
+          ${state.x} := 0A;
+          ${state.y} := 1A
+        </expression>
+      </defun>
+      <connect-in port="n" place="n"/>
+      <connect-out port="state" place="state"/>
+    </transition>
+
+    <transition name="step">
+      <defun>
+        <inout name="state" type="state"/>
+        <expression>
+          ${z} := ${state.x} + ${state.y};
+          ${state.x} := ${state.y};
+          ${state.y} := ${z};
+          ${state.i} := ${state.i} + 1A
+        </expression>
+        <condition>
+          ${state.i} :lt: ${state.n}
+        </condition>
+      </defun>
+      <connect-inout port="state" place="state"/>
+    </transition>
+
+    <transition name="done">
+      <defun>
+        <in name="state" type="state"/>
+        <out name="result" type="fib"/>
+        <expression>
+          ${result.n} := ${state.n};
+          ${result.value} := ${state.x}
+        </expression>
+        <condition>
+          ${state.i} :ge: ${state.n}
+        </condition>
+      </defun>
+      <connect-in port="state" place="state"/>
+      <connect-out port="result" place="result"/>
+    </transition>
+  </net>
+</defun>

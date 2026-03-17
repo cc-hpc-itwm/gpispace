@@ -1,9 +1,9 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2013-2015,2017,2020-2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <util/qt/dual_list_selector.hpp>
+#include <gspc/util/qt/dual_list_selector.hpp>
 
-#include <fhg/assert.hpp>
+#include <gspc/assert.hpp>
 
 #include <QAbstractListModel>
 #include <QAction>
@@ -14,18 +14,18 @@
 #include <QToolButton>
 #include <QVBoxLayout>
 
-#include <boost/optional.hpp>
+#include <optional>
 
 #include <algorithm>
+#include <exception>
 #include <functional>
+#include <utility>
 
 Q_DECLARE_METATYPE (QModelIndex)
 
-namespace fhg
-{
-  namespace util
-  {
-    namespace qt
+
+
+    namespace gspc::util::qt
     {
       namespace detail
       {
@@ -71,9 +71,9 @@ namespace fhg
 
           stream << indices.size();
 
-          for (QModelIndex index : indices)
+          for (auto index : indices)
           {
-            fhg_assert (index.isValid(), "only valid indices shall have ItemIsDragEnabled");
+            gspc_assert (index.isValid(), "only valid indices shall have ItemIsDragEnabled");
             stream << itemData (index);
           }
 
@@ -84,15 +84,15 @@ namespace fhg
 
         bool dual_list_move_and_drag_proxy::dropMimeData
           ( const QMimeData* data
-          , Qt::DropAction IF_FHG_ASSERT (action)
-          , int IF_FHG_ASSERT (row)
-          , int IF_FHG_ASSERT (column)
+          , Qt::DropAction IF_GSPC_ASSERT (action)
+          , int IF_GSPC_ASSERT (row)
+          , int IF_GSPC_ASSERT (column)
           , QModelIndex const& parent
           )
         {
-          fhg_assert (data->hasFormat (mime_type()), "only able to drag&drop from same model");
-          fhg_assert (action == Qt::MoveAction, "move is the only drop action");
-          fhg_assert (column == -1 && row == -1, "should always drop on nothing");
+          gspc_assert (data->hasFormat (mime_type()), "only able to drag&drop from same model");
+          gspc_assert (action == Qt::MoveAction, "move is the only drop action");
+          gspc_assert (column == -1 && row == -1, "should always drop on nothing");
 
           QByteArray encoded (data->data (mime_type()));
           QDataStream stream (&encoded, QIODevice::ReadOnly);
@@ -110,7 +110,7 @@ namespace fhg
             setItemData (index (begin_row, 0, QModelIndex()), item_data);
           }
 
-          fhg_assert (count == 0 && stream.atEnd(), "given count shall match data");
+          gspc_assert (count == 0 && stream.atEnd(), "given count shall match data");
 
           return true;
         }
@@ -194,12 +194,17 @@ namespace fhg
         }
 
         void swap (QModelIndex lhs, QModelIndex rhs, QAbstractItemModel* model)
+        try
         {
-          fhg_assert (model == lhs.model(), "swap: lhs and rhs shall have the same models");
-          fhg_assert (model == rhs.model(), "swap: lhs and rhs shall have the same models");
+          gspc_assert (model == lhs.model(), "swap: lhs and rhs shall have the same models");
+          gspc_assert (model == rhs.model(), "swap: lhs and rhs shall have the same models");
           const QMap<int, QVariant> data_lhs (model->itemData (lhs));
           model->setItemData (lhs, model->itemData (rhs));
           model->setItemData (rhs, data_lhs);
+        }
+        catch (...)
+        {
+          std::ignore = std::current_exception();
         }
 
         template<int offset>
@@ -209,7 +214,7 @@ namespace fhg
           const QModelIndex sibling
             (to_move.sibling (to_move.row() + offset, to_move.column()));
 
-          fhg_assert (sibling.isValid(), "move_selected: don't move above 0 or below max");
+          gspc_assert (sibling.isValid(), "move_selected: don't move above 0 or below max");
 
           swap (to_move, sibling, model);
           view->setCurrentIndex (sibling);
@@ -331,19 +336,19 @@ namespace fhg
 
       namespace
       {
-        ::boost::optional<int> selected_row (QAbstractItemView* view)
+        std::optional<int> selected_row (QAbstractItemView* view)
         {
           const QModelIndexList indices
             (view->selectionModel()->selectedIndexes());
           return indices.isEmpty()
-            ? ::boost::optional<int> (::boost::none) : indices.first().row();
+            ? std::optional<int> (std::nullopt) : indices.first().row();
         }
       }
 
       void dual_list_selector::enable_actions()
       {
-        const ::boost::optional<int> left_row (selected_row (_available_view));
-        const ::boost::optional<int> right_row (selected_row (_selected_view));
+        const std::optional<int> left_row (selected_row (_available_view));
+        const std::optional<int> right_row (selected_row (_selected_view));
 
         _select->setEnabled (!!left_row);
         _deselect->setEnabled (!!right_row);
@@ -352,5 +357,3 @@ namespace fhg
           (right_row && *right_row < _selected->rowCount() - 1);
       }
     }
-  }
-}

@@ -1,5 +1,5 @@
-<!-- Copyright (C) 2025 Fraunhofer ITWM        -->
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- Copyright (C) 2014-2015,2021,2023-2024,2026 Fraunhofer ITWM   -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
 
 <defun name="stream_two_module_calls">
   <include-structs href="stream/work_package.xpnet"/>
@@ -126,7 +126,7 @@
           <cxx flag="--std=c++17"/>
           <ld flag="-lgspc"/>
           <code><![CDATA[
-            static fhg::util::statistic delta ("mark_free: delta");
+            static gspc::util::statistic delta ("mark_free: delta");
             delta.tick
               (delta.now() - work_package_with_timestamp_and_id.produced);
 

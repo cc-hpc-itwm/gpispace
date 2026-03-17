@@ -1,0 +1,29 @@
+// Copyright (C) 2013,2016,2020-2021,2023,2025-2026 Fraunhofer ITWM
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+#include <gspc/xml/parse/util/show_node_type.hpp>
+
+#include <rapidxml.hpp>
+
+#include <stdexcept>
+
+
+
+    namespace gspc::xml::parse::util
+    {
+      std::string show_node_type (int t)
+      {
+        switch (t)
+          {
+          case rapidxml::node_document: return "document";
+          case rapidxml::node_element: return "element";
+          case rapidxml::node_data: return "data";
+          case rapidxml::node_cdata: return "cdata";
+          case rapidxml::node_comment: return "comment";
+          case rapidxml::node_declaration: return "declaration";
+          case rapidxml::node_doctype: return "doctype";
+          case rapidxml::node_pi: return "pi";
+          default: throw std::runtime_error ("STRANGE: unknown node type");
+          }
+      }
+    }

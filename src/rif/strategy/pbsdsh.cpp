@@ -1,31 +1,29 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2016-2017,2020-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <rif/strategy/pbsdsh.hpp>
+#include <gspc/rif/strategy/pbsdsh.hpp>
 
-#include <fhg/util/system_with_blocked_SIGCHLD.hpp>
-#include <util-generic/blocked.hpp>
-#include <util-generic/boost/program_options/generic.hpp>
-#include <util-generic/boost/program_options/validators/positive_integral.hpp>
+#include <gspc/util/system_with_blocked_SIGCHLD.hpp>
+#include <gspc/util/blocked.hpp>
+#include <gspc/util/boost/program_options/generic.hpp>
+#include <gspc/util/boost/program_options/validators/positive_integral.hpp>
 
-#include <FMT/boost/filesystem/path.hpp>
+#include <gspc/util/fmt/std/filesystem/path.formatter.hpp>
 #include <fmt/core.h>
 #include <stdexcept>
 #include <string>
+#include <optional>
 
-namespace fhg
-{
-  namespace rif
-  {
-    namespace strategy
-    {
-      namespace pbsdsh
+
+
+
+      namespace gspc::rif::strategy::pbsdsh
       {
         namespace
         {
           namespace option
           {
-            namespace po = fhg::util::boost::program_options;
+            namespace po = gspc::util::boost::program_options;
 
             po::option<std::size_t, po::positive_integral<std::size_t>>
               const block_size { "pbsdshs-at-once"
@@ -46,24 +44,24 @@ namespace fhg
             (std::string const& hostname, std::string const& command)
           {
             //! \todo use torque's tm_spawn API directly to avoid system()
-            util::system_with_blocked_SIGCHLD
+            gspc::util::system_with_blocked_SIGCHLD
               (fmt::format ("pbsdsh -h {} {}", hostname, command));
           }
         }
 
         std::unordered_map<std::string, std::exception_ptr>
           bootstrap ( std::vector<std::string> const& all_hostnames
-                    , ::boost::optional<unsigned short> const& port
+                    , std::optional<unsigned short> const& port
                     , std::string const& register_host
                     , unsigned short register_port
-                    , ::boost::filesystem::path const& binary
+                    , std::filesystem::path const& binary
                     , std::vector<std::string> const& parameters
                     , std::ostream&
                     )
         {
           EXTRACT_PARAMETERS (parameters);
 
-          return util::blocked_async<std::string>
+          return gspc::util::blocked_async<std::string>
             ( all_hostnames
             , block_size
             , [] (std::string const& hostname) { return hostname; }
@@ -89,20 +87,20 @@ namespace fhg
         std::pair < std::unordered_set<std::string>
                   , std::unordered_map<std::string, std::exception_ptr>
                   > teardown
-            ( std::unordered_map<std::string, fhg::rif::entry_point> const& all_entry_points
+            ( std::unordered_map<std::string, gspc::rif::entry_point> const& all_entry_points
             , std::vector<std::string> const& parameters
             )
         {
           EXTRACT_PARAMETERS (parameters);
 
-          return util::blocked_async<std::string>
+          return gspc::util::blocked_async<std::string>
             ( all_entry_points
             , block_size
-            , [] (std::pair<std::string, fhg::rif::entry_point> const& entry_point)
+            , [] (std::pair<std::string, gspc::rif::entry_point> const& entry_point)
               {
                 return entry_point.first;
               }
-            , [&] (std::pair<std::string, fhg::rif::entry_point> const& entry_point)
+            , [&] (std::pair<std::string, gspc::rif::entry_point> const& entry_point)
               {
                 do_pbsdsh ( entry_point.second.hostname
                           , fmt::format ( "/bin/kill -TERM {}"
@@ -113,6 +111,3 @@ namespace fhg
             );
         }
       }
-    }
-  }
-}

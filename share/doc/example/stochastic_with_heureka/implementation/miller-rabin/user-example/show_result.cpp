@@ -1,12 +1,12 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2020-2021,2023,2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <miller-rabin/util.hpp>
 
 #include <util/print_exception.hpp>
 
-#include <we/type/bytearray.hpp>
-#include <we/type/value/read.hpp>
+#include <gspc/we/type/bytearray.hpp>
+#include <gspc/we/type/value/read.hpp>
 
 #include <iostream>
 #include <ostream>
@@ -23,8 +23,8 @@ try
 
   miller_rabin::show_result
     ( std::cout
-    , ::boost::get<we::type::bytearray>
-        (pnet::type::value::read (std::string (argv[1])))
+    , ::boost::get<gspc::we::type::bytearray>
+        (gspc::pnet::type::value::read (std::string (argv[1])))
     );
 
   return 0;

@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2021,2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -7,7 +7,7 @@
 #include <test/parallel_reduce/module_call/protocol.hpp>
 #include <test/parallel_reduce/module_call/remote_function/Provider.hpp>
 
-#include <util-generic/this_bound_mem_fn.hpp>
+#include <gspc/util/this_bound_mem_fn.hpp>
 
 #include <condition_variable>
 #include <list>
@@ -15,13 +15,10 @@
 #include <string>
 #include <utility>
 
-namespace gspc
-{
-  namespace test
-  {
-    namespace parallel_reduce
-    {
-      namespace module_call
+
+
+
+      namespace gspc::test::parallel_reduce::module_call
       {
         struct JobServer
         {
@@ -49,7 +46,7 @@ namespace gspc
             );
 
           remote_function::Provider<protocol::running> _provider
-            {fhg::util::bind_this (this, &JobServer::running)};
+            {gspc::util::bind_this (this, &JobServer::running)};
 
         public:
           JobServer
@@ -63,6 +60,3 @@ namespace gspc
             -> decltype (_max_parallel_running_tasks);
         };
       }
-    }
-  }
-}

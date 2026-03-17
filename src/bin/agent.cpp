@@ -1,27 +1,24 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2011,2014-2016,2018-2024,2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <fhg/util/signal_handler_manager.hpp>
-#include <rif/started_process_promise.hpp>
-#include <sdpa/daemon/Agent.hpp>
-#include <we/layer.hpp>
+#include <gspc/util/signal_handler_manager.hpp>
+#include <gspc/rif/started_process_promise.hpp>
+#include <gspc/scheduler/daemon/Agent.hpp>
+#include <gspc/we/layer.hpp>
 
-#include <util-generic/boost/program_options/validators/existing_path.hpp>
-#include <util-generic/boost/program_options/validators/nonempty_string.hpp>
-#include <util-generic/connectable_to_address_string.hpp>
-#include <util-generic/print_exception.hpp>
+#include <gspc/util/boost/program_options/validators/existing_path.hpp>
+#include <gspc/util/boost/program_options/validators/nonempty_string.hpp>
+#include <gspc/util/connectable_to_address_string.hpp>
+#include <gspc/util/print_exception.hpp>
 
-#include <boost/filesystem/path.hpp>
 #include <boost/program_options.hpp>
 
 #include <csignal>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <optional>
 #include <sstream>
-
-namespace bfs = ::boost::filesystem;
-namespace po = ::boost::program_options;
 
 namespace
 {
@@ -34,47 +31,59 @@ namespace
 
 int main (int argc, char **argv)
 {
-  fhg::rif::started_process_promise promise (argc, argv);
+  gspc::rif::started_process_promise promise (argc, argv);
 
   try
   {
-    namespace validators = fhg::util::boost::program_options;
+    namespace validators = gspc::util::boost::program_options;
 
     std::string agentName;
     std::string agentUrl;
-    std::optional<bfs::path> vmem_socket;
+    std::optional<std::filesystem::path> vmem_socket;
     gspc::Certificates ssl_certificates;
 
-    po::options_description desc("Allowed options");
+    ::boost::program_options::options_description desc("Allowed options");
     desc.add_options()
-      ("name,n", po::value<std::string>(&agentName)->default_value("agent"), "Agent's logical name")
-      ("url,u",  po::value<std::string>(&agentUrl)->default_value("localhost"), "Agent's url")
+      ("name,n", ::boost::program_options::value<std::string>(&agentName)->default_value("agent"), "Agent's logical name")
+      ("url,u",  ::boost::program_options::value<std::string>(&agentUrl)->default_value("localhost"), "Agent's url")
       ( option_name::vmem_socket
-      , po::value<validators::nonempty_string>()
+      , ::boost::program_options::value<validators::nonempty_string>()
       , "socket file to communicate with the virtual memory manager"
       )
       ( option_name::ssl_certificates
-      , po::value<bfs::path>()
+      , ::boost::program_options::value<std::filesystem::path>()
       , "folder containing SSL certificates"
       )
       ;
 
-    po::variables_map vm;
-    po::store (po::command_line_parser (argc, argv).options (desc).run(), vm);
+    ::boost::program_options::variables_map vm;
+    ::boost::program_options::store
+      ( ::boost::program_options::command_line_parser (argc, argv)
+          .options (desc)
+          .run()
+      , vm
+      );
 
-    po::notify (vm);
+    ::boost::program_options::notify (vm);
 
     if (vm.count (option_name::vmem_socket))
     {
-      vmem_socket = bfs::path (vm.at (option_name::vmem_socket).as<validators::nonempty_string>());
+      vmem_socket = std::filesystem::path
+        { std::string
+          { vm.at (option_name::vmem_socket).as<validators::nonempty_string>()
+          }
+        };
     }
 
     if (vm.count (option_name::ssl_certificates))
     {
-      ssl_certificates = vm.at (option_name::ssl_certificates).as<bfs::path>();
+      ssl_certificates = vm.at
+        ( option_name::ssl_certificates
+        ).as<std::filesystem::path>()
+        ;
     }
 
-    sdpa::daemon::Agent agent
+    gspc::scheduler::daemon::Agent agent
       ( agentName
       , agentUrl
       , std::make_unique<::boost::asio::io_service>()
@@ -82,13 +91,13 @@ int main (int argc, char **argv)
       , ssl_certificates
       );
 
-    fhg::util::signal_handler_manager signal_handlers;
-    fhg::util::scoped_log_backtrace_and_exit_for_critical_errors const
+    gspc::util::signal_handler_manager signal_handlers;
+    gspc::util::scoped_log_backtrace_and_exit_for_critical_errors const
       crit_error_handler (signal_handlers, agent.log_emitter());
 
-    fhg::util::Execution execution (signal_handlers);
+    gspc::util::Execution execution (signal_handlers);
 
-    promise.set_result ( fhg::util::connectable_to_address_string
+    promise.set_result ( gspc::util::connectable_to_address_string
                            (agent.peer_local_endpoint().address())
                        , std::to_string
                            (agent.peer_local_endpoint().port())

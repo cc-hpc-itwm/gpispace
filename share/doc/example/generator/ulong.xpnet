@@ -1,0 +1,50 @@
+<!-- Copyright (C) 2026 Fraunhofer ITWM                            -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
+
+<!-- Example network demonstrating generator places with unsigned long type.
+     The generator place produces unique unsigned long values:
+     0UL, 1UL, 2UL, ...
+     This workflow consumes n tokens from the generator and outputs
+     them as individual tokens. -->
+
+<defun name="generator_ulong">
+
+  <in name="n" type="unsigned long" place="count"/>
+  <out name="id" type="unsigned long" place="id"/>
+
+  <net>
+
+    <place name="count" type="unsigned long"/>
+    <place name="generator" type="unsigned long" generator="true"/>
+    <place name="id" type="unsigned long"/>
+
+    <transition name="consume">
+      <defun>
+        <inout name="count" type="unsigned long"/>
+        <inout name="id" type="unsigned long"/>
+        <expression>
+          ${count} := ${count} - 1UL;
+        </expression>
+      </defun>
+      <condition>
+        ${count} :gt: 0UL
+      </condition>
+      <connect-inout port="count" place="count"/>
+      <connect-in port="id" place="generator"/>
+      <connect-out port="id" place="id"/>
+    </transition>
+
+    <transition name="done">
+      <defun>
+        <in name="count" type="unsigned long"/>
+        <expression/>
+      </defun>
+      <condition>
+        ${count} :le: 0UL
+      </condition>
+      <connect-in port="count" place="count"/>
+    </transition>
+
+  </net>
+
+</defun>

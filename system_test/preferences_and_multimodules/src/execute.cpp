@@ -1,16 +1,17 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2022-2024,2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <preferences_and_multimodules/parse_parameters_from_commandline.hpp>
 #include <preferences_and_multimodules/parameters.hpp>
 #include <preferences_and_multimodules/workflow.hpp>
 
-#include <drts/client.hpp>
-#include <drts/drts.hpp>
-#include <drts/scoped_rifd.hpp>
+#include <gspc/drts/client.hpp>
+#include <gspc/drts/drts.hpp>
+#include <gspc/drts/scoped_rifd.hpp>
 
-#include <util-generic/executable_path.hpp>
+#include <gspc/util/executable_path.hpp>
 
+#include <filesystem>
 #include <fmt/core.h>
 #include <string>
 
@@ -35,8 +36,8 @@ namespace preferences_and_multimodules
     auto const preferences (workflow.preferences());
     auto const num_workers_per_target (workflow.num_workers_per_target());
 
-    auto const preferences_and_multimodules_installation_path
-      (fhg::util::executable_path().parent_path().parent_path());
+    std::filesystem::path const preferences_and_multimodules_installation_path
+      {gspc::util::executable_path().parent_path().parent_path().string()};
 
     // Create an object containing information about the GPI-Space installation used.
     gspc::installation installation (parameters);

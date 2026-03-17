@@ -1,16 +1,15 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2018-2019,2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <logging/message.hpp>
+#include <gspc/logging/message.hpp>
 
-#include <util-generic/hostname.hpp>
-#include <util-generic/syscall.hpp>
+#include <gspc/util/hostname.hpp>
+#include <gspc/util/syscall.hpp>
 
 #include <stdexcept>
 
-namespace fhg
-{
-  namespace logging
+
+  namespace gspc::logging
   {
     message::message ( decltype (_content) content
                      , decltype (_category) category
@@ -18,9 +17,9 @@ namespace fhg
       : message ( std::move (content)
                 , std::move (category)
                 , decltype (_timestamp)::clock::now()
-                , util::hostname()
-                , util::syscall::getpid()
-                , util::syscall::gettid()
+                , gspc::util::hostname()
+                , gspc::util::syscall::getpid()
+                , gspc::util::syscall::gettid()
                 )
     {}
     message::message ( decltype (_content) content
@@ -38,4 +37,3 @@ namespace fhg
       , _thread_id (std::move (thread_id))
     {}
   }
-}

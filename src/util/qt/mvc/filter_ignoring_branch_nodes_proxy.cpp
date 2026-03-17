@@ -1,15 +1,12 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2013,2020-2021,2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <util/qt/mvc/filter_ignoring_branch_nodes_proxy.hpp>
+#include <gspc/util/qt/mvc/filter_ignoring_branch_nodes_proxy.hpp>
 
-namespace fhg
-{
-  namespace util
-  {
-    namespace qt
-    {
-      namespace mvc
+
+
+
+      namespace gspc::util::qt::mvc
       {
         filter_ignoring_branch_nodes_proxy::filter_ignoring_branch_nodes_proxy
           (QAbstractItemModel* model, QObject* parent)
@@ -44,6 +41,3 @@ namespace fhg
           return false;
         }
       }
-    }
-  }
-}

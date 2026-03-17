@@ -1,13 +1,11 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2013-2014,2018,2020-2021,2023,2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/type/signature/specialize.hpp>
+#include <gspc/we/type/signature/specialize.hpp>
 
-namespace pnet
-{
-  namespace type
-  {
-    namespace signature
+
+
+    namespace gspc::pnet::type::signature
     {
       namespace
       {
@@ -76,5 +74,3 @@ namespace pnet
         mapper (m)._struct (s);
       }
     }
-  }
-}

@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2014,2021-2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <map/transform_file/type.hpp>
@@ -10,7 +10,7 @@ namespace transform_file
     enum field {INPUT, OUTPUT, SIZE, NUM_FIELDS};
   }
 
-  parameter from_bytearray (we::type::bytearray const& ba)
+  parameter from_bytearray (gspc::we::type::bytearray const& ba)
   {
     std::string const s (ba.to_string());
     unsigned long const size_header (NUM_FIELDS * sizeof (unsigned long));
@@ -22,8 +22,7 @@ namespace transform_file
 
     std::vector<char> data (s.begin(), s.begin() + size_header);
 
-    auto* sizes
-      (static_cast<unsigned long*> (static_cast<void*> (data.data())));
+    auto* sizes {reinterpret_cast<unsigned long*> (data.data())};
 
     unsigned long const size_input {sizes[INPUT]};
     unsigned long const size_output {sizes[OUTPUT]};
@@ -35,35 +34,36 @@ namespace transform_file
     }
 
     return parameter
-      ( ::boost::filesystem::path (s.substr (size_header, size_input))
-      , ::boost::filesystem::path (s.substr (size_header + size_input, size_output))
+      ( std::filesystem::path (s.substr (size_header, size_input))
+      , std::filesystem::path (s.substr (size_header + size_input, size_output))
       , size
       );
   }
 
-  we::type::bytearray to_bytearray (parameter const& p)
+  gspc::we::type::bytearray to_bytearray (parameter const& p)
   {
+    auto const input {p.input().string()};
+    auto const output {p.output().string()};
     unsigned long const size_header {NUM_FIELDS * sizeof (unsigned long)};
-    unsigned long const size_input {p.input().string().size()};
-    unsigned long const size_output {p.output().string().size()};
+    unsigned long const size_input {input.size()};
+    unsigned long const size_output {output.size()};
 
     std::vector<char> data (size_header + size_input + size_output);
 
-    auto* sizes
-      (static_cast<unsigned long*> (static_cast<void*> (data.data())));
+    auto* sizes {reinterpret_cast<unsigned long*> (data.data())};
 
     sizes[INPUT] = size_input;
     sizes[OUTPUT] = size_output;
     sizes[SIZE] = p.size();
 
-    std::copy ( p.input().string().begin(), p.input().string().end()
+    std::copy ( input.begin(), input.end()
               , data.data() + size_header
               );
-    std::copy ( p.output().string().begin(), p.output().string().end()
+    std::copy ( output.begin(), output.end()
               , data.data() + size_header + size_input
               );
 
-    return we::type::bytearray
+    return gspc::we::type::bytearray
       (data.data(), size_header + size_input + size_output);
   }
 }

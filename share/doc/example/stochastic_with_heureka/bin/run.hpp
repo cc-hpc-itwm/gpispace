@@ -1,10 +1,10 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2020-2021,2023-2024,2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
 
-#include <we/type/bytearray.hpp>
-#include <we/type/value.hpp>
+#include <gspc/we/type/bytearray.hpp>
+#include <gspc/we/type/value.hpp>
 
 #include <boost/program_options.hpp>
 
@@ -19,9 +19,9 @@ namespace stochastic_with_heureka
   struct workflow_result
   {
     workflow_result
-      (std::multimap<std::string, pnet::type::value::value_type> const&);
+      (std::multimap<std::string, gspc::pnet::type::value::value_type> const&);
 
-    we::type::bytearray const& result() const
+    gspc::we::type::bytearray const& result() const
     {
       return _result;
     }
@@ -35,7 +35,7 @@ namespace stochastic_with_heureka
     }
 
   private:
-    we::type::bytearray _result;
+    gspc::we::type::bytearray _result;
     bool _got_heureka;
     unsigned long _number_of_rolls_done;
   };
@@ -49,7 +49,7 @@ namespace stochastic_with_heureka
                        , std::filesystem::path installation_dir
                        )
                    > implementation
-    , std::function< we::type::bytearray
+    , std::function< gspc::we::type::bytearray
                      (::boost::program_options::variables_map const&)
                    >
     );
@@ -59,7 +59,7 @@ namespace stochastic_with_heureka
     , char** argv
     , std::optional<::boost::program_options::options_description>
     , std::string const implementation
-    , std::function< we::type::bytearray
+    , std::function< gspc::we::type::bytearray
                      (::boost::program_options::variables_map const&)
                    >
     );

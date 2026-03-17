@@ -1,14 +1,13 @@
-fhg_add_test (NAME doc_example_virtual
+gspc_add_test (NAME doc_example_virtual
   SOURCES test.cpp
   USE_BOOST
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
        --source-directory "${PROJECT_SOURCE_DIR}/share/doc/example/virtual"
-       --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
+       --shared-directory "${GSPC_SHARED_DIRECTORY_FOR_TESTS}"
   LIBRARIES gspc
-            test-utilities
-            fhg-util
+            gspc_testing
+            gspc_util
             Boost::program_options
-            Boost::filesystem
   REQUIRES_INSTALLATION
   START_SCOPED_RIF
 )

@@ -1,11 +1,11 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2014,2021,2023,2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
 
-#include <we/type/bytearray.hpp>
+#include <gspc/we/type/bytearray.hpp>
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include <string>
 
@@ -14,8 +14,8 @@ namespace transform_file
   class parameter
   {
   public:
-    parameter ( ::boost::filesystem::path const& input
-              , ::boost::filesystem::path const& output
+    parameter ( std::filesystem::path const& input
+              , std::filesystem::path const& output
               , unsigned long size
               )
       : _input (input)
@@ -23,11 +23,11 @@ namespace transform_file
       , _size (size)
     {}
 
-    ::boost::filesystem::path const& input() const
+    std::filesystem::path input() const
     {
       return _input;
     }
-    ::boost::filesystem::path const& output() const
+    std::filesystem::path output() const
     {
       return _output;
     }
@@ -37,11 +37,11 @@ namespace transform_file
     }
 
   private:
-    ::boost::filesystem::path const _input;
-    ::boost::filesystem::path const _output;
+    std::filesystem::path _input;
+    std::filesystem::path _output;
     unsigned long _size;
   };
 
-  parameter from_bytearray (we::type::bytearray const&);
-  we::type::bytearray to_bytearray (parameter const&);
+  parameter from_bytearray (gspc::we::type::bytearray const&);
+  gspc::we::type::bytearray to_bytearray (parameter const&);
 }

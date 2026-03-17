@@ -1,36 +1,37 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2011-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <drts/worker/drts.hpp>
+#include <gspc/drts/worker/drts.hpp>
 
-#include <drts/worker/context.hpp>
-#include <drts/worker/context_impl.hpp>
+#include <gspc/drts/worker/context.hpp>
+#include <gspc/drts/worker/context_impl.hpp>
 
-#include <sdpa/capability.hpp>
-#include <sdpa/events/CancelJobAckEvent.hpp>
-#include <sdpa/events/CancelJobEvent.hpp>
-#include <sdpa/events/Codec.hpp>
-#include <sdpa/events/ErrorEvent.hpp>
-#include <sdpa/events/JobFailedAckEvent.hpp>
-#include <sdpa/events/JobFailedEvent.hpp>
-#include <sdpa/events/JobFinishedAckEvent.hpp>
-#include <sdpa/events/JobFinishedEvent.hpp>
-#include <sdpa/events/SubmitJobAckEvent.hpp>
-#include <sdpa/events/SubmitJobEvent.hpp>
-#include <sdpa/events/WorkerRegistrationEvent.hpp>
-#include <sdpa/events/worker_registration_response.hpp>
+#include <gspc/scheduler/capability.hpp>
+#include <gspc/scheduler/events/CancelJobAckEvent.hpp>
+#include <gspc/scheduler/events/CancelJobEvent.hpp>
+#include <gspc/scheduler/events/Codec.hpp>
+#include <gspc/scheduler/events/ErrorEvent.hpp>
+#include <gspc/scheduler/events/JobFailedAckEvent.hpp>
+#include <gspc/scheduler/events/JobFailedEvent.hpp>
+#include <gspc/scheduler/events/JobFinishedAckEvent.hpp>
+#include <gspc/scheduler/events/JobFinishedEvent.hpp>
+#include <gspc/scheduler/events/SubmitJobAckEvent.hpp>
+#include <gspc/scheduler/events/SubmitJobEvent.hpp>
+#include <gspc/scheduler/events/WorkerRegistrationEvent.hpp>
+#include <gspc/scheduler/events/worker_registration_response.hpp>
 
-#include <we/loader/exceptions.hpp>
-#include <we/loader/module_call.hpp>
-#include <we/type/Activity.hpp>
+#include <gspc/we/loader/exceptions.hpp>
+#include <gspc/we/loader/module_call.hpp>
+#include <gspc/we/type/Activity.hpp>
 
-#include <util-generic/hostname.hpp>
-#include <util-generic/print_exception.hpp>
-#include <util-generic/wait_and_collect_exceptions.hpp>
+#include <gspc/util/hostname.hpp>
+#include <gspc/util/print_exception.hpp>
+#include <gspc/util/wait_and_collect_exceptions.hpp>
 
 #include <cstdlib>
 #include <random>
 #include <stdexcept>
+#include <utility>
 
 struct wfe_task_t
 {
@@ -45,16 +46,16 @@ struct wfe_task_t
 
   std::string id;
   state_t state {PENDING};
-  we::type::Activity activity;
-  ::boost::optional<std::string> const target_impl;
+  gspc::we::type::Activity activity;
+  std::optional<std::string> const target_impl;
   drts::worker::context context;
 
   wfe_task_t ( std::string id_
-             , we::type::Activity const& activity_
-             , ::boost::optional<std::string> const& target_impl_
+             , gspc::we::type::Activity const& activity_
+             , std::optional<std::string> const& target_impl_
              , std::string worker_name
              , std::set<std::string> workers
-             , fhg::logging::stream_emitter& logger
+             , gspc::logging::stream_emitter& logger
              )
     : id (id_)
     , activity (activity_)
@@ -87,12 +88,12 @@ DRTSImpl::DRTSImpl
     , std::unique_ptr<::boost::asio::io_service> peer_io_service
     , std::string const& kernel_name
     , unsigned short comm_port
-    , iml::Client /*const*/* virtual_memory_api
-    , iml::SharedMemoryAllocation /*const*/* shared_memory
-    , std::tuple<fhg::com::host_t, fhg::com::port_t> const& parent
+    , gspc::iml::Client /*const*/* virtual_memory_api
+    , gspc::iml::SharedMemoryAllocation /*const*/* shared_memory
+    , std::tuple<gspc::com::host_t, gspc::com::port_t> const& parent
     , std::vector<std::string> const& capability_names
-    , std::vector<::boost::filesystem::path> const& library_path
-    , fhg::logging::stream_emitter& log_emitter
+    , std::vector<std::filesystem::path> const& library_path
+    , gspc::logging::stream_emitter& log_emitter
     , gspc::Certificates const& certificates
     )
   : _request_stop (request_stop)
@@ -103,7 +104,7 @@ DRTSImpl::DRTSImpl
   , _virtual_memory_api (virtual_memory_api)
   , _shared_memory (shared_memory)
   , _peer ( std::move (peer_io_service)
-          , fhg::com::port_t {comm_port}
+          , gspc::com::port_t {comm_port}
           , certificates
           , std::get<0> (parent)
           , std::get<1> (parent)
@@ -115,13 +116,13 @@ DRTSImpl::DRTSImpl
 {
   start_receiver();
 
-  std::set<sdpa::Capability> capabilities;
+  std::set<gspc::scheduler::Capability> capabilities;
   for (std::string const& cpb_name : capability_names)
   {
     capabilities.emplace (cpb_name);
   }
 
-  send_event_to_parent<sdpa::events::WorkerRegistrationEvent>
+  send_event_to_parent<gspc::scheduler::events::WorkerRegistrationEvent>
     ( m_my_name
     , capabilities
     ,
@@ -130,7 +131,7 @@ DRTSImpl::DRTSImpl
     #else
       0
     #endif
-    , fhg::util::hostname()
+    , gspc::util::hostname()
     );
 
   _registration_response.get_future().wait();
@@ -144,8 +145,8 @@ DRTSImpl::~DRTSImpl()
 }
 
 void DRTSImpl::handle_worker_registration_response
-  ( fhg::com::p2p::address_t const&
-  , sdpa::events::worker_registration_response const* response
+  ( gspc::com::p2p::address_t const&
+  , gspc::scheduler::events::worker_registration_response const* response
   )
 {
   try
@@ -161,7 +162,7 @@ void DRTSImpl::handle_worker_registration_response
 }
 
 void DRTSImpl::handleSubmitJobEvent
-  (fhg::com::p2p::address_t const&, const sdpa::events::SubmitJobEvent *e)
+  (gspc::com::p2p::address_t const&, const gspc::scheduler::events::SubmitJobEvent *e)
 {
   if (!e->job_id())
   {
@@ -173,7 +174,7 @@ void DRTSImpl::handleSubmitJobEvent
   auto job_it (m_jobs.find(*e->job_id()));
   if (job_it != m_jobs.end())
   {
-    send_event_to_parent<sdpa::events::SubmitJobAckEvent> (*e->job_id());
+    send_event_to_parent<gspc::scheduler::events::SubmitJobAckEvent> (*e->job_id());
     return;
   }
 
@@ -187,18 +188,18 @@ void DRTSImpl::handleSubmitJobEvent
 
   m_pending_jobs.put (job);
 
-  send_event_to_parent<sdpa::events::SubmitJobAckEvent> (job->id);
+  send_event_to_parent<gspc::scheduler::events::SubmitJobAckEvent> (job->id);
   m_jobs.emplace (job->id, job);
 }
 
 void DRTSImpl::handleCancelJobEvent
-  (fhg::com::p2p::address_t const&, const sdpa::events::CancelJobEvent *e)
+  (gspc::com::p2p::address_t const&, const gspc::scheduler::events::CancelJobEvent *e)
 {
   std::lock_guard<std::mutex> const _ (m_job_map_mutex);
   auto job_it (m_jobs.find (e->job_id()));
 
   _log_emitter.emit ( "got cancelation request for job: " + e->job_id()
-                    , fhg::logging::legacy::category_level_trace
+                    , gspc::logging::legacy::category_level_trace
                     );
 
   if (job_it == m_jobs.end())
@@ -210,14 +211,14 @@ void DRTSImpl::handleCancelJobEvent
   if (job_it->second->state.compare_exchange_strong (job_state, Job::CANCELED))
   {
     _log_emitter.emit ( "canceling pending job " + e->job_id()
-                      , fhg::logging::legacy::category_level_trace
+                      , gspc::logging::legacy::category_level_trace
                       );
-    send_event_to_parent<sdpa::events::CancelJobAckEvent> (job_it->second->id);
+    send_event_to_parent<gspc::scheduler::events::CancelJobAckEvent> (job_it->second->id);
   }
   else if (job_state == DRTSImpl::Job::RUNNING)
   {
     _log_emitter.emit ( "trying to cancel running job " + e->job_id()
-                      , fhg::logging::legacy::category_level_trace
+                      , gspc::logging::legacy::category_level_trace
                       );
     std::lock_guard<std::mutex> const _lock_currently_executed_tasks
       (_currently_executed_tasks_mutex);
@@ -232,25 +233,25 @@ void DRTSImpl::handleCancelJobEvent
   else if (job_state == DRTSImpl::Job::FAILED)
   {
     _log_emitter.emit ( "cancel_job for failed job " + e->job_id()
-                      , fhg::logging::legacy::category_level_trace
+                      , gspc::logging::legacy::category_level_trace
                       );
   }
   else if (job_state == DRTSImpl::Job::CANCELED)
   {
     _log_emitter.emit ( "cancel_job for canceled job " + e->job_id()
-                      , fhg::logging::legacy::category_level_trace
+                      , gspc::logging::legacy::category_level_trace
                       );
   }
   else // if (job_state == DRTSImpl::Job::FINISHED)
   {
     _log_emitter.emit ( "cancel_job for finished job " + e->job_id()
-                      , fhg::logging::legacy::category_level_trace
+                      , gspc::logging::legacy::category_level_trace
                       );
   }
 }
 
 void DRTSImpl::handleJobFailedAckEvent
-  (fhg::com::p2p::address_t const&, const sdpa::events::JobFailedAckEvent *e)
+  (gspc::com::p2p::address_t const&, const gspc::scheduler::events::JobFailedAckEvent *e)
 {
   std::lock_guard<std::mutex> const _ (m_job_map_mutex);
   auto job_it (m_jobs.find (e->job_id()));
@@ -264,7 +265,7 @@ void DRTSImpl::handleJobFailedAckEvent
 }
 
 void DRTSImpl::handleJobFinishedAckEvent
-  (fhg::com::p2p::address_t const&, const sdpa::events::JobFinishedAckEvent *e)
+  (gspc::com::p2p::address_t const&, const gspc::scheduler::events::JobFinishedAckEvent *e)
 {
   std::lock_guard<std::mutex> const _ (m_job_map_mutex);
   auto job_it (m_jobs.find (e->job_id()));
@@ -289,24 +290,25 @@ try
     }
     catch (std::exception const&)
     {
-      send_event_to_parent<sdpa::events::ErrorEvent>
-        ( sdpa::events::ErrorEvent::SDPA_EUNKNOWN
-        , fhg::util::current_exception_printer (": ").string()
+      send_event_to_parent<gspc::scheduler::events::ErrorEvent>
+        ( gspc::scheduler::events::ErrorEvent::SCHEDULER_EUNKNOWN
+        , gspc::util::current_exception_printer (": ").string()
         );
     }
   }
 }
-catch (decltype (m_event_queue)::interrupted const&)
+catch (decltype (m_event_queue)::interrupted const& interrupted)
 {
+  std::ignore = interrupted;
 }
 
 void DRTSImpl::emit_gantt
-  (wfe_task_t const& task, sdpa::daemon::NotificationEvent::state_t state)
+  (wfe_task_t const& task, gspc::scheduler::daemon::NotificationEvent::state_t state)
 {
   _log_emitter.emit_message
-    ( { sdpa::daemon::NotificationEvent
+    ( { gspc::scheduler::daemon::NotificationEvent
           ({m_my_name}, task.id, state, task.activity).encoded()
-      , sdpa::daemon::gantt_log_category
+      , gspc::scheduler::daemon::gantt_log_category
       }
     );
 }
@@ -323,7 +325,7 @@ try
       _log_emitter.emit
         ( "Worker process was tainted from previous job. "
           "Aborting to avoid corrupt job execution."
-        , fhg::logging::legacy::category_level_error
+        , gspc::logging::legacy::category_level_error
         );
 
       std::abort();
@@ -344,18 +346,18 @@ try
 
     try
     {
-      job->result = we::type::Activity();
+      job->result = gspc::we::type::Activity();
 
       wfe_task_t task
         (job->id, job->activity, job->target_impl, m_my_name, job->workers, _log_emitter);
 
-      emit_gantt (task, sdpa::daemon::NotificationEvent::STATE_STARTED);
+      emit_gantt (task, gspc::scheduler::daemon::NotificationEvent::STATE_STARTED);
 
       auto const generic_on_failure
         ( [&]
           {
             task.state = wfe_task_t::FAILED;
-            job->message = fhg::util::current_exception_printer (": ").string();
+            job->message = gspc::util::current_exception_printer (": ").string();
           }
         );
 
@@ -383,12 +385,12 @@ try
       {
         task.state = wfe_task_t::CANCELED;
       }
-      catch (we::loader::module_does_not_unload const&)
+      catch (gspc::we::loader::module_does_not_unload const&)
       {
         worker_was_tainted = true;
         generic_on_failure();
       }
-      catch (we::loader::function_does_not_unload const&)
+      catch (gspc::we::loader::function_does_not_unload const&)
       {
         worker_was_tainted = true;
         generic_on_failure();
@@ -413,27 +415,27 @@ try
       if (wfe_task_t::FINISHED == task.state)
       {
         _log_emitter.emit ( "task finished: " + task.id
-                          , fhg::logging::legacy::category_level_trace
+                          , gspc::logging::legacy::category_level_trace
                           );
       }
       else if (wfe_task_t::FAILED == task.state)
       {
         _log_emitter.emit ( "task failed: " + task.id + ": " + job->message
-                          , fhg::logging::legacy::category_level_error
+                          , gspc::logging::legacy::category_level_error
                           );
       }
       else if (wfe_task_t::CANCELED == task.state)
       {
         _log_emitter.emit ( "task canceled: " + task.id
-                          , fhg::logging::legacy::category_level_info
+                          , gspc::logging::legacy::category_level_info
                           );
       }
 
       emit_gantt ( task
-                 , task.state == wfe_task_t::FINISHED ? sdpa::daemon::NotificationEvent::STATE_FINISHED
-                 : task.state == wfe_task_t::CANCELED ? sdpa::daemon::NotificationEvent::STATE_CANCELED
-                 : task.state == wfe_task_t::CANCELED_DUE_TO_WORKER_SHUTDOWN ? sdpa::daemon::NotificationEvent::STATE_FAILED
-                 : task.state == wfe_task_t::FAILED ? sdpa::daemon::NotificationEvent::STATE_FAILED
+                 , task.state == wfe_task_t::FINISHED ? gspc::scheduler::daemon::NotificationEvent::STATE_FINISHED
+                 : task.state == wfe_task_t::CANCELED ? gspc::scheduler::daemon::NotificationEvent::STATE_CANCELED
+                 : task.state == wfe_task_t::CANCELED_DUE_TO_WORKER_SHUTDOWN ? gspc::scheduler::daemon::NotificationEvent::STATE_FAILED
+                 : task.state == wfe_task_t::FAILED ? gspc::scheduler::daemon::NotificationEvent::STATE_FAILED
                  : throw std::logic_error {"invalid enum value"}
                  );
       job->state = task.state == wfe_task_t::FINISHED ? DRTSImpl::Job::FINISHED
@@ -448,9 +450,9 @@ try
     {
       std::string const error
         ( "unexpected exception during job execution: "
-        + fhg::util::current_exception_printer (": ").string()
+        + gspc::util::current_exception_printer (": ").string()
         );
-      _log_emitter.emit (error, fhg::logging::legacy::category_level_error);
+      _log_emitter.emit (error, gspc::logging::legacy::category_level_error);
       job->state = DRTSImpl::Job::FAILED;
 
       job->result = std::move (job->activity);
@@ -460,17 +462,17 @@ try
     switch (job->state.load())
     {
     case DRTSImpl::Job::FINISHED:
-      send_event_to_parent<sdpa::events::JobFinishedEvent>
+      send_event_to_parent<gspc::scheduler::events::JobFinishedEvent>
         (job->id, job->result);
 
       break;
     case DRTSImpl::Job::FAILED:
-      send_event_to_parent<sdpa::events::JobFailedEvent>
+      send_event_to_parent<gspc::scheduler::events::JobFailedEvent>
         (job->id, job->message);
 
       break;
     case DRTSImpl::Job::CANCELED:
-      send_event_to_parent<sdpa::events::CancelJobAckEvent> (job->id);
+      send_event_to_parent<gspc::scheduler::events::CancelJobAckEvent> (job->id);
 
       break;
 
@@ -485,8 +487,9 @@ try
     }
   }
 }
-catch (decltype (m_pending_jobs)::interrupted const&)
+catch (decltype (m_pending_jobs)::interrupted const& interrupted)
 {
+  std::ignore = interrupted;
 }
 
 void DRTSImpl::start_receiver()
@@ -494,7 +497,7 @@ void DRTSImpl::start_receiver()
   _peer.async_recv
     ( [this] (auto received)
       {
-        static sdpa::events::Codec codec;
+        static gspc::scheduler::events::Codec codec;
 
         if (!received.ec())
         {
@@ -504,7 +507,7 @@ void DRTSImpl::start_receiver()
           }
 
           m_event_queue.put
-            ( sdpa::events::SDPAEvent::Ptr
+            ( gspc::scheduler::events::SchedulerEvent::Ptr
                 ( codec.decode
                     ( std::string ( received.message().data.begin()
                                   , received.message().data.end()
@@ -535,7 +538,7 @@ void DRTSImpl::start_receiver()
         else
         {
           _log_emitter.emit ( m_my_name + " is shutting down"
-                            , fhg::logging::legacy::category_level_trace
+                            , gspc::logging::legacy::category_level_trace
                             );
         }
       }
@@ -545,6 +548,6 @@ void DRTSImpl::start_receiver()
 template<typename Event, typename... Args>
   void DRTSImpl::send_event_to_parent (Args&&... args)
 {
-  static sdpa::events::Codec codec;
+  static gspc::scheduler::events::Codec codec;
   _peer.send (codec.encode<Event> (std::forward<Args> (args)...));
 }

@@ -1,11 +1,11 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2014-2015,2020-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/type/ModuleCall.fwd.hpp>
-#include <we/type/ModuleCall.hpp>
+#include <gspc/we/type/ModuleCall.fwd.hpp>
+#include <gspc/we/type/ModuleCall.hpp>
 
-#include <we/expr/parse/parser.hpp>
-#include <we/type/value.hpp>
+#include <gspc/we/expr/parse/parser.hpp>
+#include <gspc/we/type/value.hpp>
 
 #include <algorithm>
 #include <exception>
@@ -17,9 +17,8 @@
 #include <stdexcept>
 #include <utility>
 
-namespace we
-{
-  namespace type
+
+  namespace gspc::we::type
   {
     namespace
     {
@@ -207,7 +206,7 @@ namespace we
         try
         {
           memory_put.assert_correct_expression_types
-            ( memory_put.not_modified_in_module_call().get_value_or (false)
+            ( memory_put.not_modified_in_module_call().value_or (false)
               ? context_before_eval
               : context_after_eval
             );
@@ -218,7 +217,7 @@ namespace we
             ( std::runtime_error
               { fmt::format
                 ( "In <memory-put>, evaluated {} execution"
-                , memory_put.not_modified_in_module_call().get_value_or (false)
+                , memory_put.not_modified_in_module_call().value_or (false)
                   ? "before"
                   : "after"
                 )
@@ -266,7 +265,7 @@ namespace we
 
       for (type::memory_transfer const& mp : _memory_puts)
       {
-        if (mp.not_modified_in_module_call().get_value_or (false))
+        if (mp.not_modified_in_module_call().value_or (false))
         {
           expr::eval::context context (output);
 
@@ -289,7 +288,7 @@ namespace we
 
       for (type::memory_transfer const& mp : _memory_puts)
       {
-        if (!mp.not_modified_in_module_call().get_value_or (false))
+        if (!mp.not_modified_in_module_call().value_or (false))
         {
           expr::eval::context context (output);
 
@@ -306,7 +305,11 @@ namespace we
 
     std::ostream& operator<< (std::ostream& os, ModuleCall const& m)
     {
-      return os << m.module() << "." << m.function();
+      return os << to_string (m);
+    }
+
+    auto to_string (ModuleCall const& m) -> std::string
+    {
+      return m.module() + "." + m.function();
     }
   }
-}

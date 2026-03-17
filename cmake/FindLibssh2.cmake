@@ -1,0 +1,246 @@
+#[============================================================================[
+### FindLibssh2
+
+Finds the Libssh2 library.
+
+#### Configuration Variables
+
+- **Libssh2_NO_CMAKE**
+  Set this variable to `ON` to skip the CMake find_package call in CONFIG mode.
+  Alternatively an environment variable can be set to override the configured
+  behavior.
+
+#### Result Variables
+
+- **Libssh2_VERSION**
+  Full version string of found package in the format `major.minor.patch.tweak`
+
+- **Libssh2_VERSION_MAJOR**
+  Major version number
+
+- **Libssh2_VERSION_MINOR**
+  Minor version number
+
+- **Libssh2_VERSION_PATCH**
+  Patch version number
+
+- **Libssh2_VERSION_TWEAK**
+  Tweak version number
+
+- **Libssh2_VERSION_COUNT**
+  Number of set version numbers
+
+#### Cache Variables
+
+- **Libssh2_INCLUDE_DIR**
+  Libssh2 include directory
+
+- **Libssh2_LIBRARY**
+  Libssh2 library path (e.g. /opt/libssh2/lib/libssh2.so)
+
+#### Imported Targets
+
+- **Libssh2::libssh2**
+  Libssh2 CMake library target
+#]============================================================================]
+
+###############################################################################
+# Includes
+###############################################################################
+
+include (FindPackageHandleStandardArgs)
+include (CMakeFindDependencyMacro)
+
+###############################################################################
+# Checks and Definitions
+###############################################################################
+
+if (TARGET Libssh2::libssh2)
+  return()
+endif()
+
+if (DEFINED ENV{${CMAKE_FIND_PACKAGE_NAME}_NO_CMAKE})
+    set (${CMAKE_FIND_PACKAGE_NAME}_NO_CMAKE
+      $ENV{${CMAKE_FIND_PACKAGE_NAME}_NO_CMAKE}
+    )
+endif()
+
+###############################################################################
+# Search
+###############################################################################
+
+# config mode
+if (NOT ${CMAKE_FIND_PACKAGE_NAME}_NO_CMAKE)
+  find_package (${CMAKE_FIND_PACKAGE_NAME} CONFIG QUIET)
+
+  # populate output cache variables, otherwise there won't be an entry in the
+  # configuration output
+  if (${CMAKE_FIND_PACKAGE_NAME}_FOUND)
+    if (NOT TARGET Libssh2::libssh2)
+      add_library (Libssh2::libssh2 ALIAS Libssh2::libssh2_shared)
+    endif()
+
+    get_target_property (${CMAKE_FIND_PACKAGE_NAME}_INCLUDE_DIR
+      Libssh2::libssh2
+      INTERFACE_INCLUDE_DIRECTORIES
+    )
+    get_target_property (${CMAKE_FIND_PACKAGE_NAME}_LIBRARY
+      Libssh2::libssh2
+      LOCATION
+    )
+    set (${CMAKE_FIND_PACKAGE_NAME}_INCLUDE_DIR
+      ${${CMAKE_FIND_PACKAGE_NAME}_INCLUDE_DIR}
+      CACHE PATH "${CMAKE_FIND_PACKAGE_NAME} include directory"
+    )
+    set (${CMAKE_FIND_PACKAGE_NAME}_LIBRARY
+      ${${CMAKE_FIND_PACKAGE_NAME}_LIBRARY}
+      CACHE PATH "${CMAKE_FIND_PACKAGE_NAME} library"
+    )
+  endif()
+endif()
+
+# module mode
+if (NOT ${CMAKE_FIND_PACKAGE_NAME}_FOUND)
+  # locate libssh2 include path
+  find_path (${CMAKE_FIND_PACKAGE_NAME}_INCLUDE_DIR
+    libssh2.h
+  )
+
+  # locate libssh2 library
+  find_library (${CMAKE_FIND_PACKAGE_NAME}_LIBRARY
+    NAMES ssh2
+  )
+
+  if (${CMAKE_FIND_PACKAGE_NAME}_INCLUDE_DIR AND ${CMAKE_FIND_PACKAGE_NAME}_LIBRARY)
+    # determine the version number of the found libssh2
+    file (STRINGS
+      ${${CMAKE_FIND_PACKAGE_NAME}_INCLUDE_DIR}/libssh2.h
+      ${CMAKE_FIND_PACKAGE_NAME}_VERSION_MAJOR
+      REGEX "^#define[\t ]+LIBSSH2_VERSION_MAJOR[\t ]+"
+    )
+    string (REGEX
+      REPLACE "^#define[\t ]+LIBSSH2_VERSION_MAJOR[\t ]+([0-9]+)" "\\1"
+      ${CMAKE_FIND_PACKAGE_NAME}_VERSION_MAJOR
+      "${${CMAKE_FIND_PACKAGE_NAME}_VERSION_MAJOR}"
+    )
+
+    file (STRINGS
+      ${${CMAKE_FIND_PACKAGE_NAME}_INCLUDE_DIR}/libssh2.h
+      ${CMAKE_FIND_PACKAGE_NAME}_VERSION_MINOR
+      REGEX "^#define[\t ]LIBSSH2_VERSION_MINOR[\t ]"
+    )
+    string (REGEX
+      REPLACE "^#define[\t ]+LIBSSH2_VERSION_MINOR[\t ]+([0-9]+)" "\\1"
+      ${CMAKE_FIND_PACKAGE_NAME}_VERSION_MINOR
+      "${${CMAKE_FIND_PACKAGE_NAME}_VERSION_MINOR}"
+    )
+
+    file (STRINGS
+      ${${CMAKE_FIND_PACKAGE_NAME}_INCLUDE_DIR}/libssh2.h
+      ${CMAKE_FIND_PACKAGE_NAME}_VERSION_PATCH
+      REGEX "^#define[\t ]LIBSSH2_VERSION_PATCH[\t ]"
+    )
+    string (REGEX
+      REPLACE "^#define[\t ]+LIBSSH2_VERSION_PATCH[\t ]+([0-9]+)" "\\1"
+      ${CMAKE_FIND_PACKAGE_NAME}_VERSION_PATCH
+      "${${CMAKE_FIND_PACKAGE_NAME}_VERSION_PATCH}"
+    )
+
+    set (${CMAKE_FIND_PACKAGE_NAME}_VERSION "${${CMAKE_FIND_PACKAGE_NAME}_VERSION_MAJOR}.${${CMAKE_FIND_PACKAGE_NAME}_VERSION_MINOR}.${${CMAKE_FIND_PACKAGE_NAME}_VERSION_PATCH}")
+    set (${CMAKE_FIND_PACKAGE_NAME}_VERSION_TWEAK 0)
+    set (${CMAKE_FIND_PACKAGE_NAME}_VERSION_COUNT 3)
+
+    # verify version compatibility (SameMajorVersion)
+    set (_mode WARNING)
+    if (${CMAKE_FIND_PACKAGE_NAME}_FIND_REQUIRED)
+      set (_mode FATAL_ERROR)
+    endif()
+
+    if (${CMAKE_FIND_PACKAGE_NAME}_FIND_VERSION)
+      set (_is_compatible FALSE)
+      if (NOT ${CMAKE_FIND_PACKAGE_NAME}_VERSION VERSION_LESS
+          ${CMAKE_FIND_PACKAGE_NAME}_FIND_VERSION
+      )
+        string (REGEX REPLACE "\\..*" ""
+          _find_major "${${CMAKE_FIND_PACKAGE_NAME}_FIND_VERSION}"
+        )
+        string (REGEX REPLACE "\\..*" ""
+          _found_major "${${CMAKE_FIND_PACKAGE_NAME}_VERSION}"
+        )
+        if (_find_major EQUAL _found_major)
+          set (_is_compatible TRUE)
+        endif()
+        unset (_find_major)
+        unset (_found_major)
+      endif()
+      if (NOT _is_compatible)
+        if (NOT ${CMAKE_FIND_PACKAGE_NAME}_FIND_QUIETLY)
+          message (${_mode}
+            "Could not find a package \"${CMAKE_FIND_PACKAGE_NAME}\""
+            " that is SameMajorVersion compatible with requested"
+            " version \"${${CMAKE_FIND_PACKAGE_NAME}_FIND_VERSION}\"."
+            " (found: version ${${CMAKE_FIND_PACKAGE_NAME}_VERSION})"
+          )
+        endif()
+        unset (_is_compatible)
+        unset (_mode)
+        return()
+      endif()
+      unset (_is_compatible)
+    endif()
+    unset (_mode)
+
+    # detect library type
+    get_filename_component (_ext
+      "${${CMAKE_FIND_PACKAGE_NAME}_LIBRARY}"
+      EXT
+    )
+    if (_ext STREQUAL CMAKE_STATIC_LIBRARY_SUFFIX)
+      set (_lib_type "STATIC")
+    elseif (_ext STREQUAL CMAKE_SHARED_LIBRARY_SUFFIX)
+      set (_lib_type "SHARED")
+    else()
+      set (_lib_type "UNKNOWN")
+    endif()
+    unset (_ext)
+
+    # create imported target Libssh2::libssh2
+    add_library (Libssh2::libssh2 ${_lib_type} IMPORTED)
+    target_include_directories (Libssh2::libssh2
+      INTERFACE ${${CMAKE_FIND_PACKAGE_NAME}_INCLUDE_DIR}
+    )
+    set_target_properties (Libssh2::libssh2 PROPERTIES
+      IMPORTED_LOCATION ${${CMAKE_FIND_PACKAGE_NAME}_LIBRARY}
+    )
+
+    if (NOT _lib_type STREQUAL SHARED)
+      find_dependency (OpenSSL)
+      find_dependency (ZLIB)
+
+      target_link_libraries (Libssh2::libssh2
+        INTERFACE
+          OpenSSL::SSL
+          OpenSSL::Crypto
+          ZLIB::ZLIB
+      )
+    endif()
+
+    unset (_lib_type)
+  endif()
+endif()
+
+###############################################################################
+# Handle Standard Arguments
+###############################################################################
+
+find_package_handle_standard_args (${CMAKE_FIND_PACKAGE_NAME}
+  VERSION_VAR
+    ${CMAKE_FIND_PACKAGE_NAME}_VERSION
+  REQUIRED_VARS
+    ${CMAKE_FIND_PACKAGE_NAME}_INCLUDE_DIR
+    ${CMAKE_FIND_PACKAGE_NAME}_LIBRARY
+)
+mark_as_advanced (
+  ${CMAKE_FIND_PACKAGE_NAME}_INCLUDE_DIR
+  ${CMAKE_FIND_PACKAGE_NAME}_LIBRARY
+)

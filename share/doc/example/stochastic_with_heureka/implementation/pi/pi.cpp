@@ -1,16 +1,18 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2020-2021,2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <interface.hpp>
 
+#include "pi.hpp"
 #include <cmath>
+#include <numeric>
 #include <random>
 #include <tuple>
 #include <utility>
 
 extern "C"
-  std::pair<we::type::bytearray, bool> stochastic_with_heureka_roll_and_heureka
-    (unsigned long n, unsigned long seed, we::type::bytearray)
+  std::pair<gspc::we::type::bytearray, bool> stochastic_with_heureka_roll_and_heureka
+    (unsigned long n, unsigned long seed, gspc::we::type::bytearray)
 {
   std::mt19937 generator (seed);
   std::uniform_real_distribution<double> random_number (-1, 1);
@@ -29,52 +31,51 @@ extern "C"
     }
   }
 
-  return {we::type::bytearray {std::make_pair (in, n)}, false};
+  using gspc::share::example::stochastic_with_heurake::pi::PartialResult;
+
+  return {gspc::we::type::bytearray {PartialResult {in, n}}, false};
 };
 
 extern "C"
-  we::type::bytearray stochastic_with_heureka_reduce
-    ( we::type::bytearray partial_resultL_bytearray
-    , we::type::bytearray partial_resultR_bytearray
-    , we::type::bytearray
+  gspc::we::type::bytearray stochastic_with_heureka_reduce
+    ( gspc::we::type::bytearray partial_resultL_bytearray
+    , gspc::we::type::bytearray partial_resultR_bytearray
+    , gspc::we::type::bytearray
     )
 {
-  std::pair<unsigned long, unsigned long> partial_resultL;
-  std::pair<unsigned long, unsigned long> partial_resultR;
+  using gspc::share::example::stochastic_with_heurake::pi::PartialResult;
+
+  PartialResult partial_resultL;
+  PartialResult partial_resultR;
   partial_resultL_bytearray.copy (&partial_resultL);
   partial_resultR_bytearray.copy (&partial_resultR);
 
-  return we::type::bytearray
-    { std::make_pair ( partial_resultL.first + partial_resultR.first
-                     , partial_resultL.second + partial_resultR.second
-                     )
+  return gspc::we::type::bytearray
+    { PartialResult { partial_resultL.in + partial_resultR.in
+                    , partial_resultL.n + partial_resultR.n
+                    }
     };
 }
 
 extern "C"
-  we::type::bytearray stochastic_with_heureka_post_process
+  gspc::we::type::bytearray stochastic_with_heureka_post_process
     ( unsigned long number_of_rolls
-    , we::type::bytearray result_bytearray
-    , we::type::bytearray
+    , gspc::we::type::bytearray result_bytearray
+    , gspc::we::type::bytearray
     )
 {
-  std::pair<unsigned long, unsigned long> result;
+  using gspc::share::example::stochastic_with_heurake::pi::PartialResult;
+
+  PartialResult result;
   result_bytearray.copy (&result);
 
-  unsigned long gcd (result.second);
-  unsigned long rem (result.first);
+  auto const gcd {std::gcd (result.in, result.n)};
 
-  while (rem != 0)
-  {
-    unsigned long const r (gcd % rem);
-    gcd = rem;
-    rem = r;
-  }
+  PartialResult const reduced {result.in / gcd, result.n / gcd};
 
-  std::pair<unsigned long, unsigned long> const reduced
-    {result.first / gcd, result.second / gcd};
+  double const res (4.0 * double (result.in) / double (result.n));
 
-  double const res (4.0 * double (result.first) / double (result.second));
+  using gspc::share::example::stochastic_with_heurake::pi::Result;
 
-  return we::type::bytearray {std::make_tuple (result, reduced, res)};
+  return gspc::we::type::bytearray {Result {result, reduced, res}};
 }

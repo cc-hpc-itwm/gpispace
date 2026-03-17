@@ -1,23 +1,17 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2013-2015,2020-2021,2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/type/value/path/split.hpp>
+#include <gspc/we/type/value/path/split.hpp>
 
-#include <util-generic/split.hpp>
+#include <gspc/util/split.hpp>
 
-namespace pnet
-{
-  namespace type
-  {
-    namespace value
-    {
-      namespace path
+
+
+
+      namespace gspc::pnet::type::value::path
       {
         std::list<std::string> split (std::string const& path)
         {
-          return fhg::util::split<std::string, std::string> (path, '.');
+          return util::split<std::string, std::string> (path, '.');
         }
       }
-    }
-  }
-}

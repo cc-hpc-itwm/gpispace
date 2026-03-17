@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2021,2023,2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <test/parallel_reduce/module_call/Task.hpp>
@@ -6,13 +6,10 @@
 #include <iostream>
 #include <tuple>
 
-namespace gspc
-{
-  namespace test
-  {
-    namespace parallel_reduce
-    {
-      namespace module_call
+
+
+
+      namespace gspc::test::parallel_reduce::module_call
       {
         Task::Task (decltype (_lhs) lhs, decltype (_rhs) rhs)
           : _lhs (lhs)
@@ -30,6 +27,3 @@ namespace gspc
         #undef ESSENCE
         }
       }
-    }
-  }
-}

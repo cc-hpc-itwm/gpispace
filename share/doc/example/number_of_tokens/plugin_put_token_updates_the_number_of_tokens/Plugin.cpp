@@ -1,7 +1,7 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2023-2024,2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/plugin/Base.hpp>
+#include <gspc/we/plugin/Base.hpp>
 
 #include <stdexcept>
 

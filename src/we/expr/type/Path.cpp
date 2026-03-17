@@ -1,15 +1,14 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2021,2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/expr/type/Path.hpp>
+#include <gspc/we/expr/type/Path.hpp>
 
-#include <util-generic/print_container.hpp>
+#include <gspc/util/print_container.hpp>
 
 #include <ostream>
 
-namespace expr
-{
-  namespace type
+
+  namespace gspc::we::expr::type
   {
     Path::Path (Particle particle)
       : Path (Particles ({particle}))
@@ -35,7 +34,6 @@ namespace expr
 
     std::ostream& operator<< (std::ostream& os, Path const& path)
     {
-      return os << fhg::util::print_container ("${", ".", "}", path._particles);
+      return os << util::print_container ("${", ".", "}", path._particles);
     }
   }
-}

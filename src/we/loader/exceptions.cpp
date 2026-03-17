@@ -1,23 +1,21 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2020-2021,2023-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/loader/exceptions.hpp>
+#include <gspc/we/loader/exceptions.hpp>
 
-#include <util-generic/hash/boost/filesystem/path.hpp>
-#include <util-generic/print_container.hpp>
+#include <gspc/util/print_container.hpp>
 
-#include <FMT/boost/filesystem/path.hpp>
-#include <FMT/util-generic/join.hpp>
+#include <gspc/util/fmt/std/filesystem/path.formatter.hpp>
+#include <gspc/util/join.formatter.hpp>
 #include <algorithm>
 #include <fmt/core.h>
 #include <iterator>
 
-namespace we
-{
-  namespace loader
+
+  namespace gspc::we::loader
   {
     module_load_failed::module_load_failed
-        ( ::boost::filesystem::path const& file
+        ( std::filesystem::path const& file
         , std::string const& reason
         )
       : std::runtime_error
@@ -29,7 +27,7 @@ namespace we
     {}
 
     module_not_found::module_not_found
-        ( ::boost::filesystem::path const& file
+        ( std::filesystem::path const& file
         , std::string const& search_path
         )
       : std::runtime_error
@@ -41,7 +39,7 @@ namespace we
     {}
 
     function_not_found::function_not_found
-        ( ::boost::filesystem::path const& module
+        ( std::filesystem::path const& module
         , std::string const& name
         )
       : std::runtime_error
@@ -53,7 +51,7 @@ namespace we
     {}
 
     duplicate_function::duplicate_function
-        ( ::boost::filesystem::path const& module
+        ( std::filesystem::path const& module
         , std::string const& name
         )
       : std::runtime_error
@@ -81,21 +79,21 @@ namespace we
     }
 
     module_does_not_unload::module_does_not_unload
-        ( ::boost::filesystem::path module
-        , std::vector<::boost::filesystem::path> before
-        , std::vector<::boost::filesystem::path> after
+        ( std::filesystem::path module
+        , std::vector<std::filesystem::path> before
+        , std::vector<std::filesystem::path> after
         )
       : module_does_not_unload (module, left_overs (after, before))
     {}
     module_does_not_unload::module_does_not_unload
-        ( ::boost::filesystem::path module
-        , std::vector<::boost::filesystem::path> left_over
+        ( std::filesystem::path module
+        , std::vector<std::filesystem::path> left_over
         )
       : std::runtime_error
           { fmt::format ( "module '{0}' does not properly unload on dlclose"
                           ", leaking {1} loaded in the process"
                         , module
-                        , fhg::util::print_container ("{", ", ", "}", left_over)
+                        , util::print_container ("{", ", ", "}", left_over)
                         )
           }
     {}
@@ -103,8 +101,8 @@ namespace we
     function_does_not_unload::function_does_not_unload
         ( std::string module
         , std::string name
-        , std::vector<::boost::filesystem::path> before
-        , std::vector<::boost::filesystem::path> after
+        , std::vector<std::filesystem::path> before
+        , std::vector<std::filesystem::path> after
         )
       : function_does_not_unload
           (module, name, left_overs (after, before))
@@ -112,7 +110,7 @@ namespace we
     function_does_not_unload::function_does_not_unload
         ( std::string module
         , std::string name
-        , std::vector<::boost::filesystem::path> left_over
+        , std::vector<std::filesystem::path> left_over
         )
       : std::runtime_error
           { fmt::format ( "function {0}::{1} dynamically opened libraries "
@@ -120,9 +118,8 @@ namespace we
                             "loaded in the process"
                         , module
                         , name
-                        , fhg::util::print_container ("{", ", ", "}", left_over)
+                        , util::print_container ("{", ", ", "}", left_over)
                         )
           }
     {}
   }
-}

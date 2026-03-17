@@ -1,0 +1,91 @@
+<!-- Copyright (C) 2026 Fraunhofer ITWM                            -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
+
+<!--
+  Demonstrate nested shared values in a struct that is wrapped by
+  another shared.
+
+  A shared wraps a struct, and that struct contains another shared field.
+  When the outer shared is consumed:
+  1. The struct is placed on the outer cleanup place
+  2. The inner shared inside the struct is also cleaned up (nested cleanup)
+-->
+
+<defun name="shared_nested_cleanup">
+
+  <!-- Define structs at defun level for use in in/out declarations -->
+  <struct name="outer_struct">
+    <field name="regular_field" type="long"/>
+    <field name="shared_field" type="shared_inner_cleanup"/>
+  </struct>
+
+  <in name="inner_value" type="int" place="inner_value"/>
+  <in name="regular_value" type="long" place="regular_value"/>
+  <out name="outer_result" type="outer_struct" place="outer_cleanup"/>
+  <out name="inner_result" type="int" place="inner_cleanup"/>
+
+  <net>
+    <place name="inner_value" type="int"/>
+    <place name="regular_value" type="long"/>
+
+    <!-- Inner cleanup receives int when inner shared is consumed -->
+    <place name="inner_cleanup" type="int" shared_sink="true"/>
+
+    <!-- Outer cleanup receives struct when outer shared is consumed -->
+    <place name="outer_cleanup" type="outer_struct" shared_sink="true"/>
+
+    <!-- The outer shared wrapping the struct -->
+    <place name="outer_shared" type="shared_outer_cleanup"/>
+
+    <!-- Create the nested structure: shared<struct { shared<int> }> -->
+    <transition name="create_nested">
+      <defun>
+        <in name="iv" type="int"/>
+        <in name="rv" type="long"/>
+        <out name="outer" type="shared_outer_cleanup"/>
+        <module name="shared_nested_cleanup"
+                function="outer create_nested (iv, rv)">
+          <cinclude href="gspc/we/type/shared.hpp"/>
+          <cinclude href="gspc/we/type/value.hpp"/>
+          <cinclude href="gspc/we/type/value/poke.hpp"/>
+          <code><![CDATA[
+            // Create the inner struct with a shared field
+            using gspc::pnet::type::value::value_type;
+            using gspc::pnet::type::value::poke;
+            value_type inner_struct;
+            poke ("regular_field", inner_struct, rv);
+            poke ( "shared_field"
+                 , inner_struct
+                 , gspc::we::type::shared {iv, "inner_cleanup"}
+                 );
+
+            // Wrap the struct in an outer shared
+            return gspc::we::type::shared {inner_struct, "outer_cleanup"};
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="iv" place="inner_value"/>
+      <connect-in port="rv" place="regular_value"/>
+      <connect-out port="outer" place="outer_shared"/>
+    </transition>
+
+    <!-- Consume the outer shared (triggers nested cleanup) -->
+    <transition name="consume_outer">
+      <defun>
+        <in name="outer" type="shared_outer_cleanup"/>
+        <module name="shared_nested_cleanup"
+                function="consume_outer (outer)">
+          <cinclude href="iostream"/>
+          <cinclude href="gspc/we/type/value/show.hpp"/>
+          <code><![CDATA[
+            std::cout << "Consumed outer shared: "
+                      << gspc::pnet::type::value::show (outer.value())
+                      << " (nested cleanup triggered)" << std::endl;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="outer" place="outer_shared"/>
+    </transition>
+
+  </net>
+</defun>

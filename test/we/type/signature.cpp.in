@@ -1,0 +1,741 @@
+// Copyright (C) 2013-2015,2020-2023,2025-2026 Fraunhofer ITWM
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+#include <boost/test/unit_test.hpp>
+
+#include <gspc/we/type/signature.hpp>
+#include <gspc/we/type/signature/show.hpp>
+#include <gspc/we/type/signature/cpp.hpp>
+#include <gspc/we/type/signature/dump.hpp>
+#include <gspc/we/type/signature/names.hpp>
+#include <gspc/we/type/signature/resolve.hpp>
+
+#include <test/we/type/signature/boost/printer.hpp>
+
+#include <gspc/we/exception.hpp>
+
+#include <gspc/testing/flatten_nested_exceptions.hpp>
+
+#include <sstream>
+#include <unordered_map>
+
+BOOST_AUTO_TEST_CASE (signature_show)
+{
+#define CHECK(_expected,_sig...)                \
+  do                                            \
+  {                                             \
+    using gspc::pnet::type::signature::show;          \
+                                                \
+    std::ostringstream oss;                     \
+                                                \
+    oss << show (signature_type (_sig));        \
+                                                \
+    BOOST_CHECK_EQUAL (oss.str(), _expected);   \
+  } while (false)
+
+  using gspc::pnet::type::signature::signature_type;
+  using gspc::pnet::type::signature::structured_type;
+  using gspc::pnet::type::signature::structure_type;
+  using gspc::pnet::type::signature::field_type;
+
+  CHECK ("float", std::string ("float"));
+
+  structure_type f;
+
+  CHECK ("s :: []", structured_type (std::make_pair ("s", f)));
+
+  f.push_back (std::make_pair (std::string ("x"), std::string ("float")));
+
+  CHECK ("s :: [x :: float]", structured_type (std::make_pair ("s", f)));
+
+  f.push_back (std::make_pair (std::string ("y"), std::string ("float")));
+
+  CHECK ( "point2D :: [x :: float, y :: float]"
+        , structured_type (std::make_pair ("point2D", f))
+        );
+
+  structure_type ps;
+
+  ps.push_back (std::make_pair (std::string ("p"), std::string ("point2D")));
+  ps.push_back (structured_type (std::make_pair ("q", f)));
+
+  signature_type line2D (structured_type (std::make_pair ("line2D", ps)));
+
+  CHECK ("line2D :: [p :: point2D, q :: [x :: float, y :: float]]", line2D);
+
+#undef CHECK
+
+  {
+    std::unordered_set<std::string> n (gspc::pnet::type::signature::names (line2D));
+
+    BOOST_REQUIRE_EQUAL (n.size(), 2);
+    BOOST_REQUIRE_EQUAL (n.count("point2D"), 1);
+    BOOST_REQUIRE_EQUAL (n.count("float"), 1);
+  }
+
+  ps.push_back (std::make_pair (std::string ("l"), std::string ("list")));
+
+  {
+    signature_type s (structured_type (std::make_pair ("s", ps)));
+
+    std::unordered_set<std::string> n (gspc::pnet::type::signature::names (s));
+
+    BOOST_REQUIRE_EQUAL (n.size(), 3);
+    BOOST_REQUIRE_EQUAL (n.count("point2D"), 1);
+    BOOST_REQUIRE_EQUAL (n.count("float"), 1);
+    BOOST_REQUIRE_EQUAL (n.count("list"), 1);
+  }
+}
+
+BOOST_AUTO_TEST_CASE (signature_dump)
+{
+#define CHECK(_expected,_sig...)                        \
+  do                                                    \
+  {                                                     \
+    using gspc::pnet::type::signature::dump;                  \
+                                                        \
+    std::ostringstream oss;                             \
+                                                        \
+    oss << dump (structured_type (_sig));               \
+                                                        \
+    BOOST_CHECK_EQUAL (oss.str(), _expected);           \
+  } while (false)
+
+  using gspc::pnet::type::signature::structured_type;
+  using gspc::pnet::type::signature::structure_type;
+  using gspc::pnet::type::signature::field_type;
+
+  structure_type f;
+
+  CHECK ( "<struct name=\"s\"/>\n"
+        , structured_type (std::make_pair ("s", f))
+        );
+
+  f.push_back (std::make_pair (std::string ("x"), std::string ("float")));
+
+  CHECK ( "<struct name=\"s\">\n"
+          "  <field name=\"x\" type=\"float\"/>\n"
+          "</struct>\n"
+        , structured_type (std::make_pair ("s", f))
+        );
+
+  f.push_back (std::make_pair (std::string ("y"), std::string ("float")));
+
+  CHECK ( "<struct name=\"point2D\">\n"
+          "  <field name=\"x\" type=\"float\"/>\n"
+          "  <field name=\"y\" type=\"float\"/>\n"
+          "</struct>\n"
+        , structured_type (std::make_pair ("point2D", f))
+        );
+
+  structure_type ps;
+
+  ps.push_back (std::make_pair (std::string ("p"), std::string ("point2D")));
+  ps.push_back (structured_type (std::make_pair ("q", f)));
+
+  CHECK ( "<struct name=\"line2D\">\n"
+          "  <field name=\"p\" type=\"point2D\"/>\n"
+          "  <struct name=\"q\">\n"
+          "    <field name=\"x\" type=\"float\"/>\n"
+          "    <field name=\"y\" type=\"float\"/>\n"
+          "  </struct>\n"
+          "</struct>\n"
+        , structured_type (std::make_pair ("line2D", ps))
+        );
+
+#undef CHECK
+}
+
+BOOST_AUTO_TEST_CASE (signature_cpp)
+{
+#define CHECK_HEADER(_expected,_sig...)                 \
+  do                                                    \
+  {                                                     \
+    using gspc::pnet::type::signature::cpp::header;           \
+                                                        \
+    std::ostringstream oss;                             \
+                                                        \
+    oss << header (structured_type (_sig));             \
+                                                        \
+    BOOST_CHECK_EQUAL (oss.str(), _expected);           \
+  } while (false)
+#define CHECK_HEADER_OP(_expected,_sig...)              \
+  do                                                    \
+  {                                                     \
+    using gspc::pnet::type::signature::cpp::header_op;        \
+                                                        \
+    std::ostringstream oss;                             \
+                                                        \
+    oss << header_op (structured_type (_sig));          \
+                                                        \
+    BOOST_CHECK_EQUAL (oss.str(), _expected);           \
+  } while (false)
+#define CHECK_IMPL(_expected,_sig...)                   \
+  do                                                    \
+  {                                                     \
+    using gspc::pnet::type::signature::cpp::impl;             \
+                                                        \
+    std::ostringstream oss;                             \
+                                                        \
+    oss << impl (structured_type (_sig));               \
+                                                        \
+    BOOST_CHECK_EQUAL (oss.str(), _expected);           \
+  } while (false)
+
+  std::string pnetc_compare (R"EOS(@PNETC_COMPARE_HPP@)EOS");
+
+  using gspc::pnet::type::signature::structured_type;
+  using gspc::pnet::type::signature::structure_type;
+  using gspc::pnet::type::signature::field_type;
+
+  CHECK_HEADER
+    (pnetc_compare +
+     "\n"
+     "namespace pnetc\n"
+     "{\n"
+     "  namespace type\n"
+     "  {\n"
+     "    namespace empty\n"
+     "    {\n"
+     "      struct empty\n"
+     "      {\n"
+     "        empty()\n"
+     "        {}\n"
+     "        bool operator== (empty const& rhs) const\n"
+     "        {\n"
+     "          return true\n"
+     "            ;\n"
+     "        }\n"
+     "        bool operator< (empty const& rhs) const\n"
+     "        {\n"
+     "          return false;\n"
+     "        }\n"
+     "      };\n"
+     "    }\n"
+     "  }\n"
+     "}"
+     , std::make_pair (std::string ("empty"), structure_type())
+    );
+
+  CHECK_HEADER_OP
+    ("#include <gspc/we/type/value.hpp>\n"
+     "#include <gspc/we/type/value/from_value.hpp>\n"
+     "#include <gspc/we/type/value/to_value.hpp>\n"
+     "#include <iosfwd>\n"
+     "\n"
+     "namespace pnetc\n"
+     "{\n"
+     "  namespace type\n"
+     "  {\n"
+     "    namespace empty\n"
+     "    {\n"
+     "      empty from_value (gspc::pnet::type::value::value_type const&);\n"
+     "      gspc::pnet::type::value::value_type to_value (empty const&);\n"
+     "      std::ostream& operator<< (std::ostream&, empty const&);\n"
+     "    }\n"
+     "  }\n"
+     "}\n"
+     "namespace gspc::pnet\n"
+     "{\n"
+     "  namespace type\n"
+     "  {\n"
+     "    namespace value\n"
+     "    {\n"
+     "      template<>\n"
+     "        inline value_type to_value<pnetc::type::empty::empty> (pnetc::type::empty::empty const& x)\n"
+     "      {\n"
+     "        return pnetc::type::empty::to_value (x);\n"
+     "      }\n"
+     "      template<>\n"
+     "        inline pnetc::type::empty::empty from_value<pnetc::type::empty::empty> (value_type const& v)\n"
+     "      {\n"
+     "        return pnetc::type::empty::from_value (v);\n"
+     "      }\n"
+     "    }\n"
+     "  }\n"
+     "}"
+     , std::make_pair (std::string ("empty"), structure_type())
+    );
+
+  CHECK_IMPL
+    ("#include <gspc/we/field.hpp>\n"
+     "#include <gspc/we/signature_of.hpp>\n"
+     "#include <gspc/we/type/value/poke.hpp>\n"
+     "#include <gspc/we/type/value/show.hpp>\n"
+     "#include <iostream>\n"
+     "\n"
+     "namespace pnetc\n"
+     "{\n"
+     "  namespace type\n"
+     "  {\n"
+     "    namespace empty\n"
+     "    {\n"
+     "      empty from_value (gspc::pnet::type::value::value_type const& v)\n"
+     "      {\n"
+     "        return empty();\n"
+     "      }\n"
+     "      gspc::pnet::type::value::value_type to_value (empty const& x)\n"
+     "      {\n"
+     "        gspc::pnet::type::value::value_type v;\n"
+     "        return v;\n"
+     "      }\n"
+     "      std::ostream& operator<< (std::ostream& os, empty const& x)\n"
+     "      {\n"
+     "        return os << gspc::pnet::type::value::show (to_value (x));\n"
+     "      }\n"
+     "    }\n"
+     "  }\n"
+     "}"
+     , std::make_pair (std::string ("empty"), structure_type())
+    );
+
+  structure_type f;
+  f.push_back (std::make_pair (std::string ("x"), std::string ("float")));
+  f.push_back (std::make_pair (std::string ("y"), std::string ("float")));
+
+  CHECK_HEADER
+    (pnetc_compare +
+     "\n"
+     "namespace pnetc\n"
+     "{\n"
+     "  namespace type\n"
+     "  {\n"
+     "    namespace point2D\n"
+     "    {\n"
+     "      struct point2D\n"
+     "      {\n"
+     "        float x;\n"
+     "        float y;\n"
+     "        point2D()\n"
+     "          : x()\n"
+     "          , y()\n"
+     "        {}\n"
+     "        explicit point2D\n"
+     "          ( float const& _x\n"
+     "          , float const& _y\n"
+     "          )\n"
+     "          : x (_x)\n"
+     "          , y (_y)\n"
+     "        {}\n"
+     "        bool operator== (point2D const& rhs) const\n"
+     "        {\n"
+     "          return true\n"
+     "            && pnetc_eq{} (this->x, rhs.x)\n"
+     "            && pnetc_eq{} (this->y, rhs.y)\n"
+     "            ;\n"
+     "        }\n"
+     "        bool operator< (point2D const& rhs) const\n"
+     "        {\n"
+     "          return pnetc_less (this->x, rhs.x) || (pnetc_eq{} (this->x, rhs.x) && (pnetc_less (this->y, rhs.y)));\n"
+     "        }\n"
+     "      };\n"
+     "    }\n"
+     "  }\n"
+     "}"
+     , std::make_pair ("point2D", f)
+    );
+
+  CHECK_HEADER_OP
+    ("#include <gspc/we/type/value.hpp>\n"
+     "#include <gspc/we/type/value/from_value.hpp>\n"
+     "#include <gspc/we/type/value/to_value.hpp>\n"
+     "#include <iosfwd>\n"
+     "\n"
+     "namespace pnetc\n"
+     "{\n"
+     "  namespace type\n"
+     "  {\n"
+     "    namespace point2D\n"
+     "    {\n"
+     "      point2D from_value (gspc::pnet::type::value::value_type const&);\n"
+     "      gspc::pnet::type::value::value_type to_value (point2D const&);\n"
+     "      std::ostream& operator<< (std::ostream&, point2D const&);\n"
+     "    }\n"
+     "  }\n"
+     "}\n"
+     "namespace gspc::pnet\n"
+     "{\n"
+     "  namespace type\n"
+     "  {\n"
+     "    namespace value\n"
+     "    {\n"
+     "      template<>\n"
+     "        inline value_type to_value<pnetc::type::point2D::point2D> (pnetc::type::point2D::point2D const& x)\n"
+     "      {\n"
+     "        return pnetc::type::point2D::to_value (x);\n"
+     "      }\n"
+     "      template<>\n"
+     "        inline pnetc::type::point2D::point2D from_value<pnetc::type::point2D::point2D> (value_type const& v)\n"
+     "      {\n"
+     "        return pnetc::type::point2D::from_value (v);\n"
+     "      }\n"
+     "    }\n"
+     "  }\n"
+     "}"
+     , std::make_pair ("point2D", f)
+    );
+
+  CHECK_IMPL
+    ("#include <gspc/we/field.hpp>\n"
+     "#include <gspc/we/signature_of.hpp>\n"
+     "#include <gspc/we/type/value/poke.hpp>\n"
+     "#include <gspc/we/type/value/show.hpp>\n"
+     "#include <iostream>\n"
+     "\n"
+     "namespace pnetc\n"
+     "{\n"
+     "  namespace type\n"
+     "  {\n"
+     "    namespace point2D\n"
+     "    {\n"
+     "      point2D from_value (gspc::pnet::type::value::value_type const& v)\n"
+     "      {\n"
+     "        return point2D\n"
+     "          ( gspc::pnet::field_as< float > (\"x\", v, std::string(\"float\"))\n"
+     "          , gspc::pnet::field_as< float > (\"y\", v, std::string(\"float\"))\n"
+     "          );\n"
+     "      }\n"
+     "      gspc::pnet::type::value::value_type to_value (point2D const& x)\n"
+     "      {\n"
+     "        gspc::pnet::type::value::value_type v;\n"
+     "        gspc::pnet::type::value::poke (\"x\", v, x.x);\n"
+     "        gspc::pnet::type::value::poke (\"y\", v, x.y);\n"
+     "        return v;\n"
+     "      }\n"
+     "      std::ostream& operator<< (std::ostream& os, point2D const& x)\n"
+     "      {\n"
+     "        return os << gspc::pnet::type::value::show (to_value (x));\n"
+     "      }\n"
+     "    }\n"
+     "  }\n"
+     "}"
+     , std::make_pair ("point2D", f)
+    );
+
+  {
+    structure_type a;
+    a.push_back (std::make_pair (std::string ("i"), std::string ("int")));
+    structure_type b;
+    b.push_back (structured_type (std::make_pair ("a", a)));
+    structure_type c;
+    c.push_back (structured_type (std::make_pair ("b", b)));
+
+    CHECK_HEADER
+      (pnetc_compare +
+       "\n"
+       "namespace pnetc\n"
+       "{\n"
+       "  namespace type\n"
+       "  {\n"
+       "    namespace c\n"
+       "    {\n"
+       "      namespace b\n"
+       "      {\n"
+       "        namespace a\n"
+       "        {\n"
+       "          struct a\n"
+       "          {\n"
+       "            int i;\n"
+       "            a()\n"
+       "              : i()\n"
+       "            {}\n"
+       "            explicit a\n"
+       "              ( int const& _i\n"
+       "              )\n"
+       "              : i (_i)\n"
+       "            {}\n"
+       "            bool operator== (a const& rhs) const\n"
+       "            {\n"
+       "              return true\n"
+       "                && pnetc_eq{} (this->i, rhs.i)\n"
+       "                ;\n"
+       "            }\n"
+       "            bool operator< (a const& rhs) const\n"
+       "            {\n"
+       "              return pnetc_less (this->i, rhs.i);\n"
+       "            }\n"
+       "          };\n"
+       "        }\n"
+       "        struct b\n"
+       "        {\n"
+       "          a::a a;\n"
+       "          b()\n"
+       "            : a()\n"
+       "          {}\n"
+       "          explicit b\n"
+       "            ( a::a const& _a\n"
+       "            )\n"
+       "            : a (_a)\n"
+       "          {}\n"
+       "          bool operator== (b const& rhs) const\n"
+       "          {\n"
+       "            return true\n"
+       "              && pnetc_eq{} (this->a, rhs.a)\n"
+       "              ;\n"
+       "          }\n"
+       "          bool operator< (b const& rhs) const\n"
+       "          {\n"
+       "            return pnetc_less (this->a, rhs.a);\n"
+       "          }\n"
+       "        };\n"
+       "      }\n"
+       "      struct c\n"
+       "      {\n"
+       "        b::b b;\n"
+       "        c()\n"
+       "          : b()\n"
+       "        {}\n"
+       "        explicit c\n"
+       "          ( b::b const& _b\n"
+       "          )\n"
+       "          : b (_b)\n"
+       "        {}\n"
+       "        bool operator== (c const& rhs) const\n"
+       "        {\n"
+       "          return true\n"
+       "            && pnetc_eq{} (this->b, rhs.b)\n"
+       "            ;\n"
+       "        }\n"
+       "        bool operator< (c const& rhs) const\n"
+       "        {\n"
+       "          return pnetc_less (this->b, rhs.b);\n"
+       "        }\n"
+       "      };\n"
+       "    }\n"
+       "  }\n"
+       "}"
+      , std::make_pair ("c", c)
+      );
+
+    CHECK_HEADER_OP
+      ("#include <gspc/we/type/value.hpp>\n"
+       "#include <gspc/we/type/value/from_value.hpp>\n"
+       "#include <gspc/we/type/value/to_value.hpp>\n"
+       "#include <iosfwd>\n"
+       "\n"
+       "namespace pnetc\n"
+       "{\n"
+       "  namespace type\n"
+       "  {\n"
+       "    namespace c\n"
+       "    {\n"
+       "      namespace b\n"
+       "      {\n"
+       "        namespace a\n"
+       "        {\n"
+       "          a from_value (gspc::pnet::type::value::value_type const&);\n"
+       "          gspc::pnet::type::value::value_type to_value (a const&);\n"
+       "          std::ostream& operator<< (std::ostream&, a const&);\n"
+       "        }\n"
+       "        b from_value (gspc::pnet::type::value::value_type const&);\n"
+       "        gspc::pnet::type::value::value_type to_value (b const&);\n"
+       "        std::ostream& operator<< (std::ostream&, b const&);\n"
+       "      }\n"
+       "      c from_value (gspc::pnet::type::value::value_type const&);\n"
+       "      gspc::pnet::type::value::value_type to_value (c const&);\n"
+       "      std::ostream& operator<< (std::ostream&, c const&);\n"
+       "    }\n"
+       "  }\n"
+       "}\n"
+       "namespace gspc::pnet\n"
+       "{\n"
+       "  namespace type\n"
+       "  {\n"
+       "    namespace value\n"
+       "    {\n"
+       "      template<>\n"
+       "        inline value_type to_value<pnetc::type::c::b::a::a> (pnetc::type::c::b::a::a const& x)\n"
+       "      {\n"
+       "        return pnetc::type::c::b::a::to_value (x);\n"
+       "      }\n"
+       "      template<>\n"
+       "        inline pnetc::type::c::b::a::a from_value<pnetc::type::c::b::a::a> (value_type const& v)\n"
+       "      {\n"
+       "        return pnetc::type::c::b::a::from_value (v);\n"
+       "      }\n"
+       "      template<>\n"
+       "        inline value_type to_value<pnetc::type::c::b::b> (pnetc::type::c::b::b const& x)\n"
+       "      {\n"
+       "        return pnetc::type::c::b::to_value (x);\n"
+       "      }\n"
+       "      template<>\n"
+       "        inline pnetc::type::c::b::b from_value<pnetc::type::c::b::b> (value_type const& v)\n"
+       "      {\n"
+       "        return pnetc::type::c::b::from_value (v);\n"
+       "      }\n"
+       "      template<>\n"
+       "        inline value_type to_value<pnetc::type::c::c> (pnetc::type::c::c const& x)\n"
+       "      {\n"
+       "        return pnetc::type::c::to_value (x);\n"
+       "      }\n"
+       "      template<>\n"
+       "        inline pnetc::type::c::c from_value<pnetc::type::c::c> (value_type const& v)\n"
+       "      {\n"
+       "        return pnetc::type::c::from_value (v);\n"
+       "      }\n"
+       "    }\n"
+       "  }\n"
+       "}"
+      , std::make_pair ("c", c)
+      );
+
+    CHECK_IMPL
+      ("#include <gspc/we/field.hpp>\n"
+       "#include <gspc/we/signature_of.hpp>\n"
+       "#include <gspc/we/type/value/poke.hpp>\n"
+       "#include <gspc/we/type/value/show.hpp>\n"
+       "#include <iostream>\n"
+       "\n"
+       "namespace pnetc\n"
+       "{\n"
+       "  namespace type\n"
+       "  {\n"
+       "    namespace c\n"
+       "    {\n"
+       "      namespace b\n"
+       "      {\n"
+       "        namespace a\n"
+       "        {\n"
+       "          a from_value (gspc::pnet::type::value::value_type const& v)\n"
+       "          {\n"
+       "            return a\n"
+       "              ( gspc::pnet::field_as< int > (\"i\", v, std::string(\"int\"))\n"
+       "              );\n"
+       "          }\n"
+       "          gspc::pnet::type::value::value_type to_value (a const& x)\n"
+       "          {\n"
+       "            gspc::pnet::type::value::value_type v;\n"
+       "            gspc::pnet::type::value::poke (\"i\", v, x.i);\n"
+       "            return v;\n"
+       "          }\n"
+       "          std::ostream& operator<< (std::ostream& os, a const& x)\n"
+       "          {\n"
+       "            return os << gspc::pnet::type::value::show (to_value (x));\n"
+       "          }\n"
+       "        }\n"
+       "        b from_value (gspc::pnet::type::value::value_type const& v)\n"
+       "        {\n"
+       "          return b\n"
+       "            ( a::from_value (gspc::pnet::field (\"a\", v, gspc::pnet::signature_of (a::to_value (a::a()))))\n"
+       "            );\n"
+       "        }\n"
+       "        gspc::pnet::type::value::value_type to_value (b const& x)\n"
+       "        {\n"
+       "          gspc::pnet::type::value::value_type v;\n"
+       "          gspc::pnet::type::value::poke (\"a\", v, a::to_value (x.a));\n"
+       "          return v;\n"
+       "        }\n"
+       "        std::ostream& operator<< (std::ostream& os, b const& x)\n"
+       "        {\n"
+       "          return os << gspc::pnet::type::value::show (to_value (x));\n"
+       "        }\n"
+       "      }\n"
+       "      c from_value (gspc::pnet::type::value::value_type const& v)\n"
+       "      {\n"
+       "        return c\n"
+       "          ( b::from_value (gspc::pnet::field (\"b\", v, gspc::pnet::signature_of (b::to_value (b::b()))))\n"
+       "          );\n"
+       "      }\n"
+       "      gspc::pnet::type::value::value_type to_value (c const& x)\n"
+       "      {\n"
+       "        gspc::pnet::type::value::value_type v;\n"
+       "        gspc::pnet::type::value::poke (\"b\", v, b::to_value (x.b));\n"
+       "        return v;\n"
+       "      }\n"
+       "      std::ostream& operator<< (std::ostream& os, c const& x)\n"
+       "      {\n"
+       "        return os << gspc::pnet::type::value::show (to_value (x));\n"
+       "      }\n"
+       "    }\n"
+       "  }\n"
+       "}"
+      , std::make_pair ("c", c)
+      );
+  }
+#undef CHECK
+}
+
+namespace
+{
+  using gspc::pnet::type::signature::signature_type;
+
+  class resolver
+  {
+  public:
+    resolver (std::unordered_map<std::string, signature_type> const& m)
+      : _m (m)
+    {}
+    std::optional<signature_type> operator() (std::string const& key) const
+    {
+      std::unordered_map<std::string, signature_type>::const_iterator
+        pos (_m.find (key));
+
+      if (pos == _m.end())
+      {
+        return {};
+      }
+
+      return pos->second;
+    }
+  private:
+    std::unordered_map<std::string, signature_type> const& _m;
+  };
+}
+
+BOOST_AUTO_TEST_CASE (resolve)
+{
+  using gspc::pnet::type::signature::signature_type;
+  using gspc::pnet::type::signature::structured_type;
+  using gspc::pnet::type::signature::structure_type;
+  using gspc::pnet::type::signature::field_type;
+  using gspc::pnet::type::signature::resolver_type;
+  using gspc::pnet::type::signature::resolve;
+
+  structure_type point_fields;
+  point_fields.push_back (std::make_pair ( std::string ("x")
+                                         , std::string ("double")
+                                         )
+                         );
+  point_fields.push_back (std::make_pair ( std::string ("y")
+                                         , std::string ("double")
+                                         )
+                         );
+  const structured_type point (std::make_pair ("point", point_fields));
+  structure_type circle_fields;
+  circle_fields.push_back (std::make_pair ( std::string ("center")
+                                          , std::string ("point")
+                                          )
+                          );
+  circle_fields.push_back (std::make_pair ( std::string ("radius")
+                                          , std::string ("double")
+                                          )
+                          );
+  const structured_type circle (std::make_pair ("circle", circle_fields));
+
+  structure_type circle_resolved_fields;
+  circle_resolved_fields.push_back
+    (structured_type (std::make_pair ( std::string ("center")
+                                     , point_fields
+                                     )
+                     )
+    );
+  circle_resolved_fields.push_back (std::make_pair ( std::string ("radius")
+                                                   , std::string ("double")
+                                                   )
+                                   );
+  const structured_type circle_resolved
+    (std::make_pair ("circle", circle_resolved_fields));
+
+
+  std::unordered_map<std::string, signature_type> resolver_map;
+
+  BOOST_CHECK_THROW ( resolve (circle, resolver (resolver_map))
+                    , gspc::pnet::exception::could_not_resolve
+                    );
+
+  resolver_map.insert (std::make_pair (std::string ("point"), point));
+
+  BOOST_REQUIRE_EQUAL ( signature_type (circle_resolved)
+                      , resolve (circle,resolver (resolver_map))
+                      );
+}

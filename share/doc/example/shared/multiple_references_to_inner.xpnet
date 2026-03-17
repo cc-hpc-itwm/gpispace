@@ -1,0 +1,121 @@
+<!-- Copyright (C) 2026 Fraunhofer ITWM                            -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
+
+<!--
+  Demonstrate reference counting with multiple outer shared values referencing
+  the same inner shared.
+
+  Two outer shared values are created, both containing the same inner shared.
+  The inner shared should only be cleaned up when BOTH outer shared values
+  have been consumed (reference count reaches zero).
+
+  Sequence:
+  1. Create inner shared with value
+  2. Create two outer shared, each containing the same inner shared
+  3. Consume first outer shared -> inner NOT cleaned up (refcount > 0)
+  4. Consume second outer shared -> inner IS cleaned up (refcount reaches 0)
+-->
+
+<defun name="shared_multiple_references_to_inner">
+
+  <!-- Define struct at the defun level -->
+  <struct name="wrapper_struct">
+    <field name="id" type="long"/>
+    <field name="inner" type="shared_inner_cleanup"/>
+  </struct>
+
+  <in name="inner_value" type="int" place="inner_value"/>
+  <out name="outer_result_1" type="wrapper_struct" place="outer_cleanup_1"/>
+  <out name="outer_result_2" type="wrapper_struct" place="outer_cleanup_2"/>
+  <out name="inner_result" type="int" place="inner_cleanup"/>
+
+  <net>
+    <place name="inner_value" type="int"/>
+
+    <!-- Inner cleanup receives int when inner shared refcount reaches 0 -->
+    <place name="inner_cleanup" type="int" shared_sink="true"/>
+
+    <!-- Two separate cleanup places for the two outer shared values -->
+    <place name="outer_cleanup_1" type="wrapper_struct" shared_sink="true"/>
+    <place name="outer_cleanup_2" type="wrapper_struct" shared_sink="true"/>
+
+    <!-- Two outer shared values, each wrapping struct with same inner -->
+    <place name="outer_shared_1" type="shared_outer_cleanup_1"/>
+    <place name="outer_shared_2" type="shared_outer_cleanup_2"/>
+
+    <!-- Create both outer shared values with the same inner shared -->
+    <transition name="create_both_outer">
+      <defun>
+        <in name="iv" type="int"/>
+        <out name="outer1" type="shared_outer_cleanup_1"/>
+        <out name="outer2" type="shared_outer_cleanup_2"/>
+        <module name="shared_multiple_references_to_inner"
+                function="create_both_outer (outer1, outer2, iv)">
+          <cinclude href="gspc/we/type/shared.hpp"/>
+          <cinclude href="gspc/we/type/value.hpp"/>
+          <cinclude href="gspc/we/type/value/poke.hpp"/>
+          <code><![CDATA[
+            // Create inner shared value (referenced by both outers)
+            using gspc::pnet::type::value::value_type;
+            using gspc::pnet::type::value::poke;
+            gspc::we::type::shared inner_shared {iv, "inner_cleanup"};
+
+            // Create first wrapper struct with the inner shared
+            value_type struct1;
+            poke ("id", struct1, 1L);
+            poke ("inner", struct1, value_type {inner_shared});
+
+            // Create second wrapper struct with the SAME inner shared
+            value_type struct2;
+            poke ("id", struct2, 2L);
+            poke ("inner", struct2, value_type {inner_shared});
+
+            // Wrap each struct in an outer shared
+            outer1 = gspc::we::type::shared {struct1, "outer_cleanup_1"};
+            outer2 = gspc::we::type::shared {struct2, "outer_cleanup_2"};
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="iv" place="inner_value"/>
+      <connect-out port="outer1" place="outer_shared_1"/>
+      <connect-out port="outer2" place="outer_shared_2"/>
+    </transition>
+
+    <!-- Consume first outer shared -->
+    <transition name="consume_outer_1">
+      <defun>
+        <in name="outer" type="shared_outer_cleanup_1"/>
+        <module name="shared_multiple_references_to_inner"
+                function="consume_outer_1 (outer)">
+          <cinclude href="iostream"/>
+          <cinclude href="gspc/we/type/value/show.hpp"/>
+          <code><![CDATA[
+            std::cout << "Consumed outer_1: "
+                      << gspc::pnet::type::value::show (outer.value())
+                      << std::endl;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="outer" place="outer_shared_1"/>
+    </transition>
+
+    <!-- Consume second outer shared -->
+    <transition name="consume_outer_2">
+      <defun>
+        <in name="outer" type="shared_outer_cleanup_2"/>
+        <module name="shared_multiple_references_to_inner"
+                function="consume_outer_2 (outer)">
+          <cinclude href="iostream"/>
+          <cinclude href="gspc/we/type/value/show.hpp"/>
+          <code><![CDATA[
+            std::cout << "Consumed outer_2: "
+                      << gspc::pnet::type::value::show (outer.value())
+                      << std::endl;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="outer" place="outer_shared_2"/>
+    </transition>
+
+  </net>
+</defun>

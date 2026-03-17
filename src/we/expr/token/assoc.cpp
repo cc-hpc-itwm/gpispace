@@ -1,11 +1,10 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2012-2014,2020-2023,2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/expr/token/assoc.hpp>
+#include <gspc/we/expr/token/assoc.hpp>
 
-namespace expr
-{
-  namespace associativity
+
+  namespace gspc::we::expr::associativity
   {
     type associativity (token::type const& token)
     {
@@ -37,4 +36,3 @@ namespace expr
         }
     }
   }
-}

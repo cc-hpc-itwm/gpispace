@@ -1,17 +1,15 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2013-2014,2018,2020-2023,2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/type/signature/is_literal.hpp>
-#include <we/type/signature/resolve.hpp>
-#include <we/type/value/path/append.hpp>
+#include <gspc/we/type/signature/is_literal.hpp>
+#include <gspc/we/type/signature/resolve.hpp>
+#include <gspc/we/type/value/path/append.hpp>
 
-#include <we/exception.hpp>
+#include <gspc/we/exception.hpp>
 
-namespace pnet
-{
-  namespace type
-  {
-    namespace signature
+
+
+    namespace gspc::pnet::type::signature
     {
       namespace
       {
@@ -22,7 +20,7 @@ namespace pnet
                            , std::string const& s
                            )
         {
-          const ::boost::optional<signature_type> signature (resolver (s));
+          const std::optional<signature_type> signature (resolver (s));
 
           if (!signature)
           {
@@ -132,5 +130,3 @@ namespace pnet
         return resolve_structured (resolver, path) (signature);
       }
     }
-  }
-}

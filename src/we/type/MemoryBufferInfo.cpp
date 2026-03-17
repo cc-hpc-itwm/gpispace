@@ -1,16 +1,15 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2020-2021,2023-2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/expr/parse/parser.hpp>
-#include <we/type/MemoryBufferInfo.hpp>
+#include <gspc/we/expr/parse/parser.hpp>
+#include <gspc/we/type/MemoryBufferInfo.hpp>
 
 #include <exception>
 #include <fmt/core.h>
 #include <stdexcept>
 
-namespace we
-{
-  namespace type
+
+  namespace gspc::we::type
   {
     MemoryBufferInfo::MemoryBufferInfo() = default;
 
@@ -85,4 +84,3 @@ namespace we
       }
     }
   }
-}

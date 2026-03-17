@@ -1,53 +1,57 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2012-2016,2019-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/type/Activity.hpp>
-#include <we/type/Transition.hpp>
-#include <we/type/net.hpp>
-#include <we/type/value.hpp>
-#include <we/type/value/name.hpp>
-#include <we/type/value/peek.hpp>
-#include <we/type/value/show.hpp>
-#include <we/type/value/unwrap.hpp>
-#include <we/type/value/wrap.hpp>
+#include <gspc/we/type/Activity.hpp>
+#include <gspc/we/type/Transition.hpp>
+#include <gspc/we/type/net.hpp>
+#include <gspc/we/type/value.hpp>
+#include <gspc/we/type/value/name.hpp>
+#include <gspc/we/type/value/peek.hpp>
+#include <gspc/we/type/value/show.hpp>
+#include <gspc/we/type/value/unwrap.hpp>
+#include <gspc/we/type/value/wrap.hpp>
 
-#include <we/require_type.hpp>
+#include <gspc/we/require_type.hpp>
 
-#include <fhg/util/next.hpp>
+#include <gspc/util/next.hpp>
 
-#include <util-generic/functor_visitor.hpp>
-#include <util-generic/print_container.hpp>
+#include <gspc/util/functor_visitor.hpp>
+#include <gspc/util/print_container.hpp>
 
 #include <boost/range/join.hpp>
 
 #include <boost/variant/get.hpp>
 
+#include <gspc/assert.hpp>
+
+#include <gspc/we/exception.hpp>
+
+#include <cassert>
 #include <fmt/core.h>
-#include <FMT/we/type/value/show.hpp>
+#include <gspc/we/type/value/show.formatter.hpp>
 #include <algorithm>
 #include <exception>
+#include <limits>
 #include <list>
 #include <stdexcept>
 #include <unordered_set>
 
-namespace gspc
-{
-  namespace we
-  {
-    namespace plugin
+
+
+    namespace gspc::we::plugin
     {
       FHG_UTIL_HARD_INTEGRAL_TYPEDEF_ALLOW_CONVERSION (ID, unsigned long);
     }
-  }
-}
 
-namespace we
+
+
+namespace gspc::we
 {
   namespace edge
   {
     bool is_incoming (type const& e)
     {
-      return fhg::util::visit<bool>
+      return util::visit<bool>
         ( e
         , [] (PT const&) { return true; }
         , [] (PT_READ const&) { return true; }
@@ -115,8 +119,8 @@ namespace we
 
         net_type& _net;
         transition_id_type _tid;
-        we::type::Transition const& _transition;
-        ::boost::optional<Expression> const& _condition;
+        Transition const& _transition;
+        std::optional<Expression> const& _condition;
         expr::parse::node::KeyRoots _key_roots;
 
         using map_type = std::unordered_map<place_id_type, iterators_type>;
@@ -158,7 +162,9 @@ namespace we
         { add_place ( place::type { "#" + _pmap.at (place_id).name()
                                   , pnet::type::value::ULONG()
                                   , false
-                                  , type::property::type{}
+                                  , std::nullopt
+                , property::type{}
+          , place::type::Generator::No{}
                                   }
                     )
         };
@@ -189,7 +195,7 @@ namespace we
     {
       auto const& tokens {_token_by_place_id.at (number_of_tokens_place_id)};
 
-      fhg_assert (tokens.size() == 1);
+      gspc_assert (tokens.size() == 1);
 
       auto const [token_id, value] {*std::cbegin (tokens)};
 
@@ -223,7 +229,7 @@ namespace we
         ( number_of_tokens_place_id
         , [] (unsigned long number_of_tokens)
           {
-            fhg_assert (number_of_tokens > 0UL);
+            gspc_assert (number_of_tokens > 0UL);
 
             return number_of_tokens - 1UL;
           }
@@ -243,11 +249,44 @@ namespace we
           {fmt::format ("duplicate place with name '{}'", place.name())};
       }
 
+      if (place.is_shared_sink())
+      {
+        _shared_sink_infos.emplace (place.name(), SharedSinkInfo {pid, {}});
+      }
+
+      // Initialize generator place with initial token
+      if (place.is_generator())
+      {
+        auto const type_name {::boost::get<std::string> (place.signature())};
+
+        namespace TYPE = pnet::type::value;
+        using VALUE = TYPE::value_type;
+
+        _token_by_place_id[pid].emplace
+          ( _token_id++
+          , _generator_state[pid] =
+              type_name == TYPE::BIGINT() ? VALUE {TYPE::bigint_type {0}}
+            : type_name == TYPE::STRING() ? VALUE {std::string {"a"}}
+            : type_name == TYPE::ULONG()  ? VALUE {0UL}
+            : type_name == TYPE::LONG()   ? VALUE {0L}
+            : type_name == TYPE::UINT()   ? VALUE {0U}
+            : type_name == TYPE::INT()    ? VALUE {0}
+            : type_name == TYPE::CHAR()   ? VALUE {'a'}
+            : throw std::logic_error
+              { fmt::format
+                  ( "generator place '{}' with unknown type '{}'"
+                  , place.name()
+                  , type_name
+                  )
+              }
+          );
+      }
+
       return pid;
     }
 
     transition_id_type
-    net_type::add_transition (we::type::Transition const& transition)
+    net_type::add_transition (Transition const& transition)
     {
       const transition_id_type tid (_transition_id++);
 
@@ -279,10 +318,10 @@ namespace we
                                   , transition_id_type transition_id
                                   , place_id_type place_id
                                   , port_id_type port_id
-                                  , we::type::property::type const& property
+                                  , property::type const& property
                                   )
     {
-      fhg::util::visit<void>
+      util::visit<void>
         ( type
         , [&] (edge::TP)
           {
@@ -372,7 +411,7 @@ namespace we
     void net_type::add_response ( transition_id_type transition_id
                                 , port_id_type port_id
                                 , std::string const& to
-                                , we::type::property::type const& property
+                                , property::type const& property
                                 )
     {
       if (!_port_to_response[transition_id].emplace
@@ -401,7 +440,7 @@ namespace we
       return _pmap;
     }
 
-    const std::unordered_map<transition_id_type, we::type::Transition>&
+    const std::unordered_map<transition_id_type, Transition>&
       net_type::transitions() const
     {
       return _tmap;
@@ -444,6 +483,16 @@ namespace we
                              , pnet::type::value::value_type const& value
                              )
     {
+      increase_reference_counter (value);
+
+      return put_value_without_tracking (pid, value);
+    }
+
+    void net_type::put_value_without_tracking
+      ( place_id_type pid
+      , pnet::type::value::value_type const& value
+      )
+    {
       do_update (do_put_value (pid, value));
     }
 
@@ -481,10 +530,215 @@ namespace we
       return put_value (pid->second, value);
     }
 
-    net_type::ToBeUpdated net_type::do_put_value
-      (place_id_type pid, pnet::type::value::value_type const& value)
+    namespace
     {
-      place::type const& place (_pmap.at (pid));
+      // Recursively visits a value and calls the given function for each
+      // shared value found, including those nested in lists, sets, maps,
+      // structs, AND nested within other shared values.
+      template<typename Func>
+        void for_each_shared
+          ( pnet::type::value::value_type const& value
+          , Func const& func
+          )
+      {
+        util::visit<void>
+          ( value
+          , [&] (shared const& s)
+            {
+              func (s);
+              // Also recurse into the wrapped value to find nested shared values
+              for_each_shared (s.value(), func);
+            }
+          , [&] (std::list<pnet::type::value::value_type> const& list)
+            {
+              for (auto const& elem : list)
+              {
+                for_each_shared (elem, func);
+              }
+            }
+          , [&] (std::set<pnet::type::value::value_type> const& set)
+            {
+              for (auto const& elem : set)
+              {
+                for_each_shared (elem, func);
+              }
+            }
+          , [&] (std::map<pnet::type::value::value_type, pnet::type::value::value_type> const& map)
+            {
+              for (auto const& [key, val] : map)
+              {
+                for_each_shared (key, func);
+                for_each_shared (val, func);
+              }
+            }
+          , [&] (pnet::type::value::structured_type const& s)
+            {
+              for (auto const& [name, val] : s)
+              {
+                for_each_shared (val, func);
+              }
+            }
+          , [] (literal::control const&) { /* do nothing */ }
+          , [] (bool const&) { /* do nothing */ }
+          , [] (int const&) { /* do nothing */ }
+          , [] (long const&) { /* do nothing */ }
+          , [] (unsigned int const&) { /* do nothing */ }
+          , [] (unsigned long const&) { /* do nothing */ }
+          , [] (float const&) { /* do nothing */ }
+          , [] (double const&) { /* do nothing */ }
+          , [] (char const&) { /* do nothing */ }
+          , [] (std::string const&) { /* do nothing */ }
+          , [] (pnet::type::bitsetofint::type const&) { /* do nothing */ }
+          , [] (bytearray const&) { /* do nothing */ }
+          , [] (pnet::type::value::bigint_type const&) { /* do nothing */ }
+          );
+      }
+    }
+
+    auto net_type::sink_info
+      ( CleanupPlace const& place_name
+      ) -> SharedSinkInfo&
+    {
+      if ( auto sink_info {_shared_sink_infos.find (place_name)}
+         ; sink_info != std::end (_shared_sink_infos)
+         )
+      {
+        return sink_info->second;
+      }
+
+      throw std::runtime_error
+        { fmt::format
+          ( "shared cleanup place '{}' does not exist or is not"
+            " marked shared_sink"
+          , place_name
+          )
+       };
+    }
+
+    void net_type::increase_reference_counter
+      (pnet::type::value::value_type const& value)
+    {
+      for_each_shared
+        ( value
+        , [&] (shared const& s)
+          {
+            sink_info (s.cleanup_place())._counters[s.value()] += 1;
+          }
+        );
+    }
+
+    void net_type::decrease_reference_counter
+      ( pnet::type::value::value_type const& value
+      , SharedToCheckForCleanup& shared_to_check
+      )
+    {
+      for_each_shared
+        ( value
+        , [&] (shared const& s)
+          {
+            auto& counters {sink_info (s.cleanup_place())._counters};
+            auto counter {counters.find (s.value())};
+
+            if (counter == std::end (counters))
+            {
+              throw std::logic_error
+                { fmt::format
+                   ( "decrease_reference_counter:"
+                     " Missing counter for value '{}' on cleanup place '{}'"
+                   , pnet::type::value::show (s.value())
+                   , s.cleanup_place()
+                   )
+                };
+            }
+
+            if (counter->second == 0)
+            {
+              throw std::logic_error
+                { fmt::format
+                   ( "decrease_reference_counter:"
+                     " Counter for value '{}' on cleanup place '{}' is zero"
+                   , pnet::type::value::show (s.value())
+                   , s.cleanup_place()
+                   )
+                };
+            }
+
+            counter->second -= 1;
+
+            if (counter->second == 0)
+            {
+              shared_to_check[s.cleanup_place()].emplace (s.value());
+            }
+          }
+        );
+    }
+
+    void net_type::cleanup_shared_that_have_no_more_references
+      ( SharedToCheckForCleanup const& shared_to_check
+      )
+    {
+      std::for_each
+        ( std::begin (shared_to_check)
+        , std::end (shared_to_check)
+        , [&] (auto const& to_check)
+          {
+            auto const& cleanup_place {to_check.first};
+            auto const& values {to_check.second};
+
+            auto& sink_info {this->sink_info (cleanup_place)};
+            auto& counters {sink_info._counters};
+
+            std::for_each
+              ( std::cbegin (values)
+              , std::cend (values)
+              , [&] (auto const& value)
+                {
+                  auto counter {counters.find (value)};
+
+                  if (counter == std::end (counters))
+                  {
+                    throw std::logic_error
+                      { fmt::format
+                        ( "Missing reference counter for value '{}'"
+                          " on cleanup place '{}'"
+                        , pnet::type::value::show (value)
+                        , cleanup_place
+                        )
+                      };
+                  }
+
+                  if (counter->second == 0)
+                  {
+                    // Reference count reached zero, place cleanup token
+                    do_update
+                      ( do_put_value
+                        ( sink_info._place_id_of_cleanup_place
+                        , counter->first
+                        )
+                      );
+
+                    counters.erase (counter);
+                  }
+                }
+              );
+          }
+        );
+    }
+
+    net_type::ToBeUpdated net_type::do_put_value
+      ( place_id_type place_id
+      , pnet::type::value::value_type const& value
+      )
+    {
+      return do_put_value (place_id, _pmap.at (place_id), value);
+    }
+
+    net_type::ToBeUpdated net_type::do_put_value
+        ( place_id_type pid
+      , place::type const& place
+        , pnet::type::value::value_type const& value
+        )
+    {
       token_id_type const token_id (_token_id++);
 
       _token_by_place_id[pid].emplace
@@ -688,10 +942,118 @@ namespace we
       return tokens_to_be_deleted;
     }
 
+    namespace
+    {
+      auto incremented_generator_state
+        ( place::type const& place
+        , pnet::type::value::value_type& value
+        ) -> pnet::type::value::value_type const&
+      {
+        auto const type_name {::boost::get<std::string> (place.signature())};
+
+        if (type_name == pnet::type::value::BIGINT())
+        {
+          using BigInt = pnet::type::value::bigint_type;
+
+          auto& state {::boost::get<BigInt> (value)};
+
+          ++state;
+
+          return value;
+        }
+
+        if (type_name == pnet::type::value::STRING())
+        {
+          auto& state {::boost::get<std::string> (value)};
+
+          for ( auto symbol {std::rbegin (state)}
+              ; symbol != std::rend (state)
+              ; ++symbol
+              )
+          {
+            if (*symbol < 'z')
+            {
+              ++(*symbol);
+
+              return value;
+            }
+
+            *symbol = 'a';
+          }
+
+          state = "a" + state;
+
+          return value;
+        }
+
+        auto const increment_and_throw_on_overflow
+          { [&]<typename T>()
+            {
+              auto& state {::boost::get<T> (value)};
+
+              if (state == std::numeric_limits<T>::max())
+              {
+                throw pnet::exception::generator_place_overflow
+                  { place.name()
+                  , type_name
+                  };
+              }
+
+              ++state;
+            }
+          };
+
+        if (type_name == pnet::type::value::ULONG())
+        {
+          increment_and_throw_on_overflow.template operator()<unsigned long>();
+
+          return value;
+        }
+
+        if (type_name == pnet::type::value::LONG())
+        {
+          increment_and_throw_on_overflow.template operator()<long>();
+
+          return value;
+        }
+
+        if (type_name == pnet::type::value::UINT())
+        {
+          increment_and_throw_on_overflow.template operator()<unsigned int>();
+
+          return value;
+        }
+
+        if (type_name == pnet::type::value::INT())
+        {
+          increment_and_throw_on_overflow.template operator()<int>();
+
+          return value;
+        }
+
+        if (type_name == pnet::type::value::CHAR())
+        {
+          increment_and_throw_on_overflow.template operator()<char>();
+
+          return value;
+        }
+
+        throw std::logic_error
+          { fmt::format
+              ( "generator place '{}' has unsupported type '{}'"
+              , place.name()
+              , type_name
+              )
+          };
+      }
+    }
+
     void net_type::do_delete
       (std::forward_list<ToBeDeleted> const& tokens_to_be_deleted)
     {
       std::unordered_set<token_id_type> deleted_tokens;
+      std::forward_list<decltype (_generator_state)::iterator>
+        generator_states_to_increment;
 
       for ( ToBeDeleted const& token_to_be_deleted
           : tokens_to_be_deleted
@@ -703,6 +1065,15 @@ namespace we
           ;
 
         deleted_tokens.emplace (token_to_be_deleted._token_id);
+
+        if ( auto generator_state
+               { _generator_state.find (token_to_be_deleted._place_id)
+               }
+           ; generator_state != std::end (_generator_state)
+           )
+        {
+          generator_states_to_increment.push_front (generator_state);
+        }
       }
 
       for ( ToBeDeleted const& token_to_be_deleted
@@ -736,12 +1107,26 @@ namespace we
           }
         }
       }
+
+      for (auto generator_state : generator_states_to_increment)
+      {
+        auto& [place_id, value] {*generator_state};
+        auto const& place {_pmap.at (place_id)};
+
+        do_update
+          ( do_put_value
+            ( place_id
+            , place
+            , incremented_generator_state (place, value)
+            )
+          );
+      }
     }
 
-    we::type::Activity net_type::extract_activity
-      (transition_id_type tid, we::type::Transition const& transition)
+    Activity net_type::extract_activity
+      (transition_id_type tid, Transition const& transition)
     {
-      we::type::Activity act (transition, tid);
+      Activity act (transition, tid);
 
       do_delete
         ( do_extract ( tid
@@ -763,7 +1148,7 @@ namespace we
       {
       public:
         context_bind ( expr::eval::context& context
-                     , we::type::Transition const& transition
+                     , Transition const& transition
                      )
           : _context (context)
           , _transition (transition)
@@ -779,17 +1164,17 @@ namespace we
 
       private:
         expr::eval::context& _context;
-        we::type::Transition const& _transition;
+        Transition const& _transition;
       };
     }
 
-    ::boost::optional<we::type::Activity>
+    std::optional<Activity>
       net_type::fire_expressions_and_extract_activity_random
         ( std::mt19937& engine
         , we::workflow_response_callback const& workflow_response
         , we::eureka_response_callback const& eureka_response
-        , gspc::we::plugin::Plugins& plugins
-        , gspc::we::plugin::PutToken put_token
+        , we::plugin::Plugins& plugins
+        , we::plugin::PutToken put_token
         )
     {
       while (!_enabled.empty())
@@ -799,8 +1184,8 @@ namespace we
         std::uniform_int_distribution<std::size_t> random
           (0, transition_ids.size() - 1);
         transition_id_type const transition_id
-          (*fhg::util::next (transition_ids.begin(), random (engine)));
-        we::type::Transition const& transition (_tmap.at (transition_id));
+          (*util::next (transition_ids.begin(), random (engine)));
+        Transition const& transition (_tmap.at (transition_id));
 
         if (transition.expression())
         {
@@ -818,17 +1203,17 @@ namespace we
         }
       }
 
-      return ::boost::none;
+      return {};
     }
 
-    ::boost::optional<we::type::Activity>
+    std::optional<Activity>
       net_type::fire_expressions_and_extract_activity_random_TESTING_ONLY
         ( std::mt19937& engine
         , we::workflow_response_callback const& workflow_response
         , we::eureka_response_callback const& eureka_response
         )
     {
-      gspc::we::plugin::Plugins plugins;
+      we::plugin::Plugins plugins;
       return fire_expressions_and_extract_activity_random
         ( engine
         , workflow_response
@@ -843,20 +1228,38 @@ namespace we
 
     void net_type::fire_expression
       ( transition_id_type tid
-      , we::type::Transition const& transition
+      , Transition const& transition
       , we::workflow_response_callback const& workflow_response
       , we::eureka_response_callback const& eureka_response
-      , gspc::we::plugin::Plugins& plugins
-      , gspc::we::plugin::PutToken put_token
+      , we::plugin::Plugins& plugins
+      , we::plugin::PutToken put_token
       )
     {
       using pnet::type::value::peek;
       using values = std::list<pnet::type::value::value_type>;
 
       expr::eval::context context;
+      auto shared_to_check {SharedToCheckForCleanup{}};
+
+      // clang14 does not like to capture the "non variables" from the
+      // structured binding
+      // auto const [track_input, track_output] {transition.track_shared()};
+      auto const track_input {transition.track_shared().input};
+      auto const track_output {transition.track_shared().output};
 
       std::forward_list<ToBeDeleted> const tokens_to_be_deleted
-        (do_extract (tid, context_bind (context, transition)));
+        ( do_extract
+          ( tid
+          , [&] (port_id_type port_id, pnet::type::value::value_type const& value)
+            {
+              context_bind (context, transition) (port_id, value);
+              if (track_input)
+              {
+                decrease_reference_counter (value, shared_to_check);
+              }
+            }
+          )
+        );
 
       auto const plugin_commands
         (transition.prop().get ({"gspc", "we", "plugin"}));
@@ -865,38 +1268,38 @@ namespace we
       {
         {
           auto const call_before_eval
-            (peek ("call_before_eval", plugin_commands.get()));
+            (peek ("call_before_eval", plugin_commands->get()));
 
           if (call_before_eval)
           {
             Expression const expression
-              (::boost::get<std::string> (call_before_eval.get()));
+              (::boost::get<std::string> (call_before_eval->get()));
             auto const pids (expression.ast().eval_all (context));
 
             for (auto const& pid : ::boost::get<values> (pids))
             {
               plugins.before_eval
-                ( gspc::we::plugin::ID {::boost::get<unsigned long> (pid)}
+                ( we::plugin::ID {::boost::get<unsigned long> (pid)}
                 , context
                 );
             }
           }
         }
 
-        if (peek ("destroy", plugin_commands.get()))
+        if (peek ("destroy", plugin_commands->get()))
         {
           plugins.destroy
-            ( gspc::we::plugin::ID
+            ( we::plugin::ID
                 {::boost::get<unsigned long> (context.value ({"plugin_id"}))}
             );
         }
       }
 
-      transition.expression()->ast().eval_all (context);
+      transition.expression()->get().ast().eval_all (context);
 
       if (plugin_commands)
       {
-        if (peek ("create", plugin_commands.get()))
+        if (peek ("create", plugin_commands->get()))
         {
           context.bind_and_discard_ref
             ( {"plugin_id"}
@@ -912,18 +1315,18 @@ namespace we
 
         {
           auto const call_after_eval
-            (peek ("call_after_eval", plugin_commands.get()));
+            (peek ("call_after_eval", plugin_commands->get()));
 
           if (call_after_eval)
           {
             Expression const expression
-              (::boost::get<std::string> (call_after_eval.get()));
+              (::boost::get<std::string> (call_after_eval->get()));
             auto const pids (expression.ast().eval_all (context));
 
             for (auto const& pid : ::boost::get<values> (pids))
             {
               plugins.after_eval
-                ( gspc::we::plugin::ID {::boost::get<unsigned long> (pid)}
+                ( we::plugin::ID {::boost::get<unsigned long> (pid)}
                 , context
                 );
             }
@@ -939,10 +1342,15 @@ namespace we
            && _port_to_place.at (tid).count (port_id)
            )
         {
+          auto const& output_value = context.value ({port.name()});
+          if (track_output)
+          {
+            increase_reference_counter (output_value);
+          }
           pending_updates.emplace_back
             ( do_put_value
               ( _port_to_place.at (tid).at (port_id)._place_id
-              , context.value ({port.name()})
+              , output_value
               )
             );
         }
@@ -955,7 +1363,12 @@ namespace we
               (context.value ({port.name()}))
             );
 
-          for (auto const& token : many_tokens) {
+          for (auto const& token : many_tokens)
+          {
+            if (track_output)
+            {
+              increase_reference_counter (token);
+            }
             pending_updates.emplace_back
               ( do_put_value
                 ( _port_many_to_place.at (tid).at (port_id)._place_id
@@ -1015,6 +1428,11 @@ namespace we
         }
       }
 
+      if (track_input || track_output)
+      {
+        cleanup_shared_that_have_no_more_references (shared_to_check);
+      }
+
       do_delete (tokens_to_be_deleted);
 
       for (ToBeUpdated const& to_be_updated : pending_updates)
@@ -1064,15 +1482,33 @@ namespace we
         }
       }
 
+      auto const [track_input, track_output] {_tmap.at (tid).track_shared()};
+      auto shared_to_check {SharedToCheckForCleanup{}};
+
+      if (track_input)
+      {
+        for (auto const& in : input)
+        {
+          decrease_reference_counter (in._token, shared_to_check);
+        }
+      }
+
       for (auto const& output : outputs)
       {
         if (  _port_to_place.count (tid)
            && _port_to_place.at (tid).count (output._port_id)
            )
         {
-          put_value ( _port_to_place.at (tid).at (output._port_id)._place_id
-                    , output._token
-                    );
+          if (track_output)
+          {
+            increase_reference_counter (output._token);
+          }
+          do_update
+            ( do_put_value
+              ( _port_to_place.at (tid).at (output._port_id)._place_id
+              , output._token
+              )
+            );
         }
         else if (  _port_many_to_place.count (tid)
                 && _port_many_to_place.at (tid).count (output._port_id)
@@ -1085,9 +1521,15 @@ namespace we
 
           for (auto const& token : many_tokens)
           {
-            put_value
-              ( _port_many_to_place.at (tid).at (output._port_id)._place_id
-              , token
+            if (track_output)
+            {
+              increase_reference_counter (token);
+            }
+            do_update
+              ( do_put_value
+                ( _port_many_to_place.at (tid).at (output._port_id)._place_id
+                , token
+                )
               );
           }
         }
@@ -1155,6 +1597,11 @@ namespace we
               );
           }
         }
+      }
+
+      if (track_input || track_output)
+      {
+        cleanup_shared_that_have_no_more_references (shared_to_check);
       }
     }
 
@@ -1363,5 +1810,4 @@ namespace we
         _referenced_places.emplace (place_id);
       }
     }
-  }
-}
+  }}

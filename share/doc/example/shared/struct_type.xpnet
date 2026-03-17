@@ -1,0 +1,94 @@
+<!-- Copyright (C) 2026 Fraunhofer ITWM                            -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
+
+<!--
+  Demonstrate shared garbage collection with a custom struct type.
+
+  The struct 'point' contains two int fields: x and y.
+  A single shared<point> is created, copied twice, and both copies
+  are consumed. When the last copy is consumed, the struct value
+  appears at the 'cleanup' place.
+-->
+
+<defun name="shared_struct_type">
+
+  <struct name="point">
+    <field name="x" type="int"/>
+    <field name="y" type="int"/>
+  </struct>
+
+  <in name="x" type="int" place="x"/>
+  <in name="y" type="int" place="y"/>
+  <out name="result" type="point" place="cleanup"/>
+
+  <net>
+    <place name="x" type="int"/>
+    <place name="y" type="int"/>
+    <place name="cleanup" type="point" shared_sink="true"/>
+
+    <place name="shared" type="shared_cleanup"/>
+    <place name="copy_a" type="shared_cleanup"/>
+    <place name="copy_b" type="shared_cleanup"/>
+
+    <!-- Create a shared from a struct -->
+    <transition name="create">
+      <defun>
+        <in name="x" type="int"/>
+        <in name="y" type="int"/>
+        <out name="shared" type="shared_cleanup"/>
+        <module name="shared_struct_type"
+                function="shared create (x, y)">
+          <cinclude href="gspc/we/type/shared.hpp"/>
+          <cinclude href="gspc/we/type/value/poke.hpp"/>
+          <code><![CDATA[
+            // Create a structured type (point) with x and y fields
+            using gspc::pnet::type::value::value_type;
+            using gspc::pnet::type::value::poke;
+            value_type point;
+            poke ("x", point, x);
+            poke ("y", point, y);
+            return gspc::we::type::shared {point, "cleanup"};
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="x" place="x"/>
+      <connect-in port="y" place="y"/>
+      <connect-out port="shared" place="shared"/>
+    </transition>
+
+    <!-- Copy the shared (refcount increases) -->
+    <transition name="copy">
+      <defun>
+        <in name="shared" type="shared_cleanup"/>
+        <out name="a" type="shared_cleanup"/>
+        <out name="b" type="shared_cleanup"/>
+        <expression>
+          ${a} := ${shared};
+          ${b} := ${shared}
+        </expression>
+      </defun>
+      <connect-in port="shared" place="shared"/>
+      <connect-out port="a" place="copy_a"/>
+      <connect-out port="b" place="copy_b"/>
+    </transition>
+
+    <!-- Consume copy A -->
+    <transition name="consume_a">
+      <defun>
+        <in name="shared" type="shared_cleanup"/>
+        <expression/>
+      </defun>
+      <connect-in port="shared" place="copy_a"/>
+    </transition>
+
+    <!-- Consume copy B -->
+    <transition name="consume_b">
+      <defun>
+        <in name="shared" type="shared_cleanup"/>
+        <expression/>
+      </defun>
+      <connect-in port="shared" place="copy_b"/>
+    </transition>
+
+  </net>
+</defun>

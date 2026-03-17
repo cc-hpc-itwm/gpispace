@@ -1,9 +1,9 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2020-2021,2023,2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
 
-#include <we/type/bytearray.hpp>
+#include <gspc/we/type/bytearray.hpp>
 
 //! \note workaround for gmp bug: cstddef included with libstdcxx
 //! implementation detail that changed in gcc 4.9.0
@@ -18,6 +18,6 @@ namespace miller_rabin
 
   bool is_witness_for_compositeness (mpz_class const& a, mpz_class const& n);
 
-  we::type::bytearray generate_user_data (std::string const& number);
-  void show_result (std::ostream& os, we::type::bytearray const& output);
+  gspc::we::type::bytearray generate_user_data (std::string const& number);
+  void show_result (std::ostream& os, gspc::we::type::bytearray const& output);
 }

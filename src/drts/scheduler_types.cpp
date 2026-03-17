@@ -1,17 +1,16 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2021-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <drts/private/scheduler_types_implementation.hpp>
-#include <drts/scheduler_types.hpp>
+#include <gspc/drts/private/scheduler_types_implementation.hpp>
+#include <gspc/drts/scheduler_types.hpp>
 
-#include <util-generic/functor_visitor.hpp>
+#include <gspc/util/functor_visitor.hpp>
 
 #include <memory>
 #include <string>
 
-namespace gspc
-{
-  namespace scheduler
+
+  namespace gspc::scheduler
   {
     CostAwareWithWorkStealing::CostAwareWithWorkStealing
         (CostAwareWithWorkStealing::SingleAllocation scheduler)
@@ -60,7 +59,7 @@ namespace gspc
     std::string to_string
       (CostAwareWithWorkStealing::Implementation const& impl)
     {
-      return fhg::util::visit
+      return gspc::util::visit
         ( impl._constructed_from
         , [] (auto const& type) { return to_string (type); }
         );
@@ -80,10 +79,9 @@ namespace gspc
     std::string to_string
       (Type const& scheduler_type)
     {
-      return fhg::util::visit
+      return gspc::util::visit
         ( scheduler_type
         , [] (auto const& type) { return to_string (type); }
         );
     }
   }
-}

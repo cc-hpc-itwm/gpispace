@@ -1,0 +1,46 @@
+// Copyright (C) 2020-2021,2023,2026 Fraunhofer ITWM
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+#include <boost/test/unit_test.hpp>
+
+#include <gspc/xml/parse/parser.hpp>
+#include <gspc/xml/parse/state.hpp>
+
+#include <gspc/we/type/Transition.hpp>
+#include <gspc/we/type/net.hpp>
+
+#include <gspc/util/xml.hpp>
+#include <gspc/util/read_file.hpp>
+#include <gspc/testing/flatten_nested_exceptions.hpp>
+
+#include <sstream>
+#include <string>
+
+namespace gspc::xml::parse
+{
+    BOOST_AUTO_TEST_CASE (virtual_place_with_token_can_be_synthesized)
+    {
+      state::type state;
+
+      state.synthesize_virtual_places() = true;
+
+      std::string const filename
+        ("@XML_PARSE_TEST_XPNETS_DIR@/"
+        "virtual_place_with_token_can_be_synthesized.xpnet"
+        );
+
+      auto function (just_parse (state, filename));
+      post_processing_passes (function, &state);
+
+      ::gspc::we::type::Transition transition;
+
+      BOOST_REQUIRE_NO_THROW (transition = xml_to_we (function, state));
+
+      //! \note additional sanity not strictly required, to not throw
+      //! is the important point
+      BOOST_REQUIRE (!!transition.net());
+      BOOST_REQUIRE_EQUAL ( transition.name()
+                          , "virtual_place_with_token_can_be_synthesized"
+                          );
+    }
+}

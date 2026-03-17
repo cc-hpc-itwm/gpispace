@@ -1,0 +1,46 @@
+<!-- Copyright (C) 2021,2023,2026 Fraunhofer ITWM                       -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
+
+<defun name="loop">
+  <in name="register_host" type="string"/>
+  <in name="register_port" type="int"/>
+  <in name="task" type="string"/>
+  <in name="eureka_group" type="string"/>
+  <in name="trigger" type="control"/>
+  <module name="we_test_eureka"
+          function="loop ( register_host
+                         , register_port
+                         , task
+                         , eureka_group
+                         )"
+          pass_context="true"
+          >
+    <eureka-group>${eureka_group}</eureka-group>
+    <cinclude href="test/we/eureka/jobserver/client.hpp"/>
+    <cinclude href="stdexcept"/>
+    <cinclude href="thread"/>
+    <code><![CDATA[
+    gspc::we::test::eureka::jobserver::client client
+      (register_host, register_port, task, eureka_group);
+
+    try
+    {
+      _pnetc_context->execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FROM_WITHIN
+        ( []
+          {
+            while (1)
+            {
+              std::this_thread::yield();
+            }
+          }
+        );
+    }
+    catch (drts::worker::context::cancelled const&)
+    {
+      return client.cancelled();
+    }
+
+    std::abort();
+    ]]></code>
+  </module>
+</defun>

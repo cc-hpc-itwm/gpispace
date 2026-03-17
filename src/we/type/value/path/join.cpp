@@ -1,23 +1,17 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2013,2015,2020-2021,2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/type/value/path/join.hpp>
+#include <gspc/we/type/value/path/join.hpp>
 
-#include <util-generic/join.hpp>
+#include <gspc/util/join.hpp>
 
-namespace pnet
-{
-  namespace type
-  {
-    namespace value
-    {
-      namespace path
+
+
+
+      namespace gspc::pnet::type::value::path
       {
         std::string join (std::list<std::string> const& path)
         {
-          return fhg::util::join (path, '.').string();
+          return util::join (path, '.').string();
         }
       }
-    }
-  }
-}

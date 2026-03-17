@@ -1,17 +1,14 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2021,2023,2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
 
 #include <iosfwd>
 
-namespace gspc
-{
-  namespace test
-  {
-    namespace parallel_reduce
-    {
-      namespace module_call
+
+
+
+      namespace gspc::test::parallel_reduce::module_call
       {
         struct Task
         {
@@ -27,8 +24,8 @@ namespace gspc
         std::ostream& operator<< (std::ostream&, Task const&);
         bool operator== (Task const&, Task const&);
       }
-    }
-  }
-}
+
+
+
 
 #include <test/parallel_reduce/module_call/Task.ipp>

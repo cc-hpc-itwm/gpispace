@@ -1,0 +1,62 @@
+<!-- Copyright (C) 2026 Fraunhofer ITWM                            -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
+
+<!--
+  Demonstrate nested shared values in a list.
+
+  A list is created containing a shared value. When the list is consumed,
+  the shared value inside is also consumed, triggering cleanup.
+-->
+
+<defun name="shared_nested_in_list">
+
+  <in name="value" type="int" place="value"/>
+  <out name="result" type="int" place="cleanup"/>
+
+  <net>
+    <place name="value" type="int"/>
+    <place name="cleanup" type="int" shared_sink="true"/>
+
+    <place name="list_with_shared" type="list"/>
+
+    <!-- Create a list containing a shared value -->
+    <!-- produce_shared: output contains shared values inside the list -->
+    <transition name="create_list" produce_shared="true">
+      <defun>
+        <in name="v" type="int"/>
+        <out name="list_out" type="list"/>
+        <module name="shared_nested_in_list"
+                function="list_out create_list (v)">
+          <cinclude href="gspc/we/type/shared.hpp"/>
+          <cinclude href="gspc/we/type/value.hpp"/>
+          <cinclude href="list"/>
+          <code><![CDATA[
+            std::list<gspc::pnet::type::value::value_type> result;
+            result.push_back (gspc::we::type::shared {v, "cleanup"});
+            return result;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="v" place="value"/>
+      <connect-out port="list_out" place="list_with_shared"/>
+    </transition>
+
+    <!-- Consume the list (triggers cleanup of nested shared) -->
+    <!-- consume_shared: input contains shared values inside the list -->
+    <transition name="consume_list" consume_shared="true">
+      <defun>
+        <in name="list_in" type="list"/>
+        <module name="shared_nested_in_list"
+                function="consume_list (list_in)">
+          <cinclude href="iostream"/>
+          <code><![CDATA[
+            std::cout << "Consumed list with " << list_in.size()
+                      << " elements" << std::endl;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="list_in" place="list_with_shared"/>
+    </transition>
+
+  </net>
+</defun>

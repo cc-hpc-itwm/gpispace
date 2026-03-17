@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2021,2023-2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <test/parallel_reduce/module_call/JobExecutor.hpp>
@@ -16,13 +16,10 @@ namespace fmt
   {};
 }
 
-namespace gspc
-{
-  namespace test
-  {
-    namespace parallel_reduce
-    {
-      namespace module_call
+
+
+
+      namespace gspc::test::parallel_reduce::module_call
       {
         void JobExecutor::release (Task task, std::string worker_name)
         {
@@ -59,6 +56,3 @@ namespace gspc
           return _released.get_future().get();
         }
       }
-    }
-  }
-}

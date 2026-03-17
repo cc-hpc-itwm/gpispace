@@ -1,31 +1,32 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2023-2024,2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
 
-#include <drts/client.hpp>
-#include <drts/drts.hpp>
-#include <drts/scoped_rifd.hpp>
+#include <gspc/drts/client.hpp>
+#include <gspc/drts/drts.hpp>
+#include <gspc/drts/scoped_rifd.hpp>
 
-#include <testing/make.hpp>
-#include <testing/parse_command_line.hpp>
-#include <testing/scoped_nodefile_from_environment.hpp>
-#include <testing/shared_directory.hpp>
-#include <testing/source_directory.hpp>
+#include <gspc/testing/make.hpp>
+#include <gspc/testing/parse_command_line.hpp>
+#include <gspc/testing/scoped_nodefile_from_environment.hpp>
+#include <gspc/testing/shared_directory.hpp>
+#include <gspc/testing/source_directory.hpp>
 
-#include <we/type/value.hpp>
-#include <we/type/value/boost/test/printer.hpp>
+#include <gspc/we/type/value.hpp>
+#include <gspc/testing/printer/we/type/value.hpp>
 
-#include <util-generic/finally.hpp>
-#include <util-generic/temporary_path.hpp>
-#include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <util-generic/testing/printer/vector.hpp>
-#include <util-generic/testing/random.hpp>
-#include <util-generic/testing/random/integral.hpp>
-#include <util-generic/testing/require_container_is_permutation.hpp>
+#include <gspc/util/finally.hpp>
+#include <gspc/util/temporary_path.hpp>
+#include <gspc/testing/flatten_nested_exceptions.hpp>
+#include <gspc/testing/printer/vector.hpp>
+#include <gspc/testing/random.hpp>
+#include <gspc/testing/random/integral.hpp>
+#include <gspc/testing/require_container_is_permutation.hpp>
 
-#include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
+
+#include <filesystem>
 
 #include <algorithm>
 #include <iterator>
@@ -38,36 +39,36 @@ BOOST_AUTO_TEST_CASE (number_of_tokens_condition_and_number_on_the_same_place)
 {
   ::boost::program_options::options_description options_description;
 
-  options_description.add (test::options::shared_directory());
-  options_description.add (test::options::source_directory());
+  options_description.add (gspc::testing::options::shared_directory());
+  options_description.add (gspc::testing::options::source_directory());
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
 
   ::boost::program_options::variables_map vm
-    ( test::parse_command_line
+    ( gspc::testing::parse_command_line
         ( ::boost::unit_test::framework::master_test_suite().argc
         , ::boost::unit_test::framework::master_test_suite().argv
         , options_description
         )
     );
 
-  fhg::util::temporary_path const shared_directory
-    ( test::shared_directory (vm)
+  gspc::util::temporary_path const shared_directory
+    ( gspc::testing::shared_directory (vm)
     / "share_example_number_of_tokens_condition_and_number_on_the_same_place"
     );
 
-  test::scoped_nodefile_from_environment const nodefile_from_environment
+  gspc::testing::scoped_nodefile_from_environment const nodefile_from_environment
     (shared_directory, vm);
 
   vm.notify();
 
   gspc::installation const installation (vm);
 
-  test::make_net const make
+  gspc::testing::make_net const make
     ( installation
     , "condition_and_number_on_the_same_place"
-    , test::source_directory (vm)
+    , gspc::testing::source_directory (vm)
     );
 
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
@@ -82,9 +83,9 @@ BOOST_AUTO_TEST_CASE (number_of_tokens_condition_and_number_on_the_same_place)
                                          , rifds.entry_points()
                                          };
 
-  auto const n {fhg::util::testing::random<unsigned long>{} (1000UL, 0UL)};
+  auto const n {gspc::testing::random<unsigned long>{} (1000UL, 0UL)};
 
-  std::multimap<std::string, pnet::type::value::value_type> const result
+  std::multimap<std::string, gspc::pnet::type::value::value_type> const result
     { gspc::client (drts).put_and_run ( gspc::workflow (make.pnet())
                                         , { {"n", n}
                                           }
@@ -159,6 +160,6 @@ BOOST_AUTO_TEST_CASE (number_of_tokens_condition_and_number_on_the_same_place)
         )
       };
 
-    FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION (is, uneven);
+    GSPC_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION (is, uneven);
   }
 }

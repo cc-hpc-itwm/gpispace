@@ -38,16 +38,24 @@ if (BUILD_MILLER_RABIN)
     PUBLIC GPISpace::workflow_development)
   set_target_properties (util PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
-  add_executable (miller-rabin-utils.test "util-test.cpp")
-  target_compile_definitions (miller-rabin-utils.test PRIVATE
-    "BOOST_TEST_MODULE=\"miller-rabin-utils\""
-  )
-  target_link_libraries (miller-rabin-utils.test
-    PRIVATE util
-    PRIVATE Boost::unit_test_framework)
-  add_test (NAME miller-rabin-utils COMMAND
-    $<TARGET_FILE:miller-rabin-utils.test>
-  )
+  if (SWH_TEST)
+    if (TARGET Boost::unit_test_framework)
+      add_executable (miller-rabin-utils.test "util-test.cpp")
+      target_compile_definitions (miller-rabin-utils.test PRIVATE
+        "BOOST_TEST_MODULE=\"miller-rabin-utils\""
+      )
+      target_link_libraries (miller-rabin-utils.test
+        PRIVATE util
+        PRIVATE Boost::unit_test_framework)
+      add_test (NAME miller-rabin-utils COMMAND
+        $<TARGET_FILE:miller-rabin-utils.test>
+      )
+    else()
+      message (WARNING
+        "Could not find Boost::unit_test_framework, skipping miller-rabin-utils.test"
+      )
+    endif()
+  endif()
 
   swh_add_implementation_module (NAME miller-rabin
     SOURCES "miller-rabin.cpp"

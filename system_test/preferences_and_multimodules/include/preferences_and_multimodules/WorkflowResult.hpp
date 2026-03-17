@@ -1,11 +1,11 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2022-2024,2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
 
 #include <preferences_and_multimodules/ValuesOnPorts.hpp>
 
-#include <we/type/value.hpp>
+#include <gspc/we/type/value.hpp>
 
 #include <cstddef>
 #include <string>
@@ -36,7 +36,7 @@ namespace preferences_and_multimodules
   };
 
   template<>
-    we::type::literal::control const& WorkflowResult::at (Key) const;
+    gspc::we::type::literal::control const& WorkflowResult::at (Key) const;
   template<>
     std::vector<std::string> WorkflowResult::at_all (Key, std::size_t) const;
 }

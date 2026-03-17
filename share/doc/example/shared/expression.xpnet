@@ -1,0 +1,91 @@
+<!-- Copyright (C) 2026 Fraunhofer ITWM                            -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
+
+<!--
+  Demonstrate shared creation in expressions.
+
+  This example creates shareds in an expressions using
+  the syntax:
+
+      shared_PLACENAME ("value")
+
+  A single shared is created, copied twice, and both copies
+  are consumed. When the last copy is consumed, the string value
+  appears at the 'cleanup' place.
+-->
+
+<defun name="shared_expression">
+
+  <in name="value" type="string" place="value"/>
+  <out name="result" type="string" place="cleanup"/>
+
+  <net>
+    <place name="cleanup" type="string" shared_sink="true"/>
+
+    <place name="value" type="string"/>
+
+    <place name="shared" type="shared_cleanup"/>
+    <place name="copy_a" type="shared_cleanup"/>
+    <place name="copy_b" type="shared_cleanup"/>
+
+    <!-- Create a shared in an expression -->
+    <transition name="create">
+      <defun>
+        <in name="value" type="string"/>
+        <out name="shared" type="shared_cleanup"/>
+        <expression>
+          ${shared} := shared_cleanup (${value})
+        </expression>
+      </defun>
+      <connect-in port="value" place="value"/>
+      <connect-out port="shared" place="shared"/>
+    </transition>
+
+    <!-- Copy the shared (refcount increases) -->
+    <transition name="copy">
+      <defun>
+        <in name="shared" type="shared_cleanup"/>
+        <out name="a" type="shared_cleanup"/>
+        <out name="b" type="shared_cleanup"/>
+        <expression>
+          ${a} := ${shared};
+          ${b} := ${shared}
+        </expression>
+      </defun>
+      <connect-in port="shared" place="shared"/>
+      <connect-out port="a" place="copy_a"/>
+      <connect-out port="b" place="copy_b"/>
+    </transition>
+
+    <!-- Consume copy A (refcount decreases, cleanup when all consumed) -->
+    <transition name="consume_a">
+      <defun>
+        <in name="shared" type="shared_cleanup"/>
+        <module name="shared_expression"
+                function="consume_a (shared)">
+          <cinclude href="iostream"/>
+          <code><![CDATA[
+            std::cout << "Consumed copy A: " << shared << std::endl;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="shared" place="copy_a"/>
+    </transition>
+
+    <!-- Consume copy B (refcount decreases, cleanup when all consumed) -->
+    <transition name="consume_b">
+      <defun>
+        <in name="shared" type="shared_cleanup"/>
+        <module name="shared_expression"
+                function="consume_b (shared)">
+          <cinclude href="iostream"/>
+          <code><![CDATA[
+            std::cout << "Consumed copy B: " << shared << std::endl;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="shared" place="copy_b"/>
+    </transition>
+
+  </net>
+</defun>

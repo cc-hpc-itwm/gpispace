@@ -1,0 +1,101 @@
+<!-- Copyright (C) 2026 Fraunhofer ITWM                            -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
+
+<!-- Demonstrates the use of bigint values in conditions.          -->
+<!-- Given a bigint value, classifies it as negative, zero,        -->
+<!-- small (1-99), medium (100-999), or large (>=1000).            -->
+
+<defun name="bigint_condition">
+  <struct name="classified">
+    <field name="value" type="bigint"/>
+    <field name="classification" type="string"/>
+  </struct>
+
+  <in name="value" type="bigint" place="value"/>
+  <out name="result" type="classified" place="result"/>
+
+  <net>
+    <place name="value" type="bigint"/>
+    <place name="result" type="classified"/>
+
+    <transition name="negative">
+      <defun>
+        <in name="value" type="bigint"/>
+        <out name="result" type="classified"/>
+        <expression>
+          ${result.value} := ${value};
+          ${result.classification} := "negative"
+        </expression>
+      </defun>
+      <condition>
+        ${value} :lt: 0A
+      </condition>
+      <connect-in port="value" place="value"/>
+      <connect-out port="result" place="result"/>
+    </transition>
+
+    <transition name="zero">
+      <defun>
+        <in name="value" type="bigint"/>
+        <out name="result" type="classified"/>
+        <expression>
+          ${result.value} := ${value};
+          ${result.classification} := "zero"
+        </expression>
+      </defun>
+      <condition>
+        ${value} :eq: 0A
+      </condition>
+      <connect-in port="value" place="value"/>
+      <connect-out port="result" place="result"/>
+    </transition>
+
+    <transition name="small">
+      <defun>
+        <in name="value" type="bigint"/>
+        <out name="result" type="classified"/>
+        <expression>
+          ${result.value} := ${value};
+          ${result.classification} := "small"
+        </expression>
+      </defun>
+      <condition>
+        (${value} :gt: 0A) :and: (${value} :lt: 100A)
+      </condition>
+      <connect-in port="value" place="value"/>
+      <connect-out port="result" place="result"/>
+    </transition>
+
+    <transition name="medium">
+      <defun>
+        <in name="value" type="bigint"/>
+        <out name="result" type="classified"/>
+        <expression>
+          ${result.value} := ${value};
+          ${result.classification} := "medium"
+        </expression>
+      </defun>
+      <condition>
+        (${value} :ge: 100A) :and: (${value} :lt: 1000A)
+      </condition>
+      <connect-in port="value" place="value"/>
+      <connect-out port="result" place="result"/>
+    </transition>
+
+    <transition name="large">
+      <defun>
+        <in name="value" type="bigint"/>
+        <out name="result" type="classified"/>
+        <expression>
+          ${result.value} := ${value};
+          ${result.classification} := "large"
+        </expression>
+      </defun>
+      <condition>
+        ${value} :ge: 1000A
+      </condition>
+      <connect-in port="value" place="value"/>
+      <connect-out port="result" place="result"/>
+    </transition>
+  </net>
+</defun>

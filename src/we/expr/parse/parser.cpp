@@ -1,17 +1,18 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2011-2017,2019,2021-2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/expr/parse/parser.hpp>
+#include <gspc/we/expr/parse/parser.hpp>
 
-#include <we/exception.hpp>
-#include <we/expr/eval/context.hpp>
-#include <we/expr/eval/eval.hpp>
-#include <we/expr/parse/action.hpp>
-#include <we/expr/token/prop.hpp>
-#include <we/expr/token/tokenizer.hpp>
-#include <we/expr/type/Context.hpp>
-#include <we/expr/type/infer.hpp>
-#include <we/type/value/function.hpp>
+#include <gspc/we/exception.hpp>
+#include <gspc/we/expr/eval/context.hpp>
+#include <gspc/we/expr/eval/eval.hpp>
+#include <gspc/we/expr/parse/action.hpp>
+#include <gspc/we/expr/token/prop.hpp>
+#include <gspc/we/expr/token/tokenizer.hpp>
+#include <gspc/we/expr/type/Context.hpp>
+#include <gspc/we/expr/type/infer.hpp>
+#include <gspc/we/type/shared.hpp>
+#include <gspc/we/type/value/function.hpp>
 
 #include <algorithm>
 #include <functional>
@@ -20,9 +21,8 @@
 #include <sstream>
 #include <string>
 
-namespace expr
-{
-  namespace parse
+
+  namespace gspc::we::expr::parse
   {
     parser::parser (std::string const& input)
       : op_stack()
@@ -73,10 +73,10 @@ namespace expr
     {
       return std::accumulate
         ( nd_stack.begin(), nd_stack.end()
-        , expr::Type{}
+        , Type{}
         , [&context] (auto, node::type const& node)
           {
-            return expr::type::infer (context, node);
+            return type::infer (context, node);
           }
         );
     }
@@ -193,6 +193,58 @@ namespace expr
       }
     }
 
+    void parser::shared (std::size_t const k)
+    {
+      if (_shared_frames.empty())
+      {
+        throw exception::parse::exception
+          ("internal error: missing shared cleanup place", k);
+      }
+
+      auto frame {std::move (_shared_frames.back())};
+      _shared_frames.pop_back();
+
+      if (tmp_stack.empty())
+      {
+        throw exception::parse::missing_operand (k);
+      }
+
+      // Verify exactly one argument was given (no comma-separated arguments)
+      // Stack should have grown by exactly 1 since we saw _shared token
+      if (tmp_stack.size() != frame.stack_depth + 1)
+      {
+        throw exception::parse::exception
+          ( "shared_" + frame.cleanup_place
+            + " takes exactly one argument"
+          , k
+          );
+      }
+
+      nd_t value (tmp_stack.back()); tmp_stack.pop_back();
+
+      // Create the cleanup place name as a string literal node
+      nd_t cleanup_place
+        {pnet::type::value::value_type {frame.cleanup_place}};
+
+      if (_do_constant_folding && node::is_value (value))
+      {
+        // For _shared, construct directly
+        tmp_stack.emplace_back
+          ( pnet::type::value::value_type
+              { we::type::shared
+                  { node::get (value)
+                  , std::move (frame.cleanup_place)
+                  }
+              }
+          );
+      }
+      else
+      {
+        tmp_stack.emplace_back
+          (node::binary_t (token::_shared, cleanup_place, value));
+      }
+    }
+
     void parser::ternary (token::type const& token, std::size_t const k)
     {
       if (tmp_stack.empty())
@@ -265,6 +317,7 @@ namespace expr
       case token::_set_top:
       case token::_set_empty:
       case token::_set_size: unary (op_stack.top(), k); break;
+      case token::_shared: shared (k); break;
       case token::mul:
       case token::div:
       case token::divint:
@@ -287,6 +340,7 @@ namespace expr
       case token::_toulong:
       case token::_tofloat:
       case token::_todouble:
+      case token::_tobigint:
       case token::abs: unary (op_stack.top(), k); break;
       case token::rpr: op_stack.pop(); break;
       case token::define: binary (op_stack.top(), k); break;
@@ -299,7 +353,7 @@ namespace expr
     {
       op_stack.push (token::eof);
 
-      fhg::util::parse::position pos (input);
+      util::parse::position pos (input);
       token::tokenizer token (pos);
 
       while (!pos.end())
@@ -316,6 +370,13 @@ namespace expr
           case token::ref:
             tmp_stack.emplace_back (token.get_ref());
             break;
+          case token::_shared:
+            // Store the cleanup place name for use when reducing _shared.
+            // Don't push it onto tmp_stack - _shared takes only ONE argument.
+            _shared_frames.push_back
+              ({token.get_shared_cleanup_place(), tmp_stack.size()});
+            // Fall through to default to handle _shared via action table
+            [[fallthrough]];
           default:
             {
             ACTION:
@@ -351,4 +412,3 @@ namespace expr
       }
     }
   }
-}

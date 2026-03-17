@@ -1,17 +1,16 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2012-2016,2020-2021,2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/loader/loader.hpp>
+#include <gspc/we/loader/loader.hpp>
 
-#include <we/loader/exceptions.hpp>
+#include <gspc/we/loader/exceptions.hpp>
 
-#include <util-generic/join.hpp>
+#include <gspc/util/join.hpp>
 
-namespace we
-{
-  namespace loader
+
+  namespace gspc::we::loader
   {
-    loader::loader (std::list<::boost::filesystem::path> const& search_path)
+    loader::loader (std::list<std::filesystem::path> const& search_path)
       : _search_path (search_path)
     {}
 
@@ -30,11 +29,11 @@ namespace we
         return *mod->second;
       }
 
-      const ::boost::filesystem::path file_name ("lib" + module + ".so");
+      std::filesystem::path const file_name {"lib" + module + ".so"};
 
-      for (::boost::filesystem::path const& p : _search_path)
+      for (std::filesystem::path const& p : _search_path)
       {
-        if (::boost::filesystem::exists (p / file_name))
+        if (std::filesystem::exists (p / file_name))
         {
           return *_module_table
             .emplace ( module
@@ -49,7 +48,6 @@ namespace we
       }
 
       throw module_not_found
-        (file_name.string(), fhg::util::join (_search_path, ':').string());
+        (file_name.string(), util::join (_search_path, ':').string());
     }
   }
-}

@@ -1,0 +1,603 @@
+// Copyright (C) 2010-2016,2020-2026 Fraunhofer ITWM
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+#pragma once
+
+#include <sstream>
+#include <stdexcept>
+#include <string>
+
+#include <gspc/xml/parse/type/function.fwd.hpp>
+#include <gspc/xml/parse/type/mod.fwd.hpp>
+#include <gspc/xml/parse/type/port.fwd.hpp>
+#include <gspc/xml/parse/type/struct.hpp>
+#include <gspc/xml/parse/type/transition.fwd.hpp>
+
+#include <gspc/we/type/property.hpp>
+#include <gspc/we/type/value/show.hpp>
+
+#include <gspc/util/join.hpp>
+
+#include <gspc/util/fmt/std/filesystem/path.formatter.hpp>
+#include <gspc/util/fmt/std/optional.formatter.hpp>
+#include <fmt/core.h>
+#include <optional>
+
+
+
+    namespace gspc::xml::parse::warning
+    {
+      class generic : public std::runtime_error
+      {
+      public:
+        generic (std::string const& msg)
+          : std::runtime_error ("WARNING: " + msg)
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class unexpected_element : public generic
+      {
+      private:
+        std::string nice ( std::string const& name
+                         , std::string const& pre
+                         , std::filesystem::path const& path
+                         )
+        {
+          std::ostringstream s;
+
+          s << pre
+            << ": unexpected element with name " << name
+            << " in " << path
+            ;
+
+          return s.str();
+        }
+
+      public:
+        unexpected_element ( std::string const& name
+                           , std::string const& pre
+                           , std::filesystem::path const& path
+                           )
+          : generic (nice (name, pre, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class overwrite_function_name_as : public generic
+      {
+      private:
+        std::string nice ( std::string const& old_name
+                         , std::string const& new_name
+                         , std::filesystem::path const& path
+                         )
+        {
+          std::ostringstream s;
+
+          s << "old function name " << old_name
+            << " overwritten by new name " << new_name
+            << " in " << path
+            ;
+
+          return s.str();
+        }
+
+      public:
+        overwrite_function_name_as ( std::string const& old_name
+                                   , std::string const& new_name
+                                   , std::filesystem::path const& path
+                                   )
+          : generic (nice (old_name, new_name, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class overwrite_template_name_as : public generic
+      {
+      private:
+        std::string nice ( std::string const& old_name
+                         , std::string const& new_name
+                         , std::filesystem::path const& path
+                         )
+        {
+          std::ostringstream s;
+
+          s << "old template name " << old_name
+            << " overwritten by new name " << new_name
+            << " in " << path
+            ;
+
+          return s.str();
+        }
+
+      public:
+        overwrite_template_name_as ( std::string const& old_name
+                                   , std::string const& new_name
+                                   , std::filesystem::path const& path
+                                   )
+          : generic (nice (old_name, new_name, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class shadow_function : public generic
+      {
+      private:
+        std::string nice ( std::optional<std::string> const& name
+                         , std::filesystem::path const& path_early
+                         , std::filesystem::path const& path_late
+                         ) const
+        {
+          std::ostringstream s;
+
+          s << "function " << name << " shadowed "
+            << "in " << path_late
+            << ", first definition was in " << path_early
+            ;
+
+          return s.str();
+        }
+
+      public:
+        shadow_function ( std::optional<std::string> const& name
+                        , std::filesystem::path const& path_early
+                        , std::filesystem::path const& path_late
+                        )
+          : generic (nice (name, path_early, path_late))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class shadow_template : public generic
+      {
+      private:
+        std::string nice ( std::optional<std::string> const& name
+                         , std::filesystem::path const& path_early
+                         , std::filesystem::path const& path_late
+                         ) const
+        {
+          std::ostringstream s;
+
+          s << "template " << name << " shadowed "
+            << "in " << path_late
+            << ", first definition was in " << path_early
+            ;
+
+          return s.str();
+        }
+
+      public:
+        shadow_template ( std::optional<std::string> const& name
+                        , std::filesystem::path const& path_early
+                        , std::filesystem::path const& path_late
+                        )
+          : generic (nice (name, path_early, path_late))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class shadow_specialize : public generic
+      {
+      private:
+        std::string nice ( std::optional<std::string> const& name
+                         , std::filesystem::path const& path_early
+                         , std::filesystem::path const& path_late
+                         ) const
+        {
+          std::ostringstream s;
+
+          s << "specialization " << name << " shadowed "
+            << "in " << path_late
+            << ", first definition was in " << path_early
+            ;
+
+          return s.str();
+        }
+
+      public:
+        shadow_specialize ( std::optional<std::string> const& name
+                          , std::filesystem::path const& path_early
+                          , std::filesystem::path const& path_late
+                          )
+          : generic (nice (name, path_early, path_late))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class default_construction : public generic
+      {
+      private:
+        std::string nice ( std::string const& place
+                         , std::string const& field
+                         , std::filesystem::path const& path
+                         )
+        {
+          std::ostringstream s;
+
+          s << "default construction takes place for place " << place
+            << " from " << path
+            ;
+
+          if (field != "")
+            {
+              s << " for field " << field;
+            }
+
+          return s.str();
+        }
+
+      public:
+        default_construction ( std::string const& place
+                             , std::string const& field
+                             , std::filesystem::path const& path
+                             )
+          : generic (nice (place, field, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class unused_field : public generic
+      {
+      private:
+        std::string nice ( std::string const& place
+                         , std::string const& field
+                         , std::filesystem::path const& path
+                         )
+        {
+          std::ostringstream s;
+
+          s << "for place " << place
+            << " from " << path
+            << " there is a field given with name " << field
+            << " which is not used"
+            ;
+
+          return s.str();
+        }
+
+      public:
+        unused_field ( std::string const& place
+                             , std::string const& field
+                             , std::filesystem::path const& path
+                             )
+          : generic (nice (place, field, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class port_not_connected : public generic
+      {
+      public:
+        port_not_connected (type::port_type const&, std::filesystem::path const&);
+
+      private:
+        const std::filesystem::path _path;
+      };
+
+      // ******************************************************************* //
+
+      class overwrite_function_name_trans : public generic
+      {
+      public:
+        overwrite_function_name_trans ( type::transition_type const&
+                                      , type::function_type const&
+                                      );
+      };
+
+      // ******************************************************************* //
+
+      class property_unknown : public generic
+      {
+      private:
+        std::string nice ( ::gspc::we::type::property::path_type const& key
+                         , ::gspc::we::type::property::value_type const& val
+                         , std::filesystem::path const& path
+                         )
+        {
+          std::ostringstream s;
+
+          s << "unknown property " << gspc::util::join (key, '.')
+            << " value " << gspc::pnet::type::value::show (val)
+            << " in " << path
+            ;
+
+          return s.str();
+        }
+      public:
+        property_unknown ( ::gspc::we::type::property::path_type const& key
+                         , ::gspc::we::type::property::value_type const& val
+                         , std::filesystem::path const& path
+                         )
+          : generic (nice (key, val, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class inline_many_output_ports : public generic
+      {
+      private:
+        std::string nice ( std::string const& name
+                         , std::filesystem::path const& path
+                         )
+        {
+          std::ostringstream s;
+
+          s << "the inlined transition " << name
+            << " has more than one connected output port"
+            << " in " << path;
+
+          return s.str();
+        }
+      public:
+        inline_many_output_ports ( std::string const& name
+                                 , std::filesystem::path const& path
+                                 )
+          : generic (nice (name, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class property_overwritten : public generic
+      {
+      private:
+        std::string nice ( ::gspc::we::type::property::path_type const& key
+                         , gspc::pnet::type::value::value_type const& old_val
+                         , ::gspc::we::type::property::value_type const& new_val
+                         , std::filesystem::path const& path
+                         )
+        {
+          std::ostringstream s;
+
+          s << "property " << gspc::util::join (key, '.')
+            << " value " << gspc::pnet::type::value::show (old_val)
+            << " overwritten by value " << gspc::pnet::type::value::show (new_val)
+            << " in " << path
+            ;
+
+          return s.str();
+        }
+      public:
+        property_overwritten ( ::gspc::we::type::property::path_type const& key
+                             , gspc::pnet::type::value::value_type const& old_val
+                             , ::gspc::we::type::property::value_type const& new_val
+                             , std::filesystem::path const& path
+                             )
+          : generic (nice (key, old_val, new_val, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class type_map_duplicate : public generic
+      {
+      private:
+        std::string nice ( std::string const& replace
+                         , std::string const& with
+                         , std::filesystem::path const& path
+                         )
+        {
+          std::ostringstream s;
+
+          s << "type map duplicate, type " << replace
+            << " mapped to type " << with
+            << " twice"
+            << " in " << path
+            ;
+
+          return s.str();
+        }
+      public:
+        type_map_duplicate ( std::string const& replace
+                           , std::string const& with
+                           , std::filesystem::path const& path
+                           )
+          : generic (nice (replace, with, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class type_get_duplicate : public generic
+      {
+      private:
+        std::string nice ( std::string const& name
+                         , std::filesystem::path const& path
+                         )
+        {
+          std::ostringstream s;
+
+          s << "type get duplicate, type " << name
+            << " in " << path
+            ;
+
+          return s.str();
+        }
+      public:
+        type_get_duplicate ( std::string const& name
+                           , std::filesystem::path const& path
+                           )
+          : generic (nice (name, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class independent_place : public generic
+      {
+      private:
+        std::string nice ( std::string const& name
+                         , std::filesystem::path const& path
+                         )
+        {
+          std::ostringstream s;
+
+          s << "the place " << name << " has no connection at all"
+            << " in " << path
+            ;
+
+          return s.str();
+        }
+      public:
+        independent_place ( std::string const& name
+                          , std::filesystem::path const& path
+                          )
+          : generic (nice (name, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class independent_transition : public generic
+      {
+      private:
+        std::string nice ( std::string const& name
+                         , std::filesystem::path const& path
+                         )
+        {
+          std::ostringstream s;
+
+          s << "the transition " << name << " has no connection at all"
+            << " (or read connections only)"
+            << " in " << path
+            ;
+
+          return s.str();
+        }
+      public:
+        independent_transition ( std::string const& name
+                               , std::filesystem::path const& path
+                               )
+          : generic (nice (name, path))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class conflicting_port_types : public generic
+      {
+      public:
+        conflicting_port_types ( type::transition_type const&
+                               , type::port_type const& in
+                               , type::port_type const& out
+                               , std::filesystem::path const&
+                               );
+
+      private:
+        const std::filesystem::path _path;
+      };
+
+      // ******************************************************************* //
+
+      class backup_file : public generic
+      {
+      private:
+        std::string nice ( std::filesystem::path const& from
+                         , std::filesystem::path const& to
+                         ) const
+        {
+          std::ostringstream s;
+
+          s << "make a backup of " << from << " in " << to;
+
+          return s.str();
+        }
+
+      public:
+        explicit backup_file ( std::filesystem::path const& from
+                             , std::filesystem::path const& to
+                             )
+          : generic (nice (from, to))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class overwrite_file : public generic
+      {
+      private:
+        std::string nice (std::filesystem::path const& file) const
+        {
+          std::ostringstream s;
+
+          s << "overwrite the file " << file;
+
+          return s.str();
+        }
+
+      public:
+        overwrite_file (std::filesystem::path const& file)
+          : generic (nice (file))
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class duplicate_external_function : public generic
+      {
+      public:
+        duplicate_external_function ( type::module_type const& mod
+                                    , type::module_type const& old
+                                    );
+      };
+
+      // ******************************************************************* //
+
+      class virtual_place_not_tunneled : public generic
+      {
+      public:
+        virtual_place_not_tunneled ( std::string const& name
+                                   , std::filesystem::path const& file
+                                   )
+          : generic ( fmt::format ( "the virtual place {}"
+                                    " is not tunneled in {}."
+                                  , name
+                                  , file
+                                  )
+                    )
+        {}
+      };
+
+      // ******************************************************************* //
+
+      class duplicate_template_parameter : public generic
+      {
+      public:
+        duplicate_template_parameter ( std::optional<std::string> name
+                                     , std::string const& tn
+                                     , std::filesystem::path const& file
+                                     )
+          : generic ( fmt::format ( "duplicate typename {1}"
+                                    " in the definition of {0} in {2}"
+                                  , name ? *name : "<<noname>>"
+                                  , tn
+                                  , file
+                                  )
+                    )
+        {}
+      };
+
+      class synthesize_anonymous_function : public generic
+      {
+      public:
+        synthesize_anonymous_function (type::function_type const&);
+      };
+
+      class struct_redefined : public generic
+      {
+      public:
+        struct_redefined ( type::structure_type const& early
+                         , type::structure_type const& late
+                         );
+      };
+    }

@@ -14,8 +14,8 @@ GPI-Space targets x86-64 Linux systems. Other architectures are not
 supported at this point. It is built and tested continuously on
 
 * Oracle Linux: {8, 9}
-* Rocky Linux: {8, 9}
-* Ubuntu: {20.04, 22.04, 24.04}
+* Rocky Linux: {9}
+* Ubuntu: {22.04, 24.04}
 
 The virtual memory layer can be backed with either Ethernet,
 Infiniband or BeeOND.
@@ -87,7 +87,7 @@ and subsection "Optional Components" below.
     is compatible.
   * Among others, Ubuntu 20.04 ships with libgcrypt as backend as well
     as OpenSSH 8.2, thus needs a custom installation of libssh2.
-* [GPI-2](http://www.gpi-site.com) (>= 1.5.0)
+* [GPI-2](http://www.gpi-site.com) (>= 1.6.0)
   * Only required if GPI-Space is built with `-D GSPC_WITH_IML=ON`.
 
 > ---
@@ -141,10 +141,10 @@ system-wide.
 - chrpath: `PATH`
 
 By default, GPI-Space does not build unit- and system tests. To enable
-them, the options `-DBUILD_TESTING=ON` and
-`-DSHARED_DIRECTORY_FOR_TESTS=<shared-directory>` need to be
+them, the options `-DGSPC_TEST=ON` and
+`-DGSPC_SHARED_DIRECTORY_FOR_TESTS=<shared-directory>` need to be
 given to CMake by setting `build_tests` in the snippet
-below. `SHARED_DIRECTORY_FOR_TESTS` shall point to an existing but
+below. `GSPC_SHARED_DIRECTORY_FOR_TESTS` shall point to an existing but
 empty directory on a shared filesystem. The tests can then be run with
 `GSPC_NODEFILE_FOR_TESTS=<path to nodefile> ctest` within the build
 directory.
@@ -152,7 +152,7 @@ directory.
 ```bash
 # to build tests, remove leading # and choose a shared directory to be
 # used to store temporary data.
-#build_tests="-DBUILD_TESTING=on -DSHARED_DIRECTORY_FOR_TESTS=<shared-directory>"
+#build_tests="-DGSPC_TEST=on -DGSPC_SHARED_DIRECTORY_FOR_TESTS=<shared-directory>"
 gpispace_version=main
 
 wget "https://github.com/cc-hpc-itwm/gpispace/archive/${gpispace_version}.tar.gz" \

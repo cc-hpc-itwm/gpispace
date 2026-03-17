@@ -1,0 +1,175 @@
+// Copyright (C) 2014-2016,2018-2026 Fraunhofer ITWM
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+#pragma once
+
+#include <gspc/detail/export.hpp>
+
+#include <gspc/drts/certificates.hpp>
+#include <gspc/drts/drts.fwd.hpp>
+#include <gspc/drts/information_to_reattach.fwd.hpp>
+#include <gspc/drts/pimpl.hpp>
+#include <gspc/drts/rifd_entry_points.hpp>
+#include <gspc/drts/worker_description.hpp>
+
+#include <gspc/logging/endpoint.hpp>
+
+#include <gspc/we/type/value.hpp>
+
+#if GSPC_WITH_IML
+  #include <gspc/drts/stream.hpp>
+  #include <gspc/drts/virtual_memory.hpp>
+#else
+  #include <gspc/iml/macros.hpp>
+#endif
+#if GSPC_WITH_IML
+#include <gspc/iml/MemorySize.hpp>
+#endif
+
+#include <optional>
+#include <boost/program_options/options_description.hpp>
+#include <boost/program_options/variables_map.hpp>
+
+#include <exception>
+#include <filesystem>
+#include <functional>
+#include <iostream>
+#include <list>
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
+namespace gspc
+{
+  namespace options
+  {
+    GSPC_EXPORT ::boost::program_options::options_description logging();
+    GSPC_EXPORT ::boost::program_options::options_description installation();
+    GSPC_EXPORT ::boost::program_options::options_description drts();
+    GSPC_EXPORT ::boost::program_options::options_description external_rifd();
+    GSPC_EXPORT ::boost::program_options::options_description remote_iml();
+    GSPC_EXPORT ::boost::program_options::options_description virtual_memory();
+  }
+
+  class GSPC_EXPORT installation
+  {
+  public:
+    installation (std::filesystem::path const& gspc_home);
+    installation (::boost::program_options::variables_map const& vm);
+
+    std::filesystem::path const& gspc_home() const
+    {
+      return _gspc_home;
+    }
+
+  private:
+    std::filesystem::path const _gspc_home;
+  };
+
+  class GSPC_EXPORT scoped_runtime_system
+  {
+  public:
+    scoped_runtime_system ( ::boost::program_options::variables_map const& vm
+                          , installation const&
+                          , std::string const& topology_description
+                          , std::ostream& info_output = std::cerr
+                          , Certificates const& = {}
+                          );
+    scoped_runtime_system ( ::boost::program_options::variables_map const& vm
+                          , installation const&
+                          , std::string const& topology_description
+                          , rifd_entry_points const& entry_points
+                          , std::ostream& info_output = std::cerr
+                          , Certificates const& = {}
+                          );
+    scoped_runtime_system
+      ( ::boost::program_options::variables_map const& vm
+      , installation const&
+      , std::string const& topology_description
+      , std::optional<rifd_entry_points> const& entry_points
+      , rifd_entry_point const& parent
+      , std::ostream& info_output = std::cerr
+      , Certificates const& = {}
+      );
+
+    std::unordered_map< rifd_entry_point
+                      , std::list<std::exception_ptr>
+                      , rifd_entry_point_hash
+                      >
+      add_worker
+        ( rifd_entry_points const&
+        , Certificates const& = {}
+        );
+
+    std::unordered_map< rifd_entry_point
+                      , std::list<std::exception_ptr>
+                      , rifd_entry_point_hash
+                      >
+      add_worker
+        ( std::vector<worker_description> const&
+        , rifd_entry_points const&
+        , Certificates const& = {}
+        );
+
+    std::unordered_map< rifd_entry_point
+                      , std::pair< std::string /* kind */
+                                 , std::unordered_map<pid_t, std::exception_ptr>
+                                 >
+                      , rifd_entry_point_hash
+                      >
+      remove_worker (rifd_entry_points const&);
+
+    #if GSPC_WITH_IML
+    //! \note \a name is ignored and exists for API stability only.
+    vmem_allocation alloc
+      ( vmem::segment_description
+      , unsigned long size
+      , std::string const& name
+      ) const;
+    //! \note \a name is ignored and exists for API stability only.
+    vmem_allocation alloc_and_fill
+      ( vmem::segment_description
+      , unsigned long size
+      , std::string const& name
+      , char const* data
+      ) const;
+
+    //! \note \a name is ignored and exists for API stability only.
+    stream create_stream ( std::string const& name
+                         , gspc::vmem_allocation const& buffer
+                         , gspc::iml::MemorySize
+                         , std::function<void (gspc::pnet::type::value::value_type const&)> on_slot_filled
+                         ) const;
+    #else
+      GSPC_WITHOUT_IML_API_ERROR (alloc)
+      GSPC_WITHOUT_IML_API_ERROR (alloc_and_fill)
+      GSPC_WITHOUT_IML_API_ERROR (create_stream)
+    #endif
+
+    gspc::logging::endpoint top_level_log_demultiplexer() const;
+
+    scoped_runtime_system (scoped_runtime_system const&) = delete;
+    scoped_runtime_system& operator= (scoped_runtime_system const&) = delete;
+    scoped_runtime_system (scoped_runtime_system&&) = delete;
+    scoped_runtime_system& operator= (scoped_runtime_system&&) = delete;
+
+  private:
+    friend class information_to_reattach;
+
+    PIMPL (scoped_runtime_system);
+  };
+
+  GSPC_EXPORT void set_application_search_path
+    ( ::boost::program_options::variables_map&
+    , std::filesystem::path const&
+    );
+  GSPC_EXPORT void set_gspc_home ( ::boost::program_options::variables_map&
+                                    , std::filesystem::path const&
+                                    );
+
+  GSPC_EXPORT void set_remote_iml_vmem_socket
+    ( ::boost::program_options::variables_map&
+    , std::filesystem::path const&
+    );
+}

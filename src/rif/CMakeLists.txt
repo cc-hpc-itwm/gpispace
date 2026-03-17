@@ -1,9 +1,12 @@
 find_package (Libssh2 REQUIRED)
 
-gspc_add_library (NAME rif-entry_point
+gspc_add_library (NAME gspc_rif_entry_point
   TYPE STATIC
   SOURCES "entry_point.cpp"
-  LIBRARIES PRIVATE Util::Generic
+  INCLUDE_DIRECTORIES
+    PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    PUBLIC $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+  LIBRARIES PRIVATE gspc_util
             PRIVATE Boost::serialization
 )
 
@@ -11,48 +14,43 @@ gspc_add_executable (NAME gspc-rifd
   RUNTIME
   SOURCES "gspc-rifd.cpp"
           "execute_and_get_startup_messages.cpp"
-  LIBRARIES Util::RPC
-            fhg-util
-            gspc::logging
-            Util::Generic
-            Boost::filesystem
+  LIBRARIES gspc_rpc
+            gspc_util
+            gspc_logging
+            gspc_util
             Boost::iostreams
             Boost::program_options
             Boost::system
             Boost::thread
-            PRIVATE rif-entry_point
+            PRIVATE gspc_rif_entry_point
+            PRIVATE fmt
   CREATE_BUNDLE_INFO
 )
 
-gspc_add_library (NAME rif-started_process_promise
+gspc_add_library (NAME gspc_rif_started_process_promise
   # Object library for sake of re-exporting in libgspc.
   TYPE OBJECT
   SOURCES "started_process_promise.cpp"
+  INCLUDE_DIRECTORIES
+    PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    PUBLIC $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
   LIBRARIES GPISpace::header-only
             Boost::iostreams
             Boost::program_options
             Boost::serialization
-            Util-Generic
+            gspc_util
             PRIVATE fmt
 )
 
 install (FILES
-  started_process_promise.hpp
-  started_process_promise.ipp
-  DESTINATION include/rif
+  "${PROJECT_SOURCE_DIR}/include/gspc/rif/entry_point.hpp"
+  "${PROJECT_SOURCE_DIR}/include/gspc/rif/entry_point.ipp"
+  "${PROJECT_SOURCE_DIR}/include/gspc/rif/started_process_promise.hpp"
+  "${PROJECT_SOURCE_DIR}/include/gspc/rif/started_process_promise.ipp"
+  DESTINATION include/gspc/rif
 )
 
-add_unit_test (NAME started_process_promise
-  SOURCES "test/started_process_promise.cpp"
-
-  DESCRIPTION "pipe used for communicating with a rif-started process during startup"
-  USE_BOOST
-  LIBRARIES rif-started_process_promise
-            Util-Generic
-            PRIVATE fmt
-)
-
-gspc_add_library (NAME rif-strategies
+gspc_add_library (NAME gspc_rif_strategies
   TYPE STATIC
   SOURCES "strategy/local.cpp"
           "strategy/meta.cpp"
@@ -61,14 +59,16 @@ gspc_add_library (NAME rif-strategies
           "strategy/ssh/context.cpp"
           "strategy/ssh/detail.cpp"
           "strategy/ssh/session.cpp"
+  INCLUDE_DIRECTORIES
+    PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    PUBLIC $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
   LIBRARIES
-    PRIVATE Util::RPC
-    PRIVATE Util::Generic
+    PRIVATE gspc_rpc
+    PRIVATE gspc_util
     PRIVATE Libssh2::libssh2
     PRIVATE OpenSSL::Crypto
     PRIVATE OpenSSL::SSL
-    PRIVATE rif-entry_point
-    PUBLIC Boost::filesystem
+    PRIVATE gspc_rif_entry_point
     PUBLIC Boost::program_options
     PUBLIC Boost::serialization
     PRIVATE Boost::thread
@@ -78,11 +78,10 @@ gspc_add_library (NAME rif-strategies
 gspc_add_executable (NAME gspc-bootstrap-rifd
   RUNTIME
   SOURCES "gspc-bootstrap-rifd.cpp"
-  LIBRARIES rif-strategies
-            fhg-project_configuration
-            fhg-util
-            Util::Generic
-            Boost::filesystem
+  LIBRARIES gspc_rif_strategies
+            gspc_configuration
+            gspc_util
+            gspc_util
             Boost::program_options
             Boost::system
             PRIVATE fmt
@@ -91,11 +90,10 @@ gspc_add_executable (NAME gspc-bootstrap-rifd
 gspc_add_executable (NAME gspc-teardown-rifd
   RUNTIME
   SOURCES "gspc-teardown-rifd.cpp"
-  LIBRARIES rif-strategies
-            fhg-project_configuration
-            fhg-util
-            Util::Generic
-            Boost::filesystem
+  LIBRARIES gspc_rif_strategies
+            gspc_configuration
+            gspc_util
+            gspc_util
             Boost::program_options
             Boost::system
             PRIVATE fmt

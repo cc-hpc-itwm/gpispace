@@ -1,14 +1,14 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2021,2023-2024,2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <aggregate_sum/WorkflowResult.hpp>
 
-#include <we/signature_of.hpp>
-#include <we/type/signature/show.hpp>
-#include <we/type/value/show.hpp>
+#include <gspc/we/signature_of.hpp>
+#include <gspc/we/type/signature/show.hpp>
+#include <gspc/we/type/value/show.hpp>
 
-#include <util-generic/cxx17/holds_alternative.hpp>
-#include <util-generic/join.hpp>
+#include <gspc/util/cxx17/holds_alternative.hpp>
+#include <gspc/util/join.hpp>
 
 #include <fmt/core.h>
 #include <fmt/ostream.h>
@@ -16,8 +16,8 @@
 
 namespace fmt
 {
-  template<> struct formatter<pnet::type::value::show> : ostream_formatter{};
-  template<> struct formatter<pnet::type::signature::show> : ostream_formatter{};
+  template<> struct formatter<gspc::pnet::type::value::show> : ostream_formatter{};
+  template<> struct formatter<gspc::pnet::type::signature::show> : ostream_formatter{};
 }
 
 namespace aggregate_sum
@@ -37,11 +37,11 @@ namespace aggregate_sum
             , expected_count
             , key
             , count
-            , fhg::util::join
+            , gspc::util::join
               ( _values_on_ports, ","
               , [] (auto& os, auto const& kv) -> decltype (os)
                 {
-                  return os << kv.first << " = " << pnet::type::value::show (kv.second);
+                  return os << kv.first << " = " << gspc::pnet::type::value::show (kv.second);
                 }
               ).string()
             )
@@ -59,14 +59,14 @@ namespace aggregate_sum
 
     auto const& value (_values_on_ports.find (key)->second);
 
-    if (!fhg::util::cxx17::holds_alternative<T> (value))
+    if (!gspc::util::cxx17::holds_alternative<T> (value))
     {
       throw std::logic_error
         { fmt::format
             ( "Inconsistency: Expected type '{}'. Got value '{}' with signature '{}'."
             , type_description
-            , pnet::type::value::show (value)
-            , pnet::type::signature::show (pnet::signature_of (value))
+            , gspc::pnet::type::value::show (value)
+            , gspc::pnet::type::signature::show (gspc::pnet::signature_of (value))
             )
         };
     }

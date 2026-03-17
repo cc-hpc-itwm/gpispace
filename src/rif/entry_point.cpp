@@ -1,15 +1,14 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2021,2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <rif/entry_point.hpp>
+#include <gspc/rif/entry_point.hpp>
 
 #include <sstream>
 #include <stdexcept>
 #include <tuple>
 
-namespace fhg
-{
-  namespace rif
+
+  namespace gspc::rif
   {
     entry_point::entry_point() = default;
 
@@ -45,4 +44,3 @@ namespace fhg
 #undef ESSENCE
     }
   }
-}

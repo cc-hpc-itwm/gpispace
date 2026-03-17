@@ -1,13 +1,10 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2021,2023,2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-namespace gspc
-{
-  namespace test
-  {
-    namespace parallel_reduce
-    {
-      namespace module_call
+
+
+
+      namespace gspc::test::parallel_reduce::module_call
       {
         template<typename Archive>
           void Task::serialize (Archive& ar, unsigned int)
@@ -16,6 +13,3 @@ namespace gspc
           ar & _rhs;
         }
       }
-    }
-  }
-}

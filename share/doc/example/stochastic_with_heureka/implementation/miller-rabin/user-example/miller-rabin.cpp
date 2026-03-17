@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2020-2021,2023,2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <miller-rabin/util.hpp>
@@ -9,8 +9,8 @@
 #include <utility>
 
 extern "C"
-  std::pair<we::type::bytearray, bool> stochastic_with_heureka_roll_and_heureka
-    (unsigned long n, unsigned long seed, we::type::bytearray user_data)
+  std::pair<gspc::we::type::bytearray, bool> stochastic_with_heureka_roll_and_heureka
+    (unsigned long n, unsigned long seed, gspc::we::type::bytearray user_data)
 {
   std::string const s (user_data.to_string());
 
@@ -47,18 +47,18 @@ extern "C"
   {
     if (miller_rabin::is_witness_for_compositeness (random_number (N), N))
     {
-      return {we::type::bytearray {true}, true};
+      return {gspc::we::type::bytearray {true}, true};
     }
   }
 
-  return {we::type::bytearray {false}, false};
+  return {gspc::we::type::bytearray {false}, false};
 };
 
 extern "C"
-  we::type::bytearray stochastic_with_heureka_reduce
-    ( we::type::bytearray partial_resultL_bytearray
-    , we::type::bytearray partial_resultR_bytearray
-    , we::type::bytearray
+  gspc::we::type::bytearray stochastic_with_heureka_reduce
+    ( gspc::we::type::bytearray partial_resultL_bytearray
+    , gspc::we::type::bytearray partial_resultR_bytearray
+    , gspc::we::type::bytearray
     )
 {
   bool partial_resultL;
@@ -66,14 +66,14 @@ extern "C"
   partial_resultL_bytearray.copy (&partial_resultL);
   partial_resultR_bytearray.copy (&partial_resultR);
 
-  return we::type::bytearray {partial_resultL || partial_resultR};
+  return gspc::we::type::bytearray {partial_resultL || partial_resultR};
 }
 
 extern "C"
-  we::type::bytearray stochastic_with_heureka_post_process
+  gspc::we::type::bytearray stochastic_with_heureka_post_process
     ( unsigned long
-    , we::type::bytearray result_bytearray
-    , we::type::bytearray
+    , gspc::we::type::bytearray result_bytearray
+    , gspc::we::type::bytearray
     )
 {
   return result_bytearray;

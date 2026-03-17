@@ -2,7 +2,7 @@ include (FetchContent)
 
 FetchContent_Declare (fmt
   GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-  GIT_TAG        11.1.1
+  GIT_TAG        12.0.0
   GIT_SHALLOW    TRUE
   SOURCE_DIR     ${FMT_DIR}
   OVERRIDE_FIND_PACKAGE

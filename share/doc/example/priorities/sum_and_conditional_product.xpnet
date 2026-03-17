@@ -1,11 +1,10 @@
-<!-- Copyright (C) 2025 Fraunhofer ITWM        -->
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-
+<!-- Copyright (C) 2020-2021,2023 Fraunhofer ITWM                  -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
 <!-- return
      - if no input is "magic" -> their sum
      - if one input is "magic" -> their product
-     - if both inputs are "magic" -> zero
--->
+     - if both inputs are "magic" -> zero -->
+
 
 <defun name="prio_sum">
   <in name="a" type="long" place="a"/>

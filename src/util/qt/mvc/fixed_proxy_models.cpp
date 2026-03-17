@@ -1,15 +1,12 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2013,2020-2021,2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <util/qt/mvc/fixed_proxy_models.hpp>
+#include <gspc/util/qt/mvc/fixed_proxy_models.hpp>
 
-namespace fhg
-{
-  namespace util
-  {
-    namespace qt
-    {
-      namespace mvc
+
+
+
+      namespace gspc::util::qt::mvc
       {
         namespace
         {
@@ -120,6 +117,3 @@ namespace fhg
           return sourceModel()->setItemData (mapToSource (index), item_data);
         }
       }
-    }
-  }
-}

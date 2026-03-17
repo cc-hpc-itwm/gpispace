@@ -1,10 +1,10 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2019,2021,2023-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/plugin/Plugins.hpp>
+#include <gspc/we/plugin/Plugins.hpp>
 
-#include <FMT/boost/filesystem/path.hpp>
-#include <FMT/we/expr/eval/context.hpp>
+#include <gspc/util/fmt/std/filesystem/path.formatter.hpp>
+#include <gspc/we/expr/eval/context.formatter.hpp>
 #include <exception>
 #include <fmt/core.h>
 #include <stdexcept>
@@ -12,13 +12,11 @@
 #include <tuple>
 #include <utility>
 
-namespace gspc
-{
-  namespace we
-  {
-    namespace plugin
+
+
+    namespace gspc::we::plugin
     {
-      ID Plugins::create ( ::boost::filesystem::path path
+      ID Plugins::create ( std::filesystem::path path
                          , Context const& context
                          , PutToken put_token
                          )
@@ -92,5 +90,3 @@ namespace gspc
         return plugin;
       }
     }
-  }
-}

@@ -1,9 +1,11 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2014-2015,2020-2021,2023-2024,2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <drts/stream.hpp>
+#include <gspc/drts/stream.hpp>
 
-#include <drts/drts_iml.hpp>
+#include <gspc/drts/drts_iml.hpp>
+#include <gspc/drts/StreamSlot.hpp>
+#include <gspc/we/type/value/to_value.hpp>
 
 #include <fmt/core.h>
 #include <algorithm>
@@ -14,7 +16,7 @@ namespace gspc
   namespace
   {
     std::size_t get_number_of_slots_or_throw
-      (iml::MemorySize const available, iml::MemorySize const size_of_slot)
+      (gspc::iml::MemorySize const available, gspc::iml::MemorySize const size_of_slot)
     {
       std::size_t const number_of_slots (available / (size_of_slot + 1));
       if (0 == number_of_slots)
@@ -29,10 +31,10 @@ namespace gspc
   }
 
   stream::stream
-      ( iml::Client& client
-      , iml::SegmentAndAllocation const& buffer
-      , iml::MemorySize size_of_slot
-      , std::function<void (::pnet::type::value::value_type const&)>
+      ( gspc::iml::Client& client
+      , gspc::iml::SegmentAndAllocation const& buffer
+      , gspc::iml::MemorySize size_of_slot
+      , std::function<void (gspc::pnet::type::value::value_type const&)>
           on_slot_filled
       )
     : _virtual_memory (client)
@@ -114,11 +116,15 @@ namespace gspc
       );
 
     _on_slot_filled
-      ( pnet::vmem::stream_slot_to_value
-          ( _buffer.memory_region (_offset_to_meta_data + slot, 1UL)
-          , _buffer.memory_region (slot * _size_of_slot, data.size())
-          , flag[slot]
-          , _sequence_number++
+      ( gspc::pnet::type::value::to_value
+          ( StreamSlot
+              { _buffer.memory_region
+                  (_offset_to_meta_data + slot, 1UL)
+              , _buffer.memory_region
+                  (slot * _size_of_slot, data.size())
+              , flag[slot]
+              , _sequence_number++
+              }
           )
       );
   }

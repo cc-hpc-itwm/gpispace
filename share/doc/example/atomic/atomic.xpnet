@@ -1,5 +1,5 @@
-<!-- Copyright (C) 2025 Fraunhofer ITWM        -->
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- Copyright (C) 2014,2021,2023 Fraunhofer ITWM                  -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
 
 <defun name="atomic">
   <in name="number_of_updates" type="unsigned long"

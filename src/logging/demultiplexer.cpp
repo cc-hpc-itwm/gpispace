@@ -1,17 +1,16 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2019-2021,2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <logging/demultiplexer.hpp>
+#include <gspc/logging/demultiplexer.hpp>
 
-#include <util-generic/connectable_to_address_string.hpp>
-#include <util-generic/this_bound_mem_fn.hpp>
+#include <gspc/util/connectable_to_address_string.hpp>
+#include <gspc/util/this_bound_mem_fn.hpp>
 
-namespace fhg
-{
-  namespace logging
+
+  namespace gspc::logging
   {
     demultiplexer::demultiplexer
-        (rif::started_process_promise& promise, int, char**)
+        (gspc::rif::started_process_promise& promise, int, char**)
       : receiver ( [&] (::boost::asio::yield_context yield, message const& m)
                    {
                      return emitter.emit_message (m, std::move (yield));
@@ -19,8 +18,8 @@ namespace fhg
                  )
       , add_emitters
           ( service_dispatcher
-          , util::bind_this (&receiver, &stream_receiver::add_emitters)
-          , fhg::rpc::yielding
+          , gspc::util::bind_this (&receiver, &stream_receiver::add_emitters)
+          , gspc::rpc::yielding
           )
       , add_service_provider (io_service, service_dispatcher)
     {
@@ -30,4 +29,3 @@ namespace fhg
         );
     }
   }
-}

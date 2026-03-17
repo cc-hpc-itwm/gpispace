@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright (C) 2025 Fraunhofer ITWM
+# Copyright (C) 2021,2023,2026 Fraunhofer ITWM
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 set -euo pipefail
@@ -64,15 +64,15 @@ exclusion=${exclusion}\|$(join '|' \
 
 ## GPI-Space
 exclusion=${exclusion}\|$(join '|' \
-  'libdrts-context\.so' \
+  'libgspc_worker_context\.so' \
   'libgspc\.so' \
-  'libwe-dev\.so'
+  'libgspc_we\.so'
 )
 
 ## IML
 exclusion=${exclusion}\|$(join '|' \
-  'libIML-Client\.so' \
-  'libIMLPrivate-Installation\.so' \
+  'libgspc_iml_client\.so' \
+  'libgspc_iml_installation\.so' \
 )
 
 ## \todo Qt? See #9 and #22.

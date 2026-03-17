@@ -1,0 +1,48 @@
+// Copyright (C) 2014-2015,2020-2021,2023,2025 Fraunhofer ITWM
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+#pragma once
+
+#include <gspc/we/expr/type/Context.hpp>
+
+#include <optional>
+#include <boost/serialization/access.hpp>
+
+#include <string>
+
+
+  namespace gspc::we::type
+  {
+    struct memory_transfer
+    {
+    public:
+      //! \note serialization only
+      memory_transfer();
+
+      memory_transfer
+        ( std::string const& global
+        , std::string const& local
+        , std::optional<bool> const& not_modified_in_module_call
+        , bool allow_empty_ranges
+        );
+      std::string const& global() const;
+      std::string const& local() const;
+      std::optional<bool> const& not_modified_in_module_call() const;
+      bool const& allow_empty_ranges() const;
+
+      void assert_correct_expression_types
+        (expr::type::Context const&) const;
+
+    private:
+      std::string _global;
+      std::string _local;
+      std::optional<bool> _not_modified_in_module_call;
+      bool _allow_empty_ranges;
+
+      friend class ::boost::serialization::access;
+      template<class Archive> void serialize (Archive&, unsigned int);
+    };
+  }
+
+
+#include <gspc/we/type/memory_transfer.ipp>

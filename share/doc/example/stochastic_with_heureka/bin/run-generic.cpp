@@ -1,10 +1,10 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2020-2021,2023-2024,2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <bin/run.hpp>
 #include <util/print_exception.hpp>
 
-#include <we/type/value/read.hpp>
+#include <gspc/we/type/value/read.hpp>
 
 #include <boost/program_options.hpp>
 
@@ -91,8 +91,8 @@ try
           }
         , [] (::boost::program_options::variables_map const& vm)
           {
-            return ::boost::get<we::type::bytearray>
-              ( pnet::type::value::read
+            return ::boost::get<gspc::we::type::bytearray>
+              ( gspc::pnet::type::value::read
                   (vm[option_name::user_data].as<std::string>())
               );
           }

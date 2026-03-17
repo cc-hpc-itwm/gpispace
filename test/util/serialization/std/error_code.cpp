@@ -1,0 +1,56 @@
+#include <gspc/util/serialization/std/error_code.hpp>
+#include <gspc/testing/require_exception.hpp>
+#include <gspc/testing/require_serialized_to_id.hpp>
+
+#include <boost/test/unit_test.hpp>
+
+BOOST_AUTO_TEST_CASE (can_handle_standard_error_codes)
+{
+  GSPC_TESTING_REQUIRE_SERIALIZED_TO_ID ({}, std::error_code);
+
+  GSPC_TESTING_REQUIRE_SERIALIZED_TO_ID
+    ({std::error_code (314, std::generic_category())}, std::error_code);
+
+  GSPC_TESTING_REQUIRE_SERIALIZED_TO_ID
+    ({std::make_error_code (std::errc::inappropriate_io_control_operation)}, std::error_code);
+
+  //! \todo Bug in stdlibcxx of gcc 4.8: std::ios_base::failure
+  //! does not inherit from std::system_error as defined in c++11,
+  //! thus this category is not yet defined.
+  // GSPC_TESTING_REQUIRE_SERIALIZED_TO_ID
+  //   ({std::make_error_code (std::io_errc::stream)}, std::error_code);
+
+  GSPC_TESTING_REQUIRE_SERIALIZED_TO_ID
+    ({std::make_error_code (std::future_errc::broken_promise)}, std::error_code);
+}
+
+namespace
+{
+  struct : std::error_category
+  {
+    virtual const char* name() const noexcept override
+    {
+      return __PRETTY_FUNCTION__;
+    }
+    virtual std::string message (int) const override
+    {
+      throw std::logic_error ("will never be called");
+    }
+  } custom_error_category;
+}
+
+BOOST_AUTO_TEST_CASE (cant_handle_custom_error_categories)
+{
+  std::error_code const ec (0, custom_error_category);
+
+  std::stringstream ss;
+  ::boost::archive::binary_oarchive oa {ss};
+  oa << ec;
+  ::boost::archive::binary_iarchive ia {ss};
+  std::error_code deserialized;
+
+  gspc::testing::require_exception
+    ( [&] { ia >> deserialized; }
+    , std::logic_error ("unknown std::error_category")
+    );
+}

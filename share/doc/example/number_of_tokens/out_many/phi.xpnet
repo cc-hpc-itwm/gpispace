@@ -1,5 +1,5 @@
-<!-- Copyright (C) 2025 Fraunhofer ITWM        -->
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- Copyright (C) 2023-2024 Fraunhofer ITWM                       -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
 
 <defun name="number_of_tokens_out_many_phi">
 

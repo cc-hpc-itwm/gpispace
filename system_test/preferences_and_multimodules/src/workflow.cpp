@@ -1,12 +1,12 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2022-2024,2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <preferences_and_multimodules/workflow.hpp>
 #include <preferences_and_multimodules/WorkflowResult.hpp>
 
-#include <drts/scoped_rifd.hpp>
+#include <gspc/drts/scoped_rifd.hpp>
 
-#include <we/type/value.hpp>
+#include <gspc/we/type/value.hpp>
 
 #include <algorithm>
 #include <array>
@@ -133,8 +133,8 @@ namespace preferences_and_multimodules
       );
 
     // check if the workflow finished correctly
-    we::type::literal::control const done;
-    if ( ! (result.at<we::type::literal::control> ("done") == done)
+    gspc::we::type::literal::control const done;
+    if ( ! (result.at<gspc::we::type::literal::control> ("done") == done)
        )
     {
       throw std::runtime_error ("The workflow finished abnormally!");

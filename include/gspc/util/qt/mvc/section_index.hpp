@@ -1,0 +1,40 @@
+// Copyright (C) 2013,2015,2020-2021,2023,2025-2026 Fraunhofer ITWM
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+#pragma once
+
+#include <QHeaderView>
+
+
+
+
+      namespace gspc::util::qt::mvc
+      {
+        struct section_index
+        {
+          QAbstractItemModel* _model;
+          Qt::Orientation _orientation;
+          int _section;
+
+          //! \note Required for Q_DECLARE_METATYPE.
+          section_index();
+          section_index (const QAbstractItemModel*, Qt::Orientation, int section);
+          section_index (const QHeaderView*, int section);
+          section_index (QModelIndex, Qt::Orientation);
+
+          QVariant data (int role = Qt::DisplayRole) const;
+          bool data (QVariant, int role = Qt::EditRole) const;
+
+          bool operator< (section_index const&) const;
+          bool operator== (section_index const&) const;
+        };
+
+        QDebug operator<< (QDebug, section_index);
+        size_t hash_value (section_index);
+        uint qHash (section_index);
+      }
+
+
+
+
+Q_DECLARE_METATYPE (gspc::util::qt::mvc::section_index)

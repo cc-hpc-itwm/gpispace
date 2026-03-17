@@ -1,25 +1,31 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2014-2015,2018-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/loader/module_call.hpp>
+#include <gspc/we/loader/module_call.hpp>
 
-#include <we/loader/exceptions.hpp>
+#include <gspc/we/loader/exceptions.hpp>
 
-#include <we/expr/parse/parser.hpp>
-#include <we/type/Port.hpp>
-#include <we/type/id.hpp>
-#include <we/type/range.hpp>
+#include <gspc/we/expr/parse/parser.hpp>
+#include <gspc/we/type/Port.hpp>
+#include <gspc/we/type/id.hpp>
+#include <gspc/we/type/range.hpp>
 
-#include <drts/worker/context.hpp>
-#include <drts/worker/context_impl.hpp>
+#include <gspc/drts/worker/context.hpp>
+#include <gspc/drts/worker/context_impl.hpp>
 
-#include <fhg/assert.hpp>
+#include <gspc/assert.hpp>
 
+#include <gspc/iml/stubs.hpp>
+
+#if GSPC_WITH_IML
 #include <gspc/iml/Client.hpp>
+#endif
 #include <gspc/iml/macros.hpp>
+#if GSPC_WITH_IML
 #include <gspc/iml/MemoryOffset.hpp>
 #include <gspc/iml/MemorySize.hpp>
 #include <gspc/iml/SharedMemoryAllocation.hpp>
+#endif
 
 #include <fmt/core.h>
 #include <functional>
@@ -27,7 +33,7 @@
 
 #include <string>
 
-namespace we
+namespace gspc::we
 {
   #if GSPC_WITH_IML
   namespace
@@ -101,12 +107,12 @@ namespace we
       , std::list<std::pair<local::range, global::range>> const& transfers
       )
     {
-      for (std::pair<local::range, global::range> const& transfer : transfers)
+      for (auto const& transfer : transfers)
       {
         local::range const& local (transfer.first);
         global::range const& global (transfer.second);
 
-        fhg_assert (local.size() == global.size());
+        gspc_assert (local.size() == global.size());
 
         // Nothing to transfer if empty range, continue with the next transfer
         if (local.size() == 0)
@@ -186,12 +192,12 @@ namespace we
 
   namespace loader
   {
-    expr::eval::context module_call
+    we::expr::eval::context module_call
       ( we::loader::loader& loader
       , iml::Client /*const*/* IF_GSPC_WITH_IML (virtual_memory_api)
       , iml::SharedMemoryAllocation /*const*/* IF_GSPC_WITH_IML (shared_memory)
       , drts::worker::context* context
-      , expr::eval::context const& input
+      , we::expr::eval::context const& input
       , we::type::ModuleCall const& module_call
       )
     {
@@ -292,15 +298,15 @@ namespace we
           (module_call.puts_evaluated_before_call (input));
       #endif
 
-      expr::eval::context out (input);
+      we::expr::eval::context out (input);
 
       {
         drts::worker::redirect_output const clog
-          (context, fhg::logging::legacy::category_level_trace, std::clog);
+          (context, logging::legacy::category_level_trace, std::clog);
         drts::worker::redirect_output const cout
-          (context, fhg::logging::legacy::category_level_info, std::cout);
+          (context, logging::legacy::category_level_info, std::cout);
         drts::worker::redirect_output const cerr
-          (context, fhg::logging::legacy::category_level_warn, std::cerr);
+          (context, logging::legacy::category_level_warn, std::cerr);
 
         auto const& module
           ( loader.module ( module_call.require_module_unloads_without_rest()
@@ -308,10 +314,10 @@ namespace we
                           )
           );
 
-        auto const before (fhg::util::currently_loaded_libraries());
+        auto const before (util::currently_loaded_libraries());
         module.call
           (module_call.function(), context, input, out, pointers);
-        auto const after (fhg::util::currently_loaded_libraries());
+        auto const after (util::currently_loaded_libraries());
 
         if ( module_call.require_function_unloads_without_rest()
            && before != after

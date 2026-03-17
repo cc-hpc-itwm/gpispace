@@ -1,15 +1,13 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2013,2018,2020-2021,2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/type/value/name.hpp>
+#include <gspc/we/type/value/name.hpp>
 
 #include <iostream>
 
-namespace pnet
-{
-  namespace type
-  {
-    namespace value
+
+
+    namespace gspc::pnet::type::value
     {
 #define NAME(_name,_value)                      \
       std::string const& _name()                \
@@ -31,6 +29,8 @@ namespace pnet
       NAME (STRING, "string")
       NAME (BITSET,"bitset")
       NAME (BYTEARRAY, "bytearray")
+      NAME (BIGINT, "bigint")
+      NAME (SHARED, "shared")
       NAME (LIST, "list")
       NAME (SET, "set")
       NAME (MAP, "map")
@@ -56,6 +56,8 @@ namespace pnet
           tn.push_back (STRING());
           tn.push_back (BITSET());
           tn.push_back (BYTEARRAY());
+          tn.push_back (BIGINT());
+          tn.push_back (SHARED());
           tn.push_back (LIST());
           tn.push_back (SET());
           tn.push_back (MAP());
@@ -72,5 +74,3 @@ namespace pnet
         return tn;
       }
     }
-  }
-}

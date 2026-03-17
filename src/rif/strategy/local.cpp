@@ -1,38 +1,35 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2020-2021,2023-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <rif/strategy/local.hpp>
+#include <gspc/rif/strategy/local.hpp>
 
-#include <fhg/util/system_with_blocked_SIGCHLD.hpp>
-#include <util-generic/hostname.hpp>
+#include <gspc/util/system_with_blocked_SIGCHLD.hpp>
+#include <gspc/util/hostname.hpp>
 
-#include <FMT/boost/filesystem/path.hpp>
+#include <gspc/util/fmt/std/filesystem/path.formatter.hpp>
 #include <fmt/core.h>
 #include <stdexcept>
 #include <string>
 
-namespace fhg
-{
-  namespace rif
-  {
-    namespace strategy
-    {
-      namespace local
+
+
+
+      namespace gspc::rif::strategy::local
       {
         namespace
         {
           void do_local (std::string const& command)
           {
-            util::system_with_blocked_SIGCHLD (command);
+            gspc::util::system_with_blocked_SIGCHLD (command);
           }
         }
 
         std::unordered_map<std::string, std::exception_ptr>
           bootstrap ( std::vector<std::string> const& all_hostnames
-                    , ::boost::optional<unsigned short> const& port
+                    , std::optional<unsigned short> const& port
                     , std::string const& register_host
                     , unsigned short register_port
-                    , ::boost::filesystem::path const& binary
+                    , std::filesystem::path const& binary
                     , std::vector<std::string> const& parameters
                     , std::ostream&
                     )
@@ -51,7 +48,7 @@ namespace fhg
               );
           }
 
-          auto const localhost (util::hostname());
+          auto const localhost (gspc::util::hostname());
           auto const& hostname (all_hostnames.front());
           if (hostname != localhost)
           {
@@ -87,7 +84,7 @@ namespace fhg
         std::pair < std::unordered_set<std::string>
                   , std::unordered_map<std::string, std::exception_ptr>
                   > teardown
-            ( std::unordered_map<std::string, fhg::rif::entry_point> const& all_entry_points
+            ( std::unordered_map<std::string, gspc::rif::entry_point> const& all_entry_points
             , std::vector<std::string> const& parameters
             )
         {
@@ -105,7 +102,7 @@ namespace fhg
               );
           }
 
-          auto const localhost (util::hostname());
+          auto const localhost (gspc::util::hostname());
           auto const& entry_point (*all_entry_points.begin());
           auto const& hostname (entry_point.first);
           if (hostname != localhost)
@@ -135,6 +132,3 @@ namespace fhg
           }
         }
       }
-    }
-  }
-}

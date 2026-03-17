@@ -1,21 +1,21 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2014-2018,2020-2021,2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <rif/execute_and_get_startup_messages.hpp>
+#include <gspc/rif/execute_and_get_startup_messages.hpp>
 
-#include <rif/started_process_promise.hpp>
+#include <gspc/rif/started_process_promise.hpp>
 
-#include <fhg/util/next.hpp>
+#include <gspc/util/next.hpp>
 
-#include <util-generic/exit_status.hpp>
-#include <util-generic/serialization/exception.hpp>
-#include <util-generic/syscall.hpp>
-#include <util-generic/temporary_file.hpp>
+#include <gspc/util/exit_status.hpp>
+#include <gspc/util/serialization/exception.hpp>
+#include <gspc/util/syscall.hpp>
+#include <gspc/util/temporary_file.hpp>
 
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/iostreams/device/file_descriptor.hpp>
 #include <boost/iostreams/stream.hpp>
-#include <boost/optional.hpp>
+#include <optional>
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/system/system_error.hpp>
@@ -30,9 +30,8 @@
 #include <stdexcept>
 #include <system_error>
 
-namespace fhg
-{
-  namespace rif
+
+  namespace gspc::rif
   {
     namespace
     {
@@ -40,7 +39,7 @@ namespace fhg
       {
         try
         {
-          util::syscall::close (fd);
+          gspc::util::syscall::close (fd);
         }
         catch (::boost::system::system_error const& err)
         {
@@ -59,7 +58,7 @@ namespace fhg
         {
           throw std::logic_error ("append assumes preallocated buffer");
         }
-        std::copy (str.begin(), str.end(), fhg::util::next (buffer.begin(), pos));
+        std::copy (str.begin(), str.end(), gspc::util::next (buffer.begin(), pos));
         return pos + str.size();
       }
       size_t append (std::vector<char>& buffer, char c, size_t pos)
@@ -68,13 +67,13 @@ namespace fhg
         {
           throw std::logic_error ("append assumes preallocated buffer");
         }
-        *fhg::util::next (buffer.begin(), pos) = c;
+        *gspc::util::next (buffer.begin(), pos) = c;
         return pos + 1;
       }
 
       std::vector<char*> prepare_argv
         ( std::vector<char>& argv_buffer
-        , ::boost::filesystem::path const& command
+        , std::filesystem::path const& command
         , int pipe_fd
         , std::vector<std::string> const& arguments
         )
@@ -158,19 +157,19 @@ namespace fhg
     }
 
     StartupResult execute_and_get_startup_messages
-      ( ::boost::filesystem::path command
+      ( std::filesystem::path command
       , std::vector<std::string> arguments
       , std::unordered_map<std::string, std::string> environment
       )
     {
       int pipe_fds[2];
-      util::syscall::pipe (pipe_fds);
+      gspc::util::syscall::pipe (pipe_fds);
 
-      pid_t const pid (util::syscall::fork());
+      pid_t const pid (gspc::util::syscall::fork());
 
       if (pid)
       {
-        util::syscall::close (pipe_fds[1]);
+        gspc::util::syscall::close (pipe_fds[1]);
 
         ::boost::iostreams::stream<::boost::iostreams::file_descriptor_source>
           pipe_read (pipe_fds[0], ::boost::iostreams::close_handle);
@@ -196,19 +195,19 @@ namespace fhg
         if (!is_complete)
         {
           int child_status (0);
-          if (util::syscall::waitpid (pid, &child_status, 0) != pid)
+          if (gspc::util::syscall::waitpid (pid, &child_status, 0) != pid)
           {
             throw std::logic_error ("waitpid (pid) != pid");
           }
 
-          if (fhg::util::wifsignaled (child_status))
+          if (gspc::util::wifsignaled (child_status))
           {
             throw std::runtime_error
-              ("child signalled: " + std::to_string (fhg::util::wtermsig (child_status)));
+              ("child signalled: " + std::to_string (gspc::util::wtermsig (child_status)));
           }
-          else if (fhg::util::wifexited (child_status))
+          else if (gspc::util::wifexited (child_status))
           {
-            switch (fhg::util::wexitstatus (child_status))
+            switch (gspc::util::wexitstatus (child_status))
             {
             case 241:
               throw std::system_error
@@ -236,7 +235,7 @@ namespace fhg
                 ("execve failed: unknown error");
             default:
               throw std::runtime_error
-                ("child exited: " + std::to_string (fhg::util::wexitstatus (child_status)));
+                ("child exited: " + std::to_string (gspc::util::wexitstatus (child_status)));
             }
           }
 
@@ -257,7 +256,7 @@ namespace fhg
           archive & data;
 
           std::rethrow_exception
-            (fhg::util::serialization::exception::deserialize (data));
+            (gspc::util::serialization::exception::deserialize (data));
         }
 
         //! \todo types from startup_data
@@ -267,7 +266,7 @@ namespace fhg
       }
       else
       {
-        util::syscall::close (pipe_fds[0]);
+        gspc::util::syscall::close (pipe_fds[0]);
 
         std::vector<char> argv_buffer;
         std::vector<char*> const argv
@@ -281,7 +280,7 @@ namespace fhg
         std::vector<char> envp_buffer;
         std::vector<char*> const envp (prepare_envp (envp_buffer, environment));
 
-        long const maximum_open_files (util::syscall::sysconf (_SC_OPEN_MAX));
+        long const maximum_open_files (gspc::util::syscall::sysconf (_SC_OPEN_MAX));
         for (int fd (0); fd < maximum_open_files; ++fd)
         {
           if (fd == pipe_fds[1])
@@ -293,7 +292,7 @@ namespace fhg
 
         try
         {
-          util::syscall::execve (command.string().c_str(), argv.data(), envp.data());
+          gspc::util::syscall::execve (command.string().c_str(), argv.data(), envp.data());
         }
         catch (::boost::system::system_error const& err)
         {
@@ -311,4 +310,3 @@ namespace fhg
       }
     }
   }
-}

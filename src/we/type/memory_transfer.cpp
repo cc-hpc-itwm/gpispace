@@ -1,23 +1,22 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2021,2023-2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/type/Expression.hpp>
-#include <we/type/memory_transfer.hpp>
+#include <gspc/we/type/Expression.hpp>
+#include <gspc/we/type/memory_transfer.hpp>
 
 #include <exception>
 #include <fmt/core.h>
 #include <stdexcept>
 
-namespace we
-{
-  namespace type
+
+  namespace gspc::we::type
   {
     memory_transfer::memory_transfer() = default;
 
     memory_transfer::memory_transfer
       ( std::string const& global
       , std::string const& local
-      , ::boost::optional<bool> const& not_modified_in_module_call
+      , std::optional<bool> const& not_modified_in_module_call
       , bool allow_empty_ranges
       )
         : _global (global)
@@ -33,7 +32,7 @@ namespace we
     {
       return _local;
     }
-    ::boost::optional<bool> const& memory_transfer::not_modified_in_module_call() const
+    std::optional<bool> const& memory_transfer::not_modified_in_module_call() const
     {
       return _not_modified_in_module_call;
     }
@@ -94,4 +93,3 @@ namespace we
       }
     }
   }
-}

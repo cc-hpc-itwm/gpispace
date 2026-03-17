@@ -1,17 +1,16 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2013-2014,2020-2021,2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/type/bytearray.hpp>
+#include <gspc/we/type/bytearray.hpp>
 
-#include <fhg/util/next.hpp>
+#include <gspc/util/next.hpp>
 
 #include <boost/functional/hash.hpp>
 
 #include <iostream>
 
-namespace we
-{
-  namespace type
+
+  namespace gspc::we::type
   {
     void bytearray::push_back (char c)
     {
@@ -31,7 +30,7 @@ namespace we
     {
       const std::size_t s (std::min (_v.size(), size));
 
-      std::copy (_v.begin(), fhg::util::next (_v.begin(), s), buf);
+      std::copy (_v.begin(), util::next (_v.begin(), s), buf);
 
       return s;
     }
@@ -43,7 +42,7 @@ namespace we
     std::ostream& operator<< (std::ostream& s, bytearray const& t)
     {
       s << "y(";
-      for (char c : t._v)
+      for (auto c : t._v)
       {
         s << " " << static_cast<unsigned long> (c);
       }
@@ -64,4 +63,3 @@ namespace we
       return x._v < y._v;
     }
   }
-}

@@ -1,7 +1,7 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2013-2014,2020-2021,2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <util/qt/mvc/section_index.hpp>
+#include <gspc/util/qt/mvc/section_index.hpp>
 
 #include <boost/functional/hash.hpp>
 
@@ -9,13 +9,10 @@
 
 #include <tuple>
 
-namespace fhg
-{
-  namespace util
-  {
-    namespace qt
-    {
-      namespace mvc
+
+
+
+      namespace gspc::util::qt::mvc
       {
         section_index::section_index()
           : _model (nullptr)
@@ -83,6 +80,3 @@ namespace fhg
           return static_cast<uint> (hash_value (index));
         }
       }
-    }
-  }
-}

@@ -1,0 +1,59 @@
+// Copyright (C) 2010-2013,2015-2016,2020-2023,2025-2026 Fraunhofer ITWM
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+#pragma once
+
+#include <gspc/xml/parse/state.fwd.hpp>
+#include <gspc/xml/parse/type/net.fwd.hpp>
+#include <gspc/xml/parse/type/struct.hpp>
+#include <gspc/xml/parse/type/with_position_of_definition.hpp>
+#include <gspc/xml/parse/type_map_type.hpp>
+#include <gspc/xml/parse/util/position.fwd.hpp>
+
+#include <gspc/util/xml.fwd.hpp>
+
+#include <string>
+
+#include <filesystem>
+
+    namespace gspc::xml::parse::type
+    {
+      struct specialize_type : with_position_of_definition
+      {
+      public:
+        using unique_key_type = std::string;
+
+        specialize_type ( util::position_type const&
+                        , std::string const& name
+                        , std::string const& use
+                        , type_map_type const& type_map
+                        , type_get_type const& type_get
+                        );
+
+        std::string const& name () const;
+        unique_key_type const& unique_key() const;
+
+      private:
+        std::string const _name;
+
+        //! \todo All these should be private wth accessors.
+      public:
+        std::string use;
+        type_map_type type_map;
+        type_get_type type_get;
+      };
+
+      void split_structs ( parse::structure_type_util::set_type const& global
+                         , structs_type & child_structs
+                         , structs_type & parent_structs
+                         , type_get_type const& type_get
+                         , state::type const& state
+                         );
+
+      namespace dump
+      {
+        void dump ( ::gspc::util::xml::xmlstream & s
+                  , specialize_type const& sp
+                  );
+      }
+    }

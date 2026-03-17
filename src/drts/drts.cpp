@@ -1,38 +1,41 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2014-2016,2018-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <drts/drts.hpp>
+#include <gspc/drts/drts.hpp>
 
-#include <drts/private/drts_impl.hpp>
-#include <drts/private/option.hpp>
-#include <drts/private/pimpl.hpp>
-#include <drts/private/rifd_entry_points_impl.hpp>
-#include <drts/private/startup_and_shutdown.hpp>
+#include <gspc/drts/private/drts_impl.hpp>
+#include <gspc/drts/private/option.hpp>
+#include <gspc/drts/private/pimpl.hpp>
+#include <gspc/drts/private/rifd_entry_points_impl.hpp>
+#include <gspc/drts/private/startup_and_shutdown.hpp>
 
-#include <we/type/Activity.hpp>
-#include <we/type/value.hpp>
-#include <we/type/value/poke.hpp>
+#include <gspc/we/type/Activity.hpp>
+#include <gspc/we/type/value.hpp>
+#include <gspc/we/type/value/poke.hpp>
 
 #if GSPC_WITH_IML
-  #include <drts/drts_iml.hpp>
+  #include <gspc/drts/drts_iml.hpp>
 #endif
+#include <gspc/iml/stubs.hpp>
+
+#if GSPC_WITH_IML
 #include <gspc/iml/Client.hpp>
 #include <gspc/iml/RuntimeSystem.hpp>
+#endif
 
-#include <sdpa/client.hpp>
+#include <gspc/scheduler/client.hpp>
 
-#include <fhg/project_version.hpp>
-#include <util-generic/boost/program_options/require_all_if_one.hpp>
-#include <util-generic/make_optional.hpp>
-#include <util-generic/print_exception.hpp>
-#include <util-generic/read_file.hpp>
-#include <util-generic/read_lines.hpp>
-#include <util-generic/split.hpp>
-#include <util-generic/syscall.hpp>
-#include <util-generic/wait_and_collect_exceptions.hpp>
+#include <gspc/configuration/version.hpp>
+#include <gspc/util/boost/program_options/require_all_if_one.hpp>
+#include <gspc/util/make_optional.hpp>
+#include <gspc/util/print_exception.hpp>
+#include <gspc/util/read_file.hpp>
+#include <gspc/util/read_lines.hpp>
+#include <gspc/util/split.hpp>
+#include <gspc/util/syscall.hpp>
+#include <gspc/util/wait_and_collect_exceptions.hpp>
 
-#include <FMT/boost/filesystem/path.hpp>
-
+#include <filesystem>
 #include <fmt/core.h>
 #include <fmt/std.h>
 #include <memory>
@@ -42,11 +45,6 @@
 
 namespace gspc
 {
-  installation::installation
-    (::boost::filesystem::path const& gspc_home)
-      : installation {std::filesystem::path {gspc_home.string()}}
-  {}
-
   installation::installation
     (std::filesystem::path const& gspc_home)
       : _gspc_home (std::filesystem::canonical (gspc_home))
@@ -63,15 +61,15 @@ namespace gspc
         };
     }
 
-    std::string const version (fhg::util::read_file (path_version));
+    std::string const version (gspc::util::read_file (path_version));
 
-    if (version != fhg::project_version())
+    if (version != gspc::configuration::version())
     {
       throw std::invalid_argument
         { fmt::format
           ( "GSPC version mismatch: Expected '{}'"
             ", installation in '{}' has version '{}'"
-          , fhg::project_version()
+          , gspc::configuration::version()
           , _gspc_home
           , version
           )
@@ -132,7 +130,7 @@ namespace gspc
     ( ::boost::program_options::variables_map const& vm
     , installation const& installation
     , std::string const& topology_description
-    , ::boost::optional<rifd_entry_points> const& entry_points
+    , std::optional<rifd_entry_points> const& entry_points
     , rifd_entry_point const& parent
     , std::ostream& info_output
     , Certificates const& certificates
@@ -158,7 +156,7 @@ namespace gspc
     {
       std::vector<worker_description> worker_descriptions;
       for ( std::string const& description
-          : fhg::util::split<std::string, std::string> (descriptions, ' ')
+          : gspc::util::split<std::string, std::string> (descriptions, ' ')
           )
       {
         worker_descriptions.emplace_back (description);
@@ -168,20 +166,20 @@ namespace gspc
   }
 
   scoped_runtime_system::implementation::started_runtime_system::started_runtime_system
-      ( ::boost::optional<unsigned short> const& agent_port
-      , ::boost::optional<::boost::filesystem::path> gpi_socket
-      , std::vector<::boost::filesystem::path> app_path
+      ( std::optional<unsigned short> const& agent_port
+      , std::optional<std::filesystem::path> gpi_socket
+      , std::vector<std::filesystem::path> app_path
       , std::vector<std::string> worker_env_copy_variable
       , bool worker_env_copy_current
-      , std::vector<::boost::filesystem::path> worker_env_copy_file
+      , std::vector<std::filesystem::path> worker_env_copy_file
       , std::vector<std::string> worker_env_set_variable
       , gspc::installation_path installation_path
       , std::vector<worker_description> worker_descriptions
-      , std::vector<fhg::rif::entry_point> const& rif_entry_points
-      , fhg::rif::entry_point const& parent
+      , std::vector<gspc::rif::entry_point> const& rif_entry_points
+      , gspc::rif::entry_point const& parent
       , std::ostream& info_output
-      , ::boost::optional<fhg::rif::entry_point> logging_rif_entry_point
-      , std::vector<fhg::logging::endpoint> default_log_receivers
+      , std::optional<gspc::rif::entry_point> logging_rif_entry_point
+      , std::vector<gspc::logging::endpoint> default_log_receivers
       , Certificates const& certificates
       )
     : _info_output (info_output)
@@ -197,7 +195,7 @@ namespace gspc
     , _worker_descriptions (std::move (worker_descriptions))
     , _processes_storage (_info_output)
   {
-    fhg::util::signal_handler_manager signal_handler_manager;
+    gspc::util::signal_handler_manager signal_handler_manager;
 
     auto const startup_result
       ( fhg::drts::startup
@@ -222,14 +220,14 @@ namespace gspc
 
     if (!rif_entry_points.empty())
     {
-      std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
+      std::unordered_map<gspc::rif::entry_point, std::list<std::exception_ptr>>
         const failures (add_worker_impl (_worker_descriptions, rif_entry_points, certificates));
 
       if (!failures.empty())
       {
-        fhg::util::throw_collected_exceptions
+        gspc::util::throw_collected_exceptions
           ( failures
-          , [] (std::pair<fhg::rif::entry_point, std::list<std::exception_ptr>>
+          , [] (std::pair<gspc::rif::entry_point, std::list<std::exception_ptr>>
                  const& fail
                )
             {
@@ -239,7 +237,7 @@ namespace gspc
 
               for (std::exception_ptr const& exception_ptr : fail.second)
               {
-                oss << ' ' << fhg::util::exception_printer (exception_ptr);
+                oss << ' ' << gspc::util::exception_printer (exception_ptr);
               }
 
               return oss.str();
@@ -249,19 +247,19 @@ namespace gspc
     }
   }
 
-  std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
+  std::unordered_map<gspc::rif::entry_point, std::list<std::exception_ptr>>
     scoped_runtime_system::implementation::started_runtime_system::add_worker
-      ( std::vector<fhg::rif::entry_point> const& entry_points
+      ( std::vector<gspc::rif::entry_point> const& entry_points
       , Certificates const& certificates
       )
   {
     return add_worker (_worker_descriptions, entry_points, certificates);
   }
 
-  std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
+  std::unordered_map<gspc::rif::entry_point, std::list<std::exception_ptr>>
     scoped_runtime_system::implementation::started_runtime_system::add_worker
       ( std::vector<worker_description> const& worker_descriptions
-      , std::vector<fhg::rif::entry_point> const& entry_points
+      , std::vector<gspc::rif::entry_point> const& entry_points
       , Certificates const& certificates
       )
   {
@@ -273,14 +271,14 @@ namespace gspc
     return add_worker_impl (worker_descriptions, entry_points, certificates);
   }
 
-  std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
+  std::unordered_map<gspc::rif::entry_point, std::list<std::exception_ptr>>
     scoped_runtime_system::implementation::started_runtime_system::add_worker_impl
       ( std::vector<worker_description> const& worker_descriptions
-      , std::vector<fhg::rif::entry_point> const& entry_points
+      , std::vector<gspc::rif::entry_point> const& entry_points
       , Certificates const& certificates
       )
   {
-    std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
+    std::unordered_map<gspc::rif::entry_point, std::list<std::exception_ptr>>
       failures;
 
     for ( worker_description const& description
@@ -318,30 +316,30 @@ namespace gspc
     return failures;
   }
 
-  std::unordered_map< fhg::rif::entry_point
+  std::unordered_map< gspc::rif::entry_point
                     , std::pair< std::string /* kind */
                                , std::unordered_map<pid_t, std::exception_ptr>
                                >
                     >
     scoped_runtime_system::implementation::started_runtime_system::remove_worker
-      (std::vector<fhg::rif::entry_point> const& entry_points)
+      (std::vector<gspc::rif::entry_point> const& entry_points)
   {
     return _processes_storage.shutdown_worker (entry_points);
   }
 
   namespace
   {
-    std::vector<fhg::logging::endpoint> extract_default_receivers
+    std::vector<gspc::logging::endpoint> extract_default_receivers
       (::boost::program_options::variables_map const& vm)
     {
-      fhg::util::boost::program_options::require_all_if_one
+      gspc::util::boost::program_options::require_all_if_one
         (vm, {"log-host", "log-port"});
 
-      std::vector<fhg::logging::endpoint> receivers;
+      std::vector<gspc::logging::endpoint> receivers;
       if (auto const log_host = get_log_host (vm))
       {
         receivers.emplace_back
-          (fhg::logging::tcp_endpoint (*log_host, *get_log_port (vm)));
+          (gspc::logging::tcp_endpoint (*log_host, *get_log_port (vm)));
       }
       return receivers;
     }
@@ -351,7 +349,7 @@ namespace gspc
     ( ::boost::program_options::variables_map const& vm
     , installation const& installation
     , std::string const& topology_description
-    , ::boost::optional<rifd_entry_points> const& entry_points
+    , std::optional<rifd_entry_points> const& entry_points
     , rifd_entry_point const& parent
     , std::ostream& info_output
     , Certificates const& certificates
@@ -363,7 +361,7 @@ namespace gspc
         ? get_virtual_memory_socket (vm)
         : get_remote_iml_vmem_socket (vm)
         #else
-          boost::none
+          std::nullopt
         #endif
         )
       , _iml_rts (
@@ -373,20 +371,20 @@ namespace gspc
                      , iml_runtime_system {vm, info_output}
                      )
                    #else
-                   boost::none
+                   std::nullopt
                    #endif
                  )
       , _started_runtime_system
           ( get_agent_port (vm)
           , _virtual_memory_socket
           , get_application_search_path (vm)
-          ? std::vector<::boost::filesystem::path>
-            ({::boost::filesystem::canonical (get_application_search_path (vm).get())})
-          : std::vector<::boost::filesystem::path>()
-          , get_worker_env_copy_variable (vm).get_value_or ({})
-          , get_worker_env_copy_current (vm).get_value_or (false)
-          , get_worker_env_copy_file (vm).get_value_or ({})
-          , get_worker_env_set_variable (vm).get_value_or ({})
+          ? std::vector<std::filesystem::path>
+            ({std::filesystem::canonical (*get_application_search_path (vm))})
+          : std::vector<std::filesystem::path>()
+          , get_worker_env_copy_variable (vm).value_or (std::vector<std::string>{})
+          , get_worker_env_copy_current (vm).value_or (false)
+          , get_worker_env_copy_file (vm).value_or (std::vector<std::filesystem::path>{})
+          , get_worker_env_set_variable (vm).value_or (std::vector<std::string>{})
           , installation.gspc_home()
           , parse_worker_descriptions (topology_description)
           , !entry_points
@@ -404,9 +402,8 @@ namespace gspc
         (
         #if GSPC_WITH_IML
            _virtual_memory_socket
-        ? std::make_unique<iml::Client>
-           ( ::boost::filesystem::path {_virtual_memory_socket->string()}
-           )
+        ? std::make_unique<gspc::iml::Client>
+           (*_virtual_memory_socket)
         :
         #endif
          nullptr
@@ -433,14 +430,14 @@ namespace gspc
     #endif
   }
 
-  std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
+  std::unordered_map<gspc::rif::entry_point, std::list<std::exception_ptr>>
     scoped_runtime_system::implementation::add_worker
       (rifd_entry_points const& rifd_entry_points, Certificates const& certificates)
   {
     return _started_runtime_system.add_worker
       (rifd_entry_points._->_entry_points, certificates);
   }
-  std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
+  std::unordered_map<gspc::rif::entry_point, std::list<std::exception_ptr>>
     scoped_runtime_system::implementation::add_worker
       ( std::vector<worker_description> const& descriptions
       , rifd_entry_points const& rifd_entry_points
@@ -450,7 +447,7 @@ namespace gspc
     return _started_runtime_system.add_worker
       (descriptions, rifd_entry_points._->_entry_points, certificates);
   }
-  std::unordered_map< fhg::rif::entry_point
+  std::unordered_map< gspc::rif::entry_point
                     , std::pair< std::string /* kind */
                                , std::unordered_map<pid_t, std::exception_ptr>
                                >
@@ -469,7 +466,7 @@ namespace gspc
     , std::string const&
     ) const
   {
-    return iml::SegmentAndAllocation
+    return gspc::iml::SegmentAndAllocation
       {*_->_virtual_memory_api, segment_description, size};
   }
   vmem_allocation scoped_runtime_system::alloc_and_fill
@@ -479,14 +476,14 @@ namespace gspc
     , char const* const data
     ) const
   {
-    return iml::SegmentAndAllocation
+    return gspc::iml::SegmentAndAllocation
       {*_->_virtual_memory_api, segment_description, size, data};
   }
   stream scoped_runtime_system::create_stream
     ( std::string const&
     , gspc::vmem_allocation const& buffer
-    , iml::MemorySize size_of_slot
-    , std::function<void (::pnet::type::value::value_type const&)> on_slot_filled
+    , gspc::iml::MemorySize size_of_slot
+    , std::function<void (gspc::pnet::type::value::value_type const&)> on_slot_filled
     ) const
   {
     return gspc::stream
@@ -522,7 +519,7 @@ namespace gspc
       , Certificates const& certificates
       )
   {
-    std::unordered_map< fhg::rif::entry_point
+    std::unordered_map< gspc::rif::entry_point
                       , std::list<std::exception_ptr>
                       > const result (_->add_worker (descriptions, rifd_entry_points, certificates));
     std::unordered_map< rifd_entry_point
@@ -548,7 +545,7 @@ namespace gspc
     scoped_runtime_system::remove_worker
       (rifd_entry_points const& rifd_entry_points)
   {
-    std::unordered_map< fhg::rif::entry_point
+    std::unordered_map< gspc::rif::entry_point
                       , std::pair< std::string /* kind */
                                  , std::unordered_map<pid_t, std::exception_ptr>
                                  >
@@ -569,7 +566,7 @@ namespace gspc
     return wrapped;
   }
 
-  fhg::logging::endpoint scoped_runtime_system::top_level_log_demultiplexer() const
+  gspc::logging::endpoint scoped_runtime_system::top_level_log_demultiplexer() const
   {
     if (!_->_started_runtime_system._logging_rif_info)
     {
@@ -581,24 +578,24 @@ namespace gspc
   #if GSPC_WITH_IML
   namespace
   {
-    std::unique_ptr<iml::Rifs> make_iml_scoped_rifds
+    std::unique_ptr<gspc::iml::Rifs> make_iml_scoped_rifds
       (::boost::program_options::variables_map vm)
     {
-      return std::make_unique<iml::Rifs>
-        ( fhg::util::read_lines (require_nodefile (vm))
+      return std::make_unique<gspc::iml::Rifs>
+        ( gspc::util::read_lines (require_nodefile (vm))
         , require_rif_strategy (vm)
         , require_rif_strategy_parameters (vm)
         , get_rif_port (vm)
         );
     }
 
-    std::unique_ptr<iml::RuntimeSystem> make_iml_rts
+    std::unique_ptr<gspc::iml::RuntimeSystem> make_iml_rts
       ( ::boost::program_options::variables_map const& vm
       , std::ostream& info_output
-      , iml::Rifs const& rifds
+      , gspc::iml::Rifs const& rifds
       )
     {
-      return std::make_unique<iml::RuntimeSystem>
+      return std::make_unique<gspc::iml::RuntimeSystem>
         ( rifds
         , require_virtual_memory_socket (vm)
         , require_virtual_memory_port (vm)

@@ -1,0 +1,90 @@
+<!-- Copyright (C) 2026 Fraunhofer ITWM                            -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
+
+<!--
+  Demonstrate shared pass-through.
+
+  A single shared is created, then passed through both an
+  expression and a module call unchanged. The reference count should
+  remain stable during pass-through. Only when finally consumed the
+  cleanup triggers.
+-->
+
+<defun name="shared_passthrough">
+
+  <in name="value" type="string" place="value"/>
+  <out name="result" type="string" place="cleanup"/>
+
+  <net>
+    <place name="value" type="string"/>
+    <place name="cleanup" type="string" shared_sink="true"/>
+
+    <place name="shared" type="shared_cleanup"/>
+    <place name="after_expression_passthrough" type="shared_cleanup"/>
+    <place name="after_module_passthrough" type="shared_cleanup"/>
+
+    <!-- Create a shared from a regular string -->
+    <transition name="create">
+      <defun>
+        <in name="s" type="string"/>
+        <out name="shared" type="shared_cleanup"/>
+        <module name="shared_passthrough"
+                function="shared create (s)">
+          <cinclude href="gspc/we/type/shared.hpp"/>
+          <code><![CDATA[
+            return gspc::we::type::shared {s, "cleanup"};
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="s" place="value"/>
+      <connect-out port="shared" place="shared"/>
+    </transition>
+
+    <!-- Pass through via expression (no refcount change) -->
+    <transition name="expr_passthrough">
+      <defun>
+        <in name="in" type="shared_cleanup"/>
+        <out name="out" type="shared_cleanup"/>
+        <expression>
+          ${out} := ${in}
+        </expression>
+      </defun>
+      <connect-in port="in" place="shared"/>
+      <connect-out port="out" place="after_expression_passthrough"/>
+    </transition>
+
+    <!-- Pass through via module call (no refcount change) -->
+    <transition name="module_passthrough">
+      <defun>
+        <in name="in" type="shared_cleanup"/>
+        <out name="out" type="shared_cleanup"/>
+        <module name="shared_passthrough"
+                function="out passthrough (in)">
+          <cinclude href="gspc/we/type/shared.hpp"/>
+          <code><![CDATA[
+            return in;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="in" place="after_expression_passthrough"/>
+      <connect-out port="out" place="after_module_passthrough"/>
+    </transition>
+
+    <!-- Finally consume the shared (refcount -> 0, cleanup triggered) -->
+    <transition name="consume">
+      <defun>
+        <in name="shared" type="shared_cleanup"/>
+        <module name="shared_passthrough"
+                function="consume (shared)">
+          <cinclude href="iostream"/>
+          <code><![CDATA[
+            std::cout << "Consumed after pass-through: " << shared
+                      << std::endl;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="shared" place="after_module_passthrough"/>
+    </transition>
+
+  </net>
+</defun>

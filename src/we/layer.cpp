@@ -1,19 +1,20 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2013-2017,2019-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/layer.hpp>
+#include <gspc/we/layer.hpp>
 
-#include <fhg/assert.hpp>
-#include <fhg/util/read_bool.hpp>
-#include <util-generic/functor_visitor.hpp>
-#include <util-generic/print_exception.hpp>
+#include <gspc/assert.hpp>
+#include <gspc/util/read_bool.hpp>
+#include <gspc/util/functor_visitor.hpp>
+#include <gspc/util/print_exception.hpp>
 
 #include <algorithm>
 #include <exception>
 #include <functional>
 #include <stdexcept>
+#include <utility>
 
-namespace we
+namespace gspc::we
 {
     layer::layer
         ( std::function<void (id_type, type::Activity)> rts_submit
@@ -21,7 +22,7 @@ namespace we
         , std::function<void (id_type, type::Activity)> rts_finished
         , std::function<void (id_type, std::string)> rts_failed
         , std::function<void (id_type)> rts_canceled
-        , std::function<void (std::string, ::boost::optional<std::exception_ptr>)> rts_token_put
+        , std::function<void (std::string, std::optional<std::exception_ptr>)> rts_token_put
         , std::function<void (std::string workflow_response_id, std::variant<std::exception_ptr, pnet::type::value::value_type>)> rts_workflow_response
         , std::function<id_type()> rts_id_generator
         , std::mt19937& random_extraction_engine
@@ -52,8 +53,8 @@ namespace we
 
     void layer::finished (id_type id, type::Activity result)
     {
-      ::boost::optional<id_type> const parent (_running_jobs.parent (id));
-      fhg_assert (parent);
+      std::optional<id_type> const parent (_running_jobs.parent (id));
+      gspc_assert (parent);
 
       //! \todo Don't forget that this child actually finished and
       //! inject result.
@@ -98,8 +99,8 @@ namespace we
 
     void layer::failed (id_type id, std::string reason)
     {
-      ::boost::optional<id_type> const parent (_running_jobs.parent (id));
-      fhg_assert (parent);
+      std::optional<id_type> const parent (_running_jobs.parent (id));
+      gspc_assert (parent);
 
       //! \todo Don't forget that this child actually failed and
       //! store reason.
@@ -137,7 +138,7 @@ namespace we
 
     void layer::canceled (id_type child)
     {
-      ::boost::optional<id_type> const parent (_running_jobs.parent (child));
+      std::optional<id_type> const parent (_running_jobs.parent (child));
 
       if (!parent)
       {
@@ -182,7 +183,7 @@ namespace we
         {
           activity_data._activity->put_token (place_name, value);
 
-          _rts_token_put (put_token_id, ::boost::none);
+          _rts_token_put (put_token_id, std::nullopt);
         }
         , std::bind (_rts_token_put, put_token_id, std::placeholders::_1)
         );
@@ -233,7 +234,7 @@ namespace we
   }
 
   void layer::eureka_response ( id_type parent
-                              , ::boost::optional<id_type> eureka_calling_child
+                              , std::optional<id_type> eureka_calling_child
                               , type::eureka_ids_type const& eureka_ids
                               )
   {
@@ -277,7 +278,7 @@ namespace we
         //! fire_expression_and_extract_activity_random (endless loop
         //! in expressions)?
 
-        ::boost::optional<type::Activity> activity;
+        std::optional<type::Activity> activity;
         try
         {
           try
@@ -296,7 +297,7 @@ namespace we
                   , [this, &activity_data] (type::eureka_ids_type const& eureka_ids)
                     {
                       eureka_response ( activity_data._id
-                                      , ::boost::none
+                                      , std::nullopt
                                       , eureka_ids
                                       );
                     }
@@ -328,7 +329,7 @@ namespace we
         {
           rts_failed_and_forget
             ( activity_data._id
-            , fhg::util::current_exception_printer (": ").string()
+            , util::current_exception_printer (": ").string()
             );
           continue;
         }
@@ -347,7 +348,7 @@ namespace we
           {
             rts_failed_and_forget
               ( activity_data._id
-              , fhg::util::current_exception_printer (": ").string()
+              , util::current_exception_printer (": ").string()
               );
             continue;
           }
@@ -381,7 +382,7 @@ namespace we
           {
             rts_failed_and_forget
               ( id_
-              , fhg::util::current_exception_printer (": ").string()
+              , util::current_exception_printer (": ").string()
               );
           }
         }
@@ -392,8 +393,9 @@ namespace we
         }
       }
     }
-    catch (async_remove_queue::interrupted const&)
+    catch (async_remove_queue::interrupted const& interrupted)
     {
+      std::ignore = interrupted;
     }
 
     void layer::rts_finished_and_forget (id_type id, type::Activity activity)
@@ -439,7 +441,7 @@ namespace we
   void layer::async_remove_queue::RemovalFunction::operator()
     (activity_data_type& activity_data) &&
   {
-    fhg::util::visit
+    util::visit
       ( _function
       , [&] (std::function<void (activity_data_type&)> const& fun)
         {
@@ -743,6 +745,8 @@ namespace we
             //! always doing nothing on forget, but throwing on
             //! applying. to keep applying, most functions use
             //! std::rethrow_exception, which would break forget()
+
+            std::ignore = std::current_exception();
           }
         }
 
@@ -775,7 +779,7 @@ namespace we
     void layer::locked_parent_child_relation_type::started
       ( id_type parent
       , id_type child
-      , ::boost::optional<type::eureka_id_type> const& eureka_id
+      , std::optional<type::eureka_id_type> const& eureka_id
       )
     {
       std::lock_guard<std::mutex> const _ (_relation_mutex);
@@ -801,7 +805,7 @@ namespace we
       return _relation.left.find (parent) == _relation.left.end();
     }
 
-    ::boost::optional<layer::id_type>
+    std::optional<layer::id_type>
       layer::locked_parent_child_relation_type::parent (id_type child)
     {
       std::lock_guard<std::mutex> const _ (_relation_mutex);
@@ -814,7 +818,7 @@ namespace we
         return pos->second;
       }
 
-      return ::boost::none;
+      return {};
     }
 
     bool layer::locked_parent_child_relation_type::contains
@@ -843,7 +847,7 @@ namespace we
     void layer::locked_parent_child_relation_type::apply_and_remove_eureka
       ( type::eureka_id_type const& eureka_id
       , id_type const& parent
-      , ::boost::optional<id_type> const& eureka_caller
+      , std::optional<id_type> const& eureka_caller
       , std::function<void (id_type)> cancel
       )
     {

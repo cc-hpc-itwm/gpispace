@@ -1,18 +1,16 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2015,2021,2023,2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/type/value/serialize.hpp>
+#include <gspc/we/type/value/serialize.hpp>
 
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 
 #include <sstream>
 
-namespace pnet
-{
-  namespace type
-  {
-    namespace value
+
+
+    namespace gspc::pnet::type::value
     {
       std::string to_string (value_type const& value)
       {
@@ -31,5 +29,3 @@ namespace pnet
         return value;
       }
     }
-  }
-}

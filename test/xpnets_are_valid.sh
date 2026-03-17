@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright (C) 2025 Fraunhofer ITWM
+# Copyright (C) 2021,2023-2024,2026 Fraunhofer ITWM
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 set -euo pipefail
@@ -12,7 +12,7 @@ num_parallel_procs=${3:-10}
 function find_xpnets()
 {
   # intended to fail parsing
-  # - src/xml/tests/xpnets/diagnostics/error_duplicate_template.xpnet
+  # - test/xml/xpnets/diagnostics/error_duplicate_template.xpnet
 
   # not actually an xpnet
   # - install/share/GPISpace/xml/xsd/schemas.xml (ci installs into source dir)
@@ -25,7 +25,7 @@ function find_xpnets()
     | grep -v '3rdparty' \
     | grep -v 'install/share/GPISpace/xml/xsd/schemas.xml$' \
     | grep -v 'share/xml/xsd/schemas.xml$' \
-    | grep -v 'src/xml/tests/xpnets/diagnostics/error_duplicate_template.xpnet$'
+    | grep -v 'test/xml/xpnets/diagnostics/error_duplicate_template.xpnet$'
 }
 
 width=$(find_xpnets | sed -e 's,.,X,g' | sort | tail -n 1 | wc -c)

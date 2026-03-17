@@ -1,24 +1,22 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2013-2015,2017,2020-2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <util/qt/mvc/delegating_header_view.hpp>
+#include <gspc/util/qt/mvc/delegating_header_view.hpp>
 
-#include <util-qt/painter_state_saver.hpp>
-#include <util-qt/widget/mini_button.hpp>
-#include <util/qt/mvc/header_delegate.hpp>
+#include <gspc/util/qt/painter_state_saver.hpp>
+#include <gspc/util/qt/widget/mini_button.hpp>
+#include <gspc/util/qt/mvc/header_delegate.hpp>
 
+#include <optional>
 #include <QContextMenuEvent>
 #include <QKeyEvent>
 #include <QMenu>
 #include <QPainter>
 
-namespace fhg
-{
-  namespace util
-  {
-    namespace qt
-    {
-      namespace mvc
+
+
+
+      namespace gspc::util::qt::mvc
       {
         delegating_header_view::delegating_header_view (QWidget* parent)
           : QHeaderView (Qt::Horizontal, parent)
@@ -246,7 +244,7 @@ namespace fhg
           }
         }
 
-        ::boost::optional<int> delegating_header_view::current_editor() const
+        std::optional<int> delegating_header_view::current_editor() const
         {
           return _editor.section;
         }
@@ -275,7 +273,7 @@ namespace fhg
             delete _editor.close_button;
             _editor.close_button = nullptr;
 
-            _editor.section = ::boost::none;
+            _editor.section = std::nullopt;
 
             invalidate_cached_size_hint();
           }
@@ -305,6 +303,3 @@ namespace fhg
           QHeaderView::viewportEvent (&event);
         }
       }
-    }
-  }
-}

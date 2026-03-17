@@ -1,5 +1,5 @@
-<!-- Copyright (C) 2025 Fraunhofer ITWM        -->
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- Copyright (C) 2020-2021,2023-2024,2026 Fraunhofer ITWM        -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
 
 <defun name="stochastic_with_heureka">
   <in name="number_of_rolls" type="unsigned long" place="number_of_rolls"/>
@@ -113,8 +113,8 @@
                 pass_context="true">
           <eureka-group>"roll_and_heureka"</eureka-group>
           <cinclude href="interface.hpp"/>
-          <cinclude href="util-generic/dynamic_linking.hpp"/>
-          <cinclude href="util-generic/syscall.hpp"/>
+          <cinclude href="gspc/util/dynamic_linking.hpp"/>
+          <cinclude href="gspc/util/syscall.hpp"/>
           <cinclude href="filesystem"/>
           <cinclude href="fstream"/>
           <cinclude href="string"/>
@@ -128,7 +128,7 @@ bool cancelled (false);
 auto const filename
   ( std::filesystem::path
       ( "/dev/shm/stochastic_with_heureka_"
-      + std::to_string (fhg::util::syscall::getpid())
+      + std::to_string (gspc::util::syscall::getpid())
       + "_"
       + std::to_string
         ( std::chrono::high_resolution_clock::now().time_since_epoch().count()
@@ -146,8 +146,8 @@ struct remove_file
 _pnetc_context->execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FROM_WITHIN
   ( [=]
     {
-      std::pair<we::type::bytearray, bool> rah
-        ( fhg::util::scoped_dlhandle (implementation)
+      std::pair<gspc::we::type::bytearray, bool> rah
+        ( gspc::util::scoped_dlhandle (std::filesystem::path {implementation})
           .sym<decltype (stochastic_with_heureka_roll_and_heureka)>
             ("stochastic_with_heureka_roll_and_heureka")
               (job.roll_count, job.seed, user_data)
@@ -183,7 +183,7 @@ if (!cancelled)
   is.read (reinterpret_cast<char*> (bytes.data()), size);
   auto i {int{}};
   is.read (reinterpret_cast<char*> (std::addressof (i)), sizeof (i));
-  partial_result_and_heureka.partial_result = we::type::bytearray (bytes);
+  partial_result_and_heureka.partial_result = gspc::we::type::bytearray (bytes);
   partial_result_and_heureka.heureka = i == 1;
 
   if (partial_result_and_heureka.heureka)
@@ -317,10 +317,10 @@ if (!cancelled)
                                                 , partial_resultR
                                                 )">
           <cinclude href="interface.hpp"/>
-          <cinclude href="util-generic/dynamic_linking.hpp"/>
+          <cinclude href="gspc/util/dynamic_linking.hpp"/>
           <cxx flag="--std=c++17"/>
           <code><![CDATA[
-          return fhg::util::scoped_dlhandle (implementation)
+          return gspc::util::scoped_dlhandle (std::filesystem::path {implementation})
             .sym<decltype (stochastic_with_heureka_reduce)>
               ("stochastic_with_heureka_reduce")
                 (partial_resultL, partial_resultR, user_data);
@@ -404,10 +404,10 @@ if (!cancelled)
                                                   , result_IN
                                                   )">
           <cinclude href="interface.hpp"/>
-          <cinclude href="util-generic/dynamic_linking.hpp"/>
+          <cinclude href="gspc/util/dynamic_linking.hpp"/>
           <cxx flag="--std=c++17"/>
           <code><![CDATA[
-          return fhg::util::scoped_dlhandle (implementation)
+          return gspc::util::scoped_dlhandle (std::filesystem::path {implementation})
             .sym<decltype (stochastic_with_heureka_post_process)>
               ("stochastic_with_heureka_post_process")
                 (number_of_rolls_done, result_IN, user_data);

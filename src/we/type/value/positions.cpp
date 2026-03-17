@@ -1,14 +1,12 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2014,2020-2023,2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/type/value/path/append.hpp>
-#include <we/type/value/positions.hpp>
+#include <gspc/we/type/value/path/append.hpp>
+#include <gspc/we/type/value/positions.hpp>
 
-namespace pnet
-{
-  namespace type
-  {
-    namespace value
+
+
+    namespace gspc::pnet::type::value
     {
       namespace
       {
@@ -55,5 +53,3 @@ namespace pnet
         return positions;
       }
     }
-  }
-}

@@ -1,11 +1,10 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2021,2023,2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/type/Requirement.hpp>
+#include <gspc/we/type/Requirement.hpp>
 
-namespace we
-{
-  namespace type
+
+  namespace gspc::we::type
   {
     Requirement::Requirement (std::string value)
       : _value (value)
@@ -16,4 +15,3 @@ namespace we
       return _value;
     }
   }
-}

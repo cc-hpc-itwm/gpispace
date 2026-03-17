@@ -1,11 +1,10 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2013-2014,2020-2021,2023-2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/expr/exception.hpp>
+#include <gspc/we/expr/exception.hpp>
 
-namespace expr
-{
-  namespace exception
+
+  namespace gspc::we::expr::exception
   {
     namespace parse
     {
@@ -64,4 +63,3 @@ namespace expr
       {}
     }
   }
-}

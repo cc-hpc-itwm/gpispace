@@ -1,34 +1,30 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2015,2017,2020-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <rif/strategy/ssh.hpp>
+#include <gspc/rif/strategy/ssh.hpp>
 
-#include <util-generic/blocked.hpp>
-#include <util-generic/boost/program_options/generic.hpp>
-#include <util-generic/boost/program_options/validators/existing_path.hpp>
-#include <util-generic/boost/program_options/validators/nonempty_file.hpp>
-#include <util-generic/boost/program_options/validators/nonempty_string.hpp>
-#include <util-generic/boost/program_options/validators/positive_integral.hpp>
-#include <util-generic/syscall.hpp>
-#include <util-generic/wait_and_collect_exceptions.hpp>
+#include <gspc/util/blocked.hpp>
+#include <gspc/util/boost/program_options/generic.hpp>
+#include <gspc/util/boost/program_options/validators/existing_path.hpp>
+#include <gspc/util/boost/program_options/validators/nonempty_file.hpp>
+#include <gspc/util/boost/program_options/validators/nonempty_string.hpp>
+#include <gspc/util/boost/program_options/validators/positive_integral.hpp>
+#include <gspc/util/syscall.hpp>
+#include <gspc/util/wait_and_collect_exceptions.hpp>
 
-#include <rif/strategy/ssh/session.hpp>
+#include <gspc/rif/strategy/ssh/session.hpp>
 
-#include <boost/filesystem/operations.hpp>
-
-#include <FMT/boost/filesystem/path.hpp>
+#include <gspc/util/fmt/std/filesystem/path.formatter.hpp>
 #include <cstdlib>
+#include <filesystem>
 #include <fmt/core.h>
 #include <future>
 #include <stdexcept>
 
-namespace fhg
-{
-  namespace rif
-  {
-    namespace strategy
-    {
-      namespace ssh
+
+
+
+      namespace gspc::rif::strategy::ssh
       {
         namespace
         {
@@ -45,8 +41,8 @@ namespace fhg
               hints.ai_family = AF_UNSPEC;
               hints.ai_socktype = SOCK_STREAM;
 
-              util::syscall::addrinfo_ptr info
-                ( util::syscall::getaddrinfo
+              gspc::util::syscall::addrinfo_ptr info
+                ( gspc::util::syscall::getaddrinfo
                     (host.c_str(), std::to_string (port).c_str(), &hints)
                 );
 
@@ -58,18 +54,18 @@ namespace fhg
               {
                 try
                 {
-                  _fd = util::syscall::socket ( ai->ai_family
+                  _fd = gspc::util::syscall::socket ( ai->ai_family
                                               , ai->ai_socktype
                                               , ai->ai_protocol
                                               );
                   try
                   {
-                    util::syscall::connect
+                    gspc::util::syscall::connect
                       (_fd, ai->ai_addr, ai->ai_addrlen);
                   }
                   catch (...)
                   {
-                    util::syscall::close (_fd);
+                    gspc::util::syscall::close (_fd);
                     throw;
                   }
 
@@ -81,7 +77,7 @@ namespace fhg
                 }
               }
 
-              util::throw_collected_exceptions (exceptions);
+              gspc::util::throw_collected_exceptions (exceptions);
             }
             catch (...)
             {
@@ -100,7 +96,7 @@ namespace fhg
             socket& operator= (socket&&) = delete;
             ~socket()
             {
-              util::syscall::close (_fd);
+              gspc::util::syscall::close (_fd);
             }
 
             int _fd;
@@ -108,7 +104,7 @@ namespace fhg
 
           namespace option
           {
-            namespace po = fhg::util::boost::program_options;
+            namespace po = gspc::util::boost::program_options;
 
             po::option<std::size_t, po::positive_integral<std::size_t>>
               const block_size { "sshs-at-once"
@@ -140,7 +136,7 @@ namespace fhg
                 }
               }
 
-              ::boost::optional<std::filesystem::path> maybe_default_key
+              std::optional<std::filesystem::path> maybe_default_key
                 (std::string suffix)
               {
                 auto const home (std::getenv ("HOME"));
@@ -155,7 +151,7 @@ namespace fhg
                     return key_path;
                   }
                 }
-                return ::boost::none;
+                return {};
               }
 
               po::option<std::filesystem::path, po::existing_path> public_key()
@@ -210,10 +206,10 @@ namespace fhg
 
         std::unordered_map<std::string, std::exception_ptr>
           bootstrap ( std::vector<std::string> const& all_hostnames
-                    , ::boost::optional<unsigned short> const& port
+                    , std::optional<unsigned short> const& port
                     , std::string const& register_host
                     , unsigned short register_port
-                    , ::boost::filesystem::path const& binary
+                    , std::filesystem::path const& binary
                     , std::vector<std::string> const& parameters
                     , std::ostream& out
                     )
@@ -222,7 +218,7 @@ namespace fhg
 
           libssh2::context ssh_context;
 
-          return util::blocked_async<std::string>
+          return gspc::util::blocked_async<std::string>
             ( all_hostnames
             , block_size
             , [] (std::string const& hostname) { return hostname; }
@@ -252,7 +248,7 @@ namespace fhg
         std::pair < std::unordered_set<std::string>
                   , std::unordered_map<std::string, std::exception_ptr>
                   > teardown
-            ( std::unordered_map<std::string, fhg::rif::entry_point> const& all_entry_points
+            ( std::unordered_map<std::string, gspc::rif::entry_point> const& all_entry_points
             , std::vector<std::string> const& parameters
             )
         {
@@ -260,14 +256,14 @@ namespace fhg
 
           libssh2::context ssh_context;
 
-          return util::blocked_async<std::string>
+          return gspc::util::blocked_async<std::string>
             ( all_entry_points
             , block_size
-            , [] (std::pair<std::string, fhg::rif::entry_point> const& entry_point)
+            , [] (std::pair<std::string, gspc::rif::entry_point> const& entry_point)
               {
                 return entry_point.first;
               }
-            , [&] (std::pair<std::string, fhg::rif::entry_point> const& entry_point)
+            , [&] (std::pair<std::string, gspc::rif::entry_point> const& entry_point)
               {
                 socket const sock (entry_point.second.hostname, ssh_port);
                 libssh2::session session ( ssh_context
@@ -282,6 +278,3 @@ namespace fhg
             );
         }
       }
-    }
-  }
-}

@@ -1,0 +1,73 @@
+<!-- Copyright (C) 2026 Fraunhofer ITWM                            -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
+
+<!--
+  Demonstrate multiple nested shared values in a list.
+
+  A list is created containing multiple shared values. When the list is
+  consumed, all shared values inside are also consumed, each triggering
+  its own cleanup.
+-->
+
+<defun name="shared_multiple_nested_in_list">
+
+  <in name="value1" type="int" place="value1"/>
+  <in name="value2" type="int" place="value2"/>
+  <in name="value3" type="int" place="value3"/>
+  <out name="result" type="int" place="cleanup"/>
+
+  <net>
+    <place name="value1" type="int"/>
+    <place name="value2" type="int"/>
+    <place name="value3" type="int"/>
+    <place name="cleanup" type="int" shared_sink="true"/>
+
+    <place name="list_with_shared" type="list"/>
+
+    <!-- Create a list containing multiple shared values -->
+    <!-- produce_shared: output contains shared values inside the list -->
+    <transition name="create_list" produce_shared="true">
+      <defun>
+        <in name="v1" type="int"/>
+        <in name="v2" type="int"/>
+        <in name="v3" type="int"/>
+        <out name="list_out" type="list"/>
+        <module name="shared_multiple_nested_in_list"
+                function="list_out create_list (v1, v2, v3)">
+          <cinclude href="gspc/we/type/shared.hpp"/>
+          <cinclude href="gspc/we/type/value.hpp"/>
+          <cinclude href="list"/>
+          <code><![CDATA[
+            std::list<gspc::pnet::type::value::value_type> result;
+            result.push_back (gspc::we::type::shared {v1, "cleanup"});
+            result.push_back (gspc::we::type::shared {v2, "cleanup"});
+            result.push_back (gspc::we::type::shared {v3, "cleanup"});
+            return result;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="v1" place="value1"/>
+      <connect-in port="v2" place="value2"/>
+      <connect-in port="v3" place="value3"/>
+      <connect-out port="list_out" place="list_with_shared"/>
+    </transition>
+
+    <!-- Consume the list (triggers cleanup of all nested shareds) -->
+    <!-- consume_shared: input contains shared values inside the list -->
+    <transition name="consume_list" consume_shared="true">
+      <defun>
+        <in name="list_in" type="list"/>
+        <module name="shared_multiple_nested_in_list"
+                function="consume_list (list_in)">
+          <cinclude href="iostream"/>
+          <code><![CDATA[
+            std::cout << "Consumed list with " << list_in.size()
+                      << " shared elements" << std::endl;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="list_in" place="list_with_shared"/>
+    </transition>
+
+  </net>
+</defun>

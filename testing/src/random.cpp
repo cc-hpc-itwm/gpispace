@@ -1,0 +1,91 @@
+// Copyright (C) 2023-2026 Fraunhofer ITWM
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+#include <gspc/testing/random.hpp>
+
+#include <gspc/util/join.hpp>
+#include <gspc/testing/random/state_bits.hpp>
+
+#include <boost/test/framework.hpp>
+#include <boost/test/utils/lazy_ostream.hpp>
+
+#include <array>
+#include <functional>
+#include <iostream>
+#include <mutex>
+
+namespace gspc::testing::detail
+{
+  namespace
+  {
+    struct seed_state_t
+    {
+      using seed_seq_type = std::seed_seq::result_type;
+      static constexpr std::size_t seed_seq_size
+        = state_bits<RandomNumberEngine>()
+        / (sizeof (seed_seq_type) * CHAR_BIT);
+      using seed_seq_data = std::array<seed_seq_type, seed_seq_size>;
+
+      seed_seq_data seed_data = generate_seed();
+      static seed_seq_data generate_seed()
+      {
+        //! Paste the seed sequence as a comma-separated
+        //! sequence of seed_seq_size (2 for minstd_rand, 624
+        //! for mt19937) seed_seq_type (uint_least32_t) integers
+        //! here and uncomment if you want to fixate the seed:
+        /*
+#define GSPC_TESTING_OVERRIDE_SEED                                      \
+        3714218433,1972383181
+        */
+
+#ifdef GSPC_TESTING_OVERRIDE_SEED
+        return {{GSPC_TESTING_OVERRIDE_SEED}};
+#else
+        std::random_device source;
+        seed_seq_data data;
+        std::generate (data.begin(), data.end(), std::ref (source));
+        return data;
+#endif
+      }
+
+      void seed (RandomNumberEngine& engine) const
+      {
+        std::seed_seq seed_sequence (seed_data.begin(), seed_data.end());
+        engine.seed (seed_sequence);
+      }
+    };
+
+    seed_state_t& seed_state()
+    {
+      static seed_state_t _;
+      return _;
+    }
+  }
+
+  RandomNumberEngine& GLOBAL_random_engine()
+  {
+    static RandomNumberEngine engine;
+
+    static std::once_flag was_seeded;
+    std::call_once (was_seeded, [&] { seed_state().seed (engine); });
+
+    // Context resets per test unit, so check if in a new unit
+    // to avoid duplicate addition of context.
+    static auto last_unit (::boost::unit_test::INV_TEST_UNIT_ID);
+    auto const curr_unit
+      (::boost::unit_test::framework::current_test_case_id());
+    if (last_unit != curr_unit)
+    {
+      ::boost::unit_test::framework::add_context
+        ( BOOST_TEST_LAZY_MSG
+            ( "random generator was seeded with: "
+            << gspc::util::join (seed_state().seed_data, ",")
+            )
+        , true
+        );
+      last_unit = curr_unit;
+    }
+
+    return engine;
+  }
+}

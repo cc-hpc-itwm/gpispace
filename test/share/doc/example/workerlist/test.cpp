@@ -1,30 +1,32 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2014-2016,2018,2021-2024,2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <boost/test/unit_test.hpp>
 
-#include <drts/client.hpp>
-#include <drts/drts.hpp>
-#include <drts/private/option.hpp>
-#include <drts/scoped_rifd.hpp>
+#include <gspc/drts/client.hpp>
+#include <gspc/drts/drts.hpp>
+#include <gspc/drts/private/option.hpp>
+#include <gspc/drts/scoped_rifd.hpp>
 
-#include <testing/make.hpp>
-#include <testing/parse_command_line.hpp>
-#include <testing/scoped_nodefile_from_environment.hpp>
-#include <testing/shared_directory.hpp>
-#include <testing/source_directory.hpp>
+#include <gspc/testing/make.hpp>
+#include <gspc/testing/parse_command_line.hpp>
+#include <gspc/testing/scoped_nodefile_from_environment.hpp>
+#include <gspc/testing/shared_directory.hpp>
+#include <gspc/testing/source_directory.hpp>
 
-#include <we/type/value.hpp>
-#include <we/type/value/boost/test/printer.hpp>
+#include <gspc/we/type/value.hpp>
+#include <gspc/testing/printer/we/type/value.hpp>
 
-#include <util-generic/read_lines.hpp>
-#include <util-generic/temporary_file.hpp>
-#include <util-generic/temporary_path.hpp>
-#include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <gspc/util/read_lines.hpp>
+#include <gspc/util/temporary_file.hpp>
+#include <gspc/util/temporary_path.hpp>
+#include <gspc/testing/flatten_nested_exceptions.hpp>
+#include <gspc/testing/random.hpp>
+#include <gspc/testing/unique_path.hpp>
 
-#include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 
+#include <filesystem>
 #include <fmt/core.h>
 #include <map>
 #include <set>
@@ -35,8 +37,8 @@ namespace
   void run_test ( unsigned long num_worker
                 , ::boost::program_options::variables_map const& vm
                 , gspc::installation const& installation
-                , test::make_net_lib_install const& make
-                , ::boost::filesystem::path const& shared_directory
+                , gspc::testing::make_net_lib_install const& make
+                , std::filesystem::path const& shared_directory
                 )
   {
     gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
@@ -51,7 +53,7 @@ namespace
       , rifds.entry_points()
       );
 
-    std::multimap<std::string, pnet::type::value::value_type> const result
+    std::multimap<std::string, gspc::pnet::type::value::value_type> const result
       ( gspc::client (drts).put_and_run
           (gspc::workflow (make.pnet()), {{"num_workers", num_worker}})
       );
@@ -66,12 +68,14 @@ namespace
 
     //! \todo needs to be a function on the drts topology
     //! or the topology has to answer 'is_worker_valid (worker))'
-    fhg::util::temporary_file const _entry_points
-      (shared_directory / ::boost::filesystem::unique_path());
+    gspc::util::temporary_file const _entry_points
+      ( std::filesystem::path {shared_directory}
+      / gspc::testing::unique_path()
+      );
     //! \note the only usage of write_to_file
     rifds.entry_points().write_to_file (_entry_points);
     std::vector<std::string> const entry_points
-      (fhg::util::read_lines (_entry_points));
+      (gspc::util::read_lines (_entry_points));
 
     std::set<std::string> const worker_names
       ([&entry_points, &num_worker] () -> std::set<std::string>
@@ -109,8 +113,8 @@ namespace
       );
 
     for ( auto const& worker_with_host
-        : ::boost::get<std::map< pnet::type::value::value_type
-                             , pnet::type::value::value_type
+        : ::boost::get<std::map< gspc::pnet::type::value::value_type
+                             , gspc::pnet::type::value::value_type
                              >
                     > (result.find (port_hostnames)->second)
         )
@@ -120,9 +124,9 @@ namespace
     }
 
     {
-      std::set<pnet::type::value::value_type> seen_workers;
-      for ( pnet::type::value::value_type const& worker
-          : ::boost::get<std::list<pnet::type::value::value_type>>
+      std::set<gspc::pnet::type::value::value_type> seen_workers;
+      for ( gspc::pnet::type::value::value_type const& worker
+          : ::boost::get<std::list<gspc::pnet::type::value::value_type>>
               (result.find (port_workers)->second)
           )
       {
@@ -137,29 +141,31 @@ BOOST_AUTO_TEST_CASE (share_example_workerlist)
 {
   ::boost::program_options::options_description options_description;
 
-  options_description.add (test::options::shared_directory());
-  options_description.add (test::options::source_directory());
+  options_description.add (gspc::testing::options::shared_directory());
+  options_description.add (gspc::testing::options::source_directory());
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
 
   ::boost::program_options::variables_map vm
-    ( test::parse_command_line
+    ( gspc::testing::parse_command_line
         ( ::boost::unit_test::framework::master_test_suite().argc
         , ::boost::unit_test::framework::master_test_suite().argv
         , options_description
         )
     );
 
-  fhg::util::temporary_path const shared_directory
-    (test::shared_directory (vm) / "share_example_workerlist");
+  gspc::util::temporary_path const shared_directory
+    (gspc::testing::shared_directory (vm) / "share_example_workerlist");
 
-  test::scoped_nodefile_from_environment const nodefile_from_environment
+  gspc::testing::scoped_nodefile_from_environment const nodefile_from_environment
     (shared_directory, vm);
 
-  fhg::util::temporary_path const _installation_dir
-    (shared_directory / ::boost::filesystem::unique_path());
-  ::boost::filesystem::path const installation_dir (_installation_dir);
+  gspc::util::temporary_path const _installation_dir
+    ( std::filesystem::path {shared_directory}
+    / gspc::testing::unique_path()
+    );
+  auto const installation_dir {std::filesystem::path {_installation_dir}};
 
   gspc::set_application_search_path (vm, installation_dir);
 
@@ -167,13 +173,13 @@ BOOST_AUTO_TEST_CASE (share_example_workerlist)
 
   gspc::installation const installation (vm);
 
-  test::make_net_lib_install const make
+  gspc::testing::make_net_lib_install const make
     ( installation
     , "workerlist"
-    , test::source_directory (vm)
+    , gspc::testing::source_directory (vm)
     , installation_dir
-    , test::option::options()
-    . add<test::option::gen::library_path> (installation.gspc_home() / "lib")
+    , gspc::testing::option::options()
+    . add<gspc::testing::option::gen::library_path> (installation.gspc_home() / "lib")
     );
 
   run_test (1, vm, installation, make, shared_directory);

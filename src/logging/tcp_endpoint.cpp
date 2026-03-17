@@ -1,15 +1,14 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2018-2021,2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <logging/tcp_endpoint.hpp>
+#include <gspc/logging/tcp_endpoint.hpp>
 
-#include <util-generic/boost/program_options/validators.hpp>
+#include <gspc/util/boost/program_options/validators.hpp>
 
 #include <stdexcept>
 
-namespace fhg
-{
-  namespace logging
+
+  namespace gspc::logging
   {
     namespace error
     {
@@ -85,8 +84,7 @@ namespace fhg
                   , int
                   )
     {
-      return util::boost::program_options::validate<tcp_endpoint>
+      return gspc::util::boost::program_options::validate<tcp_endpoint>
         (result, values);
     }
   }
-}

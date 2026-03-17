@@ -1,0 +1,171 @@
+#include <gspc/util/serialization/trivial.hpp>
+#include <gspc/testing/random.hpp>
+#include <gspc/testing/require_compiletime.hpp>
+#include <gspc/testing/require_serialized_to_id.hpp>
+
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/test/unit_test.hpp>
+
+#include <iostream>
+#include <sstream>
+#include <vector>
+#include <string>
+
+
+
+    namespace gspc::util::serialization
+    {
+      namespace
+      {
+        struct user_defined_struct_base
+        {
+          std::uintptr_t _original_object_address;
+
+          int serialize_call_count;
+          user_defined_struct_base (int x = 0)
+            : _original_object_address (reinterpret_cast<std::uintptr_t> (this))
+            , serialize_call_count (x)
+          {}
+
+          template<typename Archive>
+            void serialize (Archive& ar, unsigned int)
+          {
+            ar & _original_object_address;
+
+            if (typename Archive::is_saving{})
+            {
+              ++serialize_call_count;
+            }
+            ar & serialize_call_count;
+            if (typename Archive::is_loading{})
+            {
+              ++serialize_call_count;
+            }
+          }
+
+          bool operator== (user_defined_struct_base const& other) const
+          {
+            return _original_object_address == other._original_object_address;
+          }
+
+          friend std::ostream& operator<<
+            (std::ostream& os, user_defined_struct_base const& x)
+          {
+            return os << x._original_object_address;
+          }
+        };
+
+        struct non_trivial_user_defined_struct : user_defined_struct_base
+        {
+          using user_defined_struct_base::user_defined_struct_base;
+        };
+        struct trivial_user_defined_struct : user_defined_struct_base
+        {
+          using user_defined_struct_base::user_defined_struct_base;
+        };
+      }
+    }
+
+
+
+FHG_UTIL_SERIALIZATION_TRIVIAL
+  ( gspc::util::serialization::user_defined_struct_base
+  , &gspc::util::serialization::user_defined_struct_base::serialize_call_count
+  )
+
+FHG_UTIL_SERIALIZATION_TRIVIAL
+  ( gspc::util::serialization::trivial_user_defined_struct
+  , gspc::util::serialization::base_class
+      <gspc::util::serialization::user_defined_struct_base>()
+  )
+
+
+
+    namespace gspc::util::serialization
+    {
+      BOOST_AUTO_TEST_CASE (is_trivially_serializable_true_for_pods_or_tagged)
+      {
+        GSPC_TESTING_COMPILETIME_CHECK_EQUAL
+          (is_trivially_serializable<>{}, true);
+
+        GSPC_TESTING_COMPILETIME_CHECK_EQUAL
+          (is_trivially_serializable<int>{}, true);
+        GSPC_TESTING_COMPILETIME_CHECK_EQUAL
+          (is_trivially_serializable<float>{}, true);
+        GSPC_TESTING_COMPILETIME_CHECK_EQUAL
+          (is_trivially_serializable<std::size_t>{}, true);
+
+        GSPC_TESTING_COMPILETIME_CHECK_EQUAL
+          (is_trivially_serializable<trivial_user_defined_struct>{}, true);
+
+        GSPC_TESTING_COMPILETIME_CHECK_EQUAL
+          (is_trivially_serializable<int, float, std::size_t>{}, true);
+      }
+
+      BOOST_AUTO_TEST_CASE (is_trivially_is_false_as_soon_as_one_type_is_not)
+      {
+        GSPC_TESTING_COMPILETIME_CHECK_EQUAL
+          (is_trivially_serializable<std::vector<std::string>>{}, false);
+        GSPC_TESTING_COMPILETIME_CHECK_EQUAL
+          (is_trivially_serializable<decltype (std::cout)>{}, false);
+
+        GSPC_TESTING_COMPILETIME_CHECK_EQUAL
+          (is_trivially_serializable<char[10]>{}, false);
+        GSPC_TESTING_COMPILETIME_CHECK_EQUAL
+          (is_trivially_serializable<int*>{}, false);
+
+        GSPC_TESTING_COMPILETIME_CHECK_EQUAL
+          (is_trivially_serializable<std::vector<std::string>, int>{}, false);
+        GSPC_TESTING_COMPILETIME_CHECK_EQUAL
+          (is_trivially_serializable<int, std::vector<std::string>>{}, false);
+
+        GSPC_TESTING_COMPILETIME_CHECK_EQUAL
+          (is_trivially_serializable<std::vector<std::string>, int*>{}, false);
+
+        GSPC_TESTING_COMPILETIME_CHECK_EQUAL
+          (is_trivially_serializable<non_trivial_user_defined_struct>{}, false);
+      }
+
+      BOOST_AUTO_TEST_CASE (trivially_serialized_structs_serialize_to_id)
+      {
+        GSPC_TESTING_REQUIRE_SERIALIZED_TO_ID
+          ((gspc::testing::random<int>{}()), user_defined_struct_base);
+        GSPC_TESTING_REQUIRE_SERIALIZED_TO_ID
+          ((gspc::testing::random<int>{}()), trivial_user_defined_struct);
+        GSPC_TESTING_REQUIRE_SERIALIZED_TO_ID
+          ((gspc::testing::random<int>{}()), non_trivial_user_defined_struct);
+      }
+
+      //! \note Is testing boost.serialize, not something we do.
+      BOOST_AUTO_TEST_CASE (serialize_is_only_called_for_non_trivial_types)
+      {
+        std::stringstream ss;
+        {
+          non_trivial_user_defined_struct x (0);
+          trivial_user_defined_struct y (0);
+
+          ::boost::archive::binary_oarchive oa (ss);
+          oa & x;
+          oa & y;
+
+          BOOST_CHECK_EQUAL (x.serialize_call_count, 1);
+          BOOST_CHECK_EQUAL (y.serialize_call_count, 0);
+        }
+
+        {
+          non_trivial_user_defined_struct x (-1);
+          trivial_user_defined_struct y (-1);
+
+          ::boost::archive::binary_iarchive ia (ss);
+          ia & x;
+          ia & y;
+
+          BOOST_CHECK_EQUAL (x.serialize_call_count, 2);
+          BOOST_CHECK_EQUAL (y.serialize_call_count, 0);
+        }
+      }
+
+      //! \todo FHG_UTIL_SERIALIZATION_TRIVIAL shall fail compilation
+      //! if a member or base is not trivially serializable.
+    }

@@ -1,36 +1,32 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2021,2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
 
-#include <util-rpc/service_dispatcher.hpp>
-#include <util-rpc/service_handler.hpp>
-#include <util-rpc/service_tcp_provider.hpp>
+#include <gspc/rpc/service_dispatcher.hpp>
+#include <gspc/rpc/service_handler.hpp>
+#include <gspc/rpc/service_tcp_provider.hpp>
 
-#include <util-generic/connectable_to_address_string.hpp>
-#include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
+#include <gspc/util/connectable_to_address_string.hpp>
+#include <gspc/util/scoped_boost_asio_io_service_with_threads.hpp>
 
 #include <string>
 #include <utility>
 
-namespace gspc
-{
-  namespace test
-  {
-    namespace parallel_reduce
-    {
-      namespace module_call
-      {
-        namespace remote_function
+
+
+
+
+        namespace gspc::test::parallel_reduce::module_call::remote_function
         {
           template<typename F> class Provider
           {
           private:
-            fhg::rpc::service_dispatcher _dispatcher{};
-            fhg::rpc::service_handler<F> _function;
-            fhg::util::scoped_boost_asio_io_service_with_threads
+            gspc::rpc::service_dispatcher _dispatcher{};
+            gspc::rpc::service_handler<F> _function;
+            gspc::util::scoped_boost_asio_io_service_with_threads
               _io_service {1};
-            fhg::rpc::service_tcp_provider _provider
+            gspc::rpc::service_tcp_provider _provider
               {_io_service, _dispatcher};
 
           public:
@@ -41,13 +37,9 @@ namespace gspc
 
             std::pair<std::string, unsigned short> address() const
             {
-              return fhg::util::connectable_to_address_string
+              return gspc::util::connectable_to_address_string
                 (_provider.local_endpoint())
                 ;
             }
           };
         }
-      }
-    }
-  }
-}

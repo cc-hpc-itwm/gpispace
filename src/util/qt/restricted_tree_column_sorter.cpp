@@ -1,18 +1,16 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2013-2015,2017,2020-2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <util/qt/restricted_tree_column_sorter.hpp>
+#include <gspc/util/qt/restricted_tree_column_sorter.hpp>
 
 #include <QHeaderView>
 #include <QTreeView>
 
 #include <functional>
 
-namespace fhg
-{
-  namespace util
-  {
-    namespace qt
+
+
+    namespace gspc::util::qt
     {
       restricted_tree_column_sorter::restricted_tree_column_sorter
         (QTreeView* tree, QSet<int> allowed_columns, QObject* parent)
@@ -57,5 +55,3 @@ namespace fhg
         }
       }
     }
-  }
-}

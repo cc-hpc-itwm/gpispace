@@ -1,17 +1,16 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2019,2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <logging/stdout_sink.hpp>
+#include <gspc/logging/stdout_sink.hpp>
 
-#include <logging/message.hpp>
+#include <gspc/logging/message.hpp>
 
-#include <util-generic/ostream/put_time.hpp>
+#include <gspc/util/ostream/put_time.hpp>
 
 #include <iostream>
 
-namespace fhg
-{
-  namespace logging
+
+  namespace gspc::logging
   {
     stdout_sink::stdout_sink()
       : stdout_sink (std::vector<endpoint>())
@@ -19,11 +18,11 @@ namespace fhg
     stdout_sink::stdout_sink (std::vector<endpoint> emitters)
       : stream_receiver
           ( std::move (emitters)
-          , [] (fhg::logging::message const& message)
+          , [] (gspc::logging::message const& message)
             {
               std::cout << message._process_id << "." << message._thread_id
                         << "@" << message._hostname << " "
-                        << util::ostream::put_time<std::chrono::system_clock>
+                        << gspc::util::ostream::put_time<std::chrono::system_clock>
                              (message._timestamp)
                         << " " << message._category
                         << " " << message._content << "\n";
@@ -31,4 +30,3 @@ namespace fhg
           )
     {}
   }
-}

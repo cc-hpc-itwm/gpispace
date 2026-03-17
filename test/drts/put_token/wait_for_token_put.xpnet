@@ -1,0 +1,61 @@
+<!-- Copyright (C) 2014-2016,2021,2023,2026 Fraunhofer ITWM             -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
+
+<defun name="wait_for_token_put">
+  <in name="in" type="string" place="in"/>
+  <out name="good" type="string" place="good"/>
+  <out name="bad" type="string" place="bad"/>
+  <in name="register_host" place="register_host" type="string"/>
+  <in name="register_port" place="register_port" type="unsigned int"/>
+  <net>
+    <place name="in" type="string" put_token="true"/>
+    <place name="good" type="string"/>
+    <place name="bad" type="string"/>
+
+    <transition name="good">
+      <defun>
+        <inout name="x" type="string"/>
+        <expression/>
+      </defun>
+      <condition>
+        ${x} :eq: "good"
+      </condition>
+      <connect-in port="x" place="in"/>
+      <connect-out port="x" place="good"/>
+    </transition>
+
+    <transition name="bad">
+      <defun>
+        <inout name="x" type="string"/>
+        <expression/>
+      </defun>
+      <condition>
+        ${x} :ne: "good"
+      </condition>
+      <connect-in port="x" place="in"/>
+      <connect-out port="x" place="bad"/>
+    </transition>
+
+    <place name="register_host" type="string"/>
+    <place name="register_port" type="unsigned int"/>
+    <transition name="register">
+      <defun>
+        <in name="host" type="string"/>
+        <in name="port" type="unsigned int"/>
+        <module name="workflow_response" function="notify_running (host, port)">
+          <cinclude href="gspc/rpc/remote_function.hpp"/>
+          <cinclude href="gspc/rpc/remote_tcp_endpoint.hpp"/>
+          <cinclude href="test_start_callback.hpp"/>
+          <cinclude href="gspc/util/scoped_boost_asio_io_service_with_threads.hpp"/>
+          <code><![CDATA[
+            gspc::util::scoped_boost_asio_io_service_with_threads io_service (1);
+            gspc::rpc::remote_tcp_endpoint endpoint (io_service, host, port);
+            gspc::rpc::sync_remote_function<protocol::callback> {endpoint}();
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="host" place="register_host"/>
+      <connect-in port="port" place="register_port"/>
+    </transition>
+  </net>
+</defun>

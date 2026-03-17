@@ -1,0 +1,77 @@
+<!-- Copyright (C) 2026 Fraunhofer ITWM                            -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
+
+<!--
+  Demonstrate shared garbage collection with int type.
+
+  A single shared<int> is created, copied twice, and both copies
+  are consumed. When the last copy is consumed, the int value
+  appears at the 'cleanup' place.
+-->
+
+<defun name="shared_int_type">
+
+  <in name="value" type="int" place="value"/>
+  <out name="result" type="int" place="cleanup"/>
+
+  <net>
+    <place name="value" type="int"/>
+    <place name="cleanup" type="int" shared_sink="true"/>
+
+    <place name="shared" type="shared_cleanup"/>
+    <place name="copy_a" type="shared_cleanup"/>
+    <place name="copy_b" type="shared_cleanup"/>
+
+    <!-- Create a shared from a regular int -->
+    <transition name="create">
+      <defun>
+        <in name="v" type="int"/>
+        <out name="shared" type="shared_cleanup"/>
+        <module name="shared_int_type"
+                function="shared create (v)">
+          <cinclude href="gspc/we/type/shared.hpp"/>
+          <code><![CDATA[
+            return gspc::we::type::shared {v, "cleanup"};
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="v" place="value"/>
+      <connect-out port="shared" place="shared"/>
+    </transition>
+
+    <!-- Copy the shared (refcount increases) -->
+    <transition name="copy">
+      <defun>
+        <in name="shared" type="shared_cleanup"/>
+        <out name="a" type="shared_cleanup"/>
+        <out name="b" type="shared_cleanup"/>
+        <expression>
+          ${a} := ${shared};
+          ${b} := ${shared}
+        </expression>
+      </defun>
+      <connect-in port="shared" place="shared"/>
+      <connect-out port="a" place="copy_a"/>
+      <connect-out port="b" place="copy_b"/>
+    </transition>
+
+    <!-- Consume copy A -->
+    <transition name="consume_a">
+      <defun>
+        <in name="shared" type="shared_cleanup"/>
+        <expression/>
+      </defun>
+      <connect-in port="shared" place="copy_a"/>
+    </transition>
+
+    <!-- Consume copy B -->
+    <transition name="consume_b">
+      <defun>
+        <in name="shared" type="shared_cleanup"/>
+        <expression/>
+      </defun>
+      <connect-in port="shared" place="copy_b"/>
+    </transition>
+
+  </net>
+</defun>

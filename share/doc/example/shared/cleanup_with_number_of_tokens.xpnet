@@ -1,0 +1,125 @@
+<!-- Copyright (C) 2026 Fraunhofer ITWM                            -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
+
+<!--
+  Demonstrate that a cleanup place can be used with the "number of tokens"
+  feature.
+
+  This example shows that the number of cleanup tokens on a shared_sink
+  place can be queried using connect-number-of-tokens and used in
+  transition conditions.
+
+  Flow:
+  1. Create three independent shareds using expressions (each with refcount 1)
+  2. Consume all three shareds (each triggers cleanup -> cleanup place)
+  3. A "check" transition monitors the cleanup place and puts a trigger
+     token when all 3 cleanup tokens have arrived
+  4. A "collect" transition reads from the trigger and collects cleanup tokens
+-->
+
+<defun name="shared_cleanup_with_number_of_tokens">
+
+  <in name="value1" type="string" place="value1"/>
+  <in name="value2" type="string" place="value2"/>
+  <in name="value3" type="string" place="value3"/>
+  <out name="result" type="string" place="result"/>
+
+  <net>
+    <place name="result" type="string"/>
+
+    <!-- Input values for the shareds -->
+    <place name="value1" type="string"/>
+    <place name="value2" type="string"/>
+    <place name="value3" type="string"/>
+
+    <!-- Cleanup place that collects all cleaned up values -->
+    <place name="cleanup" type="string" shared_sink="true"/>
+
+    <!-- Trigger place for collection - initially empty -->
+    <place name="collect_trigger" type="control"/>
+
+    <place name="shared1" type="shared_cleanup"/>
+    <place name="shared2" type="shared_cleanup"/>
+    <place name="shared3" type="shared_cleanup"/>
+
+    <!-- Create three shareds using expressions -->
+    <transition name="create_shareds">
+      <defun>
+        <in name="value1" type="string"/>
+        <in name="value2" type="string"/>
+        <in name="value3" type="string"/>
+        <out name="shared1" type="shared_cleanup"/>
+        <out name="shared2" type="shared_cleanup"/>
+        <out name="shared3" type="shared_cleanup"/>
+        <expression>
+          ${shared1} := shared_cleanup (${value1});
+          ${shared2} := shared_cleanup (${value2});
+          ${shared3} := shared_cleanup (${value3})
+        </expression>
+      </defun>
+      <connect-in port="value1" place="value1"/>
+      <connect-in port="value2" place="value2"/>
+      <connect-in port="value3" place="value3"/>
+      <connect-out port="shared1" place="shared1"/>
+      <connect-out port="shared2" place="shared2"/>
+      <connect-out port="shared3" place="shared3"/>
+    </transition>
+
+    <!-- Consume all three shareds (each triggers cleanup) -->
+    <transition name="consume1">
+      <defun>
+        <in name="shared" type="shared_cleanup"/>
+        <expression/>
+      </defun>
+      <connect-in port="shared" place="shared1"/>
+    </transition>
+
+    <transition name="consume2">
+      <defun>
+        <in name="shared" type="shared_cleanup"/>
+        <expression/>
+      </defun>
+      <connect-in port="shared" place="shared2"/>
+    </transition>
+
+    <transition name="consume3">
+      <defun>
+        <in name="shared" type="shared_cleanup"/>
+        <expression/>
+      </defun>
+      <connect-in port="shared" place="shared3"/>
+    </transition>
+
+    <!-- Check if all 3 cleanup tokens have arrived, then trigger collection -->
+    <transition name="check_all_ready">
+      <defun>
+        <in name="num_cleanups" type="unsigned long"/>
+        <out name="collect_trigger" type="control"/>
+        <expression>
+          ${collect_trigger} := []
+        </expression>
+        <condition>
+          ${num_cleanups} :ge: 3UL
+        </condition>
+      </defun>
+      <connect-number-of-tokens port="num_cleanups" place="cleanup"/>
+      <connect-out port="collect_trigger" place="collect_trigger"/>
+    </transition>
+
+    <!-- Collect cleanup tokens once triggered -->
+    <transition name="collect">
+      <defun>
+        <in name="collect_trigger" type="control"/>
+        <in name="cleanup_value" type="string"/>
+        <out name="result" type="string"/>
+        <expression>
+          ${result} := ${cleanup_value}
+        </expression>
+      </defun>
+      <connect-read port="collect_trigger" place="collect_trigger"/>
+      <connect-in port="cleanup_value" place="cleanup"/>
+      <connect-out port="result" place="result"/>
+    </transition>
+
+  </net>
+</defun>

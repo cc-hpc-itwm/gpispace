@@ -1,18 +1,16 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2013-2015,2020-2021,2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/type/value/show.hpp>
+#include <gspc/we/type/value/show.hpp>
 
-#include <util-generic/print_container.hpp>
+#include <gspc/util/print_container.hpp>
 
 #include <functional>
 #include <iostream>
 
-namespace pnet
-{
-  namespace type
-  {
-    namespace value
+
+
+    namespace gspc::pnet::type::value
     {
       namespace
       {
@@ -25,7 +23,7 @@ namespace pnet
 
           std::ostream& operator() (std::list<value_type> const& l) const
           {
-            return _os << fhg::util::print_container
+            return _os << util::print_container
               ( "List (", ", ", ")", l
               , std::bind ( &visitor_show::print_value, this
                           , std::placeholders::_1, std::placeholders::_2
@@ -35,7 +33,7 @@ namespace pnet
           std::ostream&
           operator() (std::map<value_type, value_type> const& m) const
           {
-            return _os << fhg::util::print_container
+            return _os << util::print_container
               ( "Map [", ", ", "]", m
               , std::bind ( &visitor_show::print_map_item, this
                           , std::placeholders::_1, std::placeholders::_2
@@ -44,7 +42,7 @@ namespace pnet
           }
           std::ostream& operator() (std::set<value_type> const& s) const
           {
-            return _os << fhg::util::print_container
+            return _os << util::print_container
               ( "Set {", ", ", "}", s
               , std::bind ( &visitor_show::print_value, this
                           , std::placeholders::_1, std::placeholders::_2
@@ -53,7 +51,7 @@ namespace pnet
           }
           std::ostream& operator() (structured_type const& m) const
           {
-            return _os << fhg::util::print_container
+            return _os << util::print_container
               ( "Struct [", ", ", "]", m
               , std::bind ( &visitor_show::print_struct_item, this
                           , std::placeholders::_1, std::placeholders::_2
@@ -100,13 +98,21 @@ namespace pnet
           {
             return _os << "\"" << s << "\"";
           }
-          std::ostream& operator() (bitsetofint::type const& bs) const
+          std::ostream& operator() (pnet::type::bitsetofint::type const& bs) const
           {
             return _os << bs;
           }
           std::ostream& operator() (we::type::bytearray const& ba) const
           {
             return _os << ba;
+          }
+          std::ostream& operator() (bigint_type const& i) const
+          {
+            return _os << i << "A";
+          }
+          std::ostream& operator() (we::type::shared const& s) const
+          {
+            return _os << s;
           }
 
         private:
@@ -150,5 +156,3 @@ namespace pnet
         return s (os);
       }
     }
-  }
-}

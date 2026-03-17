@@ -1,10 +1,10 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2015-2016,2021,2023-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <rif/started_process_promise.hpp>
+#include <gspc/rif/started_process_promise.hpp>
 
-#include <util-generic/executable_path.hpp>
-#include <util-generic/serialization/exception.hpp>
+#include <gspc/util/executable_path.hpp>
+#include <gspc/util/serialization/exception.hpp>
 
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/iostreams/device/file_descriptor.hpp>
@@ -12,12 +12,12 @@
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/vector.hpp>
 
-#include <FMT/boost/filesystem/path.hpp>
+#include <gspc/util/fmt/std/filesystem/path.formatter.hpp>
+#include <gspc/util/fmt/std/filesystem/path.formatter.hpp>
 #include <fmt/core.h>
 
-namespace fhg
-{
-  namespace rif
+
+  namespace gspc::rif
   {
     void started_process_promise::set_result
       (std::vector<std::string> messages)
@@ -27,7 +27,7 @@ namespace fhg
     void started_process_promise::set_exception
       (std::exception_ptr exception)
     {
-      send (false, fhg::util::serialization::exception::serialize (exception));
+      send (false, gspc::util::serialization::exception::serialize (exception));
     }
 
     namespace
@@ -37,7 +37,7 @@ namespace fhg
         std::string const usage
           { fmt::format
               ( "Usage: {} <pipefd> [args]..."
-              , fhg::util::executable_path()
+              , gspc::util::executable_path()
               )
           };
 
@@ -93,4 +93,3 @@ namespace fhg
       stream << end_sentinel_value();
     }
   }
-}

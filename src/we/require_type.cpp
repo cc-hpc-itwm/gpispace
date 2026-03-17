@@ -1,18 +1,19 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2013-2015,2018-2023,2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/exception.hpp>
-#include <we/require_type.hpp>
+#include <gspc/we/exception.hpp>
+#include <gspc/we/require_type.hpp>
 
-#include <we/type/value/name_of.hpp>
-#include <we/type/value/path/append.hpp>
+#include <gspc/we/type/shared.hpp>
+#include <gspc/we/type/value/name_of.hpp>
+#include <gspc/we/type/value/path/append.hpp>
 
-#include <we/type/signature.hpp>
+#include <gspc/we/type/signature.hpp>
 
 #include <algorithm>
 #include <list>
 
-namespace pnet
+namespace gspc::pnet
 {
   namespace
   {
@@ -145,6 +146,22 @@ namespace pnet
                         ) const
       {
         throw exception::type_mismatch (s, v, _path);
+      }
+      // shared is a parameterized type
+      void operator() ( we::type::shared const& shared
+                      , std::string const& type
+                      ) const
+      {
+        auto const cleanup_place
+          { we::type::shared::cleanup_place (type)
+          };
+
+        if (  !cleanup_place
+           || shared.cleanup_place() != *cleanup_place
+           )
+        {
+          throw exception::type_mismatch (type, shared, _path);
+        }
       }
       template<typename V>
         void operator() ( V const& v

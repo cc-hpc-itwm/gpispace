@@ -1,36 +1,36 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2014-2015,2018-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <drts/private/option.hpp>
+#include <gspc/drts/private/option.hpp>
 
-#include <drts/drts.hpp>
-#include <drts/scoped_rifd.hpp>
+#include <gspc/drts/drts.hpp>
+#include <gspc/drts/scoped_rifd.hpp>
 
-#include <util-generic/boost/program_options/validators/existing_directory.hpp>
-#include <util-generic/boost/program_options/validators/existing_path.hpp>
-#include <util-generic/boost/program_options/validators/is_directory_if_exists.hpp>
-#include <util-generic/boost/program_options/validators/nonempty_file.hpp>
-#include <util-generic/boost/program_options/validators/nonempty_string.hpp>
-#include <util-generic/boost/program_options/validators/nonexisting_path.hpp>
-#include <util-generic/boost/program_options/validators/nonexisting_path_in_existing_directory.hpp>
-#include <util-generic/boost/program_options/validators/positive_integral.hpp>
-#include <util-generic/join.hpp>
+#include <gspc/util/boost/program_options/validators/existing_directory.hpp>
+#include <gspc/util/boost/program_options/validators/existing_path.hpp>
+#include <gspc/util/boost/program_options/validators/is_directory_if_exists.hpp>
+#include <gspc/util/boost/program_options/validators/nonempty_file.hpp>
+#include <gspc/util/boost/program_options/validators/nonempty_string.hpp>
+#include <gspc/util/boost/program_options/validators/nonexisting_path.hpp>
+#include <gspc/util/boost/program_options/validators/nonexisting_path_in_existing_directory.hpp>
+#include <gspc/util/boost/program_options/validators/positive_integral.hpp>
+#include <gspc/util/join.hpp>
 
-#include <rif/strategy/meta.hpp>
+#include <gspc/rif/strategy/meta.hpp>
 
-#include <FMT/boost/filesystem/path.hpp>
-#include <FMT/iml/gaspi/NetdevID.hpp>
-#include <FMT/util-generic/boost/program_options/validators/existing_directory.hpp>
-#include <FMT/util-generic/boost/program_options/validators/existing_path.hpp>
-#include <FMT/util-generic/boost/program_options/validators/integral_greater_than.hpp>
-#include <FMT/util-generic/boost/program_options/validators/is_directory_if_exists.hpp>
-#include <FMT/util-generic/boost/program_options/validators/nonempty_file.hpp>
-#include <FMT/util-generic/boost/program_options/validators/nonexisting_path_in_existing_directory.hpp>
-#include <FMT/util-generic/join.hpp>
+#include <gspc/iml/gaspi/NetdevID.formatter.hpp>
+#include <gspc/util/boost/program_options/validators/existing_directory.formatter.hpp>
+#include <gspc/util/boost/program_options/validators/existing_path.formatter.hpp>
+#include <gspc/util/boost/program_options/validators/integral_greater_than.formatter.hpp>
+#include <gspc/util/boost/program_options/validators/is_directory_if_exists.formatter.hpp>
+#include <gspc/util/boost/program_options/validators/nonempty_file.formatter.hpp>
+#include <gspc/util/boost/program_options/validators/nonexisting_path_in_existing_directory.formatter.hpp>
+#include <gspc/util/join.formatter.hpp>
 
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 #include <exception>
+#include <filesystem>
 
 namespace gspc
 {
@@ -84,7 +84,7 @@ namespace gspc
 
     namespace validators
     {
-      using namespace fhg::util::boost::program_options;
+      using namespace gspc::util::boost::program_options;
 
       struct env_key
       {
@@ -133,7 +133,7 @@ namespace gspc
       void validate
         (::boost::any& r, std::vector<std::string> const& vs, env_key*, int)
       {
-        fhg::util::boost::program_options::validate<env_key> (r, vs);
+        gspc::util::boost::program_options::validate<env_key> (r, vs);
       }
 
       env_kvpair::env_kvpair (std::string value)
@@ -164,7 +164,7 @@ namespace gspc
       void validate
         (::boost::any& r, std::vector<std::string> const& vs, env_kvpair*, int)
       {
-        fhg::util::boost::program_options::validate<env_kvpair> (r, vs);
+        gspc::util::boost::program_options::validate<env_kvpair> (r, vs);
       }
     }
   }
@@ -306,7 +306,7 @@ namespace gspc
         ( name::rif_strategy
         , ::boost::program_options::value<std::string>()->required()
         , ( "strategy used to bootstrap rifd (one of "
-          + fhg::util::join (fhg::rif::strategy::available_strategies(), ", ").string()
+          + gspc::util::join (gspc::rif::strategy::available_strategies(), ", ").string()
           + ")"
           ).c_str()
         );
@@ -322,7 +322,7 @@ namespace gspc
         drts.add_options()
         ( name::rif_port
         , ::boost::program_options::value
-          <fhg::util::boost::program_options::positive_integral<unsigned short>>()
+          <gspc::util::boost::program_options::positive_integral<unsigned short>>()
         , "port for rifd to listen on"
         );
       }
@@ -353,7 +353,7 @@ namespace gspc
         , "timeout in seconds for the virtual memory manager to connect and start up."
         )
         ( name::virtual_memory_netdev_id
-        , ::boost::program_options::value<iml::gaspi::NetdevID>()
+        , ::boost::program_options::value<gspc::iml::gaspi::NetdevID>()
           ->default_value({})
         , "propose a network device ID to use ('auto' for automatic detection"
           ", or '0' or '1' to select a specific device)"
@@ -417,8 +417,8 @@ namespace gspc
           { fmt::format
             ( "Failed to set option '{}' to '{}': Found old value '{}'"
             , option_name
-            , fhg::util::join (value, ",")
-            , fhg::util::join
+            , gspc::util::join (value, ",")
+            , gspc::util::join
                (pos_and_success.first->second.as<std::vector<T>>(), ",")
             )
           };
@@ -435,201 +435,524 @@ namespace gspc
     }
   }
 
-#define SET(_name, _type)                                        \
-  void set_ ## _name ( ::boost::program_options::variables_map& vm \
-                     , _type const& value                        \
-                     )
-#define SET_PATH(_name, _as)                                            \
-  SET (_name, ::boost::filesystem::path)                                  \
-  {                                                                     \
-    set_as<_as> (vm, name::_name, value.string());                      \
+  void set_worker_env_copy_variable (::boost::program_options::variables_map& vm, std::vector<std::string> const& value)
+  {
+    set_as_vec<validators::env_key, std::string> (vm, name::worker_env_copy_variable, value);
   }
-#define SET_STRING(_name, _as)                                          \
-  SET (_name, std::string)                                              \
-  {                                                                     \
-    set_as<_as> (vm, name::_name, value);                               \
-  }
-#define SET_POSITIVE_INTEGRAL(_name, _type)                             \
-  SET (_name, _type)                                                    \
-  {                                                                     \
-    set_as<validators::positive_integral<_type>>                        \
-      (vm, name::_name, std::to_string (value));                        \
-  }
-#define SET_VECTOR(_name, _type, _validator)                  \
-  SET (_name, std::vector<_type>)                             \
-  {                                                           \
-    set_as_vec<_validator, _type> (vm, name::_name, value);   \
-  }
+  std::optional<std::vector<std::string>> get_worker_env_copy_variable (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::worker_env_copy_variable))
+    {
+      auto const v (vm.at (name::worker_env_copy_variable).as<std::vector<validators::env_key>>());
+      return std::vector<std::string> {v.begin(), v.end()};
+    }
 
-#define GET_MAYBE(_name, _type, _as)                                    \
-  ::boost::optional<_type> get_ ## _name                                  \
-    (::boost::program_options::variables_map const& vm)                   \
-  {                                                                     \
-    if (vm.count (name::_name))                                         \
-    {                                                                   \
-      return static_cast<_type> (vm.at (name::_name).as<_as>());        \
-    }                                                                   \
-                                                                        \
-    return ::boost::none;                                                 \
+    return {};
+  }
+  std::vector<std::string> require_worker_env_copy_variable (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::worker_env_copy_variable))
+    {
+      auto const v (vm.at (name::worker_env_copy_variable).as<std::vector<validators::env_key>>());
+      return std::vector<std::string> {v.begin(), v.end()};
+    }
+
+    throw std::logic_error
+      {fmt::format ("missing key '{}' in variables map", name::worker_env_copy_variable)};
   }
 
-#define GET_PATH(_name, _as) GET_MAYBE (_name, ::boost::filesystem::path, _as)
-#define GET_STRING(_name, _as) GET_MAYBE (_name, std::string, _as)
-#define GET_POSITIVE_INTEGRAL(_name, _type)                             \
-  GET_MAYBE (_name, _type, validators::positive_integral<_type>)
-#define GET_VECTOR(_name, _type, _as)                                   \
-  ::boost::optional<std::vector<_type>> get_ ## _name                     \
-    (::boost::program_options::variables_map const& vm)                   \
-  {                                                                     \
-    if (vm.count (name::_name))                                         \
-    {                                                                   \
-      auto const v (vm.at (name::_name).as<std::vector<_as>>());        \
-      return std::vector<_type> {v.begin(), v.end()};                   \
-    }                                                                   \
-                                                                        \
-    return ::boost::none;                                                 \
+  void set_worker_env_copy_current
+    ( ::boost::program_options::variables_map& vm
+    , bool value
+    )
+  {
+    set_as (vm, name::worker_env_copy_current, value, std::to_string (value));
+  }
+  std::optional<bool> get_worker_env_copy_current (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::worker_env_copy_current))
+    {
+      return vm.at (name::worker_env_copy_current).as<bool>();
+    }
+
+    return {};
+  }
+  bool require_worker_env_copy_current (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::worker_env_copy_current))
+    {
+      return vm.at (name::worker_env_copy_current).as<bool>();
+    }
+
+    throw std::logic_error
+      {fmt::format ("missing key '{}' in variables map", name::worker_env_copy_current)};
   }
 
-#define REQUIRE(_name, _type, _as)                                      \
-  _type require_ ## _name                                               \
-    (::boost::program_options::variables_map const& vm)                   \
-  {                                                                     \
-    if (vm.count (name::_name))                                         \
-    {                                                                   \
-      /* \note static_cast to be backward compatible in option validation */ \
-      return static_cast<_type> (vm.at (name::_name).as<_as>());        \
-    }                                                                   \
-                                                                        \
-    throw std::logic_error                                              \
-      {fmt::format ("missing key '{}' in variables map", name::_name)}; \
+  void set_worker_env_copy_file (::boost::program_options::variables_map& vm, std::vector<std::filesystem::path> const& value)
+  {
+    set_as_vec<validators::existing_path, std::filesystem::path> (vm, name::worker_env_copy_file, value);
+  }
+  std::optional<std::vector<std::filesystem::path>> get_worker_env_copy_file (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::worker_env_copy_file))
+    {
+      auto const v (vm.at (name::worker_env_copy_file).as<std::vector<validators::existing_path>>());
+      return std::vector<std::filesystem::path> {v.begin(), v.end()};
+    }
+
+    return {};
+  }
+  std::vector<std::filesystem::path> require_worker_env_copy_file (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::worker_env_copy_file))
+    {
+      auto const v (vm.at (name::worker_env_copy_file).as<std::vector<validators::existing_path>>());
+      return std::vector<std::filesystem::path> {v.begin(), v.end()};
+    }
+
+    throw std::logic_error
+      {fmt::format ("missing key '{}' in variables map", name::worker_env_copy_file)};
   }
 
-#define REQUIRE_PATH(_name, _as)                \
-  REQUIRE (_name, ::boost::filesystem::path, _as)
-#define REQUIRE_STRING(_name, _as)              \
-  REQUIRE (_name, std::string, _as)
-#define REQUIRE_POSITIVE_INTEGRAL(_name, _type)                 \
-  REQUIRE (_name, _type, validators::positive_integral<_type>)
-#define REQUIRE_VECTOR(_name, _type, _as)                               \
-  std::vector<_type> require_ ## _name                                  \
-    (::boost::program_options::variables_map const& vm)                   \
-  {                                                                     \
-    if (vm.count (name::_name))                                         \
-    {                                                                   \
-      auto const v (vm.at (name::_name).as<std::vector<_as>>());        \
-      return std::vector<_type> {v.begin(), v.end()};                   \
-    }                                                                   \
-                                                                        \
-    throw std::logic_error                                              \
-      {fmt::format ("missing key '{}' in variables map", name::_name)}; \
+  void set_worker_env_set_variable (::boost::program_options::variables_map& vm, std::vector<std::string> const& value)
+  {
+    set_as_vec<validators::env_kvpair, std::string> (vm, name::worker_env_set_variable, value);
+  }
+  std::optional<std::vector<std::string>> get_worker_env_set_variable (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::worker_env_set_variable))
+    {
+      auto const v (vm.at (name::worker_env_set_variable).as<std::vector<validators::env_kvpair>>());
+      return std::vector<std::string> {v.begin(), v.end()};
+    }
+
+    return {};
+  }
+  std::vector<std::string> require_worker_env_set_variable (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::worker_env_set_variable))
+    {
+      auto const v (vm.at (name::worker_env_set_variable).as<std::vector<validators::env_kvpair>>());
+      return std::vector<std::string> {v.begin(), v.end()};
+    }
+
+    throw std::logic_error
+      {fmt::format ("missing key '{}' in variables map", name::worker_env_set_variable)};
   }
 
-#define ACCESS_PATH(_name, _as)                 \
-  SET_PATH (_name, _as)                         \
-  GET_PATH (_name, _as)                         \
-  REQUIRE_PATH (_name, _as)
-#define ACCESS_STRING(_name, _as)               \
-  SET_STRING (_name, _as)                       \
-  GET_STRING (_name, _as)                       \
-  REQUIRE_STRING (_name, _as)
-#define ACCESS_POSITIVE_INTEGRAL(_name, _type)  \
-  SET_POSITIVE_INTEGRAL (_name, _type)          \
-  GET_POSITIVE_INTEGRAL (_name, _type)          \
-  REQUIRE_POSITIVE_INTEGRAL (_name, _type)
-#define ACCESS_VECTOR(_name, _type, _validator)               \
-  SET_VECTOR (_name, _type, _validator)                       \
-  GET_VECTOR (_name, _type, _validator)                       \
-  REQUIRE_VECTOR (_name, _type, _validator)
-#define ACCESS_BOOL(_name)                                    \
-  SET (_name, bool)                                           \
-  {                                                           \
-    set_as (vm, name::_name, value, std::to_string (value));  \
-  }                                                           \
-  GET_MAYBE (_name, bool, bool)                               \
-  REQUIRE (_name, bool, bool)
+  void set_log_host (::boost::program_options::variables_map& vm, std::string const& value)
+  {
+    set_as<validators::nonempty_string> (vm, name::log_host, value);
+  }
+  std::optional<std::string> get_log_host (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::log_host))
+    {
+      return vm.at (name::log_host).as<validators::nonempty_string>();
+    }
 
-  ACCESS_VECTOR (worker_env_copy_variable, std::string, validators::env_key)
-  ACCESS_BOOL (worker_env_copy_current)
-  ACCESS_VECTOR
-    (worker_env_copy_file, ::boost::filesystem::path, validators::existing_path)
-  ACCESS_VECTOR (worker_env_set_variable, std::string, validators::env_kvpair)
+    return {};
+  }
+  std::string require_log_host (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::log_host))
+    {
+      return vm.at (name::log_host).as<validators::nonempty_string>();
+    }
 
-  ACCESS_STRING (log_host, validators::nonempty_string)
-  ACCESS_POSITIVE_INTEGRAL (log_port, unsigned short)
-  ACCESS_STRING (log_level, std::string)
+    throw std::logic_error
+      {fmt::format ("missing key '{}' in variables map", name::log_host)};
+  }
 
-  ACCESS_PATH (log_directory, validators::is_directory_if_exists)
-  ACCESS_PATH (gspc_home, validators::existing_directory)
-  ACCESS_PATH (nodefile, validators::existing_path)
-  ACCESS_PATH (application_search_path, validators::existing_directory)
-  ACCESS_POSITIVE_INTEGRAL (agent_port, unsigned short)
+  void set_log_port (::boost::program_options::variables_map& vm, unsigned short value)
+  {
+    set_as<validators::positive_integral<unsigned short>>
+      (vm, name::log_port, std::to_string (value));
+  }
+  std::optional<unsigned short> get_log_port (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::log_port))
+    {
+      return vm.at (name::log_port).as<validators::positive_integral<unsigned short>>();
+    }
+
+    return {};
+  }
+  unsigned short require_log_port (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::log_port))
+    {
+      return vm.at (name::log_port).as<validators::positive_integral<unsigned short>>();
+    }
+
+    throw std::logic_error
+      {fmt::format ("missing key '{}' in variables map", name::log_port)};
+  }
+
+  void set_log_level (::boost::program_options::variables_map& vm, std::string const& value)
+  {
+    set_as<std::string> (vm, name::log_level, value);
+  }
+  std::optional<std::string> get_log_level (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::log_level))
+    {
+      return vm.at (name::log_level).as<std::string>();
+    }
+
+    return {};
+  }
+  std::string require_log_level (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::log_level))
+    {
+      return vm.at (name::log_level).as<std::string>();
+    }
+
+    throw std::logic_error
+      {fmt::format ("missing key '{}' in variables map", name::log_level)};
+  }
+
+  void set_log_directory (::boost::program_options::variables_map& vm, std::filesystem::path const& value)
+  {
+    set_as<validators::is_directory_if_exists> (vm, name::log_directory, value.string());
+  }
+  std::optional<std::filesystem::path> get_log_directory (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::log_directory))
+    {
+      return vm.at (name::log_directory).as<validators::is_directory_if_exists>();
+    }
+
+    return {};
+  }
+  std::filesystem::path require_log_directory (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::log_directory))
+    {
+      return vm.at (name::log_directory).as<validators::is_directory_if_exists>();
+    }
+
+    throw std::logic_error
+      {fmt::format ("missing key '{}' in variables map", name::log_directory)};
+  }
+
+  void set_gspc_home (::boost::program_options::variables_map& vm, std::filesystem::path const& value)
+  {
+    set_as<validators::existing_directory> (vm, name::gspc_home, value.string());
+  }
+  std::optional<std::filesystem::path> get_gspc_home (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::gspc_home))
+    {
+      return vm.at (name::gspc_home).as<validators::existing_directory>();
+    }
+
+    return {};
+  }
+  std::filesystem::path require_gspc_home (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::gspc_home))
+    {
+      return vm.at (name::gspc_home).as<validators::existing_directory>();
+    }
+
+    throw std::logic_error
+      {fmt::format ("missing key '{}' in variables map", name::gspc_home)};
+  }
+
+  void set_nodefile (::boost::program_options::variables_map& vm, std::filesystem::path const& value)
+  {
+    set_as<validators::existing_path> (vm, name::nodefile, value.string());
+  }
+  std::optional<std::filesystem::path> get_nodefile (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::nodefile))
+    {
+      return vm.at (name::nodefile).as<validators::existing_path>();
+    }
+
+    return {};
+  }
+  std::filesystem::path require_nodefile (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::nodefile))
+    {
+      return vm.at (name::nodefile).as<validators::existing_path>();
+    }
+
+    throw std::logic_error
+      {fmt::format ("missing key '{}' in variables map", name::nodefile)};
+  }
+
+  void set_application_search_path (::boost::program_options::variables_map& vm, std::filesystem::path const& value)
+  {
+    set_as<validators::existing_directory> (vm, name::application_search_path, value.string());
+  }
+  std::optional<std::filesystem::path> get_application_search_path (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::application_search_path))
+    {
+      return vm.at (name::application_search_path).as<validators::existing_directory>();
+    }
+
+    return {};
+  }
+  std::filesystem::path require_application_search_path (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::application_search_path))
+    {
+      return vm.at (name::application_search_path).as<validators::existing_directory>();
+    }
+
+    throw std::logic_error
+      {fmt::format ("missing key '{}' in variables map", name::application_search_path)};
+  }
+
+  void set_agent_port (::boost::program_options::variables_map& vm, unsigned short value)
+  {
+    set_as<validators::positive_integral<unsigned short>>
+      (vm, name::agent_port, std::to_string (value));
+  }
+  std::optional<unsigned short> get_agent_port (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::agent_port))
+    {
+      return vm.at (name::agent_port).as<validators::positive_integral<unsigned short>>();
+    }
+
+    return {};
+  }
+  unsigned short require_agent_port (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::agent_port))
+    {
+      return vm.at (name::agent_port).as<validators::positive_integral<unsigned short>>();
+    }
+
+    throw std::logic_error
+      {fmt::format ("missing key '{}' in variables map", name::agent_port)};
+  }
 
   #if GSPC_WITH_IML
-  ACCESS_PATH ( remote_iml_vmem_socket
-              , validators::existing_path
-              )
-
-  ACCESS_PATH ( virtual_memory_socket
-              , validators::nonexisting_path_in_existing_directory
-              )
-  ACCESS_POSITIVE_INTEGRAL (virtual_memory_port, unsigned short)
-  ACCESS_POSITIVE_INTEGRAL (virtual_memory_startup_timeout, unsigned long)
-  SET (virtual_memory_netdev_id, iml::gaspi::NetdevID)
+  void set_remote_iml_vmem_socket (::boost::program_options::variables_map& vm, std::filesystem::path const& value)
   {
-    set_as<iml::gaspi::NetdevID>
+    set_as<validators::existing_path> (vm, name::remote_iml_vmem_socket, value.string());
+  }
+  std::optional<std::filesystem::path> get_remote_iml_vmem_socket (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::remote_iml_vmem_socket))
+    {
+      return vm.at (name::remote_iml_vmem_socket).as<validators::existing_path>();
+    }
+
+    return {};
+  }
+  std::filesystem::path require_remote_iml_vmem_socket (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::remote_iml_vmem_socket))
+    {
+      return vm.at (name::remote_iml_vmem_socket).as<validators::existing_path>();
+    }
+
+    throw std::logic_error
+      {fmt::format ("missing key '{}' in variables map", name::remote_iml_vmem_socket)};
+  }
+
+  void set_virtual_memory_socket (::boost::program_options::variables_map& vm, std::filesystem::path const& value)
+  {
+    set_as<validators::nonexisting_path_in_existing_directory> (vm, name::virtual_memory_socket, value.string());
+  }
+  std::optional<std::filesystem::path> get_virtual_memory_socket (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::virtual_memory_socket))
+    {
+      return vm.at (name::virtual_memory_socket).as<validators::nonexisting_path_in_existing_directory>();
+    }
+
+    return {};
+  }
+  std::filesystem::path require_virtual_memory_socket (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::virtual_memory_socket))
+    {
+      return vm.at (name::virtual_memory_socket).as<validators::nonexisting_path_in_existing_directory>();
+    }
+
+    throw std::logic_error
+      {fmt::format ("missing key '{}' in variables map", name::virtual_memory_socket)};
+  }
+
+  void set_virtual_memory_port (::boost::program_options::variables_map& vm, unsigned short value)
+  {
+    set_as<validators::positive_integral<unsigned short>>
+      (vm, name::virtual_memory_port, std::to_string (value));
+  }
+  std::optional<unsigned short> get_virtual_memory_port (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::virtual_memory_port))
+    {
+      return vm.at (name::virtual_memory_port).as<validators::positive_integral<unsigned short>>();
+    }
+
+    return {};
+  }
+  unsigned short require_virtual_memory_port (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::virtual_memory_port))
+    {
+      return vm.at (name::virtual_memory_port).as<validators::positive_integral<unsigned short>>();
+    }
+
+    throw std::logic_error
+      {fmt::format ("missing key '{}' in variables map", name::virtual_memory_port)};
+  }
+
+  void set_virtual_memory_startup_timeout (::boost::program_options::variables_map& vm, unsigned long const& value)
+  {
+    set_as<validators::positive_integral<unsigned long>>
+      (vm, name::virtual_memory_startup_timeout, std::to_string (value));
+  }
+  std::optional<unsigned long> get_virtual_memory_startup_timeout (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::virtual_memory_startup_timeout))
+    {
+      return vm.at (name::virtual_memory_startup_timeout).as<validators::positive_integral<unsigned long>>();
+    }
+
+    return {};
+  }
+  unsigned long require_virtual_memory_startup_timeout (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::virtual_memory_startup_timeout))
+    {
+      return vm.at (name::virtual_memory_startup_timeout).as<validators::positive_integral<unsigned long>>();
+    }
+
+    throw std::logic_error
+      {fmt::format ("missing key '{}' in variables map", name::virtual_memory_startup_timeout)};
+  }
+
+  void set_virtual_memory_netdev_id (::boost::program_options::variables_map& vm, gspc::iml::gaspi::NetdevID const& value)
+  {
+    set_as<gspc::iml::gaspi::NetdevID>
       (vm, name::virtual_memory_netdev_id, value.to_string());
   }
-  GET_MAYBE
-    (virtual_memory_netdev_id, iml::gaspi::NetdevID, iml::gaspi::NetdevID)
-  REQUIRE
-    (virtual_memory_netdev_id, iml::gaspi::NetdevID, iml::gaspi::NetdevID)
+  std::optional<gspc::iml::gaspi::NetdevID> get_virtual_memory_netdev_id (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::virtual_memory_netdev_id))
+    {
+      return vm.at (name::virtual_memory_netdev_id).as<gspc::iml::gaspi::NetdevID>();
+    }
+
+    return {};
+  }
+  gspc::iml::gaspi::NetdevID require_virtual_memory_netdev_id (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::virtual_memory_netdev_id))
+    {
+      return vm.at (name::virtual_memory_netdev_id).as<gspc::iml::gaspi::NetdevID>();
+    }
+
+    throw std::logic_error
+      {fmt::format ("missing key '{}' in variables map", name::virtual_memory_netdev_id)};
+  }
   #endif
 
-  ACCESS_PATH (rif_entry_points_file, validators::nonempty_file)
-  ACCESS_POSITIVE_INTEGRAL (rif_port, unsigned short)
-  ACCESS_STRING (rif_strategy, std::string)
+  void set_rif_entry_points_file (::boost::program_options::variables_map& vm, std::filesystem::path const& value)
+  {
+    set_as<validators::nonempty_file> (vm, name::rif_entry_points_file, value.string());
+  }
+  std::optional<std::filesystem::path> get_rif_entry_points_file (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::rif_entry_points_file))
+    {
+      return vm.at (name::rif_entry_points_file).as<validators::nonempty_file>();
+    }
 
-  GET_MAYBE (rif_strategy_parameters, std::vector<std::string>, std::vector<std::string>)
-  REQUIRE (rif_strategy_parameters, std::vector<std::string>, std::vector<std::string>)
+    return {};
+  }
+  std::filesystem::path require_rif_entry_points_file (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::rif_entry_points_file))
+    {
+      return vm.at (name::rif_entry_points_file).as<validators::nonempty_file>();
+    }
+
+    throw std::logic_error
+      {fmt::format ("missing key '{}' in variables map", name::rif_entry_points_file)};
+  }
+
+  void set_rif_port (::boost::program_options::variables_map& vm, unsigned short value)
+  {
+    set_as<validators::positive_integral<unsigned short>>
+      (vm, name::rif_port, std::to_string (value));
+  }
+  std::optional<unsigned short> get_rif_port (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::rif_port))
+    {
+      return vm.at (name::rif_port).as<validators::positive_integral<unsigned short>>();
+    }
+
+    return {};
+  }
+  unsigned short require_rif_port (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::rif_port))
+    {
+      return vm.at (name::rif_port).as<validators::positive_integral<unsigned short>>();
+    }
+
+    throw std::logic_error
+      {fmt::format ("missing key '{}' in variables map", name::rif_port)};
+  }
+
+  void set_rif_strategy (::boost::program_options::variables_map& vm, std::string const& value)
+  {
+    set_as<std::string> (vm, name::rif_strategy, value);
+  }
+  std::optional<std::string> get_rif_strategy (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::rif_strategy))
+    {
+      return vm.at (name::rif_strategy).as<std::string>();
+    }
+
+    return {};
+  }
+  std::string require_rif_strategy (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::rif_strategy))
+    {
+      return vm.at (name::rif_strategy).as<std::string>();
+    }
+
+    throw std::logic_error
+      {fmt::format ("missing key '{}' in variables map", name::rif_strategy)};
+  }
+
+  std::optional<std::vector<std::string>> get_rif_strategy_parameters (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::rif_strategy_parameters))
+    {
+      return vm.at (name::rif_strategy_parameters).as<std::vector<std::string>>();
+    }
+
+    return {};
+  }
+  std::vector<std::string> require_rif_strategy_parameters (::boost::program_options::variables_map const& vm)
+  {
+    if (vm.count (name::rif_strategy_parameters))
+    {
+      return vm.at (name::rif_strategy_parameters).as<std::vector<std::string>>();
+    }
+
+    throw std::logic_error
+      {fmt::format ("missing key '{}' in variables map", name::rif_strategy_parameters)};
+  }
   char const* name_rif_strategy_parameters()
   {
     return name::rif_strategy_parameters;
-  }
-
-#undef ACCESS_POSITIVE_INTEGRAL
-#undef ACCESS_STRING
-#undef ACCESS_PATH
-
-#undef REQUIRE_POSITIVE_INTEGRAL
-#undef REQUIRE_STRING
-#undef REQUIRE_PATH
-
-#undef REQUIRE
-
-#undef GET_POSITIVE_INTEGRAL
-#undef GET_STRING
-#undef GET_PATH
-
-#undef GET_MAYBE
-
-#undef SET_POSITIVE_INTEGRAL
-#undef SET_STRING
-#undef SET_PATH
-#undef SET
-
-
-  void set_application_search_path
-    ( ::boost::program_options::variables_map& vm
-    , std::filesystem::path const& path
-    )
-  {
-    return set_application_search_path (vm, ::boost::filesystem::path {path.string()});
-  }
-  void set_gspc_home
-    ( ::boost::program_options::variables_map& vm
-    , std::filesystem::path const& path
-    )
-  {
-    return set_gspc_home (vm, ::boost::filesystem::path {path.string()});
   }
 }

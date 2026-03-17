@@ -1,22 +1,22 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2010-2016,2018-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/type/Activity.hpp>
-#include <we/type/Transition.hpp>
-#include <we/type/id.hpp>
-#include <we/type/net.hpp>
-#include <we/type/signature/show.hpp>
-#include <we/type/value/show.hpp>
+#include <gspc/we/type/Activity.hpp>
+#include <gspc/we/type/Transition.hpp>
+#include <gspc/we/type/id.hpp>
+#include <gspc/we/type/net.hpp>
+#include <gspc/we/type/signature/show.hpp>
+#include <gspc/we/type/value/show.hpp>
 
-#include <fhg/project_info.hpp>
-#include <fhg/util/cctype.hpp>
-#include <fhg/util/indenter.hpp>
-#include <fhg/util/starts_with.hpp>
-#include <util-generic/print_exception.hpp>
+#include <gspc/configuration/info.hpp>
+#include <gspc/util/cctype.hpp>
+#include <gspc/util/indenter.hpp>
+#include <gspc/util/starts_with.hpp>
+#include <gspc/util/print_exception.hpp>
 
-#include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
 
+#include <filesystem>
 #include <fstream>
 #include <functional>
 #include <iostream>
@@ -34,6 +34,7 @@ namespace
     static std::string const expression ("none");
     static std::string const modcall ("box");
     static std::string const place ("ellipse");
+    static std::string const generator ("hexagon");
   }
 
   namespace color
@@ -45,8 +46,11 @@ namespace
     static std::string const plugin ("tan");
     static std::string const node ("white");
     static std::string const put_token ("lightblue");
+    static std::string const shared_sink ("lightgreen");
+    static std::string const put_token_shared_sink ("lightblue:lightgreen");
     static std::string const tp_many ("black:invis:black");
     static std::string const number_of_tokens ("orange");
+    static std::string const generator ("plum");
   }
 
   namespace style
@@ -96,7 +100,7 @@ namespace
       {
         ++pos;
 
-        while (pos != end && (fhg::util::isspace (*pos) || *pos == b))
+        while (pos != end && (gspc::util::isspace (*pos) || *pos == b))
         {
           ++pos;
         }
@@ -133,7 +137,7 @@ namespace
   {
     std::string q;
 
-    for (char pos : s)
+    for (auto pos : s)
     {
       q += quote (pos);
     }
@@ -187,16 +191,16 @@ namespace
   {
   public:
     bool full {false};
-    std::list<std::function <bool (we::type::Transition const&)>> filter{};
+    std::list<std::function <bool (gspc::we::type::Transition const&)>> filter{};
     bool show_token {true};
     bool show_signature {true};
     bool show_priority {false};
     bool show_virtual {true};
     bool show_tunnel_connection {true};
 
-    bool should_be_expanded (we::type::Transition const& x) const
+    bool should_be_expanded (gspc::we::type::Transition const& x) const
     {
-      for (std::function <bool (we::type::Transition const&)> f : filter)
+      for (std::function <bool (gspc::we::type::Transition const&)> f : filter)
       {
         if (f (x))
         {
@@ -209,7 +213,7 @@ namespace
   };
 
   std::string with_signature ( std::string const& name
-                             , pnet::type::signature::signature_type const& sig
+                             , gspc::pnet::type::signature::signature_type const& sig
                              , options const& opts
                              )
   {
@@ -219,59 +223,59 @@ namespace
 
     if (opts.show_signature)
     {
-      s << endl << pnet::type::signature::show (sig);
+      s << endl << gspc::pnet::type::signature::show (sig);
     }
 
     return s.str();
   }
 
   std::string to_dot
-    ( we::type::Transition const&
+    ( gspc::we::type::Transition const&
     , id_type&
     , options const&
-    , fhg::util::indenter&
-    , std::optional<we::type::TokensOnPorts> input
-    , std::optional<we::type::TokensOnPorts> output
+    , gspc::util::indenter&
+    , std::optional<gspc::we::type::TokensOnPorts> input
+    , std::optional<gspc::we::type::TokensOnPorts> output
     );
 
   class visit_transition : public ::boost::static_visitor<std::string>
   {
   private:
     id_type& id;
-    fhg::util::indenter& _indent;
+    gspc::util::indenter& _indent;
     options const& opts;
 
   public:
     visit_transition
-      (id_type& _id, fhg::util::indenter& indent, options const& _opts)
+      (id_type& _id, gspc::util::indenter& indent, options const& _opts)
       : id (_id)
       , _indent (indent)
       , opts (_opts)
     {}
 
-    std::string operator() (we::type::Expression const& expr) const
+    std::string operator() (gspc::we::type::Expression const& expr) const
     {
       std::ostringstream s;
 
       s << _indent
         << name (id, "expression")
-        << node (shape::expression, quote (::boost::lexical_cast<std::string> (expr)));
+        << node (shape::expression, quote (to_string (expr)));
 
       return s.str();
     }
 
-    std::string operator() (we::type::ModuleCall const& mod_call) const
+    std::string operator() (gspc::we::type::ModuleCall const& mod_call) const
     {
       std::ostringstream s;
 
       s << _indent
         << name (id, "modcall")
-        << node (shape::modcall, ::boost::lexical_cast<std::string> (mod_call));
+        << node (shape::modcall, to_string (mod_call));
 
       return s.str();
     }
 
-    std::string operator() (we::type::MultiModuleCall const& mod_calls) const
+    std::string operator() (gspc::we::type::MultiModuleCall const& mod_calls) const
     {
       std::ostringstream s;
 
@@ -279,13 +283,13 @@ namespace
       {
         s << _indent
           << name (id, "modcall")
-          << node (shape::modcall, ::boost::lexical_cast<std::string> (mod_call.second));
+          << node (shape::modcall, to_string (mod_call.second));
       }
 
       return s.str();
     }
 
-    std::string operator() (we::type::net_type const& net) const
+    std::string operator() (gspc::we::type::net_type const& net) const
     {
       std::ostringstream s;
 
@@ -311,7 +315,7 @@ namespace
         {
           for (auto const& [_ignore, t] : net.get_token (place_id))
           {
-            token << endl << pnet::type::value::show (t);
+            token << endl << gspc::pnet::type::value::show (t);
           }
         }
 
@@ -322,29 +326,33 @@ namespace
             virt << endl << props ("virtual");
         }
 
-        s << fhg::util::deeper (_indent)
+        s << gspc::util::deeper (_indent)
           << name ( id_net
-                  , "place_" + ::boost::lexical_cast<std::string> (place_id)
+                  , "place_" + to_string (place_id)
                   )
           << node
-             ( shape::place
+             ( place.is_generator() ? shape::generator : shape::place
              , with_signature (place.name(), place.signature(), opts)
              + quote (token.str())
              + virt.str()
-             , place.is_marked_for_put_token() ? color::put_token
+             , place.is_generator() ? color::generator
+               : (place.is_marked_for_put_token() && place.is_shared_sink())
+               ? color::put_token_shared_sink
+               : place.is_marked_for_put_token() ? color::put_token
+               : place.is_shared_sink() ? color::shared_sink
                : place.name()[0] == '#' ? color::number_of_tokens
                : color::node
              );
 
         if (number_of_tokens_place_id)
         {
-          s << fhg::util::deeper (_indent)
+          s << gspc::util::deeper (_indent)
             << name ( id_net
-                    , "place_" + ::boost::lexical_cast<std::string> (place_id)
+                    , "place_" + to_string (place_id)
                     )
             << arrow
             << name ( id_net
-                    , "place_" + ::boost::lexical_cast<std::string> (*number_of_tokens_place_id)
+                    , "place_" + to_string (*number_of_tokens_place_id)
                     )
             << association()
             << "}"
@@ -354,8 +362,8 @@ namespace
 
       for (auto const& it : net.transitions())
       {
-        we::transition_id_type const& trans_id (it.first);
-        we::type::Transition const& trans (it.second);
+        gspc::we::transition_id_type const& trans_id (it.first);
+        gspc::we::type::Transition const& trans (it.second);
         const id_type id_trans (++id);
 
         ++_indent;
@@ -366,13 +374,13 @@ namespace
         {
           for (auto const& port_to_place : net.port_to_place().at (trans_id))
           {
-            s << fhg::util::deeper (_indent)
+            s << gspc::util::deeper (_indent)
               << name ( id_trans
-                      , "port_" + ::boost::lexical_cast<std::string> (port_to_place.first)
+                      , "port_" + to_string (port_to_place.first)
                       )
               << arrow
               << name ( id_net
-                      , "place_" + ::boost::lexical_cast<std::string> (port_to_place.second._place_id)
+                      , "place_" + to_string (port_to_place.second._place_id)
                       );
           }
         }
@@ -382,13 +390,13 @@ namespace
         {
           for (auto const& port_to_place : tid_with_tp_many->second)
           {
-            s << fhg::util::deeper (_indent)
+            s << gspc::util::deeper (_indent)
               << name ( id_trans
-                      , "port_" + ::boost::lexical_cast<std::string> (port_to_place.first)
+                      , "port_" + to_string (port_to_place.first)
                       )
               << arrow
               << name ( id_net
-                      , "place_" + ::boost::lexical_cast<std::string> (port_to_place.second._place_id)
+                      , "place_" + to_string (port_to_place.second._place_id)
                       )
               << brackets (keyval ("color", color::tp_many));
           }
@@ -398,16 +406,16 @@ namespace
         {
           for (auto const& place_to_port : net.place_to_port().at (trans_id))
           {
-            s << fhg::util::deeper (_indent)
+            s << gspc::util::deeper (_indent)
               << name ( id_net
-                      , "place_" + ::boost::lexical_cast<std::string> (place_to_port.first)
+                      , "place_" + to_string (place_to_port.first)
                       )
               << arrow
               << name ( id_trans
-                      , "port_" + ::boost::lexical_cast<std::string> (place_to_port.second._port_id)
+                      , "port_" + to_string (place_to_port.second._port_id)
                       )
               << (  net.place_to_transition_read().find
-                    ( we::type::net_type::adj_pt_type::value_type
+                    ( gspc::we::type::net_type::adj_pt_type::value_type
                      (place_to_port.first, trans_id)
                     )
                  != net.place_to_transition_read().end()
@@ -423,7 +431,7 @@ namespace
         }
       }
 
-      s << fhg::util::deeper (_indent) << bgcolor (color::internal)
+      s << gspc::util::deeper (_indent) << bgcolor (color::internal)
         << _indent << "} /* " << "cluster_net_" << id_net << " */";
 
       return s.str();
@@ -431,12 +439,12 @@ namespace
   };
 
   std::string to_dot
-    ( we::type::Transition const& t
+    ( gspc::we::type::Transition const& t
     , id_type& id
     , options const& opts
-    , fhg::util::indenter& indent
-    , std::optional<we::type::TokensOnPorts> input
-    , std::optional<we::type::TokensOnPorts> output
+    , gspc::util::indenter& indent
+    , std::optional<gspc::we::type::TokensOnPorts> input
+    , std::optional<gspc::we::type::TokensOnPorts> output
     )
   {
     std::ostringstream s;
@@ -459,18 +467,18 @@ namespace
     if (t.condition())
     {
       std::ostringstream oss;
-      expr::parse::parser const& p (t.condition()->ast());
+      gspc::we::expr::parse::parser const& p (t.condition()->ast());
 
       std::copy
         ( p.begin()
         , p.end()
-        , std::ostream_iterator<expr::parse::parser::nd_t> (oss, ";\n")
+        , std::ostream_iterator<gspc::we::expr::parse::parser::nd_t> (oss, ";\n")
         );
 
       cond << "|" << lines ('&', quote (oss.str()));
     }
 
-    s << fhg::util::deeper (indent)
+    s << gspc::util::deeper (indent)
       << name (id_trans, "condition")
       << node ( shape::condition
               , t.name()
@@ -479,7 +487,7 @@ namespace
               + priority.str()
               );
 
-    for (we::type::Transition::PortByID::value_type const& p : t.ports_input())
+    for (gspc::we::type::Transition::PortByID::value_type const& p : t.ports_input())
     {
       std::ostringstream token;
 
@@ -489,19 +497,19 @@ namespace
         {
           if (vp._port_id == p.first)
           {
-            token << endl << pnet::type::value::show (vp._token);
+            token << endl << gspc::pnet::type::value::show (vp._token);
           }
         }
       }
 
-      s << fhg::util::deeper (indent)
-        << name (id_trans, "port_" + ::boost::lexical_cast<std::string> (p.first))
+      s << gspc::util::deeper (indent)
+        << name (id_trans, "port_" + to_string (p.first))
         << node ( shape::port_in
                 , with_signature (p.second.name(), p.second.signature(), opts)
                 + quote (token.str())
                 );
     }
-    for (we::type::Transition::PortByID::value_type const& p : t.ports_output())
+    for (gspc::we::type::Transition::PortByID::value_type const& p : t.ports_output())
     {
       std::ostringstream token;
 
@@ -511,22 +519,22 @@ namespace
         {
           if (vp._port_id == p.first)
           {
-            token << endl << pnet::type::value::show (vp._token);
+            token << endl << gspc::pnet::type::value::show (vp._token);
           }
         }
       }
 
-      s << fhg::util::deeper (indent)
-        << name (id_trans, "port_" + ::boost::lexical_cast<std::string> (p.first))
+      s << gspc::util::deeper (indent)
+        << name (id_trans, "port_" + to_string (p.first))
         << node ( shape::port_out
                 , with_signature (p.second.name(), p.second.signature(), opts)
                 + quote (token.str())
                 );
     }
-    for (we::type::Transition::PortByID::value_type const& p : t.ports_tunnel())
+    for (gspc::we::type::Transition::PortByID::value_type const& p : t.ports_tunnel())
     {
-      s << fhg::util::deeper (indent)
-        << name (id_trans, "port_" + ::boost::lexical_cast<std::string> (p.first))
+      s << gspc::util::deeper (indent)
+        << name (id_trans, "port_" + to_string (p.first))
         << node ( shape::port_tunnel
                 , with_signature (p.second.name(), p.second.signature(), opts)
                 );
@@ -538,51 +546,51 @@ namespace
       s << ::boost::apply_visitor (visit_transition (id, indent, opts), t.data());
       --indent;
 
-      for (we::type::Transition::PortByID::value_type const& p : t.ports_input())
+      for (gspc::we::type::Transition::PortByID::value_type const& p : t.ports_input())
       {
         if (p.second.associated_place())
         {
-          s << fhg::util::deeper (indent)
-            << name (id_trans, "port_" + ::boost::lexical_cast<std::string> (p.first))
+          s << gspc::util::deeper (indent)
+            << name (id_trans, "port_" + to_string (p.first))
             << arrow
             << name (id_trans
                     , "place_"
-                    + ::boost::lexical_cast<std::string> (*p.second.associated_place())
+                    + to_string (*p.second.associated_place())
                     )
             << association();
         }
       }
-      for (we::type::Transition::PortByID::value_type const& p : t.ports_output())
+      for (gspc::we::type::Transition::PortByID::value_type const& p : t.ports_output())
       {
         if (p.second.associated_place())
         {
-          s << fhg::util::deeper (indent)
-            << name (id_trans, "port_" + ::boost::lexical_cast<std::string> (p.first))
+          s << gspc::util::deeper (indent)
+            << name (id_trans, "port_" + to_string (p.first))
             << arrow
             << name (id_trans
                     , "place_"
-                    + ::boost::lexical_cast<std::string> (*p.second.associated_place())
+                    + to_string (*p.second.associated_place())
                     )
             << association();
         }
       }
-      for (we::type::Transition::PortByID::value_type const& p : t.ports_tunnel())
+      for (gspc::we::type::Transition::PortByID::value_type const& p : t.ports_tunnel())
       {
         if (p.second.associated_place())
         {
-          s << fhg::util::deeper (indent)
-            << name (id_trans, "port_" + ::boost::lexical_cast<std::string> (p.first))
+          s << gspc::util::deeper (indent)
+            << name (id_trans, "port_" + to_string (p.first))
             << arrow
             << name (id_trans
                     , "place_"
-                    + ::boost::lexical_cast<std::string> (*p.second.associated_place())
+                    + to_string (*p.second.associated_place())
                     )
             << association();
         }
       }
     }
 
-    s << fhg::util::deeper (indent)
+    s << gspc::util::deeper (indent)
       << bgcolor ( t.expression() ? ( !!t.prop().get ({"gspc","we","plugin"})
                                     ? color::plugin
                                     : color::expression
@@ -597,12 +605,12 @@ namespace
   }
 
   void to_dot ( std::ostream& os
-              , we::type::Activity const& activity
+              , gspc::we::type::Activity const& activity
               , options const& options
               )
   {
     id_type id (0);
-    fhg::util::indenter indent (1);
+    gspc::util::indenter indent (1);
 
     os << "digraph \"" << activity.name() << "\" {"
        << "\n" << "compound=true"
@@ -711,7 +719,7 @@ try
 
   if (vm.count ("version"))
   {
-    std::cout << fhg::project_info ("pnet2dot");
+    std::cout << gspc::configuration::info ("pnet2dot");
 
     return EXIT_SUCCESS;
   }
@@ -719,26 +727,26 @@ try
   for (std::string const& nsw : not_starts_with)
   {
     options.filter.push_back
-      ( [&nsw] (we::type::Transition const& t)
+      ( [&nsw] (gspc::we::type::Transition const& t)
       {
-        return fhg::util::starts_with (nsw, t.name());
+        return gspc::util::starts_with (nsw, t.name());
       }
       );
   }
   for (std::string const& s : not_ends_with)
   {
     options.filter.push_back
-      ( [&s] (we::type::Transition const& t)
+      ( [&s] (gspc::we::type::Transition const& t)
       {
-        return fhg::util::ends_with (s, t.name());
+        return gspc::util::ends_with (s, t.name());
       }
       );
   }
 
-  we::type::Activity const act
+  gspc::we::type::Activity const act
     ( input == "-"
-    ? we::type::Activity (std::cin)
-    : we::type::Activity (::boost::filesystem::path (input))
+    ? gspc::we::type::Activity (std::cin)
+    : gspc::we::type::Activity (std::filesystem::path (input))
     );
 
   if (output == "-")
@@ -761,7 +769,7 @@ try
 }
 catch (...)
 {
-  std::cerr << "EX: " << fhg::util::current_exception_printer() << '\n';
+  std::cerr << "EX: " << gspc::util::current_exception_printer() << '\n';
 
   return EXIT_FAILURE;
 }

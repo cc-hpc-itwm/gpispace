@@ -1,0 +1,75 @@
+<!-- Copyright (C) 2026 Fraunhofer ITWM                            -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
+
+<!--
+  Demonstrate that a shared_sink place can also receive output
+  from transitions.
+
+  This example shows that cleanup tokens (from shared garbage
+  collection) and explicit output tokens (from transitions) can both
+  arrive at the same shared_sink place.
+
+  Flow:
+  1. Create a shared from input "shared_value"
+  2. Consume the shared (triggers cleanup -> sink)
+  3. Also put "explicit_value" directly to the sink
+  4. Both values appear at the output
+-->
+
+<defun name="shared_sink_with_output">
+
+  <in name="shared_value" type="string" place="shared_value"/>
+  <in name="explicit_value" type="string" place="explicit_value"/>
+  <out name="result" type="string" place="sink"/>
+
+  <net>
+    <place name="shared_value" type="string"/>
+    <place name="explicit_value" type="string"/>
+
+    <!-- This place receives both cleanup tokens and explicit output -->
+    <place name="sink" type="string" shared_sink="true"/>
+
+    <place name="shared" type="shared_sink"/>
+
+    <!-- Create a shared from the shared_value input -->
+    <transition name="create">
+      <defun>
+        <in name="s" type="string"/>
+        <out name="shared" type="shared_sink"/>
+        <module name="shared_sink_with_output"
+                function="shared create (s)">
+          <cinclude href="gspc/we/type/shared.hpp"/>
+          <code><![CDATA[
+            return gspc::we::type::shared {s, "sink"};
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="s" place="shared_value"/>
+      <connect-out port="shared" place="shared"/>
+    </transition>
+
+    <!-- Consume the shared (triggers cleanup -> sink) -->
+    <transition name="consume">
+      <defun>
+        <in name="shared" type="shared_sink"/>
+        <expression/>
+      </defun>
+      <connect-in port="shared" place="shared"/>
+    </transition>
+
+    <!-- Also put explicit_value directly to the sink -->
+    <transition name="put_explicit">
+      <defun>
+        <in name="value" type="string"/>
+        <out name="out" type="string"/>
+        <expression>
+          ${out} := ${value}
+        </expression>
+      </defun>
+      <connect-in port="value" place="explicit_value"/>
+      <connect-out port="out" place="sink"/>
+    </transition>
+
+  </net>
+
+</defun>

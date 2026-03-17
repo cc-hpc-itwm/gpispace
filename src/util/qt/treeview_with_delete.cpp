@@ -1,8 +1,8 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2013-2014,2020,2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <util-qt/compat.hpp>
-#include <util/qt/treeview_with_delete.hpp>
+#include <gspc/util/qt/compat.hpp>
+#include <gspc/util/qt/treeview_with_delete.hpp>
 
 #include <QKeyEvent>
 #include <QList>
@@ -11,11 +11,9 @@
 #include <QSet>
 #include <QVector>
 
-namespace fhg
-{
-  namespace util
-  {
-    namespace qt
+
+
+    namespace gspc::util::qt
     {
       treeview_with_delete::treeview_with_delete (QWidget* parent)
         : QTreeView (parent)
@@ -50,7 +48,7 @@ namespace fhg
         QSet<QPersistentModelIndex> persisted (QSet<QModelIndex> set)
         {
           QSet<QPersistentModelIndex> ret;
-          for (QModelIndex index : set)
+          for (auto index : set)
           {
             ret.insert (index);
           }
@@ -76,5 +74,3 @@ namespace fhg
         }
       }
     }
-  }
-}

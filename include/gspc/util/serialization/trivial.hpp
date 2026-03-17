@@ -1,0 +1,29 @@
+#pragma once
+
+#include <gspc/util/serialization/detail/base_class.hpp>
+
+#include <boost/serialization/is_bitwise_serializable.hpp>
+
+#include <type_traits>
+
+
+
+    namespace gspc::util::serialization
+    {
+      //! Check if all given Types are trivially serializable.
+      template<typename... Types>
+        using is_trivially_serializable
+          = std::conjunction
+              <::boost::serialization::is_bitwise_serializable<Types>...>;
+
+      //! Let the serialization of type_ with the
+      //! base_or_members_... be trivial. base_or_members_... are
+      //! asserted to be trivially serializable.
+      //! \see base_class<T>()
+#define FHG_UTIL_SERIALIZATION_TRIVIAL(type_, base_or_members_...)      \
+      FHG_UTIL_SERIALIZATION_DETAIL_TRIVIAL (type_, base_or_members_)
+    }
+
+
+
+#include <gspc/util/serialization/trivial.ipp>

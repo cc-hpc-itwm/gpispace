@@ -1,14 +1,14 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2019,2023,2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <logging/demultiplexer.hpp>
+#include <gspc/logging/demultiplexer.hpp>
 
-#include <rif/started_process_promise.hpp>
+#include <gspc/rif/started_process_promise.hpp>
 
-#include <util-generic/print_exception.hpp>
-#include <util-generic/syscall.hpp>
-#include <util-generic/syscall/process_signal_block.hpp>
-#include <util-generic/syscall/signal_set.hpp>
+#include <gspc/util/print_exception.hpp>
+#include <gspc/util/syscall.hpp>
+#include <gspc/util/syscall/process_signal_block.hpp>
+#include <gspc/util/syscall/signal_set.hpp>
 
 #include <cstdlib>
 #include <exception>
@@ -17,15 +17,15 @@
 int main (int argc, char** argv)
 try
 {
-  fhg::rif::started_process_promise promise (argc, argv);
+  gspc::rif::started_process_promise promise (argc, argv);
   try
   {
-    fhg::util::syscall::signal_set const signals {SIGINT, SIGTERM};
-    fhg::util::syscall::process_signal_block const signal_block (signals);
+    gspc::util::syscall::signal_set const signals {SIGINT, SIGTERM};
+    gspc::util::syscall::process_signal_block const signal_block (signals);
 
-    fhg::logging::demultiplexer const actual (promise, argc, argv);
+    gspc::logging::demultiplexer const actual (promise, argc, argv);
 
-    fhg::util::syscall::sigwaitinfo (&signals._, nullptr);
+    gspc::util::syscall::sigwaitinfo (&signals._, nullptr);
 
     return EXIT_SUCCESS;
   }
@@ -37,6 +37,6 @@ try
 }
 catch (...)
 {
-  std::cerr << fhg::util::current_exception_printer() << "\n";
+  std::cerr << gspc::util::current_exception_printer() << "\n";
   return EXIT_FAILURE;
 }

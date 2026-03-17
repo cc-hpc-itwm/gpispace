@@ -1,9 +1,10 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2020-2021,2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <bin/run.hpp>
 #include <util/print_exception.hpp>
 
+#include "Parameters.hpp"
 #include <exception>
 #include <ios>
 #include <iostream>
@@ -47,11 +48,12 @@ try
       , "tasks_with_normal_distributed_duration"
       , [] (::boost::program_options::variables_map const& vm)
         {
-          return we::type::bytearray
-            ( std::make_pair
-              ( vm[option::mean].as<unsigned int>()
+          using gspc::share::example::stochastic_with_heurake::tasks::Parameters;
+          return gspc::we::type::bytearray
+            ( Parameters
+              { vm[option::mean].as<unsigned int>()
               , vm[option::stddev].as<unsigned int>()
-              )
+              }
             );
         }
       )

@@ -1,48 +1,48 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2013-2014,2016,2019-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/type/Transition.hpp>
+#include <gspc/we/type/Transition.hpp>
 
-#include <we/exception.hpp>
-#include <we/expr/type/AssignResult.hpp>
-#include <we/expr/type/Type.hpp>
-#include <we/type/net.hpp>
-#include <we/type/signature.hpp>
-#include <we/type/value/name.hpp>
-#include <we/type/value/peek.hpp>
-#include <we/type/value/show.hpp>
+#include <gspc/we/exception.hpp>
+#include <gspc/we/expr/type/AssignResult.hpp>
+#include <gspc/we/expr/type/Type.hpp>
+#include <gspc/we/type/net.hpp>
+#include <gspc/we/type/shared.hpp>
+#include <gspc/we/type/signature.hpp>
+#include <gspc/we/type/value/name.hpp>
+#include <gspc/we/type/value/peek.hpp>
+#include <gspc/we/type/value/show.hpp>
 
-#include <util-generic/functor_visitor.hpp>
-#include <util-generic/join.hpp>
-#include <util-generic/print_container.hpp>
-#include <util-generic/unreachable.hpp>
+#include <gspc/util/functor_visitor.hpp>
+#include <gspc/util/join.hpp>
+#include <gspc/util/print_container.hpp>
+#include <gspc/util/unreachable.hpp>
 
-#include <FMT/boost/variant.hpp>
-#include <FMT/util-generic/join.hpp>
-#include <FMT/we/expr/type/Type.hpp>
-#include <FMT/we/type/Expression.hpp>
-#include <FMT/we/type/value/show.hpp>
+#include <gspc/util/fmt/boost/variant.formatter.hpp>
+#include <gspc/util/join.formatter.hpp>
+#include <gspc/we/expr/type/Type.formatter.hpp>
+#include <gspc/we/type/Expression.formatter.hpp>
+#include <gspc/we/type/value/show.formatter.hpp>
 #include <algorithm>
 #include <fmt/core.h>
 #include <stdexcept>
 #include <string>
 
-namespace we
-{
-  namespace type
+
+  namespace gspc::we::type
   {
     namespace
     {
       struct visitor_signature_to_type
-        : private ::boost::static_visitor<::expr::Type>
+        : private ::boost::static_visitor<expr::Type>
       {
-        ::expr::Type operator()
+        expr::Type operator()
           (std::string const& name) const
         {
 #define LITERAL(S,T)                            \
-          if (name == ::pnet::type::value::S()) \
+          if (name == pnet::type::value::S()) \
           {                                     \
-            return ::expr::type::T{};           \
+            return expr::type::T{};           \
           }
 
           LITERAL (CONTROL, Control)
@@ -57,13 +57,21 @@ namespace we
           LITERAL (STRING, String)
           LITERAL (BITSET, Bitset)
           LITERAL (BYTEARRAY, Bytearray)
+          LITERAL (BIGINT, Bigint)
 
 #undef LITERAL
 
+          // Handle shared_PLACENAME types
+          //
+          if (auto cleanup_place {shared::cleanup_place (name)})
+          {
+            return expr::type::Shared {std::move (*cleanup_place)};
+          }
+
 #define CONTAINER(S,T,Ts...)                                  \
-          if (name == ::pnet::type::value::S())               \
+          if (name == pnet::type::value::S())               \
           {                                                   \
-            return ::expr::type::T {Ts};                      \
+            return expr::type::T {Ts};                      \
           }
 
           CONTAINER (LIST, List, expr::type::Any())
@@ -75,17 +83,17 @@ namespace we
           FHG_UTIL_UNREACHABLE();
         }
 
-        ::expr::Type operator()
-            (::pnet::type::signature::structured_type const& sig_struct) const
+        expr::Type operator()
+            (pnet::type::signature::structured_type const& sig_struct) const
           {
             // auto const& name (sig_struct.first); // ignored
             auto const& fields (sig_struct.second);
 
-            ::expr::type::Struct::Fields field_types;
+            expr::type::Struct::Fields field_types;
 
             for (auto const& field : fields)
             {
-              fhg::util::visit<void>
+              util::visit<void>
                 ( field
                 , [&] (std::pair<std::string, std::string> const& f)
                   {
@@ -94,7 +102,7 @@ namespace we
                       , this->operator() (f.second)
                       );
                   }
-                , [&] (::pnet::type::signature::structured_type const& f)
+                , [&] (pnet::type::signature::structured_type const& f)
                   {
                     field_types.emplace_back
                       ( f.first
@@ -104,12 +112,12 @@ namespace we
                 );
             }
 
-            return ::expr::type::Struct (field_types);
+            return expr::type::Struct (field_types);
           }
       };
 
-      ::expr::Type signature_to_type
-        (::pnet::type::signature::signature_type const& signature)
+      expr::Type signature_to_type
+        (pnet::type::signature::signature_type const& signature)
       {
         return ::boost::apply_visitor (visitor_signature_to_type{}, signature);
       }
@@ -118,7 +126,7 @@ namespace we
     Transition::Transition()
       : name_ ("<<transition unknown>>")
       , data_ (Expression())
-      , condition_ (::boost::none)
+      , condition_ (std::nullopt)
       , _ports_input()
       , _ports_output()
       , _ports_tunnel()
@@ -127,42 +135,42 @@ namespace we
       , _requirements()
       , _preferences()
       , _priority()
-      , eureka_id_ (::boost::none)
+      , eureka_id_ (std::nullopt)
     {}
 
     namespace
     {
       template<typename T, typename Variant>
-        ::boost::optional<T const&> get_or_none (Variant const& variant)
+        std::optional<std::reference_wrapper<T const>> get_or_none (Variant const& variant)
       {
-        using Ret = ::boost::optional<T const&>;
-        return fhg::util::visit<Ret>
+        using Ret = std::optional<std::reference_wrapper<T const>>;
+        return util::visit<Ret>
           ( variant
-          , [] (T const& x) -> Ret { return x; }
+          , [] (T const& x) -> Ret { return std::cref(x); }
           , [] (auto const&) -> Ret { return {}; }
           );
       }
     }
 
-    ::boost::optional<Expression const&> Transition::expression() const
+    std::optional<std::reference_wrapper<Expression const>> Transition::expression() const
     {
       return get_or_none<Expression> (data_);
     }
-    ::boost::optional<we::type::net_type const&> Transition::net() const
+    std::optional<std::reference_wrapper<net_type const>> Transition::net() const
     {
-      return get_or_none<we::type::net_type> (data_);
+      return get_or_none<net_type> (data_);
     }
-    ::boost::optional<ModuleCall const&> Transition::module_call() const
+    std::optional<std::reference_wrapper<ModuleCall const>> Transition::module_call() const
     {
       return get_or_none<ModuleCall> (data_);
     }
 
-    ::boost::optional<Expression> const& Transition::condition() const
+    std::optional<Expression> const& Transition::condition() const
     {
       return condition_;
     }
 
-    ::boost::optional<eureka_id_type> const& Transition::eureka_id() const
+    std::optional<eureka_id_type> const& Transition::eureka_id() const
     {
       return eureka_id_;
     }
@@ -176,17 +184,17 @@ namespace we
     {
       return data_;
     }
-    we::type::net_type& Transition::mutable_net()
+    net_type& Transition::mutable_net()
     {
-      return ::boost::get<we::type::net_type> (data_);
+      return ::boost::get<net_type> (data_);
     }
 
-    std::list<we::type::Requirement> const& Transition::requirements() const
+    std::list<Requirement> const& Transition::requirements() const
     {
       return _requirements;
     }
 
-    std::list<we::type::Preference> const& Transition::preferences() const
+    std::list<Preference> const& Transition::preferences() const
     {
       return _preferences;
     }
@@ -195,7 +203,7 @@ namespace we
     {
       auto const port_id (port_id_counter_++);
 
-      fhg::util::visit<void>
+      util::visit<void>
         ( port.direction()
         , [&] (port::direction::In const&)
           {
@@ -250,7 +258,7 @@ namespace we
       throw pnet::exception::port::unknown (name(), port_name);
     }
 
-    we::type::property::type const& Transition::prop() const
+    property::type const& Transition::prop() const
     {
       return prop_;
     }
@@ -268,7 +276,7 @@ namespace we
       return _ports_tunnel;
     }
 
-    void Transition::add_requirement (we::type::Requirement const& r)
+    void Transition::add_requirement (Requirement const& r)
     {
       _requirements.push_back (r);
     }
@@ -344,7 +352,7 @@ namespace we
         //! \note this is the reason for the method being non-const
         if (condition_->ast().is_const_true())
         {
-          condition_ = ::boost::none;
+          condition_ = std::nullopt;
         }
       }
 
@@ -368,49 +376,77 @@ namespace we
           {
             if (auto property = prop_.get (path))
             {
-              if (!::boost::get<std::string> (&*property))
+              if (!::boost::get<std::string> (&property->get()))
               {
                 throw std::runtime_error
                   { fmt::format
                       ( "In the property at '{0}': '{1}' is not a string."
                         " The property at '{0}' must contain a string to be interpreted as an expression."
                         " Did you mean '\"{1}\"'?"
-                      , fhg::util::join (path, ".")
-                      , pnet::type::value::show (*property)
+                      , util::join (path, ".")
+                      , pnet::type::value::show (property->get())
                       )
                   };
               }
 
               require_expression_has_type
-                ( ::boost::get<std::string> (*property)
+                ( ::boost::get<std::string> (property->get())
                 , expected
                 , context
                 , fmt::format ( "In the property at '{}'"
-                              , fhg::util::join (path, ".")
+                              , util::join (path, ".")
                               )
                 );
             }
           }
         );
 
-      //! \note exploits internal knowledge of `we::activity_t`
+      //! \note exploits internal knowledge of `gspc::we::activity_t`
       require_property_expression_has_type_if_present
         ( {"fhg", "drts", "schedule", "num_worker"}
         , expr::type::ULong()
         , inference_context_before_eval()
         );
 
-      //! \note exploits internal knowledge of `we::activity_t`
+      //! \note exploits internal knowledge of `gspc::we::activity_t`
       require_property_expression_has_type_if_present
         ( {"fhg", "drts", "schedule", "maximum_number_of_retries"}
         , expr::type::ULong()
         , inference_context_before_eval()
         );
 
-      //! \note exploits internal knowledge of `we::activity_t`
+      //! \note exploits internal knowledge of `gspc::we::activity_t`
       require_property_expression_has_type_if_present
         ( {"fhg", "drts", "require", "dynamic_requirement"}
         , expr::type::String()
+        , inference_context_before_eval()
+        );
+
+      //! \note exploits internal knowledge of `gspc::scheduler::daemon::NotificationEvent`
+      require_property_expression_has_type_if_present
+        ( {"gspc", "monitor", "color", "started"}
+        , expr::type::Int()
+        , inference_context_before_eval()
+        );
+
+      //! \note exploits internal knowledge of `gspc::scheduler::daemon::NotificationEvent`
+      require_property_expression_has_type_if_present
+        ( {"gspc", "monitor", "color", "finished"}
+        , expr::type::Int()
+        , inference_context_before_eval()
+        );
+
+      //! \note exploits internal knowledge of `gspc::scheduler::daemon::NotificationEvent`
+      require_property_expression_has_type_if_present
+        ( {"gspc", "monitor", "color", "failed"}
+        , expr::type::Int()
+        , inference_context_before_eval()
+        );
+
+      //! \note exploits internal knowledge of `gspc::scheduler::daemon::NotificationEvent`
+      require_property_expression_has_type_if_present
+        ( {"gspc", "monitor", "color", "canceled"}
+        , expr::type::Int()
         , inference_context_before_eval()
         );
 
@@ -488,7 +524,7 @@ namespace we
           }
         );
 
-      fhg::util::visit<void>
+      util::visit<void>
         ( data_
         , [&] (ModuleCall& m)
           {
@@ -532,7 +568,7 @@ namespace we
 
               std::ignore = e.type (context);
 
-              //! \note exploits internal knowledge of `we::net_type`
+              //! \note exploits internal knowledge of `gspc::we::net_type`
               if (prop_.get ({"gspc", "we", "plugin", "create"}))
               {
                 context.bind ({"plugin_id"}, expr::type::ULong{});
@@ -549,7 +585,7 @@ namespace we
                 );
             }
 
-            //! \note exploits internal knowledge of `we::net_type`
+            //! \note exploits internal knowledge of `gspc::we::net_type`
             if (prop_.get ({"gspc", "we", "plugin", "create"}))
             {
               require_context_key_with_type
@@ -559,7 +595,7 @@ namespace we
                 );
             }
 
-            //! \note exploits internal knowledge of `we::net_type`
+            //! \note exploits internal knowledge of `gspc::we::net_type`
             if (prop_.get ({"gspc", "we", "plugin", "destroy"}))
             {
               require_context_key_with_type
@@ -569,14 +605,14 @@ namespace we
                 );
             }
 
-            //! \note exploits internal knowledge of `we::net_type`
+            //! \note exploits internal knowledge of `gspc::we::net_type`
             require_property_expression_has_type_if_present
               ( {"gspc", "we", "plugin", "call_before_eval"}
               , expr::type::List (expr::type::ULong{})
               , inference_context_before_eval()
               );
 
-            //! \note exploits internal knowledge of `we::net_type`
+            //! \note exploits internal knowledge of `gspc::we::net_type`
             require_property_expression_has_type_if_present
               ( {"gspc", "we", "plugin", "call_after_eval"}
               , expr::type::List (expr::type::ULong{})
@@ -590,9 +626,9 @@ namespace we
 
     bool Transition::might_use_virtual_memory() const
     {
-      return fhg::util::visit<bool>
+      return util::visit<bool>
         ( data_
-        , [&] (we::type::net_type const& net)
+        , [&] (net_type const& net)
           {
             return net.might_use_virtual_memory();
           }
@@ -620,9 +656,9 @@ namespace we
 
     bool Transition::might_have_tasks_requiring_multiple_workers() const
     {
-      return fhg::util::visit<bool>
+      return util::visit<bool>
         ( data_
-        , [&] (we::type::net_type const& net)
+        , [&] (net_type const& net)
           {
             return net.might_have_tasks_requiring_multiple_workers();
           }
@@ -645,9 +681,9 @@ namespace we
 
     bool Transition::might_use_modules_with_multiple_implementations() const
     {
-      return fhg::util::visit<bool>
+      return util::visit<bool>
         ( data_
-        , [&] (we::type::net_type const& net)
+        , [&] (net_type const& net)
           {
             return net.might_use_modules_with_multiple_implementations();
           }
@@ -666,4 +702,3 @@ namespace we
         );
     }
   }
-}

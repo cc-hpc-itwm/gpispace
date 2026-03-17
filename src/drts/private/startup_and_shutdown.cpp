@@ -1,37 +1,39 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2014-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <drts/private/startup_and_shutdown.hpp>
+#include <gspc/drts/private/startup_and_shutdown.hpp>
 
-#include <drts/private/drts_impl.hpp>
-#include <drts/private/worker_description_implementation.hpp>
+#include <gspc/drts/private/drts_impl.hpp>
+#include <gspc/drts/private/worker_description_implementation.hpp>
 
-#include <rif/client.hpp>
+#include <gspc/rif/client.hpp>
 
-#include <fhg/util/starts_with.hpp>
-#include <util-generic/functor_visitor.hpp>
-#include <util-generic/hostname.hpp>
-#include <util-generic/join.hpp>
-#include <util-generic/make_optional.hpp>
-#include <util-generic/print_exception.hpp>
-#include <util-generic/read_file.hpp>
-#include <util-generic/read_lines.hpp>
-#include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
-#include <util-generic/serialization/boost/filesystem/path.hpp>
-#include <util-generic/unreachable.hpp>
-#include <util-generic/wait_and_collect_exceptions.hpp>
+#include <gspc/util/starts_with.hpp>
+#include <gspc/util/functor_visitor.hpp>
+#include <gspc/util/hostname.hpp>
+#include <gspc/util/join.hpp>
+#include <gspc/util/make_optional.hpp>
+#include <gspc/util/print_exception.hpp>
+#include <gspc/util/read_file.hpp>
+#include <gspc/util/read_lines.hpp>
+#include <gspc/util/scoped_boost_asio_io_service_with_threads.hpp>
+#include <gspc/util/unreachable.hpp>
+#include <gspc/util/wait_and_collect_exceptions.hpp>
 
-#include <util-rpc/remote_function.hpp>
-#include <util-rpc/remote_socket_endpoint.hpp>
-#include <util-rpc/remote_tcp_endpoint.hpp>
+#include <gspc/rpc/remote_function.hpp>
+#include <gspc/rpc/remote_socket_endpoint.hpp>
+#include <gspc/rpc/remote_tcp_endpoint.hpp>
 
-#include <boost/filesystem.hpp>
-#include <boost/optional.hpp>
+#include <boost/asio/io_service.hpp>
+
 #include <boost/serialization/unordered_map.hpp>
+
+#include <filesystem>
+#include <optional>
 #include <boost/utility/in_place_factory.hpp>
 
-#include <FMT/util-generic/exception_printer.hpp>
-#include <FMT/rif/entry_point.hpp>
+#include <gspc/util/exception_printer.formatter.hpp>
+#include <gspc/rif/entry_point.formatter.hpp>
 #include <algorithm>
 #include <atomic>
 #include <cassert>
@@ -49,11 +51,10 @@
 #include <type_traits>
 #include <unistd.h>
 
-namespace fhg
-{
-  namespace drts
+
+  namespace fhg::drts
   {
-    void processes_storage::store ( fhg::rif::entry_point const& entry_point
+    void processes_storage::store ( gspc::rif::entry_point const& entry_point
                                   , std::string const& name
                                   , pid_t pid
                                   )
@@ -71,7 +72,7 @@ namespace fhg
       }
     }
     std::optional<pid_t> processes_storage::pidof
-      (fhg::rif::entry_point const& entry_point, std::string const& name)
+      (gspc::rif::entry_point const& entry_point, std::string const& name)
     {
       std::lock_guard<std::mutex> const guard (_guard);
 
@@ -92,7 +93,7 @@ namespace fhg
       return pos_name->second;
     }
   }
-}
+
 
 namespace
 {
@@ -107,15 +108,15 @@ namespace
   }
 
   fhg::drts::hostinfo_type start_agent
-    ( fhg::rif::entry_point const& rif_entry_point
-    , fhg::rif::client& rif_client
+    ( gspc::rif::entry_point const& rif_entry_point
+    , gspc::rif::client& rif_client
     , std::string const& name
-    , ::boost::optional<unsigned short> const& agent_port
-    , ::boost::optional<::boost::filesystem::path> const& gpi_socket
+    , std::optional<unsigned short> const& agent_port
+    , std::optional<std::filesystem::path> const& gpi_socket
     , gspc::installation_path const& installation_path
     , fhg::drts::processes_storage& processes
     , std::ostream& info_output
-    , ::boost::optional<std::pair<fhg::rif::client&, pid_t>> top_level_log
+    , std::optional<std::pair<gspc::rif::client&, pid_t>> top_level_log
     , gspc::Certificates const& certificates
     )
   {
@@ -139,7 +140,7 @@ namespace
     {
       top_level_log->first.add_emitter_to_logging_demultiplexer
         ( top_level_log->second
-        , std::vector<fhg::logging::endpoint>
+        , std::vector<gspc::logging::endpoint>
             {result.logger_registration_endpoint}
         ).get();
     }
@@ -148,33 +149,32 @@ namespace
   }
 }
 
-namespace fhg
-{
-  namespace drts
+
+  namespace fhg::drts
   {
-    std::pair< std::unordered_set<fhg::rif::entry_point>
-             , std::unordered_map<fhg::rif::entry_point, std::exception_ptr>
+    std::pair< std::unordered_set<gspc::rif::entry_point>
+             , std::unordered_map<gspc::rif::entry_point, std::exception_ptr>
              > start_workers_for
-    ( std::vector<fhg::rif::entry_point> const& entry_points
+    ( std::vector<gspc::rif::entry_point> const& entry_points
     , std::string parent_name
     , fhg::drts::hostinfo_type parent_hostinfo
     , gspc::worker_description const& description_
     , fhg::drts::processes_storage& processes
-    , ::boost::optional<::boost::filesystem::path> const& gpi_socket
-    , std::vector<::boost::filesystem::path> const& app_path
+    , std::optional<std::filesystem::path> const& gpi_socket
+    , std::vector<std::filesystem::path> const& app_path
     , std::vector<std::string> const& worker_env_copy_variable
     , bool worker_env_copy_current
-    , std::vector<::boost::filesystem::path> const& worker_env_copy_file
+    , std::vector<std::filesystem::path> const& worker_env_copy_file
     , std::vector<std::string> const& worker_env_set_variable
     , gspc::installation_path const& installation_path
     , std::ostream& info_output
-    , ::boost::optional<std::pair<fhg::rif::entry_point, pid_t>> top_level_log
+    , std::optional<std::pair<gspc::rif::entry_point, pid_t>> top_level_log
     , gspc::Certificates const& certificates
     )
   {
      auto const& description (*description_._);
 
-     std::string name_prefix (fhg::util::join (description.capabilities, '+').string());
+     std::string name_prefix (gspc::util::join (description.capabilities, '+').string());
 
      auto is_any_of
        { [] (std::string cs)
@@ -198,7 +198,7 @@ namespace fhg
                     )
                  << ", " << description.shm_size << " SHM) with parent "
                  << parent_name << " on rif entry point "
-                 << fhg::util::join
+                 << gspc::util::join
                       ( entry_points
                       , ", "
                       , [] ( std::ostream& os
@@ -216,7 +216,7 @@ namespace fhg
      arguments.emplace_back
        (build_parent_with_hostinfo (parent_name, parent_hostinfo));
 
-     for (::boost::filesystem::path const& path : app_path)
+     for (auto const& path : app_path)
      {
        arguments.emplace_back ("--library-search-path");
        arguments.emplace_back (path.string());
@@ -227,7 +227,7 @@ namespace fhg
        arguments.emplace_back ("--capability");
        arguments.emplace_back ("GPI");
        arguments.emplace_back ("--virtual-memory-socket");
-       arguments.emplace_back (gpi_socket.get().string());
+       arguments.emplace_back (gpi_socket->string());
        arguments.emplace_back ("--shared-memory-size");
        arguments.emplace_back (std::to_string (description.shm_size));
      }
@@ -252,17 +252,17 @@ namespace fhg
 
      std::atomic<std::size_t> num_nodes (0);
 
-      std::unordered_map<fhg::rif::entry_point, std::vector<std::exception_ptr>>
+      std::unordered_map<gspc::rif::entry_point, std::vector<std::exception_ptr>>
         exceptions;
 
       //! \todo let thread count be a parameter
-      fhg::util::scoped_boost_asio_io_service_with_threads io_service
-        (std::min (64UL, entry_points.size()));
+      gspc::util::scoped_boost_asio_io_service_with_threads io_service
+        (std::max (1UL, std::min (64UL, entry_points.size())));
 
-      std::list<std::pair<rif::client, rif::entry_point>> rif_connections;
+      std::list<std::pair<gspc::rif::client, gspc::rif::entry_point>> rif_connections;
       try
       {
-        for (rif::entry_point const& entry_point : entry_points)
+        for (gspc::rif::entry_point const& entry_point : entry_points)
         {
           rif_connections.emplace_back
             ( std::piecewise_construct
@@ -277,8 +277,8 @@ namespace fhg
           (std::runtime_error {"connecting to rif entry points"});
       }
 
-      std::vector<std::tuple< fhg::rif::entry_point
-                            , std::future<fhg::rif::protocol::start_worker_result>
+      std::vector<std::tuple< gspc::rif::entry_point
+                            , std::future<gspc::rif::protocol::start_worker_result>
                             , std::string
                             >
                  > futures;
@@ -363,7 +363,7 @@ namespace fhg
 
             for (auto const& file : worker_env_copy_file)
             {
-              for (auto const& definition : fhg::util::read_lines (file))
+              for (auto const& definition : gspc::util::read_lines (file))
               {
                 parse_and_add_definition (definition);
               }
@@ -393,7 +393,7 @@ namespace fhg
         }
       }
 
-      std::vector<fhg::logging::endpoint> log_emitters;
+      std::vector<gspc::logging::endpoint> log_emitters;
 
       for (auto& future : futures)
       {
@@ -416,8 +416,8 @@ namespace fhg
         }
       }
 
-      std::pair< std::unordered_set<fhg::rif::entry_point>
-               , std::unordered_map<fhg::rif::entry_point, std::exception_ptr>
+      std::pair< std::unordered_set<gspc::rif::entry_point>
+               , std::unordered_map<gspc::rif::entry_point, std::exception_ptr>
                > results;
 
       for (auto const& connection : rif_connections)
@@ -432,7 +432,7 @@ namespace fhg
           else
           {
             //! \todo return the individual exceptions
-            fhg::util::throw_collected_exceptions (it->second);
+            gspc::util::throw_collected_exceptions (it->second);
           }
         }
         catch (...)
@@ -443,7 +443,7 @@ namespace fhg
 
       if (top_level_log)
       {
-        fhg::rif::client (io_service, top_level_log->first)
+        gspc::rif::client (io_service, top_level_log->first)
           .add_emitter_to_logging_demultiplexer
             (top_level_log->second, log_emitters).get();
       }
@@ -453,21 +453,21 @@ namespace fhg
 
     namespace
     {
-      std::unique_ptr<rpc::remote_endpoint> connect
-        (::boost::asio::io_service& io_service, logging::endpoint ep)
+      std::unique_ptr<gspc::rpc::remote_endpoint> connect
+        (::boost::asio::io_service& io_service, gspc::logging::endpoint ep)
       {
-        return util::visit<std::unique_ptr<rpc::remote_endpoint>>
-          ( ep.best (util::hostname())
-          , [&] ( logging::socket_endpoint const& as_socket
-                ) -> std::unique_ptr<rpc::remote_endpoint>
+        return gspc::util::visit
+          ( ep.best (gspc::util::hostname())
+          , [&] ( gspc::logging::socket_endpoint const& as_socket
+                ) -> std::unique_ptr<gspc::rpc::remote_endpoint>
             {
-              return std::make_unique<rpc::remote_socket_endpoint>
+              return std::make_unique<gspc::rpc::remote_socket_endpoint>
                 (io_service, as_socket.socket);
             }
-          , [&] ( logging::tcp_endpoint const& as_tcp
-                ) -> std::unique_ptr<rpc::remote_endpoint>
+          , [&] ( gspc::logging::tcp_endpoint const& as_tcp
+                ) -> std::unique_ptr<gspc::rpc::remote_endpoint>
             {
-              return std::make_unique<rpc::remote_tcp_endpoint>
+              return std::make_unique<gspc::rpc::remote_tcp_endpoint>
                 (io_service, as_tcp);
             }
           );
@@ -475,22 +475,22 @@ namespace fhg
     }
 
     startup_result startup
-      ( ::boost::optional<unsigned short> const& agent_port
-      , ::boost::optional<::boost::filesystem::path> gpi_socket
+      ( std::optional<unsigned short> const& agent_port
+      , std::optional<std::filesystem::path> gpi_socket
       , gspc::installation_path const& installation_path
-      , fhg::util::signal_handler_manager& signal_handler_manager
-      , std::vector<fhg::rif::entry_point> const& rif_entry_points
-      , fhg::rif::entry_point const& parent
+      , gspc::util::signal_handler_manager& signal_handler_manager
+      , std::vector<gspc::rif::entry_point> const& rif_entry_points
+      , gspc::rif::entry_point const& parent
       , fhg::drts::processes_storage& processes
       , std::string& parent_agent_name
       , fhg::drts::hostinfo_type& parent_agent_hostinfo
       , std::ostream& info_output
-      , ::boost::optional<fhg::rif::entry_point> log_rif_entry_point
-      , std::vector<logging::endpoint> default_log_receivers
+      , std::optional<gspc::rif::entry_point> log_rif_entry_point
+      , std::vector<gspc::logging::endpoint> default_log_receivers
       , gspc::Certificates const& certificates
       )
     {
-      fhg::util::scoped_signal_handler interrupt_signal_handler
+      gspc::util::scoped_signal_handler interrupt_signal_handler
         ( signal_handler_manager
         ,  SIGINT
         , [] (int, siginfo_t*, void*)
@@ -499,20 +499,20 @@ namespace fhg
           }
         );
 
-      info_output << "I: starting base sdpa components on " << parent << "...\n";
+      info_output << "I: starting base scheduler components on " << parent << "...\n";
 
       //! \todo let thread count be a parameter
-      fhg::util::scoped_boost_asio_io_service_with_threads io_service
+      gspc::util::scoped_boost_asio_io_service_with_threads io_service
         (std::max (1UL, std::min (64UL, rif_entry_points.size())));
 
-      rif::client parent_rif_client (io_service, parent);
+      gspc::rif::client parent_rif_client (io_service, parent);
 
-      ::boost::optional<rif::client> logging_rif_client;
-      ::boost::optional<rif::protocol::start_logging_demultiplexer_result>
+      std::optional<gspc::rif::client> logging_rif_client;
+      std::optional<gspc::rif::protocol::start_logging_demultiplexer_result>
         logging_rif_info;
       if (log_rif_entry_point)
       {
-        logging_rif_client = ::boost::in_place
+        logging_rif_client.emplace
           (std::ref (io_service), *log_rif_entry_point);
 
         info_output << "I: starting top level gspc logging demultiplexer on "
@@ -539,15 +539,15 @@ namespace fhg
         processes.store
           (*log_rif_entry_point, "logging-demultiplexer", logging_rif_info->pid);
 
-        std::vector<logging::endpoint> const top_level_endpoint
+        std::vector<gspc::logging::endpoint> const top_level_endpoint
           {logging_rif_info->sink_endpoint};
         for (auto const& receiver : default_log_receivers)
         {
           try
           {
             auto const endpoint (connect (io_service, receiver));
-            using fun = logging::protocol::receiver::add_emitters;
-            rpc::sync_remote_function<fun> {*endpoint} (top_level_endpoint);
+            using fun = gspc::logging::protocol::receiver::add_emitters;
+            gspc::rpc::sync_remote_function<fun> {*endpoint} (top_level_endpoint);
           }
           catch (...)
           {
@@ -561,11 +561,11 @@ namespace fhg
         }
       }
 
-      std::list<std::pair<rif::client, rif::entry_point>> rif_connections;
+      std::list<std::pair<gspc::rif::client, gspc::rif::entry_point>> rif_connections;
       std::vector<std::string> hostnames;
       try
       {
-        for (rif::entry_point const& entry_point : rif_entry_points)
+        for (gspc::rif::entry_point const& entry_point : rif_entry_points)
         {
           rif_connections.emplace_back
             ( std::piecewise_construct
@@ -584,7 +584,7 @@ namespace fhg
       if (gpi_socket)
       {
         info_output << "I: external IML as VMEM running on: "
-                    << gpi_socket.get()
+                    << gpi_socket.value()
                     << "\n";
       }
 
@@ -615,7 +615,7 @@ namespace fhg
     {
       template<typename It>
         std::unordered_map
-          < rif::entry_point
+          < gspc::rif::entry_point
           , std::pair< std::string /* kind */
                      , std::unordered_map<pid_t, std::exception_ptr>
                      >
@@ -641,7 +641,7 @@ namespace fhg
         }(component);
 
         std::unordered_map
-          < rif::entry_point
+          < gspc::rif::entry_point
           , std::pair< std::string /* kind */
                      , std::unordered_map<pid_t, std::exception_ptr>
                      >
@@ -652,7 +652,7 @@ namespace fhg
         {
           for (auto const& it : entry_point_processes->second)
           {
-            if (fhg::util::starts_with (kind, it.first))
+            if (gspc::util::starts_with (kind, it.first))
             {
               ++processes_to_kill;
             }
@@ -660,13 +660,13 @@ namespace fhg
         }
 
         //! \todo let thread count be a parameter
-        fhg::util::scoped_boost_asio_io_service_with_threads io_service
+        gspc::util::scoped_boost_asio_io_service_with_threads io_service
           (std::min (64UL, processes_to_kill));
 
         using process_iter
           = typename decltype (entry_point_procs.front()->second)::iterator;
 
-        std::list<fhg::rif::client> clients;
+        std::list<gspc::rif::client> clients;
         std::vector<std::tuple < It
                                , std::future<std::unordered_map<pid_t, std::exception_ptr>>
                                , std::unordered_map<pid_t, process_iter>
@@ -683,7 +683,7 @@ namespace fhg
               ; ++it
               )
           {
-            if (fhg::util::starts_with (kind, it->first))
+            if (gspc::util::starts_with (kind, it->first))
             {
               to_erase.emplace (it->second, it);
               pids.emplace_back (it->second);
@@ -696,7 +696,7 @@ namespace fhg
               {
                 std::unordered_map<pid_t, std::exception_ptr> fails;
 
-                for (pid_t pid : pids)
+                for (auto pid : pids)
                 {
                   fails.emplace (pid, std::current_exception());
                 }
@@ -711,7 +711,7 @@ namespace fhg
           {
             info_output << "terminating " << kind << " on "
                         << entry_point
-                        << ": " << fhg::util::join (pids, ' ') << "\n";
+                        << ": " << gspc::util::join (pids, ' ') << "\n";
 
             try
             {
@@ -722,7 +722,7 @@ namespace fhg
                                    , fail_group_with_current_exception
                                    );
             }
-            catch (...) // \note: e.g. rif::client::connect
+            catch (...) // \note: e.g. gspc::rif::client::connect
             {
               fail_group_with_current_exception();
             }
@@ -761,16 +761,16 @@ namespace fhg
       }
     }
 
-    std::unordered_map< rif::entry_point
+    std::unordered_map< gspc::rif::entry_point
                       , std::pair< std::string /* kind */
                                  , std::unordered_map<pid_t, std::exception_ptr>
                                  >
                       >
       processes_storage::shutdown_worker
-        (std::vector<fhg::rif::entry_point> const& rif_entry_points)
+        (std::vector<gspc::rif::entry_point> const& rif_entry_points)
     {
       std::vector<decltype (_)::iterator> iterators;
-      for (fhg::rif::entry_point const& entry_point : rif_entry_points)
+      for (gspc::rif::entry_point const& entry_point : rif_entry_points)
       {
         decltype (_)::iterator const pos (_.find (entry_point));
         if (pos == _.end())
@@ -782,7 +782,7 @@ namespace fhg
       }
 
       std::unordered_map
-        < rif::entry_point
+        < gspc::rif::entry_point
         , std::pair< std::string /* kind */
                    , std::unordered_map<pid_t, std::exception_ptr>
                    >
@@ -817,7 +817,7 @@ namespace fhg
 
     processes_storage::~processes_storage()
     {
-      util::apply_for_each_and_collect_exceptions
+      gspc::util::apply_for_each_and_collect_exceptions
         ( { component_type::worker
           , component_type::agent
           , component_type::logging_demultiplexer
@@ -825,7 +825,7 @@ namespace fhg
         , [this] (component_type component)
           {
             std::unordered_map
-              < rif::entry_point
+              < gspc::rif::entry_point
               , std::pair< std::string /* kind */
                          , std::unordered_map<pid_t, std::exception_ptr>
                          >
@@ -844,7 +844,7 @@ namespace fhg
                      , failure.second.first
                      , fails.first
                      , failure.first
-                     , util::exception_printer (fails.second)
+                     , gspc::util::exception_printer (fails.second)
                      )
                   << std::endl
                   ;
@@ -854,4 +854,3 @@ namespace fhg
         );
     }
   }
-}

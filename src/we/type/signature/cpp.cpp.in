@@ -1,27 +1,27 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2013-2015,2021-2023,2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/type/signature/complete.hpp>
-#include <we/type/signature/cpp.hpp>
-#include <we/type/signature/is_literal.hpp>
-#include <we/type/signature/traverse.hpp>
-#include <we/type/value/name.hpp>
-#include <we/type/value/path/append.hpp>
+#include <gspc/we/type/signature/complete.hpp>
+#include <gspc/we/type/signature/cpp.hpp>
+#include <gspc/we/type/signature/is_literal.hpp>
+#include <gspc/we/type/signature/traverse.hpp>
+#include <gspc/we/type/value/name.hpp>
+#include <gspc/we/type/value/path/append.hpp>
 
-#include <fhg/util/cpp/block.hpp>
-#include <fhg/util/cpp/include.hpp>
-#include <fhg/util/cpp/namespace.hpp>
-#include <fhg/util/cpp/struct.hpp>
-#include <fhg/util/indenter.hpp>
+#include <gspc/util/cpp/block.hpp>
+#include <gspc/util/cpp/include.hpp>
+#include <gspc/util/cpp/namespace.hpp>
+#include <gspc/util/cpp/struct.hpp>
+#include <gspc/util/indenter.hpp>
 
-#include <util-generic/join.hpp>
+#include <gspc/util/join.hpp>
 
 #include <iostream>
 #include <list>
 #include <set>
 #include <sstream>
 
-namespace pnet
+namespace gspc::pnet
 {
   namespace type
   {
@@ -34,14 +34,14 @@ namespace pnet
           class printer
           {
           public:
-            printer (std::ostream& os, fhg::util::indenter& indent)
+            printer (std::ostream& os, util::indenter& indent)
               : _os (os)
               , _indent (indent)
             {}
 
           protected:
             std::ostream& _os;
-            fhg::util::indenter& _indent;
+            util::indenter& _indent;
 
             template<typename P>
             void traverse_fields
@@ -59,14 +59,14 @@ namespace pnet
           {
           public:
             printer_for_field ( std::ostream& os
-                              , fhg::util::indenter& indent
+                              , util::indenter& indent
                               , State state
                               )
               : printer (os, indent)
               , _state (state)
             {}
             printer_for_field ( std::ostream& os
-                              , fhg::util::indenter& indent
+                              , util::indenter& indent
                               )
               : printer (os, indent)
               , _state()
@@ -91,7 +91,7 @@ namespace pnet
           {
           public:
             void operator() ( std::ostream& os
-                            , fhg::util::indenter& indent
+                            , util::indenter& indent
                             , std::string const& name
                             , std::string const& type
                             , int
@@ -107,13 +107,13 @@ namespace pnet
           {
           public:
             void operator() ( std::ostream& os
-                            , fhg::util::indenter& indent
+                            , util::indenter& indent
                             , std::string const& name
                             , std::string const& type
                             , bool& first
                             )
             {
-              os << fhg::util::deeper (indent)
+              os << util::deeper (indent)
                  << (first ? '(' : ',') << ' '
                  << complete (type) << " const& _" << name;
 
@@ -127,13 +127,13 @@ namespace pnet
           {
           public:
             void operator() ( std::ostream& os
-                            , fhg::util::indenter& indent
+                            , util::indenter& indent
                             , std::string const& name
                             , std::string const&
                             , bool& first
                             ) const
             {
-              os << fhg::util::deeper (indent)
+              os << util::deeper (indent)
                  << (first ? ':' : ',') << ' ' << name << " (_" << name << ')';
 
               first = false;
@@ -146,13 +146,13 @@ namespace pnet
           {
           public:
             void operator() ( std::ostream& os
-                            , fhg::util::indenter& indent
+                            , util::indenter& indent
                             , std::string const& name
                             , std::string const&
                             , bool& first
                             ) const
             {
-              os << fhg::util::deeper (indent)
+              os << util::deeper (indent)
                  << (first ? ':' : ',') << ' ' << name <<  "()";
 
               first = false;
@@ -165,7 +165,7 @@ namespace pnet
           {
           public:
             void operator() ( std::ostream& os
-                            , fhg::util::indenter&
+                            , util::indenter&
                             , std::string const& name
                             , std::string const&
                             , std::list<std::string>& prefix
@@ -193,13 +193,13 @@ namespace pnet
           {
           public:
             void operator() ( std::ostream& os
-                            , fhg::util::indenter& indent
+                            , util::indenter& indent
                             , std::string const& name
                             , std::string const&
                             , bool& first
                             ) const
             {
-              os << fhg::util::deeper (indent)
+              os << util::deeper (indent)
                  << "&& pnetc_eq{} (this->" << name << ", rhs." << name << ")";
 
               first = false;
@@ -213,14 +213,14 @@ namespace pnet
           class print_header : public printer
           {
           public:
-            print_header (std::ostream& os, fhg::util::indenter& indent)
+            print_header (std::ostream& os, util::indenter& indent)
               : printer (os, indent)
             {}
 
             void _struct (std::pair<std::string, structure_type> const& s) const
             {
-              namespace ns = fhg::util::cpp::ns;
-              namespace structure = fhg::util::cpp::structure;
+              namespace ns = util::cpp::ns;
+              namespace structure = util::cpp::structure;
 
               _os << ns::open (_indent, s.first);
 
@@ -259,7 +259,7 @@ namespace pnet
 
               _os << _indent << "bool operator< ("
                   << s.first << " const& rhs) const"
-                  << fhg::util::cpp::block::open (_indent)
+                  << util::cpp::block::open (_indent)
                   << _indent << "return ";
 
               if (s.second.empty())
@@ -277,7 +277,7 @@ namespace pnet
               }
 
               _os << ";"
-                  << fhg::util::cpp::block::close (_indent);
+                  << util::cpp::block::close (_indent);
             }
 
             void operator_eq
@@ -287,13 +287,13 @@ namespace pnet
 
               _os << _indent << "bool operator== ("
                   << s.first << " const& rhs) const"
-                  << fhg::util::cpp::block::open (_indent)
+                  << util::cpp::block::open (_indent)
                   << _indent << "return true";
 
               traverse (print_field_operator_eq (_os, _indent, first), s);
 
-              _os << fhg::util::deeper (_indent) << ";"
-                  << fhg::util::cpp::block::close (_indent);
+              _os << util::deeper (_indent) << ";"
+                  << util::cpp::block::close (_indent);
             }
 
             void ctor_default
@@ -315,7 +315,7 @@ namespace pnet
 
               traverse (print_field_param (_os, _indent, first), s);
 
-              _os << fhg::util::deeper (_indent) << ")";
+              _os << util::deeper (_indent) << ")";
 
               first = true;
 
@@ -334,15 +334,15 @@ namespace pnet
         {
           os << R"EOS(@PNETC_COMPARE_HPP@)EOS";
 
-          fhg::util::indenter indent;
+          util::indenter indent;
 
-          os << fhg::util::cpp::ns::open (indent, "pnetc");
-          os << fhg::util::cpp::ns::open (indent, "type");
+          os << util::cpp::ns::open (indent, "pnetc");
+          os << util::cpp::ns::open (indent, "type");
 
           traverse (print_header (os, indent), _structured);
 
-          os << fhg::util::cpp::ns::close (indent);
-          os << fhg::util::cpp::ns::close (indent);
+          os << util::cpp::ns::close (indent);
+          os << util::cpp::ns::close (indent);
 
           return os;
         }
@@ -391,7 +391,7 @@ namespace pnet
           {
           public:
             print_header_op ( std::ostream& os
-                            , fhg::util::indenter& indent
+                            , util::indenter& indent
                             , std::list<std::list<std::string>>& tnames
                             , std::list<std::string>& tname
                             )
@@ -404,7 +404,7 @@ namespace pnet
             {
               using pnet::type::value::path::append;
 
-              _os << fhg::util::cpp::ns::open (_indent, s.first);
+              _os << util::cpp::ns::open (_indent, s.first);
 
               _tnames.push_front (append (append (_tname, s.first), s.first));
 
@@ -418,10 +418,10 @@ namespace pnet
 
               _os << _indent
                   << s.first
-                  << " from_value (pnet::type::value::value_type const&);";
+                  << " from_value (gspc::pnet::type::value::value_type const&);";
 
               _os << _indent
-                  << "pnet::type::value::value_type to_value ("
+                  << "gspc::pnet::type::value::value_type to_value ("
                   << s.first << " const&);";
 
               _os << _indent
@@ -429,7 +429,7 @@ namespace pnet
                   << s.first
                   << " const&);";
 
-              _os << fhg::util::cpp::ns::close (_indent);
+              _os << util::cpp::ns::close (_indent);
             }
             void _field (std::pair<std::string, std::string> const&) const
             {}
@@ -449,15 +449,15 @@ namespace pnet
         {}
         std::ostream& header_op::operator() (std::ostream& os) const
         {
-          fhg::util::indenter indent;
+          util::indenter indent;
 
-          os << fhg::util::cpp::include ("we/type/value.hpp");
-          os << fhg::util::cpp::include ("we/type/value/from_value.hpp");
-          os << fhg::util::cpp::include ("we/type/value/to_value.hpp");
-          os << fhg::util::cpp::include ("iosfwd");
+          os << util::cpp::include ("gspc/we/type/value.hpp");
+          os << util::cpp::include ("gspc/we/type/value/from_value.hpp");
+          os << util::cpp::include ("gspc/we/type/value/to_value.hpp");
+          os << util::cpp::include ("iosfwd");
 
-          os << fhg::util::cpp::ns::open (indent, "pnetc");
-          os << fhg::util::cpp::ns::open (indent, "type");
+          os << util::cpp::ns::open (indent, "pnetc");
+          os << util::cpp::ns::open (indent, "type");
 
           std::list<std::list<std::string>> tnames;
 
@@ -469,47 +469,47 @@ namespace pnet
             traverse (print_header_op (os, indent, tnames, tname), _structured);
           }
 
-          os << fhg::util::cpp::ns::close (indent);
-          os << fhg::util::cpp::ns::close (indent);
+          os << util::cpp::ns::close (indent);
+          os << util::cpp::ns::close (indent);
 
-          os << fhg::util::cpp::ns::open (indent, "pnet");
-          os << fhg::util::cpp::ns::open (indent, "type");
-          os << fhg::util::cpp::ns::open (indent, "value");
+          os << util::cpp::ns::open (indent, "gspc::pnet");
+          os << util::cpp::ns::open (indent, "type");
+          os << util::cpp::ns::open (indent, "value");
 
           for (std::list<std::string> const& tname : tnames)
           {
             os << indent
                << "template<>"
-               << fhg::util::deeper (indent)
+               << util::deeper (indent)
                << "inline value_type to_value<"
-               << fhg::util::join (tname.begin(), tname.end(), "::")
+               << util::join (tname.begin(), tname.end(), "::")
                << "> ("
-               << fhg::util::join (tname.begin(), tname.end(), "::")
+               << util::join (tname.begin(), tname.end(), "::")
                << " const& x)"
-               << fhg::util::cpp::block::open (indent)
+               << util::cpp::block::open (indent)
                << indent << "return "
-               << fhg::util::join (tname.begin(), std::prev (tname.end()), "::")
+               << util::join (tname.begin(), std::prev (tname.end()), "::")
                << "::to_value (x);"
-               << fhg::util::cpp::block::close (indent);
+               << util::cpp::block::close (indent);
 
             os << indent
                << "template<>"
-               << fhg::util::deeper (indent)
+               << util::deeper (indent)
                << "inline "
-               << fhg::util::join (tname.begin(), tname.end(), "::")
+               << util::join (tname.begin(), tname.end(), "::")
                << " from_value<"
-               << fhg::util::join (tname.begin(), tname.end(), "::")
+               << util::join (tname.begin(), tname.end(), "::")
                << "> (value_type const& v)"
-               << fhg::util::cpp::block::open (indent)
+               << util::cpp::block::open (indent)
                << indent << "return "
-               << fhg::util::join (tname.begin(), std::prev (tname.end()), "::")
+               << util::join (tname.begin(), std::prev (tname.end()), "::")
                << "::from_value (v);"
-               << fhg::util::cpp::block::close (indent);
+               << util::cpp::block::close (indent);
           }
 
-          os << fhg::util::cpp::ns::close (indent);
-          os << fhg::util::cpp::ns::close (indent);
-          os << fhg::util::cpp::ns::close (indent);
+          os << util::cpp::ns::close (indent);
+          os << util::cpp::ns::close (indent);
+          os << util::cpp::ns::close (indent);
 
           return os;
         }
@@ -558,7 +558,7 @@ namespace pnet
           {
           public:
             print_from_value ( std::ostream& os
-                             , fhg::util::indenter& indent
+                             , util::indenter& indent
                              , bool& first
                              )
               : printer (os, indent)
@@ -570,15 +570,15 @@ namespace pnet
             }
             void _field (std::pair<std::string, std::string> const& f) const
             {
-              _os << fhg::util::deeper (_indent) << (_first ? '(' : ',') << ' ';
+              _os << util::deeper (_indent) << (_first ? '(' : ',') << ' ';
 
               if (!is_literal (f.second))
               {
-                _os << f.second << "::from_value (pnet::field";
+                _os << f.second << "::from_value (gspc::pnet::field";
               }
               else
               {
-                _os << "pnet::field_as< " << complete (f.second) << " >";
+                _os << "gspc::pnet::field_as< " << complete (f.second) << " >";
               }
 
               _os << " ("
@@ -596,13 +596,13 @@ namespace pnet
             }
             void _field_struct (std::pair<std::string, structure_type> const& s) const
             {
-              _os << fhg::util::deeper (_indent)
+              _os << util::deeper (_indent)
                   << (_first ? '(' : ',') << ' '
-                  << s.first << "::from_value (pnet::field"
+                  << s.first << "::from_value (gspc::pnet::field"
                   << " ("
                   << "\"" << s.first << "\""
                   << ", v"
-                  << ", pnet::signature_of ("
+                  << ", gspc::pnet::signature_of ("
                   << s.first << "::to_value (" << s.first << "::" << s.first << "())"
                   << ")"
                   << ")"
@@ -618,14 +618,14 @@ namespace pnet
           {
           public:
             void operator() ( std::ostream& os
-                            , fhg::util::indenter& indent
+                            , util::indenter& indent
                             , std::string const& name
                             , std::string const& type
                             , int
                             ) const
             {
               os << indent
-                 << "pnet::type::value::poke ("
+                 << "gspc::pnet::type::value::poke ("
                  << "\"" << name << "\""
                  << ", v, ";
 
@@ -647,13 +647,13 @@ namespace pnet
           class print_impl : public printer
           {
           public:
-            print_impl (std::ostream& os, fhg::util::indenter& indent)
+            print_impl (std::ostream& os, util::indenter& indent)
               : printer (os, indent)
             {}
 
             void _struct (std::pair<std::string, structure_type> const& s) const
             {
-              namespace ns = fhg::util::cpp::ns;
+              namespace ns = util::cpp::ns;
 
               _os << ns::open (_indent, s.first);
 
@@ -675,11 +675,11 @@ namespace pnet
             void from_value
               (std::pair<std::string, structure_type> const& s) const
             {
-              namespace block = fhg::util::cpp::block;
+              namespace block = util::cpp::block;
 
               _os << _indent
                   << s.first << " from_value "
-                  << "(pnet::type::value::value_type const& v)"
+                  << "(gspc::pnet::type::value::value_type const& v)"
                   << block::open (_indent)
                   << _indent << "return " << s.first;
 
@@ -693,7 +693,7 @@ namespace pnet
 
                 traverse (print_from_value (_os, _indent, first), s);
 
-                _os << fhg::util::deeper (_indent) << ");";
+                _os << util::deeper (_indent) << ");";
               }
 
               _os << block::close (_indent);
@@ -701,12 +701,12 @@ namespace pnet
             void to_value
               (std::pair<std::string, structure_type> const& s) const
             {
-              namespace block = fhg::util::cpp::block;
+              namespace block = util::cpp::block;
 
               _os << _indent
-                  << "pnet::type::value::value_type to_value (" << s.first << " const& x)"
+                  << "gspc::pnet::type::value::value_type to_value (" << s.first << " const& x)"
                   << block::open (_indent)
-                  << _indent << "pnet::type::value::value_type v;";
+                  << _indent << "gspc::pnet::type::value::value_type v;";
 
               traverse (print_impl_poke (_os, _indent), s);
 
@@ -715,13 +715,13 @@ namespace pnet
             }
             void show (std::string const& name) const
             {
-              namespace block = fhg::util::cpp::block;
+              namespace block = util::cpp::block;
 
               _os << _indent
                   << "std::ostream& operator<< (std::ostream& os, " << name << " const& x)"
                   << block::open (_indent)
                   << _indent
-                  << "return os << pnet::type::value::show (to_value (x));"
+                  << "return os << gspc::pnet::type::value::show (to_value (x));"
                   << block::close (_indent)
                 ;
             }
@@ -733,21 +733,21 @@ namespace pnet
         {}
         std::ostream& impl::operator() (std::ostream& os) const
         {
-          fhg::util::indenter indent;
+          util::indenter indent;
 
-          os << fhg::util::cpp::include ("we/field.hpp");
-          os << fhg::util::cpp::include ("we/signature_of.hpp");
-          os << fhg::util::cpp::include ("we/type/value/poke.hpp");
-          os << fhg::util::cpp::include ("we/type/value/show.hpp");
-          os << fhg::util::cpp::include ("iostream");
+          os << util::cpp::include ("gspc/we/field.hpp");
+          os << util::cpp::include ("gspc/we/signature_of.hpp");
+          os << util::cpp::include ("gspc/we/type/value/poke.hpp");
+          os << util::cpp::include ("gspc/we/type/value/show.hpp");
+          os << util::cpp::include ("iostream");
 
-          os << fhg::util::cpp::ns::open (indent, "pnetc");
-          os << fhg::util::cpp::ns::open (indent, "type");
+          os << util::cpp::ns::open (indent, "pnetc");
+          os << util::cpp::ns::open (indent, "type");
 
           traverse (print_impl (os, indent), _structured);
 
-          os << fhg::util::cpp::ns::close (indent);
-          os << fhg::util::cpp::ns::close (indent);
+          os << util::cpp::ns::close (indent);
+          os << util::cpp::ns::close (indent);
 
           return os;
         }

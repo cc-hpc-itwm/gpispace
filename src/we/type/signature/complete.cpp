@@ -1,18 +1,17 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2013-2014,2020-2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/type/signature/complete.hpp>
+#include <gspc/we/type/signature/complete.hpp>
 
-#include <we/type/value/name.hpp>
+#include <gspc/we/type/shared.hpp>
+#include <gspc/we/type/value/name.hpp>
 
 #include <iostream>
 #include <unordered_map>
 
-namespace pnet
-{
-  namespace type
-  {
-    namespace signature
+
+
+    namespace gspc::pnet::type::signature
     {
       namespace
       {
@@ -22,7 +21,7 @@ namespace pnet
         {
           map_type tn;
 
-          tn[value::CONTROL()] = "we::type::literal::control";
+          tn[value::CONTROL()] = "gspc::we::type::literal::control";
           tn[value::BOOL()] = "bool";
           tn[value::INT()] = "int";
           tn[value::LONG()] = "long";
@@ -32,11 +31,12 @@ namespace pnet
           tn[value::DOUBLE()] = "double";
           tn[value::CHAR()] = "char";
           tn[value::STRING()] = "std::string";
-          tn[value::BITSET()] = "bitsetofint::type";
-          tn[value::BYTEARRAY()] = "we::type::bytearray";
-          tn[value::LIST()] = "std::list<pnet::type::value::value_type>";
-          tn[value::SET()] = "std::set<pnet::type::value::value_type>";
-          tn[value::MAP()] = "std::map<pnet::type::value::value_type,pnet::type::value::value_type>";
+          tn[value::BITSET()] = "gspc::pnet::type::bitsetofint::type";
+          tn[value::BYTEARRAY()] = "gspc::we::type::bytearray";
+          tn[value::SHARED()] = "gspc::we::type::shared";
+          tn[value::LIST()] = "std::list<gspc::pnet::type::value::value_type>";
+          tn[value::SET()] = "std::set<gspc::pnet::type::value::value_type>";
+          tn[value::MAP()] = "std::map<gspc::pnet::type::value::value_type,gspc::pnet::type::value::value_type>";
 
           return tn;
         }
@@ -49,6 +49,13 @@ namespace pnet
 
           if (pos == tn.end())
           {
+            // Handle shared_PLACENAME types
+            //
+            if (we::type::shared::cleanup_place (tname))
+            {
+              return "gspc::we::type::shared";
+            }
+
             return (tname + "::" + tname);
           }
 
@@ -68,5 +75,3 @@ namespace pnet
         return os << typename_complete (c.tname());
       }
     }
-  }
-}

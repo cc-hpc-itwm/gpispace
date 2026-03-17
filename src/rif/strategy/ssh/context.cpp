@@ -1,9 +1,9 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2020-2021,2023,2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <rif/strategy/ssh/context.hpp>
+#include <gspc/rif/strategy/ssh/context.hpp>
 
-#include <rif/strategy/ssh/detail.hpp>
+#include <gspc/rif/strategy/ssh/detail.hpp>
 
 #include <atomic>
 #include <exception>

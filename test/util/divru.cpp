@@ -1,0 +1,87 @@
+#include <boost/test/unit_test.hpp>
+
+#include <gspc/util/divru.hpp>
+#include <gspc/util/hard_integral_typedef.hpp>
+#include <gspc/testing/printer/hard_integral_typedef.hpp>
+#include <gspc/testing/random.hpp>
+
+//! \todo use BOOST_DATA_TEST_CASE
+BOOST_AUTO_TEST_CASE (zero)
+{
+  BOOST_REQUIRE_EQUAL (gspc::util::divru (0, 1), 0);
+  BOOST_REQUIRE_EQUAL (gspc::util::divru (0, 10000), 0);
+}
+
+BOOST_AUTO_TEST_CASE (minmax)
+{
+  BOOST_REQUIRE_EQUAL (gspc::util::divru (1, 1), 1);
+  BOOST_REQUIRE_EQUAL (gspc::util::divru (100000, 1), 100000);
+  BOOST_REQUIRE_EQUAL (gspc::util::divru (100000, 100000), 1);
+}
+
+BOOST_AUTO_TEST_CASE (div2)
+{
+  BOOST_REQUIRE_EQUAL (gspc::util::divru (0, 2), 0);
+  BOOST_REQUIRE_EQUAL (gspc::util::divru (1, 2), 1);
+  BOOST_REQUIRE_EQUAL (gspc::util::divru (2, 2), 1);
+  BOOST_REQUIRE_EQUAL (gspc::util::divru (3, 2), 2);
+  BOOST_REQUIRE_EQUAL (gspc::util::divru (4, 2), 2);
+}
+
+BOOST_AUTO_TEST_CASE (negative)
+{
+  BOOST_REQUIRE_EQUAL (gspc::util::divru (-4, 2), -1);
+  BOOST_REQUIRE_EQUAL (gspc::util::divru (-3, 2), -1);
+  BOOST_REQUIRE_EQUAL (gspc::util::divru (-2, 2), 0);
+  BOOST_REQUIRE_EQUAL (gspc::util::divru (-1, 2), 0);
+  BOOST_REQUIRE_EQUAL (gspc::util::divru (0, 2), 0);
+
+}
+
+BOOST_AUTO_TEST_CASE (a_bit_of_random)
+{
+  BOOST_REQUIRE_EQUAL (gspc::util::divru (9, 2), 5);
+
+  BOOST_REQUIRE_EQUAL (gspc::util::divru (98731873, 210242), 470);
+
+  static_assert ( sizeof (unsigned long) > sizeof (unsigned int)
+                , "note: int -> long to avoid issue of overflow"
+                );
+  unsigned long const d
+    ( gspc::testing::random<unsigned int>{}
+        (gspc::testing::random<unsigned int>::non_zero{})
+    );
+
+  BOOST_REQUIRE_EQUAL (gspc::util::divru (0ul, d), 0ul);
+  BOOST_REQUIRE_EQUAL (gspc::util::divru (1ul, d), 1ul);
+  BOOST_REQUIRE_EQUAL (gspc::util::divru (d - 1ul, d), 1ul);
+  BOOST_REQUIRE_EQUAL (gspc::util::divru (d, d), 1ul);
+  BOOST_REQUIRE_EQUAL (gspc::util::divru (2ul * d, d), 2ul);
+  BOOST_REQUIRE_EQUAL (gspc::util::divru (2ul * d + 1ul, d), 3ul);
+  BOOST_REQUIRE_EQUAL (gspc::util::divru (3ul * d - 1ul, d), 3ul);
+  BOOST_REQUIRE_EQUAL (gspc::util::divru (3ul * d, d), 3ul);
+}
+
+
+  namespace gspc::util
+  {
+    FHG_UTIL_HARD_INTEGRAL_TYPEDEF (test_t, std::size_t);
+    FHG_UTIL_HARD_INTEGRAL_TYPEDEF_ARITH_OPERATOR (+, test_t);
+    FHG_UTIL_HARD_INTEGRAL_TYPEDEF_ARITH_OPERATOR (-, test_t);
+    FHG_UTIL_HARD_INTEGRAL_TYPEDEF_ARITH_OPERATOR (/, test_t);
+  }
+
+
+GSPC_HARD_INTEGRAL_TYPEDEF_LOG_VALUE_PRINTER (gspc::util::test_t)
+
+
+  namespace gspc::util
+  {
+    BOOST_AUTO_TEST_CASE (with_hard_integral_typedef)
+    {
+      BOOST_REQUIRE_EQUAL (divru (test_t {0}, test_t {1}), test_t {0});
+      BOOST_REQUIRE_EQUAL (divru (test_t {1}, test_t {1}), test_t {1});
+      BOOST_REQUIRE_EQUAL
+        (divru (test_t {98731873}, test_t {210242}), test_t {470});
+    }
+  }

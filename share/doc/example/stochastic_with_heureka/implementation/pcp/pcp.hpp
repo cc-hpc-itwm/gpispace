@@ -1,9 +1,9 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2020-2021,2023-2024,2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
 
-#include <we/type/bytearray.hpp>
+#include <gspc/we/type/bytearray.hpp>
 
 #include <list>
 #include <optional>
@@ -43,8 +43,8 @@ namespace pcp
     pcp (std::list<std::pair<std::string, std::string>> rules)
       : _rules (rules)
     {}
-    pcp (we::type::bytearray const&);
-    we::type::bytearray bytearray() const;
+    pcp (gspc::we::type::bytearray const&);
+    gspc::we::type::bytearray bytearray() const;
 
     std::list<std::pair<std::string, std::string>> rules() const
     {

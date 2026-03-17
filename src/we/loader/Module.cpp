@@ -1,28 +1,27 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2013-2015,2020-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/loader/Module.hpp>
+#include <gspc/we/loader/Module.hpp>
 
-#include <we/loader/exceptions.hpp>
+#include <gspc/we/loader/exceptions.hpp>
 
-#include <util-generic/print_exception.hpp>
+#include <gspc/util/print_exception.hpp>
 
 #include <exception>
 
-namespace we
-{
-  namespace loader
+
+  namespace gspc::we::loader
   {
     namespace
     {
       auto const flags (RTLD_NOW | RTLD_GLOBAL);
 
-      ::boost::filesystem::path
-        ensure_unloads_without_rest_and_load (::boost::filesystem::path path)
+      std::filesystem::path
+        ensure_unloads_without_rest_and_load (std::filesystem::path path)
       {
-        auto const before (fhg::util::currently_loaded_libraries());
-        (void) fhg::util::scoped_dlhandle (path, flags);
-        auto const after (fhg::util::currently_loaded_libraries());
+        auto const before (util::currently_loaded_libraries());
+        (void) util::scoped_dlhandle (path, flags);
+        auto const after (util::currently_loaded_libraries());
 
         if (before != after)
         {
@@ -34,7 +33,7 @@ namespace we
     }
 
     Module::Module ( RequireModuleUnloadsWithoutRest
-                   , ::boost::filesystem::path const& path
+                   , std::filesystem::path const& path
                    )
     try
       : Module (ensure_unloads_without_rest_and_load (path))
@@ -42,9 +41,9 @@ namespace we
     catch (...)
     {
       throw module_load_failed
-        (path, fhg::util::current_exception_printer().string());
+        (path, util::current_exception_printer().string());
     }
-    Module::Module (::boost::filesystem::path const& path)
+    Module::Module (std::filesystem::path const& path)
     try
       : path_ (path)
       , _dlhandle (path, flags)
@@ -55,12 +54,12 @@ namespace we
     catch (...)
     {
       throw module_load_failed
-        (path, fhg::util::current_exception_printer().string());
+        (path, util::current_exception_printer().string());
     }
     void Module::call ( std::string const& function
                       , drts::worker::context *info
-                      , expr::eval::context const& input
-                      , expr::eval::context& output
+                      , we::expr::eval::context const& input
+                      , we::expr::eval::context& output
                       , std::map<std::string, void*> const& memory_buffer
                       ) const
     {
@@ -82,4 +81,3 @@ namespace we
       }
     }
   }
-}

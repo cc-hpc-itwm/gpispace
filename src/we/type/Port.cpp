@@ -1,17 +1,15 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2012,2014,2021,2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/type/Port.hpp>
+#include <gspc/we/type/Port.hpp>
 
-#include <util-generic/cxx17/holds_alternative.hpp>
+#include <variant>
 
-namespace we
-{
-  namespace type
+
+  namespace gspc::we::type
   {
-    namespace port
-    {
-      namespace direction
+
+      namespace port::direction
       {
         std::ostream& operator<< (std::ostream& os, In const&)
         {
@@ -39,24 +37,24 @@ namespace we
           return true;
         }
       }
-    }
+
 
     Port::Port()
       : _name("default")
       , _direction (port::direction::In{})
-      , _associated_place (::boost::none)
+      , _associated_place (std::nullopt)
     {}
 
     Port::Port
       ( std::string const& name
       , PortDirection direction
       , pnet::type::signature::signature_type const& signature
-      , we::type::property::type prop
+      , property::type prop
       )
         : _name (name)
         , _direction (direction)
         , _signature (signature)
-        , _associated_place (::boost::none)
+        , _associated_place (std::nullopt)
         , _properties (prop)
     {}
 
@@ -65,7 +63,7 @@ namespace we
       , PortDirection direction
       , pnet::type::signature::signature_type const& signature
       , we::place_id_type const& place_id
-      , we::type::property::type prop
+      , property::type prop
       )
         : _name (name)
         , _direction (direction)
@@ -87,26 +85,39 @@ namespace we
     {
       return _signature;
     }
-    ::boost::optional<we::place_id_type> const& Port::associated_place() const
+    std::optional<we::place_id_type> const& Port::associated_place() const
     {
       return _associated_place;
     }
-    we::type::property::type const& Port::property() const
+    property::type const& Port::property() const
     {
       return _properties;
     }
 
+    std::ostream& operator<<
+      ( std::ostream& os
+      , PortDirection const& direction
+      )
+    {
+      return std::visit
+        ( [&] (auto const& d) -> std::ostream&
+          {
+            return os << d;
+          }
+        , direction
+        );
+    }
+
     bool Port::is_input() const
     {
-      return fhg::util::cxx17::holds_alternative<port::direction::In> (_direction);
+      return std::holds_alternative<port::direction::In> (_direction);
     }
     bool Port::is_output() const
     {
-      return fhg::util::cxx17::holds_alternative<port::direction::Out> (_direction);
+      return std::holds_alternative<port::direction::Out> (_direction);
     }
     bool Port::is_tunnel() const
     {
-      return fhg::util::cxx17::holds_alternative<port::direction::Tunnel> (_direction);
+      return std::holds_alternative<port::direction::Tunnel> (_direction);
     }
   }
-}

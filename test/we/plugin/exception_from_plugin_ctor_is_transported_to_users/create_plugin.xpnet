@@ -1,0 +1,15 @@
+<!-- Copyright (C) 2021,2023,2026 Fraunhofer ITWM                       -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
+
+<defun name="create_plugin">
+  <properties name="gspc">
+    <properties name="we">
+      <properties name="plugin">
+        <property key="create"/>
+      </properties>
+    </properties>
+  </properties>
+  <in name="plugin_path" type="string"/>
+  <out name="plugin_id" type="unsigned long"/>
+  <expression/>
+</defun>

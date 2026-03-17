@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2021,2023,2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <test/parallel_reduce/module_call/JobServer.hpp>
@@ -9,13 +9,10 @@
 #include <algorithm>
 #include <iterator>
 
-namespace gspc
-{
-  namespace test
-  {
-    namespace parallel_reduce
-    {
-      namespace module_call
+
+
+
+      namespace gspc::test::parallel_reduce::module_call
       {
         void JobServer::running
           ( Task task
@@ -95,6 +92,3 @@ namespace gspc
           return _max_parallel_running_tasks;
         }
       }
-    }
-  }
-}

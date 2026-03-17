@@ -1,15 +1,13 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2013,2020,2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <util/qt/scoped_disconnect.hpp>
+#include <gspc/util/qt/scoped_disconnect.hpp>
 
 #include <QObject>
 
-namespace fhg
-{
-  namespace util
-  {
-    namespace qt
+
+
+    namespace gspc::util::qt
     {
       scoped_disconnect::scoped_disconnect ( const QObject* const sender
                                            , const char* const signal
@@ -33,5 +31,3 @@ namespace fhg
         }
       }
     }
-  }
-}

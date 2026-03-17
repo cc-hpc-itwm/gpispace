@@ -1,0 +1,155 @@
+<!-- Copyright (C) 2026 Fraunhofer ITWM                            -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
+
+<!--
+  Demonstrate that a cleanup place can be used with put_token="true".
+
+  This example shows that a cleanup place (marked with shared_sink="true")
+  can also be marked with put_token="true" to allow external injection of
+  cleanup tokens from the client application.
+
+  Use Case:
+  This is useful when:
+  - You want to inject cleanup tokens from outside the workflow
+  - External systems need to signal resource cleanup
+  - Testing cleanup handling without creating shared values
+
+  Flow:
+  1. The cleanup place is marked with both shared_sink="true" and put_token="true"
+  2. The client can inject cleanup tokens using gspc::client::put_token()
+  3. When cleanup tokens arrive (either from shared cleanup or external injection),
+     the workflow processes them
+
+  To run this example with external token injection:
+
+    // Create client
+    gspc::client client (drts);
+
+    // Start workflow
+    auto const job_id (client.submit (workflow, ...));
+
+    // Inject cleanup tokens from outside
+    client.put_token (job_id, "external_cleanup", "external_value_1");
+    client.put_token (job_id, "external_cleanup", "external_value_2");
+
+    // The workflow will process both internal cleanup tokens (from shared)
+    // and external cleanup tokens (from put_token)
+-->
+
+<defun name="shared_cleanup_with_put_token">
+
+  <properties name="drts">
+    <property key="wait_for_output" value="true"/>
+  </properties>
+
+  <in name="value1" type="string" place="value1"/>
+  <in name="value2" type="string" place="value2"/>
+  <out name="result" type="list" place="result"/>
+
+  <net>
+    <place name="result" type="list"/>
+
+    <!-- Input values for the shareds -->
+    <place name="value1" type="string"/>
+    <place name="value2" type="string"/>
+
+    <!--
+      Cleanup place that:
+      - Receives cleanup tokens when shared values are consumed (shared_sink)
+      - Can receive tokens from external put_token calls (put_token)
+    -->
+    <place name="external_cleanup" type="string"
+           shared_sink="true"
+           put_token="true"/>
+
+    <!-- Accumulator for collected cleanup values -->
+    <place name="collected" type="list">
+      <token><value>List()</value></token>
+    </place>
+
+    <!-- Processing done flag -->
+    <place name="done_flag" type="control" put_token="true"/>
+
+    <place name="shared1" type="shared_external_cleanup"/>
+    <place name="shared2" type="shared_external_cleanup"/>
+
+    <!-- Create two shareds that will clean up to the external_cleanup place -->
+    <transition name="create_shareds">
+      <defun>
+        <in name="value1" type="string"/>
+        <in name="value2" type="string"/>
+        <out name="shared1" type="shared_external_cleanup"/>
+        <out name="shared2" type="shared_external_cleanup"/>
+        <expression>
+          ${shared1} := shared_external_cleanup (${value1});
+          ${shared2} := shared_external_cleanup (${value2})
+        </expression>
+      </defun>
+      <connect-in port="value1" place="value1"/>
+      <connect-in port="value2" place="value2"/>
+      <connect-out port="shared1" place="shared1"/>
+      <connect-out port="shared2" place="shared2"/>
+    </transition>
+
+    <!-- Consume the shareds (triggers internal cleanup) -->
+    <transition name="consume1">
+      <defun>
+        <in name="shared" type="shared_external_cleanup"/>
+        <expression/>
+      </defun>
+      <connect-in port="shared" place="shared1"/>
+    </transition>
+
+    <transition name="consume2">
+      <defun>
+        <in name="shared" type="shared_external_cleanup"/>
+        <expression/>
+      </defun>
+      <connect-in port="shared" place="shared2"/>
+    </transition>
+
+    <!--
+      Collect cleanup tokens from the cleanup place.
+      This collects both:
+      - Internal cleanup tokens (from shared values being consumed)
+      - External cleanup tokens (injected via put_token from client)
+    -->
+    <transition name="collect_cleanup">
+      <defun>
+        <inout name="collected" type="list"/>
+        <in name="cleanup_value" type="string"/>
+        <expression>
+          ${collected} := stack_push (${collected}, ${cleanup_value})
+        </expression>
+      </defun>
+      <connect-inout port="collected" place="collected"/>
+      <connect-in port="cleanup_value" place="external_cleanup"/>
+    </transition>
+
+    <!--
+      Finalize when done signal is received (via put_token from client).
+      The client calls put_token(job_id, "done_flag", []) when all external
+      tokens have been injected.
+    -->
+    <transition name="finalize">
+      <defun>
+        <in name="done" type="control"/>
+        <in name="num_cleanup" type="unsigned long"/>
+        <in name="collected" type="list"/>
+        <out name="result" type="list"/>
+        <expression>
+          ${result} := ${collected}
+        </expression>
+        <!-- Wait until all cleanup tokens are processed (none left) -->
+        <condition>
+          ${num_cleanup} :eq: 0UL
+        </condition>
+      </defun>
+      <connect-in port="done" place="done_flag"/>
+      <connect-number-of-tokens port="num_cleanup" place="external_cleanup"/>
+      <connect-in port="collected" place="collected"/>
+      <connect-out port="result" place="result"/>
+    </transition>
+
+  </net>
+</defun>

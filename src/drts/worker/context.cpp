@@ -1,15 +1,15 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2015-2016,2019-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <drts/worker/context.hpp>
-#include <drts/worker/context_impl.hpp>
+#include <gspc/drts/worker/context.hpp>
+#include <gspc/drts/worker/context_impl.hpp>
 
-#include <util-generic/exit_status.hpp>
-#include <util-generic/finally.hpp>
-#include <util-generic/serialization/exception.hpp>
-#include <util-generic/syscall.hpp>
-#include <util-generic/syscall/process_signal_block.hpp>
-#include <util-generic/syscall/signal_set.hpp>
+#include <gspc/util/exit_status.hpp>
+#include <gspc/util/finally.hpp>
+#include <gspc/util/serialization/exception.hpp>
+#include <gspc/util/syscall.hpp>
+#include <gspc/util/syscall/process_signal_block.hpp>
+#include <gspc/util/syscall/signal_set.hpp>
 
 #include <boost/iostreams/device/file_descriptor.hpp>
 #include <boost/iostreams/stream.hpp>
@@ -20,9 +20,8 @@
 #include <stdexcept>
 #include <string>
 
-namespace drts
-{
-  namespace worker
+
+  namespace drts::worker
   {
     context::context (context_constructor ctor)
       : _ (ctor._)
@@ -61,7 +60,7 @@ namespace drts
     context_constructor::context_constructor
       ( std::string const& worker_name
       , std::set<std::string> const& workers
-      , fhg::logging::stream_emitter& logger
+      , gspc::logging::stream_emitter& logger
       )
         : _ (new context::implementation (worker_name, workers, logger))
     {}
@@ -69,7 +68,7 @@ namespace drts
     context::implementation::implementation
       ( std::string const& worker_name
       , std::set<std::string> const& workers
-      , fhg::logging::stream_emitter& logger
+      , gspc::logging::stream_emitter& logger
       )
         : _worker_name (worker_name)
         , _workers (workers)
@@ -123,13 +122,13 @@ namespace drts
       )
     {
       int pipe_fds[2];
-      fhg::util::syscall::pipe (pipe_fds);
+      gspc::util::syscall::pipe (pipe_fds);
 
-      if (pid_t child = fhg::util::syscall::fork())
+      if (pid_t child = gspc::util::syscall::fork())
       {
         FHG_UTIL_FINALLY
-          ([&pipe_fds]() {fhg::util::syscall::close (pipe_fds[0]); });
-        fhg::util::syscall::close (pipe_fds[1]);
+          ([&pipe_fds]() {gspc::util::syscall::close (pipe_fds[0]); });
+        gspc::util::syscall::close (pipe_fds[1]);
 
         bool cancelled {false};
 
@@ -142,7 +141,7 @@ namespace drts
 
               try
               {
-                fhg::util::syscall::kill (child, SIGUSR2);
+                gspc::util::syscall::kill (child, SIGUSR2);
               }
               catch (::boost::system::system_error const& se)
               {
@@ -160,23 +159,23 @@ namespace drts
 
         int status;
 
-        if (fhg::util::syscall::waitpid (child, &status, 0) != child)
+        if (gspc::util::syscall::waitpid (child, &status, 0) != child)
         {
           throw std::logic_error {fmt::format ("wait ({0}) != {0}", child)};
         }
 
-        if (fhg::util::wifsignaled (status))
+        if (gspc::util::wifsignaled (status))
         {
-          if (cancelled && fhg::util::wtermsig (status) == SIGUSR2)
+          if (cancelled && gspc::util::wtermsig (status) == SIGUSR2)
           {
             return on_cancel();
           }
 
-          return on_signal (fhg::util::wtermsig (status));
+          return on_signal (gspc::util::wtermsig (status));
         }
-        else if (fhg::util::wifexited (status))
+        else if (gspc::util::wifexited (status))
         {
-          if (fhg::util::wexitstatus (status) == 1)
+          if (gspc::util::wexitstatus (status) == 1)
           {
             ::boost::iostreams::stream<::boost::iostreams::file_descriptor_source>
               pipe_read (pipe_fds[0], ::boost::iostreams::never_close_handle);
@@ -190,11 +189,11 @@ namespace drts
             if (ex.size())
             {
               std::rethrow_exception
-                (fhg::util::serialization::exception::deserialize (ex));
+                (gspc::util::serialization::exception::deserialize (ex));
             }
           }
 
-          return on_exit (fhg::util::wexitstatus (status));
+          return on_exit (gspc::util::wexitstatus (status));
         }
         else
         {
@@ -205,12 +204,12 @@ namespace drts
       else
       {
         FHG_UTIL_FINALLY
-          ([&pipe_fds]() {fhg::util::syscall::close (pipe_fds[1]); });
-        fhg::util::syscall::close (pipe_fds[0]);
+          ([&pipe_fds]() {gspc::util::syscall::close (pipe_fds[1]); });
+        gspc::util::syscall::close (pipe_fds[0]);
 
         //! \note block to avoid "normal" exit due to external signal
-        fhg::util::syscall::process_signal_block const process_signal_block
-          {fhg::util::syscall::signal_set ({SIGINT, SIGTERM})};
+        gspc::util::syscall::process_signal_block const process_signal_block
+          {gspc::util::syscall::signal_set ({SIGINT, SIGTERM})};
 
         try
         {
@@ -222,7 +221,7 @@ namespace drts
         {
           ::boost::iostreams::stream<::boost::iostreams::file_descriptor_sink>
             (pipe_fds[1], ::boost::iostreams::never_close_handle) <<
-              fhg::util::serialization::exception::serialize
+              gspc::util::serialization::exception::serialize
                 (std::current_exception());
 
           exit (1);
@@ -246,4 +245,3 @@ namespace drts
         ("Unexpected on_exit (" + std::to_string (exit_code) + ")");
     }
   }
-}

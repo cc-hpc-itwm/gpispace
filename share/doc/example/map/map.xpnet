@@ -1,5 +1,5 @@
-<!-- Copyright (C) 2025 Fraunhofer ITWM        -->
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- Copyright (C) 2014,2021,2023,2026 Fraunhofer ITWM             -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
 
 <defun name="map">
   <include-structs href="memory/global/range.xpnet"/>
@@ -267,9 +267,9 @@
                                              )"
         >
           <cinclude href="interface.hpp"/>
-          <cinclude href="util-generic/dynamic_linking.hpp"/>
+          <cinclude href="gspc/util/dynamic_linking.hpp"/>
           <code><![CDATA[
-            fhg::util::scoped_dlhandle (implementation)
+            gspc::util::scoped_dlhandle (std::filesystem::path {implementation})
               .sym<decltype (map_produce)> ("map_produce")
                 ( user_data
                 , std::make_pair (data, block_with_slot.slot.size)
@@ -355,9 +355,9 @@
                                              )"
         >
           <cinclude href="interface.hpp"/>
-          <cinclude href="util-generic/dynamic_linking.hpp"/>
+          <cinclude href="gspc/util/dynamic_linking.hpp"/>
           <code><![CDATA[
-            fhg::util::scoped_dlhandle (implementation)
+            gspc::util::scoped_dlhandle (std::filesystem::path {implementation})
               .sym<decltype (map_process)> ("map_process")
                 ( user_data
                 , std::make_pair (input, package.slot_input.size)
@@ -420,9 +420,9 @@
                                              )"
         >
           <cinclude href="interface.hpp"/>
-          <cinclude href="util-generic/dynamic_linking.hpp"/>
+          <cinclude href="gspc/util/dynamic_linking.hpp"/>
           <code><![CDATA[
-            fhg::util::scoped_dlhandle (implementation)
+            gspc::util::scoped_dlhandle (std::filesystem::path {implementation})
               .sym<decltype (map_consume)> ("map_consume")
                 ( user_data
                 , std::make_pair (data, block_with_slot.slot.size)

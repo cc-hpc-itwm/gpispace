@@ -29,6 +29,8 @@ include ("deployment/${SWH_DEPLOYMENT_STRATEGY}.cmake")
 
 include (CTest)
 
+option (SWH_TEST "Build tests for stochastic_with_heureka" OFF)
+
 include (FetchContent)
 
 find_package (GPISpace REQUIRED)
@@ -37,6 +39,22 @@ _swh_deployment_gpispace()
 find_package (Boost 1.61 REQUIRED
   COMPONENTS program_options
 )
+if (SWH_TEST)
+  find_package (Boost 1.61 QUIET
+    COMPONENTS unit_test_framework
+  )
+
+  # boost::unit_test_framework, when linked using a shared library,
+  # needs to be explicitly told to generate `main()` as well. CMake's
+  # FindBoost does not do that, so detect what type of library it gave
+  # us and fix up that flag if needed.
+  if (TARGET Boost::unit_test_framework
+      AND Boost_UNIT_TEST_FRAMEWORK_LIBRARY MATCHES "[.]so[0-9.]*$")
+    target_compile_definitions (Boost::unit_test_framework
+      INTERFACE BOOST_TEST_DYN_LINK
+    )
+  endif()
+endif()
 
 include_directories ("${PROJECT_SOURCE_DIR}")
 
@@ -98,7 +116,6 @@ add_library (run-stochastic_with_heureka STATIC "bin/run.cpp")
 target_link_libraries (run-stochastic_with_heureka
   PUBLIC GPISpace::execution
   PRIVATE Boost::program_options
-  PRIVATE Boost::filesystem
   PRIVATE fmt
 )
 target_compile_definitions (run-stochastic_with_heureka
@@ -133,7 +150,7 @@ add_custom_command (
           --gen-cxxflags=-I${PROJECT_SOURCE_DIR}
           --gen-cxxflags=-I${BOOST_ROOT}/include
           --gen-ldflags=-L${BOOST_ROOT}/lib
-          --gen-ldflags=-lboost_filesystem
+          --gen-ldflags=-lstdc++fs
           --force-overwrite-file=true
           --input=${workflow_description}
           --output=/dev/null

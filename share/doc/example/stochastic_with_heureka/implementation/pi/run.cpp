@@ -1,9 +1,10 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2020-2021,2023-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <bin/run.hpp>
 #include <util/print_exception.hpp>
 
+#include "pi.hpp"
 #include <exception>
 #include <ios>
 #include <iostream>
@@ -22,7 +23,7 @@ try
       , "pi"
       , [] (::boost::program_options::variables_map const&)
         {
-          return we::type::bytearray();
+          return gspc::we::type::bytearray();
         }
       )
     );
@@ -32,22 +33,21 @@ try
   std::cout << "number_of_rolls_done = "
             << workflow_result.number_of_rolls_done() << std::endl;
 
-  std::tuple< std::pair<unsigned long, unsigned long>
-            , std::pair<unsigned long, unsigned long>
-            , double
-            > result;
+  using gspc::share::example::stochastic_with_heurake::pi::Result;
+
+  Result result;
   workflow_result.result().copy (&result);
 
   std::cout << "result = "
-            << std::get<0> (result).first
+            << result.result.in
             << " / "
-            << std::get<0> (result).second << std::endl;
+            << result.result.n << std::endl;
   std::cout << "reduced = "
-            << std::get<1> (result).first
+            << result.reduced.in
             << " / "
-            << std::get<1> (result).second << std::endl;
-  std::cout << "PI = " << std::get<2> (result) << std::endl;
-  std::cout << "err = " << ( std::get<2> (result)
+            << result.reduced.n << std::endl;
+  std::cout << "PI = " << result.pi << std::endl;
+  std::cout << "err = " << ( result.pi
                            - 3.1415926535897932384626433832795028841968
                            ) << std::endl;
 

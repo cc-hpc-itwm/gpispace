@@ -1,14 +1,13 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2019,2021,2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <logging/endpoint.hpp>
+#include <gspc/logging/endpoint.hpp>
 
-#include <fhg/util/next.hpp>
-#include <util-generic/boost/program_options/validators.hpp>
+#include <gspc/util/next.hpp>
+#include <gspc/util/boost/program_options/validators.hpp>
 
-namespace fhg
-{
-  namespace logging
+
+  namespace gspc::logging
   {
     namespace error
     {
@@ -53,7 +52,7 @@ namespace fhg
 
     namespace
     {
-      //! \todo Maybe merge/replace with fhg::util::parse::require.
+      //! \todo Maybe merge/replace with gspc::util::parse::require.
       std::string read_until
         (std::string::iterator& it, std::string::iterator end, std::string what)
       {
@@ -64,7 +63,7 @@ namespace fhg
         }
 
         std::string result (it, prior_to_what);
-        it = fhg::util::next (prior_to_what, what.size());
+        it = gspc::util::next (prior_to_what, what.size());
         return result;
       }
 
@@ -101,7 +100,7 @@ namespace fhg
           error::throw_unexpected_token (it, end, what, false);
         }
 
-        it = fhg::util::next (it, what.size());
+        it = gspc::util::next (it, what.size());
       }
 
       std::string require_tcp_block
@@ -204,7 +203,7 @@ namespace fhg
       }
     }
 
-    ::boost::variant<tcp_endpoint, socket_endpoint>
+    std::variant<tcp_endpoint, socket_endpoint>
       endpoint::best (std::string host) const
     {
       REQUIRE_VALID()
@@ -242,7 +241,6 @@ namespace fhg
                   , int
                   )
     {
-      return util::boost::program_options::validate<endpoint> (result, values);
+      return gspc::util::boost::program_options::validate<endpoint> (result, values);
     }
   }
-}

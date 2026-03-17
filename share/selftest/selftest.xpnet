@@ -1,5 +1,5 @@
-<!-- Copyright (C) 2025 Fraunhofer ITWM        -->
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- Copyright (C) 2011,2015,2023 Fraunhofer ITWM                  -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
 
 <defun name="selftest">
   <in name="challenge" type="string" />

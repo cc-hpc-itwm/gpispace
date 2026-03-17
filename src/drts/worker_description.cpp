@@ -1,16 +1,16 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2021-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <drts/worker_description.hpp>
+#include <gspc/drts/worker_description.hpp>
 
-#include <drts/private/worker_description_implementation.hpp>
+#include <gspc/drts/private/worker_description_implementation.hpp>
 
-#include <fhg/util/num.hpp>
-#include <fhg/util/parse/position.hpp>
-#include <fhg/util/parse/require.hpp>
+#include <gspc/util/num.hpp>
+#include <gspc/util/parse/position.hpp>
+#include <gspc/util/parse/require.hpp>
 
-#include <util-generic/join.hpp>
-#include <util-generic/split.hpp>
+#include <gspc/util/join.hpp>
+#include <gspc/util/split.hpp>
 
 #include <sstream>
 #include <stdexcept>
@@ -18,24 +18,6 @@
 
 namespace gspc
 {
-  worker_description::worker_description
-    ( std::vector<std::string> capabilities
-    , std::size_t num_per_node
-    , std::size_t max_nodes
-    , std::size_t shm_size
-    , ::boost::optional<std::size_t> socket
-    , ::boost::optional<unsigned short> base_port
-    )
-      : worker_description
-        { capabilities
-        , num_per_node
-        , max_nodes
-        , shm_size
-        , socket ? std::make_optional (*socket) : std::nullopt
-        , base_port ? std::make_optional (*base_port) : std::nullopt
-        }
-  {}
-
   worker_description::worker_description
     ( std::vector<std::string> capabilities
     , std::size_t num_per_node
@@ -87,11 +69,11 @@ namespace gspc
       , socket()
       , base_port()
   {
-    using fhg::util::parse::require::skip_spaces;
-    using fhg::util::parse::require::identifier;
-    using fhg::util::read_ulong;
+    using gspc::util::parse::require::skip_spaces;
+    using gspc::util::parse::require::identifier;
+    using gspc::util::read_ulong;
 
-    fhg::util::parse::position input (cap_spec);
+    gspc::util::parse::position input (cap_spec);
 
     auto const peek
       ( [&] (char c)
@@ -130,7 +112,7 @@ namespace gspc
   std::string to_string (worker_description const& wd)
   {
     std::ostringstream oss;
-    oss << fhg::util::join (wd._->capabilities, '+');
+    oss << gspc::util::join (wd._->capabilities, '+');
 
     if (wd._->socket)    { oss << '#' << wd._->socket.value();    }
                            oss << ':' << wd._->num_per_node;

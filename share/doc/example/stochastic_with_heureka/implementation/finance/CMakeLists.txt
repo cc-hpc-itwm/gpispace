@@ -11,14 +11,22 @@ swh_add_implementation_exe (NAME asianopt
   $<TARGET_OBJECTS:asianopt-base>
 )
 
-add_executable (asianopt-runs.test
-  "test/asianopt.cpp" $<TARGET_OBJECTS:asianopt-base>
-)
-target_compile_definitions (asianopt-runs.test PRIVATE
-  "-DBOOST_TEST_MODULE=\"asianopt-runs\""
-)
-target_link_libraries (asianopt-runs.test PRIVATE Boost::unit_test_framework)
-add_test (NAME asianopt-runs COMMAND $<TARGET_FILE:asianopt-runs.test>)
+if (SWH_TEST)
+  if (TARGET Boost::unit_test_framework)
+    add_executable (asianopt-runs.test
+      "test/asianopt.cpp" $<TARGET_OBJECTS:asianopt-base>
+    )
+    target_compile_definitions (asianopt-runs.test PRIVATE
+      "-DBOOST_TEST_MODULE=\"asianopt-runs\""
+    )
+    target_link_libraries (asianopt-runs.test PRIVATE Boost::unit_test_framework)
+    add_test (NAME asianopt-runs COMMAND $<TARGET_FILE:asianopt-runs.test>)
+  else()
+    message (WARNING
+      "Could not find Boost::unit_test_framework, skipping asianopt-runs.test"
+    )
+  endif()
+endif()
 
 
 swh_add_implementation_module (NAME barropt

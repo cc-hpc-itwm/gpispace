@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2020-2021,2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <implementation/finance/barropt.hpp>
@@ -96,11 +96,11 @@ namespace
 
 using namespace barrieropt;
 
-std::pair<we::type::bytearray, bool>
+std::pair<gspc::we::type::bytearray, bool>
   stochastic_with_heureka_roll_and_heureka
     ( unsigned long n
     , unsigned long seed
-    , we::type::bytearray user_data_bytearray
+    , gspc::we::type::bytearray user_data_bytearray
     )
 {
   barrieropt::SingleBarrierOptionMonteCarlo_user_data user_data;
@@ -196,48 +196,48 @@ std::pair<we::type::bytearray, bool>
     sum_variance += value * value;
   }
 
-  return {we::type::bytearray {std::make_pair (sum_expected_value, sum_variance)}, false};
+  return {gspc::we::type::bytearray {State {sum_expected_value, sum_variance}}, false};
 }
 
-we::type::bytearray stochastic_with_heureka_reduce
-  ( we::type::bytearray state_bytearray
-  , we::type::bytearray partial_result_bytearray
-  , we::type::bytearray
+gspc::we::type::bytearray stochastic_with_heureka_reduce
+  ( gspc::we::type::bytearray state_bytearray
+  , gspc::we::type::bytearray partial_result_bytearray
+  , gspc::we::type::bytearray
   )
 {
-  std::pair<double, double> state;
-  std::pair<double, double> partial_result;
+  State state;
+  State partial_result;
   state_bytearray.copy (&state);
   partial_result_bytearray.copy (&partial_result);
 
-  return we::type::bytearray
-    { std::make_pair ( state.first + partial_result.first
-                     , state.second + partial_result.second
-                     )
+  return gspc::we::type::bytearray
+    { State { state.value + partial_result.value
+            , state.variance + partial_result.variance
+            }
     };
 }
 
-we::type::bytearray stochastic_with_heureka_post_process
+gspc::we::type::bytearray stochastic_with_heureka_post_process
   ( unsigned long number_of_rolls
-  , we::type::bytearray reduced_bytearray
-  , we::type::bytearray user_data_bytearray
+  , gspc::we::type::bytearray reduced_bytearray
+  , gspc::we::type::bytearray user_data_bytearray
   )
 {
-  std::pair<double, double> reduced;
+  State reduced;
   reduced_bytearray.copy (&reduced);
   SingleBarrierOptionMonteCarlo_user_data user_data;
   user_data_bytearray.copy (&user_data);
 
   double const temp (std::exp (-user_data.r * user_data.T));
-  return we::type::bytearray
-    { std::make_pair
-      ( temp * (reduced.first / number_of_rolls)
+  return gspc::we::type::bytearray
+    { State
+      { temp * (reduced.value / number_of_rolls)
       , temp * std::sqrt ( 1.0 / (number_of_rolls - 1)
-                         * ( 1.0 / number_of_rolls * reduced.second
-                           - reduced.first * reduced.first
+                         * ( 1.0 / number_of_rolls * reduced.variance
+                           - reduced.value * reduced.value
                            / (number_of_rolls * number_of_rolls)
                            )
                          )
-      )
+      }
     };
 }

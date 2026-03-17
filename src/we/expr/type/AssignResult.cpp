@@ -1,22 +1,21 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2021,2023-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/expr/type/AssignResult.hpp>
+#include <gspc/we/expr/type/AssignResult.hpp>
 
-#include <we/expr/exception.hpp>
+#include <gspc/we/expr/exception.hpp>
 
-#include <util-generic/join.hpp>
+#include <gspc/util/join.hpp>
 
-#include <FMT/util-generic/join.hpp>
-#include <FMT/we/expr/type/Path.hpp>
-#include <FMT/we/expr/type/Type.hpp>
+#include <gspc/util/join.formatter.hpp>
+#include <gspc/we/expr/type/Path.formatter.hpp>
+#include <gspc/we/expr/type/Type.formatter.hpp>
 #include <fmt/core.h>
 #include <iostream>
 #include <iterator>
 
-namespace expr
-{
-  namespace type
+
+  namespace gspc::we::expr::type
   {
     namespace
     {
@@ -74,6 +73,24 @@ namespace expr
         LITERAL (String)
         LITERAL (Bitset)
         LITERAL (Bytearray)
+        LITERAL (Bigint)
+
+        Type operator() (Shared const& lhs, Shared const& rhs) const
+        {
+          if (lhs.cleanup_place != rhs.cleanup_place)
+          {
+            throw exception::type::error
+              { fmt::format
+                  ( "At {2}: Can not assign a value of type 'shared_{1}'"
+                    " to a value of type 'shared_{0}'"
+                  , lhs.cleanup_place
+                  , rhs.cleanup_place
+                  , _path
+                  )
+              };
+          }
+          return rhs;
+        }
 
 #undef LITERAL
 
@@ -142,7 +159,7 @@ namespace expr
                   , lhs
                   , rhs
                   , _path
-                  , fhg::util::join
+                  , util::join
                     ( Struct::Fields {l, std::end (lhs._fields)}
                     , "', '"
                     , [] (auto& os, auto const& field) -> decltype (os)
@@ -162,7 +179,7 @@ namespace expr
                   , lhs
                   , rhs
                   , _path
-                  , fhg::util::join
+                  , util::join
                     ( Struct::Fields {r, std::end (rhs._fields)}
                     , "', '"
                     , [] (auto& os, auto const& field) -> decltype (os)
@@ -262,4 +279,3 @@ namespace expr
       return ::boost::apply_visitor (visitor_result_type {path}, lhs, rhs);
     }
   }
-}

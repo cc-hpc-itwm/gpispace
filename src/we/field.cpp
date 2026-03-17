@@ -1,10 +1,10 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2013,2020-2021,2023,2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/field.hpp>
-#include <we/type/value/peek.hpp>
+#include <gspc/we/field.hpp>
+#include <gspc/we/type/value/peek.hpp>
 
-namespace pnet
+namespace gspc::pnet
 {
   type::value::value_type const& field
     ( std::string const& f
@@ -12,7 +12,7 @@ namespace pnet
     , type::signature::signature_type const& signature
     )
   {
-    ::boost::optional<type::value::value_type const&> field
+    std::optional<std::reference_wrapper<type::value::value_type const>> field
       (type::value::peek (f, v));
 
     if (!field)
@@ -23,6 +23,6 @@ namespace pnet
                                      );
     }
 
-    return *field;
+    return field->get();
   }
 }

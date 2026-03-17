@@ -1,7 +1,7 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2013-2014,2019-2023,2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/type/bitsetofint.hpp>
+#include <gspc/we/type/bitsetofint.hpp>
 
 #include <algorithm>
 #include <stdexcept>
@@ -14,7 +14,7 @@
 
 #include <stdint.h>
 
-namespace bitsetofint
+namespace gspc::pnet::type::bitsetofint
 {
   type::type (std::size_t n)
     : _container (n)
@@ -58,7 +58,7 @@ namespace bitsetofint
   {
     std::size_t cnt (0);
 
-    for (uint64_t block : _container)
+    for (auto block : _container)
     {
       // http://en.wikipedia.org/wiki/Hamming_weight
 
@@ -84,7 +84,7 @@ namespace bitsetofint
   {
     unsigned long x (0);
 
-    for (uint64_t block : _container)
+    for (auto block : _container)
     {
       for (size_t bit (0); bit < 64; ++x, ++bit, block >>= 1)
       {
@@ -158,7 +158,7 @@ namespace bitsetofint
   std::ostream& operator<< (std::ostream& s, type const& t)
   {
     s << "{";
-    for (uint64_t v : t._container)
+    for (auto v : t._container)
     {
       s << " " << v;
     }
@@ -170,7 +170,7 @@ namespace bitsetofint
 
     oss << "0x/";
 
-    for (uint64_t v : t._container)
+    for (auto v : t._container)
     {
       oss.flags (std::ios::hex);
       oss.width (16);
@@ -181,7 +181,7 @@ namespace bitsetofint
     return oss.str();
   }
 
-  ::boost::optional<type> from_hex ( std::string::const_iterator& pos
+  std::optional<type> from_hex ( std::string::const_iterator& pos
                                  , std::string::const_iterator const& end
                                  )
   {
@@ -223,7 +223,7 @@ namespace bitsetofint
       return std::move (bs);
     }
 
-    return ::boost::none;
+    return {};
   }
 
   type from_hex (std::string const& s)
@@ -231,17 +231,17 @@ namespace bitsetofint
     std::string::const_iterator pos (s.begin());
     std::string::const_iterator const& end (s.end());
 
-    ::boost::optional<type> mtype (from_hex (pos, end));
+    std::optional<type> mtype (from_hex (pos, end));
 
     if (!mtype)
     {
-      throw std::runtime_error ("bitsetofint::from_hex: missing prefix 0x");
+      throw std::runtime_error ("gspc::pnet::type::bitsetofint::from_hex: missing prefix 0x");
     }
 
     if (pos != end)
     {
       throw std::runtime_error
-        ("bitsetofint::from_hex invalid argument: \"" + s + "\""
+        ("gspc::pnet::type::bitsetofint::from_hex invalid argument: \"" + s + "\""
         + ", rest after parsing: " + std::string (pos, end)
         );
     }

@@ -1,0 +1,71 @@
+<!-- Copyright (C) 2026 Fraunhofer ITWM                            -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
+
+<!--
+  Demonstrate multiple shared values nested in struct fields.
+
+  A struct is created where multiple fields are shared values.
+  When the struct is consumed, all shared fields are also consumed,
+  each triggering its own cleanup.
+-->
+
+<defun name="shared_multiple_nested_in_struct">
+
+  <in name="value1" type="int" place="value1"/>
+  <in name="value2" type="int" place="value2"/>
+  <out name="result" type="int" place="cleanup"/>
+
+  <net>
+    <place name="value1" type="int"/>
+    <place name="value2" type="int"/>
+    <place name="cleanup" type="int" shared_sink="true"/>
+
+    <struct name="data_container">
+      <field name="shared_field_1" type="shared_cleanup"/>
+      <field name="shared_field_2" type="shared_cleanup"/>
+    </struct>
+
+    <place name="struct_with_shared" type="data_container"/>
+
+    <!-- Create a struct with multiple shared fields -->
+    <transition name="create_struct">
+      <defun>
+        <in name="v1" type="int"/>
+        <in name="v2" type="int"/>
+        <out name="s" type="data_container"/>
+        <module name="shared_multiple_nested_in_struct"
+                function="create_struct (v1, v2, s)">
+          <cinclude href="gspc/we/type/shared.hpp"/>
+          <code><![CDATA[
+            s.shared_field_1 = gspc::we::type::shared {v1, "cleanup"};
+            s.shared_field_2 = gspc::we::type::shared {v2, "cleanup"};
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="v1" place="value1"/>
+      <connect-in port="v2" place="value2"/>
+      <connect-out port="s" place="struct_with_shared"/>
+    </transition>
+
+    <!-- Consume the struct (triggers cleanup of all nested shared fields) -->
+    <transition name="consume_struct">
+      <defun>
+        <in name="s" type="data_container"/>
+        <module name="shared_multiple_nested_in_struct"
+                function="consume_struct (s)">
+          <cinclude href="iostream"/>
+          <cinclude href="gspc/we/type/value/show.hpp"/>
+          <code><![CDATA[
+            std::cout << "Consumed struct with shared_field_1="
+                      << gspc::pnet::type::value::show (s.shared_field_1.value())
+                      << " and shared_field_2="
+                      << gspc::pnet::type::value::show (s.shared_field_2.value())
+                      << std::endl;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="s" place="struct_with_shared"/>
+    </transition>
+
+  </net>
+</defun>

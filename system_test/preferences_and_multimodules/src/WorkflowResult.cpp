@@ -1,14 +1,14 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2022-2024,2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <preferences_and_multimodules/WorkflowResult.hpp>
 
-#include <we/signature_of.hpp>
-#include <we/type/signature/show.hpp>
-#include <we/type/value/show.hpp>
+#include <gspc/we/signature_of.hpp>
+#include <gspc/we/type/signature/show.hpp>
+#include <gspc/we/type/value/show.hpp>
 
-#include <util-generic/cxx17/holds_alternative.hpp>
-#include <util-generic/join.hpp>
+#include <gspc/util/cxx17/holds_alternative.hpp>
+#include <gspc/util/join.hpp>
 
 #include <fmt/core.h>
 #include <fmt/ostream.h>
@@ -19,8 +19,8 @@
 
 namespace fmt
 {
-  template<> struct formatter<pnet::type::value::show> : ostream_formatter{};
-  template<> struct formatter<pnet::type::signature::show> : ostream_formatter{};
+  template<> struct formatter<gspc::pnet::type::value::show> : ostream_formatter{};
+  template<> struct formatter<gspc::pnet::type::signature::show> : ostream_formatter{};
 }
 
 namespace preferences_and_multimodules
@@ -33,8 +33,8 @@ namespace preferences_and_multimodules
               ( "Inconsistency: Expected type '{}'. "
                 "Got value '{}' with signature '{}'."
               , type_description
-              , pnet::type::value::show (value)
-              , pnet::type::signature::show (pnet::signature_of (value))
+              , gspc::pnet::type::value::show (value)
+              , gspc::pnet::type::signature::show (gspc::pnet::signature_of (value))
               )
           };
       }
@@ -56,13 +56,13 @@ namespace preferences_and_multimodules
             , expected_count
             , key
             , count
-            , fhg::util::join
+            , gspc::util::join
                 ( _values_on_ports, ","
                 , [] (auto& os, auto const& kv) -> decltype (os)
                   {
                     return os << kv.first
                               << " = "
-                              << pnet::type::value::show (kv.second);
+                              << gspc::pnet::type::value::show (kv.second);
                   }
                 ).string()
             )
@@ -78,7 +78,7 @@ namespace preferences_and_multimodules
 
     auto const& value (_values_on_ports.find (key)->second);
 
-    if (!fhg::util::cxx17::holds_alternative<T> (value))
+    if (!gspc::util::cxx17::holds_alternative<T> (value))
     {
       error_inconsistent_type (value, type_description);
     }
@@ -87,9 +87,9 @@ namespace preferences_and_multimodules
   }
 
   template<>
-    we::type::literal::control const& WorkflowResult::at (Key key) const
+    gspc::we::type::literal::control const& WorkflowResult::at (Key key) const
   {
-    return at_implementation<we::type::literal::control> (key, "control");
+    return at_implementation<gspc::we::type::literal::control> (key, "control");
   }
 
   template<typename T, typename TypeDescription>
@@ -111,7 +111,7 @@ namespace preferences_and_multimodules
       , [&type_description] (auto const& key_and_value)
         {
           auto const& value (key_and_value.second);
-          if (!fhg::util::cxx17::holds_alternative<T> (value))
+          if (!gspc::util::cxx17::holds_alternative<T> (value))
           {
             error_inconsistent_type (value, type_description);
           }

@@ -1,19 +1,19 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2015-2017,2020-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <rif/strategy/meta.hpp>
+#include <gspc/rif/strategy/meta.hpp>
 
-#include <util-generic/connectable_to_address_string.hpp>
-#include <util-generic/join.hpp>
-#include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
+#include <gspc/util/connectable_to_address_string.hpp>
+#include <gspc/util/join.hpp>
+#include <gspc/util/scoped_boost_asio_io_service_with_threads.hpp>
 
-#include <rif/strategy/local.hpp>
-#include <rif/strategy/pbsdsh.hpp>
-#include <rif/strategy/ssh.hpp>
+#include <gspc/rif/strategy/local.hpp>
+#include <gspc/rif/strategy/pbsdsh.hpp>
+#include <gspc/rif/strategy/ssh.hpp>
 
-#include <util-rpc/service_dispatcher.hpp>
-#include <util-rpc/service_handler.hpp>
-#include <util-rpc/service_tcp_provider.hpp>
+#include <gspc/rpc/service_dispatcher.hpp>
+#include <gspc/rpc/service_handler.hpp>
+#include <gspc/rpc/service_tcp_provider.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -27,11 +27,9 @@
 #include <unordered_set>
 #include <utility>
 
-namespace fhg
-{
-  namespace rif
-  {
-    namespace strategy
+
+
+    namespace gspc::rif::strategy
     {
       namespace
       {
@@ -40,10 +38,10 @@ namespace fhg
           std::function
               < std::unordered_map<std::string, std::exception_ptr>
                 ( std::vector<std::string> const&
-                , ::boost::optional<unsigned short> const&
+                , std::optional<unsigned short> const&
                 , std::string const&
                 , unsigned short
-                , ::boost::filesystem::path const&
+                , std::filesystem::path const&
                 , std::vector<std::string> const&
                 , std::ostream&
                 )
@@ -52,7 +50,7 @@ namespace fhg
               < std::pair < std::unordered_set<std::string>
                           , std::unordered_map<std::string, std::exception_ptr>
                           >
-                ( std::unordered_map<std::string, fhg::rif::entry_point> const&
+                ( std::unordered_map<std::string, gspc::rif::entry_point> const&
                 , std::vector<std::string> const&
                 )
               > teardown;
@@ -70,7 +68,7 @@ namespace fhg
           {
             throw std::invalid_argument
               ("invalid strategy '" + strategy + "'. available strategies: "
-              + fhg::util::join (available_strategies(), ", ").string()
+              + gspc::util::join (available_strategies(), ", ").string()
               );
           }
         }
@@ -109,14 +107,14 @@ namespace fhg
         }
       }
 
-      std::tuple < std::unordered_map<std::string, fhg::rif::entry_point>
+      std::tuple < std::unordered_map<std::string, gspc::rif::entry_point>
                  , std::unordered_map<std::string, std::exception_ptr>
                  , std::unordered_map<std::string, std::string>
                  > bootstrap
         ( std::string const& strategy
         , std::vector<std::string> const& hostnames_in
-        , ::boost::optional<unsigned short> const& port
-        , ::boost::filesystem::path const& gspc_home
+        , std::optional<unsigned short> const& port
+        , std::filesystem::path const& gspc_home
         , std::vector<std::string> const& parameters
         , std::ostream& out
         )
@@ -127,19 +125,19 @@ namespace fhg
 
         std::mutex entry_points_guard;
         std::condition_variable entry_point_added;
-        std::unordered_map<std::string, fhg::rif::entry_point> entry_points;
+        std::unordered_map<std::string, gspc::rif::entry_point> entry_points;
         std::unordered_map<std::string, std::string> real_hostnames;
 
-        fhg::rpc::service_dispatcher service_dispatcher;
+        gspc::rpc::service_dispatcher service_dispatcher;
 
-        fhg::rpc::service_handler<bootstrap_callback> const register_service
+        gspc::rpc::service_handler<bootstrap_callback> const register_service
             ( service_dispatcher
             , [&entry_points, &entry_points_guard, &entry_point_added
               , &real_hostnames
               ]
                 ( std::string const& key
                 , std::string hostname
-                , fhg::rif::entry_point const& entry_point
+                , gspc::rif::entry_point const& entry_point
                 )
               {
                 {
@@ -149,11 +147,11 @@ namespace fhg
                 }
                 entry_point_added.notify_one();
               }
-            , fhg::rpc::not_yielding
+            , gspc::rpc::not_yielding
             );
 
-        util::scoped_boost_asio_io_service_with_threads io_service (2);
-        fhg::rpc::service_tcp_provider rpc_server
+        gspc::util::scoped_boost_asio_io_service_with_threads io_service (2);
+        gspc::rpc::service_tcp_provider rpc_server
           (io_service, service_dispatcher);
 
         ::boost::asio::ip::tcp::endpoint const local_endpoint
@@ -163,7 +161,7 @@ namespace fhg
           ( strategies.at (strategy).bootstrap
               ( hostnames
               , port
-              , fhg::util::connectable_to_address_string (local_endpoint.address())
+              , gspc::util::connectable_to_address_string (local_endpoint.address())
               , local_endpoint.port()
               , gspc_home / "bin" / "gspc-rifd"
               , parameters
@@ -195,7 +193,7 @@ namespace fhg
                 , std::unordered_map<std::string, std::exception_ptr>
                 > teardown
         ( std::string const& strategy
-        , std::unordered_map<std::string, fhg::rif::entry_point> const& entry_points
+        , std::unordered_map<std::string, gspc::rif::entry_point> const& entry_points
         , std::vector<std::string> const& parameters
         )
       {
@@ -204,5 +202,3 @@ namespace fhg
         return strategies.at (strategy).teardown (entry_points, parameters);
       }
     }
-  }
-}

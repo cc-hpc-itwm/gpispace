@@ -1,0 +1,207 @@
+<!-- Copyright (C) 2026 Fraunhofer ITWM                            -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
+
+<!--
+  Demonstrate the shared type with automatic garbage collection.
+
+  A shared is a string with an associated cleanup place. When
+  a shared token is placed somewhere, its reference count is
+  incremented. When it is consumed, the reference count is decremented.
+  When the reference count reaches zero, the string value is automatically
+  put to the designated cleanup place.
+
+  The type syntax is: shared_PLACENAME
+  where PLACENAME is the name of the place that receives the string
+  when the last reference is removed.
+
+  This example:
+  1. Creates two shareds, one for each cleanup place (files, temps)
+  2. Copies each string multiple times (fan-out)
+  3. Processes all copies (consumes them)
+  4. When the last copy is consumed, the string appears at the cleanup place
+
+  Flow:
+    input => create => fan_out => process => (when all consumed) => cleanup
+-->
+
+<defun name="shared_demo">
+
+  <!-- Input: two strings to track -->
+  <in name="file_name" type="string" place="file_name"/>
+  <in name="temp_name" type="string" place="temp_name"/>
+
+  <!-- Output: cleaned up strings appear here -->
+  <out name="cleaned_file" type="string" place="files"/>
+  <out name="cleaned_temp" type="string" place="temps"/>
+
+  <net>
+    <!-- Input places for the original strings -->
+    <place name="file_name" type="string"/>
+    <place name="temp_name" type="string"/>
+
+    <!-- Cleanup places: when refcount reaches 0, strings go here -->
+    <place name="files" type="string" shared_sink="true"/>
+    <place name="temps" type="string" shared_sink="true"/>
+
+    <!-- Shared places: these hold reference-counted strings -->
+    <place name="file_shared" type="shared_files"/>
+    <place name="temp_shared" type="shared_temps"/>
+
+    <!-- Places for copied references -->
+    <place name="file_copy_1" type="shared_files"/>
+    <place name="file_copy_2" type="shared_files"/>
+    <place name="file_copy_3" type="shared_files"/>
+
+    <place name="temp_copy_1" type="shared_temps"/>
+    <place name="temp_copy_2" type="shared_temps"/>
+
+    <!-- ============================================================= -->
+    <!-- Step 1: Create shareds from regular strings                   -->
+    <!-- ============================================================= -->
+
+    <transition name="create_file_shared">
+      <defun>
+        <in name="name" type="string"/>
+        <out name="shared" type="shared_files"/>
+        <module name="shared_demo"
+                function="shared create_file_shared (name)">
+          <cinclude href="gspc/we/type/shared.hpp"/>
+          <code><![CDATA[
+            return gspc::we::type::shared {name, "files"};
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="name" place="file_name"/>
+      <connect-out port="shared" place="file_shared"/>
+    </transition>
+
+    <transition name="create_temp_shared">
+      <defun>
+        <in name="name" type="string"/>
+        <out name="shared" type="shared_temps"/>
+        <module name="shared_demo"
+                function="shared create_temp_shared (name)">
+          <cinclude href="gspc/we/type/shared.hpp"/>
+          <code><![CDATA[
+            return gspc::we::type::shared {name, "temps"};
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="name" place="temp_name"/>
+      <connect-out port="shared" place="temp_shared"/>
+    </transition>
+
+    <!-- ============================================================= -->
+    <!-- Step 2: Fan-out - copy references (increases refcount)        -->
+    <!-- Each copy is a new reference to the same underlying string.   -->
+    <!-- ============================================================= -->
+
+    <!-- Copy file_shared to 3 places -->
+    <transition name="fanout_file">
+      <defun>
+        <in name="shared" type="shared_files"/>
+        <out name="copy1" type="shared_files"/>
+        <out name="copy2" type="shared_files"/>
+        <out name="copy3" type="shared_files"/>
+        <expression>
+          ${copy1} := ${shared};
+          ${copy2} := ${shared};
+          ${copy3} := ${shared}
+        </expression>
+      </defun>
+      <connect-in port="shared" place="file_shared"/>
+      <connect-out port="copy1" place="file_copy_1"/>
+      <connect-out port="copy2" place="file_copy_2"/>
+      <connect-out port="copy3" place="file_copy_3"/>
+    </transition>
+
+    <!-- Copy temp_shared to 2 places -->
+    <transition name="fanout_temp">
+      <defun>
+        <in name="shared" type="shared_temps"/>
+        <out name="copy1" type="shared_temps"/>
+        <out name="copy2" type="shared_temps"/>
+        <expression>
+          ${copy1} := ${shared};
+          ${copy2} := ${shared}
+        </expression>
+      </defun>
+      <connect-in port="shared" place="temp_shared"/>
+      <connect-out port="copy1" place="temp_copy_1"/>
+      <connect-out port="copy2" place="temp_copy_2"/>
+    </transition>
+
+    <!-- ============================================================= -->
+    <!-- Step 3: Process each copy (consumes the reference)            -->
+    <!-- When the last reference is consumed, refcount reaches 0,      -->
+    <!-- and the string value is automatically put to the cleanup      -->
+    <!-- place (files or temps).                                       -->
+    <!-- ============================================================= -->
+
+    <transition name="process_file_1">
+      <defun>
+        <in name="shared" type="shared_files"/>
+        <module name="shared_demo" function="process_file_1 (shared)">
+          <cinclude href="iostream"/>
+          <code><![CDATA[
+            std::cout << "Processing file copy 1: " << shared << std::endl;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="shared" place="file_copy_1"/>
+    </transition>
+
+    <transition name="process_file_2">
+      <defun>
+        <in name="shared" type="shared_files"/>
+        <module name="shared_demo" function="process_file_2 (shared)">
+          <cinclude href="iostream"/>
+          <code><![CDATA[
+            std::cout << "Processing file copy 2: " << shared << std::endl;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="shared" place="file_copy_2"/>
+    </transition>
+
+    <transition name="process_file_3">
+      <defun>
+        <in name="shared" type="shared_files"/>
+        <module name="shared_demo" function="process_file_3 (shared)">
+          <cinclude href="iostream"/>
+          <code><![CDATA[
+            std::cout << "Processing file copy 3: "  << shared << std::endl;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="shared" place="file_copy_3"/>
+    </transition>
+
+    <transition name="process_temp_1">
+      <defun>
+        <in name="shared" type="shared_temps"/>
+        <module name="shared_demo" function="process_temp_1 (shared)">
+          <cinclude href="iostream"/>
+          <code><![CDATA[
+            std::cout << "Processing temp copy 1: " << shared << std::endl;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="shared" place="temp_copy_1"/>
+    </transition>
+
+    <transition name="process_temp_2">
+      <defun>
+        <in name="shared" type="shared_temps"/>
+        <module name="shared_demo" function="process_temp_2 (shared)">
+          <cinclude href="iostream"/>
+          <code><![CDATA[
+            std::cout << "Processing temp copy 2: " << shared << std::endl;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="shared" place="temp_copy_2"/>
+    </transition>
+
+  </net>
+</defun>

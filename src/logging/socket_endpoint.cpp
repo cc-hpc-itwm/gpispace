@@ -1,16 +1,15 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2019-2021,2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <logging/socket_endpoint.hpp>
+#include <gspc/logging/socket_endpoint.hpp>
 
-#include <util-generic/boost/program_options/validators.hpp>
-#include <util-generic/hostname.hpp>
+#include <gspc/util/boost/program_options/validators.hpp>
+#include <gspc/util/hostname.hpp>
 
 #include <exception>
 
-namespace fhg
-{
-  namespace logging
+
+  namespace gspc::logging
   {
     namespace error
     {
@@ -21,7 +20,7 @@ namespace fhg
     }
 
     socket_endpoint::socket_endpoint (Socket local_socket)
-      : socket_endpoint (fhg::util::hostname(), local_socket)
+      : socket_endpoint (gspc::util::hostname(), local_socket)
     {}
 
     socket_endpoint::socket_endpoint (std::string host_, Socket socket_)
@@ -95,8 +94,7 @@ namespace fhg
                   , int
                   )
     {
-      return util::boost::program_options::validate<socket_endpoint>
+      return gspc::util::boost::program_options::validate<socket_endpoint>
         (result, values);
     }
   }
-}

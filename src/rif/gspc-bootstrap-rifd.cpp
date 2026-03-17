@@ -1,26 +1,28 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2015-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <fhg/project_info.hpp>
+#include <gspc/configuration/info.hpp>
 
-#include <util-generic/boost/program_options/separated_argument_list_parser.hpp>
-#include <util-generic/boost/program_options/validators/existing_directory.hpp>
-#include <util-generic/boost/program_options/validators/nonempty_file.hpp>
-#include <util-generic/boost/program_options/validators/positive_integral.hpp>
-#include <util-generic/executable_path.hpp>
-#include <util-generic/join.hpp>
-#include <util-generic/print_exception.hpp>
-#include <util-generic/read_lines.hpp>
+#include <gspc/util/boost/program_options/separated_argument_list_parser.hpp>
+#include <gspc/util/boost/program_options/validators/existing_directory.hpp>
+#include <gspc/util/boost/program_options/validators/nonempty_file.hpp>
+#include <gspc/util/boost/program_options/validators/positive_integral.hpp>
+#include <gspc/util/executable_path.hpp>
+#include <gspc/util/join.hpp>
+#include <gspc/util/print_exception.hpp>
+#include <gspc/util/read_lines.hpp>
 
-#include <rif/strategy/meta.hpp>
+#include <gspc/rif/strategy/meta.hpp>
 
-#include <boost/filesystem/operations.hpp>
 #include <boost/program_options.hpp>
 
-#include <FMT/util-generic/join.hpp>
+#include <filesystem>
+
+#include <gspc/util/join.formatter.hpp>
 #include <fmt/core.h>
 #include <iostream>
 #include <vector>
+#include <optional>
 
 namespace
 {
@@ -42,24 +44,24 @@ int main (int argc, char** argv)
 try
 {
   std::vector<std::string> const strategies
-    {fhg::rif::strategy::available_strategies()};
+    {gspc::rif::strategy::available_strategies()};
 
   ::boost::program_options::options_description options_description;
   options_description.add_options()
     ("help", "this message")
     ( option::port
     , ::boost::program_options::value
-        <fhg::util::boost::program_options::positive_integral<unsigned short>>()
+        <gspc::util::boost::program_options::positive_integral<unsigned short>>()
     , "port to listen on"
     )
     ( option::hostfile
     , ::boost::program_options::value
-        <fhg::util::boost::program_options::nonempty_file>()->required()
+        <gspc::util::boost::program_options::nonempty_file>()->required()
     , "hostfile"
     )
     ( option::strategy
     , ::boost::program_options::value<std::string>()->required()
-    , ("strategy: one of " + fhg::util::join (strategies, ", ").string()).c_str()
+    , ("strategy: one of " + gspc::util::join (strategies, ", ").string()).c_str()
     )
     ( option::strategy_parameters
     , ::boost::program_options::value<option::strategy_parameters_type>()
@@ -73,7 +75,7 @@ try
     ( ::boost::program_options::command_line_parser (argc, argv)
       .options (options_description)
     . extra_style_parser
-        ( fhg::util::boost::program_options::separated_argument_list_parser
+        ( gspc::util::boost::program_options::separated_argument_list_parser
             ("RIF", "FIR", option::strategy_parameters)
         )
       .run()
@@ -82,9 +84,9 @@ try
 
   if (vm.count ("help"))
   {
-    std::cerr << fhg::project_info ( std::string (argv[0])
-                                   + ": bootstrap the gspc rif deamon"
-                                   ) << "\n";
+    std::cerr << gspc::configuration::info ( std::string (argv[0])
+                                            + ": bootstrap the gspc rif deamon"
+                                            ) << "\n";
     std::cerr << options_description << "\n";
     return 0;
   }
@@ -100,30 +102,30 @@ try
         ( "invalid argument '{}' for --{}: one of {}"
         , strategy
         , option::strategy
-        , fhg::util::join (strategies, ", ")
+        , gspc::util::join (strategies, ", ")
         )
       };
   }
 
   auto const result
-    (fhg::rif::strategy::bootstrap
+    (gspc::rif::strategy::bootstrap
           ( strategy
-          , fhg::util::read_lines
+          , gspc::util::read_lines
               ( static_cast<std::filesystem::path>
                 ( vm.at (option::hostfile)
-                . as<fhg::util::boost::program_options::nonempty_file>()
+                . as<gspc::util::boost::program_options::nonempty_file>()
                 )
               )
           , vm.count (option::port)
-          ? ::boost::make_optional<unsigned short>
+          ? std::make_optional<unsigned short>
             ( static_cast<unsigned short>
               ( vm.at (option::port)
-              . as<fhg::util::boost::program_options::positive_integral<unsigned short>>()
+              . as<gspc::util::boost::program_options::positive_integral<unsigned short>>()
               )
             )
-          : ::boost::none
-          , ::boost::filesystem::canonical
-              (fhg::util::executable_path().parent_path() / INSTALLATION_HOME)
+          : std::nullopt
+          , std::filesystem::canonical
+              (gspc::util::executable_path().parent_path() / INSTALLATION_HOME)
           , vm.at (option::strategy_parameters)
           . as<option::strategy_parameters_type>()
           , std::cout
@@ -143,14 +145,14 @@ try
   for (auto const& failure : std::get<1> (result))
   {
     std::cerr << failure.first << ": "
-              << fhg::util::exception_printer (failure.second) << "\n";
+              << gspc::util::exception_printer (failure.second) << "\n";
   }
 
   return std::get<1> (result).empty() ? 0 : 1;
 }
 catch (...)
 {
-  std::cerr << "EX: " << fhg::util::current_exception_printer() << '\n';
+  std::cerr << "EX: " << gspc::util::current_exception_printer() << '\n';
 
   return 1;
 }

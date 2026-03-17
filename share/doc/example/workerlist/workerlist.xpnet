@@ -1,5 +1,5 @@
-<!-- Copyright (C) 2025 Fraunhofer ITWM        -->
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- Copyright (C) 2013-2015,2021,2023,2026 Fraunhofer ITWM             -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
 
 <defun name="workerlist">
   <in name="num_workers" type="unsigned long" place="num_workers"/>
@@ -25,7 +25,7 @@
         <out name="hostnames" type="map"/>
         <module name="workerlist" function="run (workers, hostnames)"
                 pass_context="true">
-          <ld flag="-lwe-dev" />
+          <ld flag="-lgspc_we" />
           <code><![CDATA[
             const std::set<std::string> ws (_pnetc_context->workers());
 

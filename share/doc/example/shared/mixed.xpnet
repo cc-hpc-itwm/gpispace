@@ -1,0 +1,129 @@
+<!-- Copyright (C) 2026 Fraunhofer ITWM                            -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
+
+<!--
+  Demonstrate mixed shared operations.
+
+  Tests the combination of:
+  - Pass-through: Reference count unchanged
+  - Copying: Reference count increased
+  - Consumption: Reference count decreased
+
+  The shared is:
+  1. Created (refcount = 1)
+  2. Passed through an expression (refcount = 1)
+  3. Copied twice (refcount = 2)
+  4. One copy passed through module (refcount = 2)
+  5. Both copies consumed (refcount = 0, cleanup triggered)
+-->
+
+<defun name="shared_mixed">
+
+  <in name="value" type="string" place="value"/>
+  <out name="result" type="string" place="cleanup"/>
+
+  <net>
+    <place name="value" type="string"/>
+    <place name="cleanup" type="string" shared_sink="true"/>
+
+    <place name="shared" type="shared_cleanup"/>
+    <place name="after_passthrough" type="shared_cleanup"/>
+    <place name="copy_a" type="shared_cleanup"/>
+    <place name="copy_b" type="shared_cleanup"/>
+    <place name="copy_a_passed" type="shared_cleanup"/>
+
+    <!-- Create a shared from a regular string -->
+    <transition name="create">
+      <defun>
+        <in name="s" type="string"/>
+        <out name="shared" type="shared_cleanup"/>
+        <module name="shared_mixed"
+                function="shared create (s)">
+          <cinclude href="gspc/we/type/shared.hpp"/>
+          <code><![CDATA[
+            return gspc::we::type::shared {s, "cleanup"};
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="s" place="value"/>
+      <connect-out port="shared" place="shared"/>
+    </transition>
+
+    <!-- Pass through via expression (no refcount change) -->
+    <transition name="expr_passthrough">
+      <defun>
+        <in name="in" type="shared_cleanup"/>
+        <out name="out" type="shared_cleanup"/>
+        <expression>
+          ${out} := ${in}
+        </expression>
+      </defun>
+      <connect-in port="in" place="shared"/>
+      <connect-out port="out" place="after_passthrough"/>
+    </transition>
+
+    <!-- Copy the shared (refcount increased) -->
+    <transition name="copy">
+      <defun>
+        <in name="shared" type="shared_cleanup"/>
+        <out name="a" type="shared_cleanup"/>
+        <out name="b" type="shared_cleanup"/>
+        <expression>
+          ${a} := ${shared};
+          ${b} := ${shared}
+        </expression>
+      </defun>
+      <connect-in port="shared" place="after_passthrough"/>
+      <connect-out port="a" place="copy_a"/>
+      <connect-out port="b" place="copy_b"/>
+    </transition>
+
+    <!-- Pass copy_a through via module (no refcount change) -->
+    <transition name="module_passthrough">
+      <defun>
+        <in name="in" type="shared_cleanup"/>
+        <out name="out" type="shared_cleanup"/>
+        <module name="shared_mixed"
+                function="out passthrough (in)">
+          <cinclude href="gspc/we/type/shared.hpp"/>
+          <code><![CDATA[
+            return in;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="in" place="copy_a"/>
+      <connect-out port="out" place="copy_a_passed"/>
+    </transition>
+
+    <!-- Consume copy A after pass-through (refcount decreased) -->
+    <transition name="consume_a">
+      <defun>
+        <in name="shared" type="shared_cleanup"/>
+        <module name="shared_mixed"
+                function="consume_a (shared)">
+          <cinclude href="iostream"/>
+          <code><![CDATA[
+            std::cout << "Consumed copy A: " << shared << std::endl;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="shared" place="copy_a_passed"/>
+    </transition>
+
+    <!-- Consume copy B (refcount decreased, cleanup triggered) -->
+    <transition name="consume_b">
+      <defun>
+        <in name="shared" type="shared_cleanup"/>
+        <module name="shared_mixed"
+                function="consume_b (shared)">
+          <cinclude href="iostream"/>
+          <code><![CDATA[
+            std::cout << "Consumed copy B: " << shared << std::endl;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="shared" place="copy_b"/>
+    </transition>
+
+  </net>
+</defun>

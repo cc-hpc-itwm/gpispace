@@ -1,0 +1,51 @@
+<!-- Copyright (C) 2026 Fraunhofer ITWM                            -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
+
+<!-- Example network demonstrating generator places with int type.
+     The generator place produces unique int values: 0, 1, 2, ...
+     This workflow consumes n tokens from the generator and outputs
+     them as individual tokens. -->
+
+<defun name="generator_int">
+
+  <in name="n" type="unsigned long" place="count"/>
+  <out name="id" type="int" place="out"/>
+
+  <net>
+
+    <place name="count" type="unsigned long"/>
+    <place name="generator" type="int" generator="true"/>
+    <place name="out" type="int"/>
+
+    <transition name="consume">
+      <defun>
+        <inout name="count" type="unsigned long"/>
+        <in name="id" type="int"/>
+        <out name="out" type="int"/>
+        <expression>
+          ${out} := ${id};
+          ${count} := ${count} - 1UL;
+        </expression>
+      </defun>
+      <condition>
+        ${count} :gt: 0UL
+      </condition>
+      <connect-inout port="count" place="count"/>
+      <connect-in port="id" place="generator"/>
+      <connect-out port="out" place="out"/>
+    </transition>
+
+    <transition name="done">
+      <defun>
+        <in name="count" type="unsigned long"/>
+        <expression/>
+      </defun>
+      <condition>
+        ${count} :le: 0UL
+      </condition>
+      <connect-in port="count" place="count"/>
+    </transition>
+
+  </net>
+
+</defun>

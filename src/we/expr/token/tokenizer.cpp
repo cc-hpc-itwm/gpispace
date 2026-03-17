@@ -1,26 +1,27 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2012-2015,2018,2020-2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/expr/token/tokenizer.hpp>
+#include <gspc/we/expr/token/tokenizer.hpp>
 
-#include <we/expr/token/prop.hpp>
+#include <gspc/we/expr/token/prop.hpp>
 
-#include <we/expr/exception.hpp>
+#include <gspc/we/expr/exception.hpp>
 
 #include <boost/variant.hpp>
 
-#include <we/type/value/read.hpp>
+#include <gspc/we/type/shared.hpp>
+#include <gspc/we/type/value/read.hpp>
 
-#include <fhg/util/parse/require.hpp>
+#include <gspc/util/parse/require.hpp>
 
+#include <cctype>
 #include <functional>
 #include <iterator>
 
-namespace expr
-{
-  namespace token
+
+  namespace gspc::we::expr::token
   {
-    tokenizer::tokenizer (fhg::util::parse::position& _p)
+    tokenizer::tokenizer (util::parse::position& _p)
       : _pos (_p)
     {}
 
@@ -36,7 +37,11 @@ namespace expr
     {
       return _ref;
     }
-    fhg::util::parse::position& tokenizer::pos()
+    std::string const& tokenizer::get_shared_cleanup_place() const
+    {
+      return _shared_cleanup_place;
+    }
+    util::parse::position& tokenizer::pos()
     {
       return _pos;
     }
@@ -144,6 +149,7 @@ namespace expr
         SET_TOKEN ("ulong", _toulong);
         SET_TOKEN ("float", _tofloat);
         SET_TOKEN ("double", _todouble);
+        SET_TOKEN ("bigint", _tobigint);
         SET_TOKEN ("max", max);
         SET_TOKEN ("min", min);
         SET_TOKEN ("mod", modint);
@@ -195,6 +201,9 @@ namespace expr
         UNARY ("stack_pop", _stack_pop);
         UNARY ("stack_size", _stack_size);
         UNARY ("stack_top", _stack_top);
+
+        // shared_* is a value literal, not a token
+        ACTION ("shared_", std::bind (&tokenizer::shared_value, std::placeholders::_1));
 
 #undef SET_VALUE
 #undef SET_TOKEN
@@ -400,7 +409,7 @@ namespace expr
 
       do
         {
-          _ref.push_back (fhg::util::parse::require::identifier (_pos));
+          _ref.push_back (util::parse::require::identifier (_pos));
 
           if (_pos.end())
           {
@@ -414,7 +423,7 @@ namespace expr
         }
       while (!_pos.end() && *_pos != '}');
 
-      fhg::util::parse::require::require (_pos, '}');
+      util::parse::require::require (_pos, '}');
     }
 
     void tokenizer::notne()
@@ -429,6 +438,23 @@ namespace expr
       {
         unary (_not, "negation");
       }
+    }
+
+    void tokenizer::shared_value()
+    {
+      // At this point, "shared_" has already been consumed.
+      // We need to parse: PLACENAME(expression)
+      // We emit _shared token and store cleanup place name.
+      // The parser will handle the expression inside the parentheses.
+
+      _shared_cleanup_place = gspc::util::parse::require::identifier (_pos);
+
+      gspc::util::parse::require::skip_spaces (_pos);
+
+      // Don't consume the '(', let it be handled by the parser as lpr
+      // This way _shared behaves like other prefix builtins: _shared ( expr )
+
+      set_token (_shared);
     }
 
     void tokenizer::unary (token::type const& t, std::string const& descr)
@@ -470,7 +496,7 @@ namespace expr
 
     void tokenizer::operator++()
     {
-      fhg::util::parse::require::skip_spaces (_pos);
+      gspc::util::parse::require::skip_spaces (_pos);
 
       if (is_eof())
       {
@@ -487,4 +513,3 @@ namespace expr
       }
     }
   }
-}

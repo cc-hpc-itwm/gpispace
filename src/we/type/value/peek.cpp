@@ -1,22 +1,20 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2013-2014,2020-2021,2023,2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/type/value/peek.hpp>
+#include <gspc/we/type/value/peek.hpp>
 
-#include <we/type/value/path/split.hpp>
+#include <gspc/we/type/value/path/split.hpp>
 
 #include <iterator>
 
-namespace pnet
-{
-  namespace type
-  {
-    namespace value
+
+
+    namespace gspc::pnet::type::value
     {
       namespace
       {
         template<typename V, typename M, typename MIT>
-        class visitor_peek : public ::boost::static_visitor<::boost::optional<V&>>
+        class visitor_peek : public ::boost::static_visitor<std::optional<std::reference_wrapper<V>>>
         {
         public:
           visitor_peek ( std::list<std::string>::const_iterator const& key
@@ -28,7 +26,7 @@ namespace pnet
             , _node (node)
           {}
 
-          ::boost::optional<V&> operator() (M& m) const
+          std::optional<std::reference_wrapper<V>> operator() (M& m) const
           {
             if (_key == _end)
             {
@@ -53,18 +51,18 @@ namespace pnet
               ++field;
             }
 
-            return ::boost::none;
+            return {};
           }
 
           template<typename T>
-          ::boost::optional<V&> operator() (T&) const
+          std::optional<std::reference_wrapper<V>> operator() (T&) const
           {
             if (_key == _end)
             {
               return _node;
             }
 
-            return ::boost::none;
+            return {};
           }
 
         private:
@@ -74,7 +72,7 @@ namespace pnet
         };
       }
 
-      ::boost::optional<value_type const&>
+      std::optional<std::reference_wrapper<value_type const>>
       peek ( std::list<std::string>::const_iterator const& key
            , std::list<std::string>::const_iterator const& end
            , value_type const& node
@@ -88,18 +86,18 @@ namespace pnet
           , node
           );
       }
-      ::boost::optional<value_type const&>
+      std::optional<std::reference_wrapper<value_type const>>
       peek (std::list<std::string> const& path, value_type const& node)
       {
         return peek (path.begin(), path.end(), node);
       }
-      ::boost::optional<value_type const&>
+      std::optional<std::reference_wrapper<value_type const>>
       peek (std::string const& path, value_type const& node)
       {
         return peek (path::split (path), node);
       }
 
-      ::boost::optional<value_type&>
+      std::optional<std::reference_wrapper<value_type>>
       peek ( std::list<std::string>::const_iterator const& key
            , std::list<std::string>::const_iterator const& end
            , value_type& node
@@ -113,16 +111,14 @@ namespace pnet
           , node
           );
       }
-      ::boost::optional<value_type&>
+      std::optional<std::reference_wrapper<value_type>>
       peek (std::list<std::string> const& path, value_type& node)
       {
         return peek (path.begin(), path.end(), node);
       }
-      ::boost::optional<value_type&>
+      std::optional<std::reference_wrapper<value_type>>
       peek (std::string const& path, value_type& node)
       {
         return peek (path::split (path), node);
       }
     }
-  }
-}

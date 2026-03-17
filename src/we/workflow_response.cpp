@@ -1,14 +1,14 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2015,2018,2021,2023 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/workflow_response.hpp>
+#include <gspc/we/workflow_response.hpp>
 
-#include <we/type/value/peek_or_die.hpp>
-#include <we/type/value/poke.hpp>
+#include <gspc/we/type/value/peek_or_die.hpp>
+#include <gspc/we/type/value/poke.hpp>
 
 #include <algorithm>
 
-namespace we
+namespace gspc::we
 {
   namespace
   {

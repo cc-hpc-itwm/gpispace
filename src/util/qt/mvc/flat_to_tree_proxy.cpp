@@ -1,25 +1,24 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2013-2015,2020-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <util/qt/mvc/flat_to_tree_proxy.hpp>
+#include <gspc/util/qt/mvc/flat_to_tree_proxy.hpp>
 
-#include <util-qt/variant.hpp>
+#include <gspc/util/qt/variant.hpp>
 
-#include <fhg/assert.hpp>
+#include <gspc/assert.hpp>
 
 #include <QSet>
 #include <QStringList>
 #include <QVector>
 
+#include <exception>
+#include <utility>
 #include <variant>
 
-namespace fhg
-{
-  namespace util
-  {
-    namespace qt
-    {
-      namespace mvc
+
+
+
+      namespace gspc::util::qt::mvc
       {
         transform_functions_model::transform_functions_model (QObject* parent)
           : QAbstractListModel (parent)
@@ -53,7 +52,7 @@ namespace fhg
           if (role == function_role)
           {
             _items[index.row()].function
-              = value<::boost::shared_ptr<transform_function>> (variant);
+              = value<std::shared_ptr<transform_function>> (variant);
           }
           else if (role == Qt::DisplayRole)
           {
@@ -94,7 +93,7 @@ namespace fhg
         }
 
         transform_functions_model::item::item
-          (QString name_, ::boost::shared_ptr<transform_function> function_)
+          (QString name_, std::shared_ptr<transform_function> function_)
             : name (name_)
             , function (function_)
         { }
@@ -106,7 +105,7 @@ namespace fhg
         bool transform_functions_model::insertRows
           (int row, int count, QModelIndex const& parent)
         {
-          fhg_assert (!parent.isValid(), "there are no rows on non-top-level");
+          gspc_assert (!parent.isValid(), "there are no rows on non-top-level");
 
           beginInsertRows (parent, row, row + count - 1);
           while (count --> 0)
@@ -120,7 +119,7 @@ namespace fhg
         bool transform_functions_model::removeRows
           (int row, int count, QModelIndex const& parent)
         {
-          fhg_assert (!parent.isValid(), "there are no rows on non-top-level");
+          gspc_assert (!parent.isValid(), "there are no rows on non-top-level");
 
           beginRemoveRows (parent, row, row + count - 1);
           while (count --> 0)
@@ -152,12 +151,19 @@ namespace fhg
 
           ~index_tree_item()
           {
-            if (is_branch())
+            try
             {
-              for (index_tree_item* child : children())
+              if (is_branch())
               {
-                delete child;
+                for (index_tree_item* child : children())
+                {
+                  delete child;
+                }
               }
+            }
+            catch (...)
+            {
+              std::ignore = std::current_exception();
             }
           }
 
@@ -177,17 +183,17 @@ namespace fhg
 
           const QVector<index_tree_item*>& children() const
           {
-            fhg_assert (is_branch(), "children() only to be called on branch");
+            gspc_assert (is_branch(), "children() only to be called on branch");
             return std::get<name_and_child_type> (_data).second;
           }
           QString const& name() const
           {
-            fhg_assert (is_branch(), "name() only to be called on branch");
+            gspc_assert (is_branch(), "name() only to be called on branch");
             return std::get<name_and_child_type> (_data).first;
           }
           QPersistentModelIndex const& index() const
           {
-            fhg_assert (is_leaf(), "index() only to be called on leaf");
+            gspc_assert (is_leaf(), "index() only to be called on leaf");
             return std::get<index_type> (_data);
           }
 
@@ -217,7 +223,7 @@ namespace fhg
 
           void remove_child (int index)
           {
-            fhg_assert (is_branch(), "remove_child() only to be called on branch");
+            gspc_assert (is_branch(), "remove_child() only to be called on branch");
 
             std::get<name_and_child_type> (_data).second.remove (index);
           }
@@ -227,7 +233,7 @@ namespace fhg
           {
             if (_parent)
             {
-              fhg_assert (_parent->is_branch(), "parent needs to be a branch");
+              gspc_assert (_parent->is_branch(), "parent needs to be a branch");
               std::get<name_and_child_type> (_parent->_data).second << this;
             }
           }
@@ -472,8 +478,8 @@ namespace fhg
         void flat_to_tree_proxy::insert_from_source
           (int begin, int end, QModelIndex parent, bool emit_per_row)
         {
-          const QList<::boost::shared_ptr<transform_functions_model::transform_function>> transform_functions
-            ( value_of_all_rows<::boost::shared_ptr<transform_functions_model::transform_function>>
+          const QList<std::shared_ptr<transform_functions_model::transform_function>> transform_functions
+            ( value_of_all_rows<std::shared_ptr<transform_functions_model::transform_function>>
               ( _transform_functions
               , transform_functions_model::function_role
               , 0
@@ -485,7 +491,7 @@ namespace fhg
             const QModelIndex index (_source->index (row, 0, parent));
 
             QStringList path;
-            for ( ::boost::shared_ptr<transform_functions_model::transform_function> fun
+            for ( std::shared_ptr<transform_functions_model::transform_function> fun
                 : transform_functions
                 )
             {
@@ -679,7 +685,7 @@ namespace fhg
             {
               indices.insert (item->index());
             }
-            for (QPersistentModelIndex index : indices)
+            for (auto index : indices)
             {
               _source->removeRow (index.row(), index.parent());
             }
@@ -688,6 +694,3 @@ namespace fhg
           return true;
         }
       }
-    }
-  }
-}

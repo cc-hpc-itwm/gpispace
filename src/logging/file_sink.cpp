@@ -1,20 +1,19 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2018-2019,2021-2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <logging/file_sink.hpp>
+#include <gspc/logging/file_sink.hpp>
 
-#include <util-generic/this_bound_mem_fn.hpp>
+#include <gspc/util/this_bound_mem_fn.hpp>
 
 #include <exception>
 
-namespace fhg
-{
-  namespace logging
+
+  namespace gspc::logging
   {
     namespace error
     {
       unable_to_write_to_file::unable_to_write_to_file
-          (::boost::filesystem::path const& path)
+          (std::filesystem::path const& path)
         : std::runtime_error
             ("unable to open '" + path.string() + "' for writing")
       {}
@@ -22,14 +21,14 @@ namespace fhg
 
     file_sink::file_sink
         ( endpoint const& emitter
-        , ::boost::filesystem::path const& target
+        , std::filesystem::path const& target
         , std::function<void (std::ostream&, message const&)> formatter
-        , ::boost::optional<std::size_t> flush_interval
+        , std::optional<std::size_t> flush_interval
         )
       : _stream()
       , _formatter (std::move (formatter))
       , _flush_interval (std::move (flush_interval))
-      , _append ( !!_flush_interval
+      , _append ( _flush_interval.has_value()
                 ? &file_sink::append
                 : &file_sink::append_no_flush
                 )
@@ -41,8 +40,7 @@ namespace fhg
       _stream.exceptions (std::fstream::badbit | std::fstream::failbit);
       try
       {
-        _stream.open
-          (target.string(), std::fstream::app | std::fstream::binary);
+        _stream.open (target, std::fstream::app | std::fstream::binary);
       }
       catch (...)
       {
@@ -66,11 +64,10 @@ namespace fhg
 
     void file_sink::maybe_flush()
     {
-      if (++_emit_counter >= _flush_interval.get())
+      if (++_emit_counter >= _flush_interval.value())
       {
         _stream.flush();
         _emit_counter = 0;
       }
     }
   }
-}

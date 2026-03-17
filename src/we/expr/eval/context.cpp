@@ -1,21 +1,20 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2012-2016,2019-2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/expr/eval/context.hpp>
+#include <gspc/we/expr/eval/context.hpp>
 
-#include <we/exception.hpp>
+#include <gspc/we/exception.hpp>
 
-#include <we/type/value/peek.hpp>
-#include <we/type/value/poke.hpp>
-#include <we/type/value/show.hpp>
+#include <gspc/we/type/value/peek.hpp>
+#include <gspc/we/type/value/poke.hpp>
+#include <gspc/we/type/value/show.hpp>
 
-#include <util-generic/join.hpp>
+#include <gspc/util/join.hpp>
 
 #include <iostream>
 
-namespace expr
-{
-  namespace eval
+
+  namespace gspc::we::expr::eval
   {
     void context::bind_ref ( std::string const& key
                            , pnet::type::value::value_type const& value
@@ -67,12 +66,12 @@ namespace expr
 
         if (pos != _ref_container.end())
         {
-          ::boost::optional<pnet::type::value::value_type const&>
+          std::optional<std::reference_wrapper<pnet::type::value::value_type const>>
             v (pnet::type::value::peek (key_pos, key_vec.end(), *pos->second));
 
           if (v)
           {
-            return *v;
+            return v->get();
           }
         }
       }
@@ -82,18 +81,18 @@ namespace expr
 
         if (pos != _container.end())
         {
-          ::boost::optional<pnet::type::value::value_type const&>
+          std::optional<std::reference_wrapper<pnet::type::value::value_type const>>
             v (pnet::type::value::peek (key_pos, key_vec.end(), pos->second));
 
           if (v)
           {
-            return *v;
+            return v->get();
           }
         }
       }
 
       throw pnet::exception::missing_binding
-        (fhg::util::join (key_vec, ".").string());
+        (util::join (key_vec, ".").string());
     }
 
     std::ostream& operator<< (std::ostream& os, context const& c)
@@ -110,4 +109,3 @@ namespace expr
       return os;
     }
   }
-}

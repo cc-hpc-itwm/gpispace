@@ -1,19 +1,17 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2013-2015,2020-2021,2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/type/signature/show.hpp>
-#include <we/type/signature/traverse.hpp>
+#include <gspc/we/type/signature/show.hpp>
+#include <gspc/we/type/signature/traverse.hpp>
 
-#include <util-generic/print_container.hpp>
+#include <gspc/util/print_container.hpp>
 
 #include <functional>
 #include <iostream>
 
-namespace pnet
-{
-  namespace type
-  {
-    namespace signature
+
+
+    namespace gspc::pnet::type::signature
     {
       namespace
       {
@@ -25,7 +23,7 @@ namespace pnet
           {}
           void _struct (std::pair<std::string, structure_type> const& s) const
           {
-            _os << fhg::util::print_container
+            _os << util::print_container
               ( s.first + " :: [", ", ", "]", s.second
               , [this] (std::ostream& os, field_type const& f) -> std::ostream&
                 {
@@ -75,5 +73,3 @@ namespace pnet
         return ::boost::apply_visitor (show_sig (os), _signature);
       }
     }
-  }
-}

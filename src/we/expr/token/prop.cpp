@@ -1,11 +1,10 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2012-2014,2020-2021,2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/expr/token/prop.hpp>
+#include <gspc/we/expr/token/prop.hpp>
 
-namespace expr
-{
-  namespace token
+
+  namespace gspc::we::expr::token
   {
     bool is_builtin (type const& token)
     {
@@ -44,6 +43,7 @@ namespace expr
         case _set_erase:
         case _set_is_element:
         case _set_is_subset:
+        case _shared:
         case abs: return true;
         default: return false;
         }
@@ -75,4 +75,3 @@ namespace expr
       return (token == _and_boolean);
     }
   }
-}

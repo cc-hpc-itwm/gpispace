@@ -1,36 +1,34 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2015-2016,2018-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <drts/certificates.hpp>
+#include <gspc/drts/certificates.hpp>
 
-#include <rif/entry_point.hpp>
+#include <gspc/rif/entry_point.hpp>
 
-#include <util-generic/boost/program_options/validators/nonempty_string.hpp>
-#include <util-generic/boost/program_options/validators/positive_integral.hpp>
-#include <util-generic/connectable_to_address_string.hpp>
-#include <util-generic/exit_status.hpp>
-#include <util-generic/hostname.hpp>
-#include <util-generic/join.hpp>
-#include <util-generic/print_exception.hpp>
-#include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
-#include <util-generic/syscall.hpp>
-#include <util-generic/temporary_file.hpp>
+#include <gspc/util/boost/program_options/validators/nonempty_string.hpp>
+#include <gspc/util/boost/program_options/validators/positive_integral.hpp>
+#include <gspc/util/connectable_to_address_string.hpp>
+#include <gspc/util/exit_status.hpp>
+#include <gspc/util/hostname.hpp>
+#include <gspc/util/join.hpp>
+#include <gspc/util/print_exception.hpp>
+#include <gspc/util/scoped_boost_asio_io_service_with_threads.hpp>
+#include <gspc/util/syscall.hpp>
+#include <gspc/util/temporary_file.hpp>
 
-#include <util-generic/serialization/boost/filesystem/path.hpp>
+#include <gspc/logging/protocol.hpp>
 
-#include <logging/protocol.hpp>
+#include <gspc/rif/execute_and_get_startup_messages.hpp>
+#include <gspc/rif/protocol.hpp>
+#include <gspc/rif/strategy/meta.hpp>
 
-#include <rif/execute_and_get_startup_messages.hpp>
-#include <rif/protocol.hpp>
-#include <rif/strategy/meta.hpp>
-
-#include <util-rpc/future.hpp>
-#include <util-rpc/remote_function.hpp>
-#include <util-rpc/remote_socket_endpoint.hpp>
-#include <util-rpc/remote_tcp_endpoint.hpp>
-#include <util-rpc/service_dispatcher.hpp>
-#include <util-rpc/service_handler.hpp>
-#include <util-rpc/service_tcp_provider.hpp>
+#include <gspc/rpc/future.hpp>
+#include <gspc/rpc/remote_function.hpp>
+#include <gspc/rpc/remote_socket_endpoint.hpp>
+#include <gspc/rpc/remote_tcp_endpoint.hpp>
+#include <gspc/rpc/service_dispatcher.hpp>
+#include <gspc/rpc/service_handler.hpp>
+#include <gspc/rpc/service_tcp_provider.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -40,6 +38,11 @@
 #include <boost/system/system_error.hpp>
 #include <boost/thread/scoped_thread.hpp>
 
+#include <chrono>
+#include <optional>
+
+#include <gspc/util/fmt/std/filesystem/path.formatter.hpp>
+#include <fmt/core.h>
 #include <fstream>
 #include <stdexcept>
 
@@ -57,17 +60,17 @@ namespace
   {
     int status;
 
-    if (fhg::util::syscall::waitpid (pid, &status, WNOHANG) == pid)
+    if (gspc::util::syscall::waitpid (pid, &status, WNOHANG) == pid)
     {
-      if (fhg::util::wifexited (status))
+      if (gspc::util::wifexited (status))
       {
         throw std::runtime_error
-          ("already returned " + std::to_string (fhg::util::wexitstatus (status)));
+          ("already returned " + std::to_string (gspc::util::wexitstatus (status)));
       }
-      else if (fhg::util::wifsignaled (status))
+      else if (gspc::util::wifsignaled (status))
       {
         throw std::runtime_error
-          ("already signaled " + std::to_string (fhg::util::wtermsig (status)));
+          ("already signaled " + std::to_string (gspc::util::wtermsig (status)));
       }
     }
   }
@@ -76,19 +79,19 @@ namespace
   {
     int status;
 
-    if (fhg::util::syscall::waitpid (pid, &status, 0) != pid)
+    if (gspc::util::syscall::waitpid (pid, &status, 0) != pid)
     {
       throw std::logic_error ("waitpid returned for wrong child");
     }
-    if (fhg::util::wifexited (status) && fhg::util::wexitstatus (status))
+    if (gspc::util::wifexited (status) && gspc::util::wexitstatus (status))
     {
       throw std::runtime_error
-        ("returned " + std::to_string (fhg::util::wexitstatus (status)));
+        ("returned " + std::to_string (gspc::util::wexitstatus (status)));
     }
-    else if (fhg::util::wifsignaled (status))
+    else if (gspc::util::wifsignaled (status))
     {
       throw std::runtime_error
-        ("signaled " + std::to_string (fhg::util::wtermsig (status)));
+        ("signaled " + std::to_string (gspc::util::wtermsig (status)));
     }
   }
 }
@@ -100,7 +103,7 @@ try
   options_description.add_options()
     ( option::port
     , ::boost::program_options::value
-        <fhg::util::boost::program_options::positive_integral<unsigned short>>()
+        <gspc::util::boost::program_options::positive_integral<unsigned short>>()
     , "port to listen on"
     )
     ( option::register_host
@@ -109,13 +112,13 @@ try
     )
     ( option::register_port
     , ::boost::program_options::value
-        <fhg::util::boost::program_options::positive_integral<unsigned short>>()
+        <gspc::util::boost::program_options::positive_integral<unsigned short>>()
         ->required()
     , "port register server is listening on"
     )
     ( option::register_key
     , ::boost::program_options::value
-        <fhg::util::boost::program_options::nonempty_string>()
+        <gspc::util::boost::program_options::nonempty_string>()
         ->required()
     , "key to register with"
     )
@@ -131,15 +134,15 @@ try
 
   ::boost::program_options::notify (vm);
 
-  ::boost::optional<unsigned short> const port
+  std::optional<unsigned short> const port
     ( vm.count (option::port)
-    ? ::boost::make_optional<unsigned short>
+    ? std::make_optional<unsigned short>
       ( static_cast<unsigned short>
         ( vm.at (option::port)
-        . as<fhg::util::boost::program_options::positive_integral<unsigned short>>()
+        . as<gspc::util::boost::program_options::positive_integral<unsigned short>>()
         )
       )
-    : ::boost::none
+    : std::nullopt
     );
 
   if (port)
@@ -151,32 +154,32 @@ try
     (vm.at (option::register_host).as<std::string>());
   unsigned short const register_port
     ( vm.at (option::register_port)
-      .as<fhg::util::boost::program_options::positive_integral<unsigned short>>()
+      .as<gspc::util::boost::program_options::positive_integral<unsigned short>>()
     );
   std::string const register_key
     ( vm.at (option::register_key)
-    . as<fhg::util::boost::program_options::nonempty_string>()
+    . as<gspc::util::boost::program_options::nonempty_string>()
     );
 
-  fhg::rpc::service_dispatcher service_dispatcher;
+  gspc::rpc::service_dispatcher service_dispatcher;
 
-  fhg::rpc::service_handler<fhg::rif::protocol::execute_and_get_startup_messages>
+  gspc::rpc::service_handler<gspc::rif::protocol::execute_and_get_startup_messages>
     execute_and_get_startup_messages_service
       ( service_dispatcher
-      , &fhg::rif::execute_and_get_startup_messages
-      , fhg::rpc::not_yielding
+      , &gspc::rif::execute_and_get_startup_messages
+      , gspc::rpc::not_yielding
       );
 
-  fhg::rpc::service_handler<fhg::rif::protocol::execute_and_get_startup_messages_and_wait>
+  gspc::rpc::service_handler<gspc::rif::protocol::execute_and_get_startup_messages_and_wait>
     execute_and_get_startup_messages_and_wait_service
       ( service_dispatcher
-      , [] ( ::boost::filesystem::path command
+      , [] ( std::filesystem::path command
            , std::vector<std::string> arguments
            , std::unordered_map<std::string, std::string> environment
            )
         {
           auto const startup_result
-            ( fhg::rif::execute_and_get_startup_messages
+            ( gspc::rif::execute_and_get_startup_messages
                 (command, arguments, environment)
             );
 
@@ -184,22 +187,22 @@ try
 
           return startup_result.messages;
         }
-      , fhg::rpc::not_yielding
+      , gspc::rpc::not_yielding
       );
 
-  fhg::rpc::service_handler<fhg::rif::protocol::kill> kill_service
+  gspc::rpc::service_handler<gspc::rif::protocol::kill> kill_service
     ( service_dispatcher
     , [] (std::vector<pid_t> const& pids)
         -> std::unordered_map<pid_t, std::exception_ptr>
       {
         std::unordered_map<pid_t, std::exception_ptr> failures;
-        for (pid_t pid : pids)
+        for (auto pid : pids)
         {
           try
           {
             check_pid_is_still_running (pid);
 
-            fhg::util::syscall::kill (pid, SIGTERM);
+            gspc::util::syscall::kill (pid, SIGTERM);
 
             wait_for_pid_returned_with_exit_status_zero (pid);
           }
@@ -210,21 +213,21 @@ try
         }
         return failures;
       }
-    , fhg::rpc::not_yielding
+    , gspc::rpc::not_yielding
     );
 
-  fhg::rpc::service_handler<fhg::rif::protocol::start_agent>
+  gspc::rpc::service_handler<gspc::rif::protocol::start_agent>
     start_agent_service
       ( service_dispatcher
-      , [] ( std::string const& name
-           , ::boost::optional<unsigned short> const& agent_port
-           , ::boost::optional<::boost::filesystem::path> const& gpi_socket
-           , gspc::Certificates const& certificates
-           , ::boost::filesystem::path const& command
-           )
+       , [] ( std::string const& name
+         , std::optional<unsigned short> const& agent_port
+         , std::optional<std::filesystem::path> const& gpi_socket
+         , gspc::Certificates const& certificates
+         , std::filesystem::path const& command
+         )
         {
           std::vector<std::string> arguments
-            { "-u", "*:" + std::to_string (agent_port.get_value_or (0))
+            { "-u", "*:" + std::to_string (agent_port.value_or (0))
             , "-n", name
             };
           if (gpi_socket)
@@ -239,7 +242,7 @@ try
           }
 
           auto const startup_result
-            ( fhg::rif::execute_and_get_startup_messages
+            ( gspc::rif::execute_and_get_startup_messages
                 ( command
                 , arguments
                 , std::unordered_map<std::string, std::string>()
@@ -254,21 +257,21 @@ try
                                    );
           }
 
-          fhg::rif::protocol::start_scheduler_result result;
+          gspc::rif::protocol::start_scheduler_result result;
           result.pid = startup_result.pid;
           result.hostinfo
             = {messages[0], ::boost::lexical_cast<unsigned short> (messages[1])};
           result.logger_registration_endpoint = messages[2];
           return result;
         }
-      , fhg::rpc::not_yielding
+      , gspc::rpc::not_yielding
       );
 
-  fhg::rpc::service_handler<fhg::rif::protocol::start_worker>
+  gspc::rpc::service_handler<gspc::rif::protocol::start_worker>
     start_worker_service
       ( service_dispatcher
       , [] ( std::string name
-           , ::boost::filesystem::path command
+           , std::filesystem::path command
            , std::vector<std::string> arguments
            , std::unordered_map<std::string, std::string> environment
            )
@@ -277,7 +280,7 @@ try
           arguments.emplace_back (name);
 
           auto const startup_result
-            ( fhg::rif::execute_and_get_startup_messages
+            ( gspc::rif::execute_and_get_startup_messages
                 (command, arguments, environment)
             );
           auto const& messages (startup_result.messages);
@@ -289,28 +292,121 @@ try
                                    );
           }
 
-          fhg::rif::protocol::start_worker_result result;
+          gspc::rif::protocol::start_worker_result result;
           result.pid = startup_result.pid;
           result.logger_registration_endpoint = messages[0];
           return result;
         }
-      , fhg::rpc::not_yielding
+      , gspc::rpc::not_yielding
       );
 
-  fhg::util::scoped_boost_asio_io_service_with_threads_and_deferred_startup
+  gspc::rpc::service_handler<gspc::rif::protocol::start_vmem>
+    start_vmem_service
+      ( service_dispatcher
+      , [] ( std::filesystem::path command
+           , std::filesystem::path socket
+           , unsigned short gaspi_port
+           , std::chrono::seconds proc_init_timeout
+           , std::vector<std::string> nodes
+           , std::size_t rank
+           , std::string netdev_id
+           ) -> pid_t
+        {
+          std::vector<std::string> arguments
+            { "--socket", socket.string()
+            , "--port", std::to_string (gaspi_port)
+            , "--gpi-timeout"
+            , std::to_string (proc_init_timeout.count())
+            , "--netdev", netdev_id
+            };
+
+          std::filesystem::path const nodefile
+            { std::filesystem::temp_directory_path()
+            / fmt::format
+                ( "gspc-rifd-vmem-nodefile-{}-{}"
+                , gspc::util::syscall::getpid()
+                , std::chrono::high_resolution_clock::now()
+                  .time_since_epoch().count()
+                )
+            };
+          gspc::util::temporary_file const
+            nodefile_temporary (nodefile);
+          {
+            std::ofstream nodefile_stream (nodefile);
+
+            if (!nodefile_stream)
+            {
+              throw std::runtime_error
+                { fmt::format
+                    ( "Could not create nodefile {}: {}"
+                    , nodefile
+                    , strerror (errno)
+                    )
+                };
+            }
+
+            for (std::string const& node : nodes)
+            {
+              nodefile_stream << node << "\n";
+            }
+
+            if (!nodefile_stream)
+            {
+              throw std::runtime_error
+                { fmt::format
+                    ( "Could not write to"
+                      " nodefile {}: {}"
+                    , nodefile
+                    , strerror (errno)
+                    )
+                };
+            }
+          }
+
+          auto const startup_result
+            ( gspc::rif::execute_and_get_startup_messages
+                ( command
+                , arguments
+                , { {"GASPI_SOCKET", "0"}
+                  , { "GASPI_MFILE"
+                    , nodefile.string()
+                    }
+                  , { "GASPI_RANK"
+                    , std::to_string (rank)
+                    }
+                  , { "GASPI_NRANKS"
+                    , std::to_string (nodes.size())
+                    }
+                  , {"GASPI_SET_NUMA_SOCKET", "0"}
+                  }
+                )
+            );
+
+          if (!startup_result.messages.empty())
+          {
+            throw std::logic_error
+              ("expected no startup messages");
+          }
+
+          return startup_result.pid;
+        }
+      , gspc::rpc::not_yielding
+      );
+
+  gspc::util::scoped_boost_asio_io_service_with_threads_and_deferred_startup
     io_service (1);
 
-  std::unordered_map<pid_t, fhg::rpc::remote_socket_endpoint>
+  std::unordered_map<pid_t, gspc::rpc::remote_socket_endpoint>
     add_emitters_endpoints;
 
-  fhg::rpc::service_handler<fhg::rif::protocol::start_logging_demultiplexer>
+  gspc::rpc::service_handler<gspc::rif::protocol::start_logging_demultiplexer>
     start_logging_demultiplexer_service
       ( service_dispatcher
       , [&add_emitters_endpoints, &io_service]
-          (::boost::asio::yield_context yield, ::boost::filesystem::path exe)
+          (::boost::asio::yield_context yield, std::filesystem::path exe)
         {
           auto const startup_result
-            ( fhg::rif::execute_and_get_startup_messages
+            ( gspc::rif::execute_and_get_startup_messages
                 (exe, {}, std::unordered_map<std::string, std::string>())
             );
           auto const& messages (startup_result.messages);
@@ -322,7 +418,7 @@ try
                                    );
           }
 
-          fhg::rif::protocol::start_logging_demultiplexer_result result;
+          gspc::rif::protocol::start_logging_demultiplexer_result result;
           result.pid = startup_result.pid;
           result.sink_endpoint = messages[0];
 
@@ -332,22 +428,22 @@ try
             , std::forward_as_tuple
                 ( io_service
                 , yield
-                , fhg::logging::socket_endpoint (messages[1]).socket
+                , gspc::logging::socket_endpoint (messages[1]).socket
                 )
             );
 
           return result;
         }
-      , fhg::rpc::yielding
+      , gspc::rpc::yielding
       );
 
-  fhg::rpc::service_handler<fhg::rif::protocol::add_emitter_to_logging_demultiplexer>
+  gspc::rpc::service_handler<gspc::rif::protocol::add_emitter_to_logging_demultiplexer>
     add_emitter_to_logging_demultiplexer_service
       ( service_dispatcher
       , [&add_emitters_endpoints]
           ( ::boost::asio::yield_context yield
           , pid_t pid
-          , std::vector<fhg::logging::endpoint> emitters
+          , std::vector<gspc::logging::endpoint> emitters
           )
         {
           auto const it (add_emitters_endpoints.find (pid));
@@ -357,34 +453,34 @@ try
               ("unknown log demultiplexer: " + std::to_string (pid));
           }
 
-          fhg::rpc::sync_remote_function
-            < fhg::logging::protocol::receiver::add_emitters
-            , fhg::rpc::future
+          gspc::rpc::sync_remote_function
+            < gspc::logging::protocol::receiver::add_emitters
+            , gspc::rpc::future
             > {it->second} (yield, std::move (emitters));
         }
-      , fhg::rpc::yielding
+      , gspc::rpc::yielding
       );
 
-  fhg::rpc::service_tcp_provider_with_deferred_start server
+  gspc::rpc::service_tcp_provider_with_deferred_start server
     (io_service, service_dispatcher);
 
-  if (pid_t child = fhg::util::syscall::fork())
+  if (pid_t child = gspc::util::syscall::fork())
   {
     io_service.post_fork_parent();
 
-    fhg::util::scoped_boost_asio_io_service_with_threads io_service_parent (1);
-    fhg::rpc::remote_tcp_endpoint endpoint
+    gspc::util::scoped_boost_asio_io_service_with_threads io_service_parent (1);
+    gspc::rpc::remote_tcp_endpoint endpoint
       (io_service_parent, register_host, register_port);
 
     ::boost::asio::ip::tcp::endpoint const local_endpoint
       (server.local_endpoint());
 
-    fhg::rpc::sync_remote_function<fhg::rif::strategy::bootstrap_callback>
+    gspc::rpc::sync_remote_function<gspc::rif::strategy::bootstrap_callback>
       {endpoint}
       ( register_key
-      , fhg::util::hostname()
-      , fhg::rif::entry_point
-          ( fhg::util::connectable_to_address_string (local_endpoint.address())
+      , gspc::util::hostname()
+      , gspc::rif::entry_point
+          ( gspc::util::connectable_to_address_string (local_endpoint.address())
           , local_endpoint.port()
           , child
           )
@@ -393,11 +489,11 @@ try
     return 0;
   }
 
-  fhg::util::syscall::setsid();
+  gspc::util::syscall::setsid();
 
-  fhg::util::syscall::close (0);
-  fhg::util::syscall::close (1);
-  fhg::util::syscall::close (2);
+  gspc::util::syscall::close (0);
+  gspc::util::syscall::close (1);
+  gspc::util::syscall::close (2);
 
   server.start();
   io_service.post_fork_child();
@@ -407,7 +503,7 @@ try
 }
 catch (...)
 {
-  std::cerr << "EX: " << fhg::util::current_exception_printer() << '\n';
+  std::cerr << "EX: " << gspc::util::current_exception_printer() << '\n';
 
   return 1;
 }

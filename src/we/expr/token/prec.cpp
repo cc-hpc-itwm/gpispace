@@ -1,15 +1,14 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2012-2014,2020-2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/expr/token/prec.hpp>
+#include <gspc/we/expr/token/prec.hpp>
 
-#include <FMT/we/expr/token/show.hpp>
+#include <gspc/we/expr/token/show.formatter.hpp>
 #include <fmt/core.h>
 #include <stdexcept>
 
-namespace expr
-{
-  namespace prec
+
+  namespace gspc::we::expr::prec
   {
     int prec (token::type const& token)
     {
@@ -37,8 +36,7 @@ namespace expr
         case token::neg: return 25;
         case token::define: return -98;
         default: throw std::runtime_error
-            {fmt::format ("prec ({})", expr::token::show (token))};
+          {fmt::format ("prec ({})", token::show (token))};
         }
     }
   }
-}

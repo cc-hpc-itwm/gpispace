@@ -1,12 +1,12 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2020-2021,2023-2024,2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <bin/run.hpp>
 
-#include <drts/client.hpp>
-#include <drts/drts.hpp>
-#include <drts/scoped_rifd.hpp>
-#include <we/type/value/show.hpp>
+#include <gspc/drts/client.hpp>
+#include <gspc/drts/drts.hpp>
+#include <gspc/drts/scoped_rifd.hpp>
+#include <gspc/we/type/value/show.hpp>
 
 #include <boost/lexical_cast.hpp>
 
@@ -22,7 +22,7 @@
 namespace fmt
 {
   template<>
-    struct formatter<pnet::type::value::show> : fmt::ostream_formatter
+    struct formatter<gspc::pnet::type::value::show> : fmt::ostream_formatter
   {};
 }
 
@@ -80,7 +80,7 @@ namespace stochastic_with_heureka
 
     template<typename T>
       T extract
-        ( std::multimap<std::string, pnet::type::value::value_type> const& r
+        ( std::multimap<std::string, gspc::pnet::type::value::value_type> const& r
         , std::string const& key
         )
     {
@@ -100,7 +100,7 @@ namespace stochastic_with_heureka
           {
             first = false;
           }
-          oss << "'" << x.first << "': " << pnet::type::value::show (x.second);
+          oss << "'" << x.first << "': " << gspc::pnet::type::value::show (x.second);
         }
         oss << "}";
 
@@ -126,7 +126,7 @@ namespace stochastic_with_heureka
           ( std::runtime_error
               { fmt::format ( "Extract: Key '{}', value '{}'"
                             , key
-                            , pnet::type::value::show (value)
+                            , gspc::pnet::type::value::show (value)
                             )
               }
           );
@@ -185,8 +185,8 @@ namespace stochastic_with_heureka
   }
 
   workflow_result::workflow_result
-      (std::multimap<std::string, pnet::type::value::value_type> const& r)
-    : _result (extract<we::type::bytearray> (r, "result"))
+      (std::multimap<std::string, gspc::pnet::type::value::value_type> const& r)
+    : _result (extract<gspc::we::type::bytearray> (r, "result"))
     , _got_heureka (extract<bool> (r, "got_heureka"))
     , _number_of_rolls_done (extract<unsigned long> (r, "number_of_rolls_done"))
   {}
@@ -196,7 +196,7 @@ namespace stochastic_with_heureka
     , char** argv
     , std::optional<::boost::program_options::options_description> options
     , std::string const implementation
-    , std::function< we::type::bytearray
+    , std::function< gspc::we::type::bytearray
                        (::boost::program_options::variables_map const&)
                    > user_data
     )
@@ -230,7 +230,7 @@ namespace stochastic_with_heureka
                        , std::filesystem::path installation_dir
                        )
                    > implementation
-    , std::function< we::type::bytearray
+    , std::function< gspc::we::type::bytearray
                      (::boost::program_options::variables_map const&)
                    > implementation_bytearray
     )
@@ -353,7 +353,7 @@ namespace stochastic_with_heureka
 
     gspc::set_application_search_path (vm, workflow_path);
 
-    we::type::bytearray const user_data (implementation_bytearray (vm));
+    gspc::we::type::bytearray const user_data (implementation_bytearray (vm));
 
     auto worker
       ( [&vm] (std::string const& name, char const* const option) -> std::string

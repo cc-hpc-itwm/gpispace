@@ -1,7 +1,9 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2020-2021,2023,2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
+
+#include <type_traits>
 
 namespace barrieropt
 {
@@ -48,4 +50,11 @@ namespace barrieropt
     double price;
     double std_dev;
   };
+
+  struct State
+  {
+    double value;
+    double variance;
+  };
+  static_assert (std::is_trivially_copyable_v<State>);
 }

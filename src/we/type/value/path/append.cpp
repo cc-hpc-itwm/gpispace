@@ -1,15 +1,12 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2013,2020-2021,2023,2025 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/type/value/path/append.hpp>
+#include <gspc/we/type/value/path/append.hpp>
 
-namespace pnet
-{
-  namespace type
-  {
-    namespace value
-    {
-      namespace path
+
+
+
+      namespace gspc::pnet::type::value::path
       {
         append::append ( std::list<std::string>& path
                        , std::string const& key
@@ -27,6 +24,3 @@ namespace pnet
           return _path;
         }
       }
-    }
-  }
-}

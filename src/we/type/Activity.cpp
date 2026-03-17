@@ -1,30 +1,37 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2012-2015,2019-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/type/Activity.hpp>
+#include <gspc/we/type/Activity.hpp>
 
-#include <we/loader/module_call.hpp>
-#include <we/type/Transition.hpp>
-#include <we/type/net.hpp>
-#include <we/type/schedule_data.hpp>
+#include <gspc/we/loader/module_call.hpp>
+#include <gspc/we/type/Transition.hpp>
+#include <gspc/we/type/net.hpp>
+#include <gspc/we/type/schedule_data.hpp>
 
-#include <fhg/assert.hpp>
-#include <fhg/util/starts_with.hpp>
+#include <gspc/assert.hpp>
+#include <gspc/util/starts_with.hpp>
 
+#include <gspc/iml/stubs.hpp>
+
+#if GSPC_WITH_IML
 #include <gspc/iml/Client.hpp>
+#endif
 #include <gspc/iml/macros.hpp>
+#if GSPC_WITH_IML
 #include <gspc/iml/SharedMemoryAllocation.hpp>
+#endif
 
-#include <drts/worker/context.hpp>
+#include <gspc/drts/worker/context.hpp>
 
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 
-#include <FMT/boost/filesystem/path.hpp>
+#include <gspc/util/fmt/std/filesystem/path.formatter.hpp>
 #include <algorithm>
 #include <cassert>
 #include <exception>
 #include <fmt/core.h>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <list>
@@ -36,15 +43,15 @@
 
 namespace
 {
-  struct wfe_exec_context : public ::boost::static_visitor<expr::eval::context>
+  struct wfe_exec_context : public ::boost::static_visitor<gspc::we::expr::eval::context>
   {
     wfe_exec_context
-      ( we::loader::loader& loader
-      , iml::Client /*const*/* virtual_memory
-      , iml::SharedMemoryAllocation /*const*/* shared_memory
-      , ::boost::optional<std::string> target_implementation
+      ( gspc::we::loader::loader& loader
+      , gspc::iml::Client /*const*/* virtual_memory
+      , gspc::iml::SharedMemoryAllocation /*const*/* shared_memory
+      , std::optional<std::string> target_implementation
       , drts::worker::context* worker_context
-      , expr::eval::context const& evaluation_context
+      , gspc::we::expr::eval::context const& evaluation_context
       , std::string const& name
       )
       : _loader (loader)
@@ -56,20 +63,20 @@ namespace
       , _name (name)
     {}
 
-    expr::eval::context operator() (we::type::net_type const&) const
+    gspc::we::expr::eval::context operator() (gspc::we::type::net_type const&) const
     {
       throw std::logic_error ("wfe_exec_context (net)");
     }
-    expr::eval::context operator() (we::type::Expression const&) const
+    gspc::we::expr::eval::context operator() (gspc::we::type::Expression const&) const
     {
       throw std::logic_error ("wfe_exec_context (expression)");
     }
 
-    expr::eval::context operator() (we::type::ModuleCall const& mod) const
+    gspc::we::expr::eval::context operator() (gspc::we::type::ModuleCall const& mod) const
     {
       try
       {
-        return we::loader::module_call
+        return gspc::we::loader::module_call
           ( _loader
           , _virtual_memory
           , _shared_memory
@@ -91,8 +98,8 @@ namespace
       }
     }
 
-    expr::eval::context operator()
-      (we::type::MultiModuleCall const& multi_mod) const
+    gspc::we::expr::eval::context operator()
+      (gspc::we::type::MultiModuleCall const& multi_mod) const
     {
       if (!_target_implementation)
       {
@@ -122,34 +129,33 @@ namespace
 
 
   private:
-    we::loader::loader& _loader;
-    iml::Client /*const*/* _virtual_memory;
-    iml::SharedMemoryAllocation /*const*/* _shared_memory;
-    ::boost::optional<std::string> _target_implementation;
+    gspc::we::loader::loader& _loader;
+    gspc::iml::Client /*const*/* _virtual_memory;
+    gspc::iml::SharedMemoryAllocation /*const*/* _shared_memory;
+    std::optional<std::string> _target_implementation;
     drts::worker::context* _worker_context;
-    expr::eval::context const& _evaluation_context;
+    gspc::we::expr::eval::context const& _evaluation_context;
     std::string const& _name;
   };
 }
 
-namespace we
-{
-  namespace type
+
+  namespace gspc::we::type
   {
-    Activity::Activity (we::type::Transition transition)
-      : Activity (std::move (transition), ::boost::none)
+    Activity::Activity (Transition transition)
+      : Activity (std::move (transition), std::nullopt)
     {}
     Activity::Activity ( TESTING_ONLY
-                           , we::type::Transition transition
+                           , Transition transition
                            , we::transition_id_type transition_id
                            )
       : Activity ( std::move (transition)
-                   , ::boost::optional<we::transition_id_type> (transition_id)
+                   , std::optional<we::transition_id_type> (transition_id)
                    )
     {}
     Activity::Activity
-      ( we::type::Transition transition
-      , ::boost::optional<we::transition_id_type> transition_id
+      ( Transition transition
+      , std::optional<we::transition_id_type> transition_id
       )
         : _transition (std::move (transition))
         , _transition_id (std::move (transition_id))
@@ -173,14 +179,14 @@ namespace we
       }
     }
 
-    Activity::Activity (::boost::filesystem::path const& path)
+    Activity::Activity (std::filesystem::path const& path)
     {
-      std::ifstream stream (path.string().c_str());
+      std::ifstream stream (path);
 
       if (!stream)
       {
         throw std::runtime_error
-          {fmt::format ("could not open '{}' for reading", path)};
+          {fmt::format ("could not open '{}' for reading", path.string())};
       }
 
       decode (stream, *this);
@@ -241,11 +247,11 @@ namespace we
       }
     }
 
-    we::type::Transition const& Activity::transition() const
+    Transition const& Activity::transition() const
     {
       return _transition;
     }
-    we::type::Transition& Activity::mutable_transition()
+    Transition& Activity::mutable_transition()
     {
       return _transition;
     }
@@ -259,7 +265,7 @@ namespace we
       return !!transition().net();
     }
 
-    ::boost::optional<eureka_id_type> const& Activity::eureka_id()
+    std::optional<eureka_id_type> const& Activity::eureka_id()
     {
       if (!_eureka_id)
       {
@@ -299,13 +305,13 @@ namespace we
                  , std::move (eureka_response)
                  );
     }
-    ::boost::optional<Activity>
+    std::optional<Activity>
       Activity::extract
       ( std::mt19937& random_engine
       , workflow_response_callback const& workflow_response
       , eureka_response_callback const& eureka_response
-      , gspc::we::plugin::Plugins& plugins
-      , gspc::we::plugin::PutToken put_token
+      , we::plugin::Plugins& plugins
+      , we::plugin::PutToken put_token
       )
     {
       return mutable_transition().mutable_net()
@@ -346,7 +352,7 @@ namespace we
       {
         TokensOnPorts output;
 
-        for ( we::type::Transition::PortByID::value_type const& p
+        for ( Transition::PortByID::value_type const& p
             : transition().ports_output()
             )
         {
@@ -355,7 +361,7 @@ namespace we
             (*p.second.associated_place());
 
           for ( auto const& [_ignore, token]
-              : transition().net()->get_token (pid)
+              : transition().net()->get().get_token (pid)
               )
           {
             output.emplace_back (TokenOnPort {token, port_id});
@@ -441,7 +447,7 @@ namespace we
       ( we::loader::loader& loader
       , iml::Client /*const*/ * virtual_memory
       , iml::SharedMemoryAllocation /* const */ * shared_memory
-      , ::boost::optional<std::string> target_implementation
+      , std::optional<std::string> target_implementation
       , drts::worker::context* worker_context
       )
     {
@@ -485,7 +491,7 @@ namespace we
     namespace
     {
       template<typename T>
-        ::boost::optional<T> evaluate_property
+        std::optional<T> evaluate_property
         ( Transition const& transition
         , expr::eval::context context
         , property::path_type const& path
@@ -494,7 +500,7 @@ namespace we
         if (auto const expression = transition.prop().get (path))
         {
           return ::boost::get<T>
-            ( Expression (::boost::get<std::string> (*expression))
+            ( Expression (::boost::get<std::string> (expression->get()))
             . ast()
             . eval_all (context)
             );
@@ -524,8 +530,10 @@ namespace we
     }
     #endif
 
-    Requirements_and_preferences Activity::requirements_and_preferences
-      (iml::Client* IF_GSPC_WITH_IML (virtual_memory_api))
+    Requirements_and_preferences
+      Activity::requirements_and_preferences
+        ( iml::Client* IF_GSPC_WITH_IML (virtual_memory_api)
+        )
     {
       auto const context (evaluation_context());
 
@@ -566,7 +574,7 @@ namespace we
              )
          )
       {
-        requirements.emplace_back (dynamic_requirement.get());
+        requirements.emplace_back (dynamic_requirement.value());
       }
 
       return
@@ -579,10 +587,10 @@ namespace we
               return null_transfer_cost;
             }
 
-            auto vm_transfers (transition().module_call()->gets (context));
+            auto vm_transfers (transition().module_call()->get().gets (context));
 
             auto puts_before
-              (transition().module_call()->puts_evaluated_before_call (context));
+              (transition().module_call()->get().puts_evaluated_before_call (context));
 
             vm_transfers.splice (vm_transfers.end(), puts_before);
 
@@ -612,12 +620,12 @@ namespace we
         , computational_cost
         , !transition().module_call()
           ? 0UL
-          : transition().module_call()->memory_buffer_size_total (context)
+          : transition().module_call()->get().memory_buffer_size_total (context)
         , transition().preferences()
         };
     }
 
-    std::list<we::type::Preference>
+    std::list<Preference>
       Activity::preferences_TESTING_ONLY() const
     {
       return transition().preferences();
@@ -643,11 +651,11 @@ namespace we
         return std::move (*this);
       }
 
-      we::type::net_type net;
+      net_type net;
 
       auto const transition_id (net.add_transition (transition()));
 
-      fhg_assert (transition().ports_tunnel().size() == 0);
+      gspc_assert (transition().ports_tunnel().size() == 0);
 
       std::unordered_map<std::string, we::place_id_type> place_ids;
 
@@ -656,8 +664,10 @@ namespace we
         auto const place_id
           (net.add_place (place::type ( wrapped_name (p.second)
                                       , p.second.signature()
-                                      , ::boost::none
-                                      , we::type::property::type{}
+                                      , std::nullopt
+                                      , std::nullopt
+                                      , property::type{}
+                                      , place::type::Generator::No{}
                                       )
                          )
           );
@@ -666,7 +676,7 @@ namespace we
                            , transition_id
                            , place_id
                            , p.first
-                           , we::type::property::type()
+                           , property::type()
                            );
 
         place_ids.emplace (wrapped_name (p.second), place_id);
@@ -677,8 +687,10 @@ namespace we
         auto const place_id
           (net.add_place (place::type ( wrapped_name (p.second)
                                       , p.second.signature()
-                                      , ::boost::none
-                                      , we::type::property::type{}
+                                      , std::nullopt
+                                      , std::nullopt
+                                      , property::type{}
+                                      , place::type::Generator::No{}
                                       )
                          )
           );
@@ -687,7 +699,7 @@ namespace we
                            , transition_id
                            , place_id
                            , p.first
-                           , we::type::property::type()
+                           , property::type()
                            );
 
         place_ids.emplace (wrapped_name (p.second), place_id);
@@ -697,7 +709,10 @@ namespace we
       {
         auto const& port (transition().ports_input().at (input._port_id));
 
-        net.put_value
+        // Bypass shared reference tracking - wrapper nets are temporary
+        // execution contexts and don't contain the actual cleanup places.
+        // The parent net handles all reference counting.
+        net.put_value_without_tracking
           ( place_ids.find (wrapped_name (port))->second
           , input._token
           );
@@ -705,14 +720,15 @@ namespace we
 
       //! \todo copy output too
 
-      we::type::Transition const
+      Transition const
         transition_net_wrapper ( wrapped_activity_prefix() + name()
                                , net
-                               , ::boost::none
-                               , we::type::property::type()
+                               , std::nullopt
+                               , property::type()
                                , we::priority_type()
-                               , ::boost::optional<we::type::eureka_id_type>{}
-                               , std::list<we::type::Preference>{}
+                               , std::optional<eureka_id_type>{}
+                               , std::list<Preference>{}
+                               , track_shared{}
                                );
 
       return Activity {transition_net_wrapper, _transition_id};
@@ -720,12 +736,12 @@ namespace we
 
     Activity Activity::unwrap() &&
     {
-      if (!fhg::util::starts_with (wrapped_activity_prefix(), name()))
+      if (!util::starts_with (wrapped_activity_prefix(), name()))
       {
         return std::move (*this);
       }
 
-      auto const& net (*transition().net());
+      auto const& net (transition().net()->get());
       auto const& transition_inner (net.transitions().begin()->second);
       auto const& transition_id_inner (net.transitions().begin()->first);
 
@@ -747,4 +763,3 @@ namespace we
       return activity_inner;
     }
   }
-}

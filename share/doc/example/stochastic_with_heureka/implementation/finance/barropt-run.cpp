@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2020-2021,2023-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <bin/run.hpp>
@@ -159,7 +159,7 @@ try
               ("requires TimeSteps >= 1");
           }
 
-          return we::type::bytearray (implementation_parameter);
+          return gspc::we::type::bytearray (implementation_parameter);
         }
       )
     );
@@ -169,11 +169,11 @@ try
   std::cout << "number_of_rolls_done = "
             << workflow_result.number_of_rolls_done() << std::endl;
 
-  std::pair<double, double> result;
+  barrieropt::State result;
   workflow_result.result().copy (&result);
 
-  std::cout << "value = " << result.first << std::endl;
-  std::cout << "stddev = " << result.second << std::endl;
+  std::cout << "value = " << result.value << std::endl;
+  std::cout << "stddev = " << result.variance << std::endl;
 
   return 0;
 }

@@ -1,0 +1,9 @@
+<!-- Copyright (C) 2014,2023,2026 Fraunhofer ITWM                       -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later                     -->
+
+<defun name="input_is_copied_to_output_in_module_calls">
+  <inout name="p" type="control"/>
+  <module name="m" function="f()">
+    <code></code>
+  </module>
+</defun>

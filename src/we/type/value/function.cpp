@@ -1,28 +1,26 @@
-// Copyright (C) 2025 Fraunhofer ITWM
+// Copyright (C) 2013-2014,2016,2020-2023,2025-2026 Fraunhofer ITWM
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <we/type/value/function.hpp>
+#include <gspc/we/type/value/function.hpp>
 
-#include <we/exception.hpp>
+#include <gspc/we/exception.hpp>
 
-#include <we/expr/exception.hpp>
+#include <gspc/we/expr/exception.hpp>
 
 #include <limits>
 
 #include <cmath>
 
-namespace pnet
-{
-  namespace type
-  {
-    namespace value
+
+
+    namespace gspc::pnet::type::value
     {
       namespace
       {
         class visitor_unary : public ::boost::static_visitor<value_type>
         {
         public:
-          visitor_unary (expr::token::type const& token)
+          visitor_unary (we::expr::token::type const& token)
             : _token (token)
           {}
 
@@ -30,11 +28,12 @@ namespace pnet
           {
             switch (_token)
             {
-            case expr::token::_not: return !x;
-            case expr::token::_toint: return x ? 1 : 0;
-            case expr::token::_tolong: return x ? 1L : 0L;
-            case expr::token::_touint: return x ? 1U : 0U;
-            case expr::token::_toulong: return x ? 1UL : 0UL;
+            case we::expr::token::_not: return !x;
+            case we::expr::token::_toint: return x ? 1 : 0;
+            case we::expr::token::_tolong: return x ? 1L : 0L;
+            case we::expr::token::_touint: return x ? 1U : 0U;
+            case we::expr::token::_toulong: return x ? 1UL : 0UL;
+            case we::expr::token::_tobigint: return x ? bigint_type (1) : bigint_type (0);
             default: throw exception::eval (_token, x);
             }
           }
@@ -60,31 +59,32 @@ namespace pnet
           {
             switch (_token)
             {
-            case expr::token::neg: return -x;
-            case expr::token::abs: return std::abs (x);
-            case expr::token::_sin: return std::sin (x);
-            case expr::token::_cos: return std::cos (x);
-            case expr::token::_sqrt:
+            case we::expr::token::neg: return -x;
+            case we::expr::token::abs: return std::abs (x);
+            case we::expr::token::_sin: return std::sin (x);
+            case we::expr::token::_cos: return std::cos (x);
+            case we::expr::token::_sqrt:
               if (x < 0)
               {
-                throw expr::exception::eval::square_root_for_negative_argument<T> (x);
+                throw we::expr::exception::eval::square_root_for_negative_argument<T> (x);
               }
               return std::sqrt (x);
-            case expr::token::_log:
+            case we::expr::token::_log:
               if (!(x > 0))
               {
-                throw expr::exception::eval::log_for_nonpositive_argument<T> (x);
+                throw we::expr::exception::eval::log_for_nonpositive_argument<T> (x);
               }
               return std::log (x);
-            case expr::token::_floor: return std::floor (x);
-            case expr::token::_ceil: return std::ceil (x);
-            case expr::token::_round: return std::round (x);
-            case expr::token::_toint: return static_cast<int> (x);
-            case expr::token::_tolong: return static_cast<long> (x);
-            case expr::token::_touint: return static_cast<unsigned int> (x);
-            case expr::token::_toulong: return static_cast<unsigned long> (x);
-            case expr::token::_tofloat: return static_cast<float> (x);
-            case expr::token::_todouble: return static_cast<double> (x);
+            case we::expr::token::_floor: return std::floor (x);
+            case we::expr::token::_ceil: return std::ceil (x);
+            case we::expr::token::_round: return std::round (x);
+            case we::expr::token::_toint: return static_cast<int> (x);
+            case we::expr::token::_tolong: return static_cast<long> (x);
+            case we::expr::token::_touint: return static_cast<unsigned int> (x);
+            case we::expr::token::_toulong: return static_cast<unsigned long> (x);
+            case we::expr::token::_tofloat: return static_cast<float> (x);
+            case we::expr::token::_todouble: return static_cast<double> (x);
+            case we::expr::token::_tobigint: return bigint_type (x);
             default: throw exception::eval (_token, x);
             }
           }
@@ -101,16 +101,16 @@ namespace pnet
           {
             switch (_token)
             {
-            case expr::token::_bitset_fromhex: return bitsetofint::from_hex (x);
+            case we::expr::token::_bitset_fromhex: return pnet::type::bitsetofint::from_hex (x);
             default: throw exception::eval (_token, x);
             }
           }
-          value_type operator() (bitsetofint::type x) const
+          value_type operator() (pnet::type::bitsetofint::type x) const
           {
             switch (_token)
             {
-            case expr::token::_bitset_tohex: return bitsetofint::to_hex (x);
-            case expr::token::_bitset_count: return x.count();
+            case we::expr::token::_bitset_tohex: return pnet::type::bitsetofint::to_hex (x);
+            case we::expr::token::_bitset_count: return x.count();
             default: throw exception::eval (_token, x);
             }
           }
@@ -118,25 +118,29 @@ namespace pnet
           {
             throw exception::eval (_token, x);
           }
+          value_type operator() (we::type::shared x) const
+          {
+            throw exception::eval (_token, x);
+          }
           value_type operator() (std::list<value_type> x) const
           {
             switch (_token)
             {
-            case expr::token::_stack_empty: return x.empty();
-            case expr::token::_stack_top:
+            case we::expr::token::_stack_empty: return x.empty();
+            case we::expr::token::_stack_top:
               if (x.empty())
               {
                 throw exception::eval (_token, x);
               }
               return x.back();
-            case expr::token::_stack_pop:
+            case we::expr::token::_stack_pop:
               if (x.empty())
               {
                 throw exception::eval (_token, x);
               }
               x.pop_back();
               return std::move (x);
-            case expr::token::_stack_size: return x.size();
+            case we::expr::token::_stack_size: return x.size();
             default: throw exception::eval (_token, x);
             }
           }
@@ -144,21 +148,21 @@ namespace pnet
           {
             switch (_token)
             {
-            case expr::token::_set_pop:
+            case we::expr::token::_set_pop:
               if (x.empty())
               {
                 throw exception::eval (_token, x);
               }
               x.erase (x.begin());
               return std::move (x);
-            case expr::token::_set_top:
+            case we::expr::token::_set_top:
               if (x.empty())
               {
                 throw exception::eval (_token, x);
               }
               return *(x.begin());
-            case expr::token::_set_empty: return x.empty();
-            case expr::token::_set_size: return x.size();
+            case we::expr::token::_set_empty: return x.empty();
+            case we::expr::token::_set_size: return x.size();
             default: throw exception::eval (_token, x);
             }
           }
@@ -166,8 +170,28 @@ namespace pnet
           {
             switch (_token)
             {
-            case expr::token::_map_size: return x.size();
-            case expr::token::_map_empty: return x.empty();
+            case we::expr::token::_map_size: return x.size();
+            case we::expr::token::_map_empty: return x.empty();
+            default: throw exception::eval (_token, x);
+            }
+          }
+          value_type operator() (bigint_type const& x) const
+          {
+            switch (_token)
+            {
+            case we::expr::token::_not: return bigint_type {~x};
+            case we::expr::token::neg: return bigint_type {-x};
+            case we::expr::token::abs: return boost::multiprecision::abs (x);
+            case we::expr::token::_floor:
+            case we::expr::token::_ceil:
+            case we::expr::token::_round: return x;
+            case we::expr::token::_toint: return static_cast<int> (x);
+            case we::expr::token::_tolong: return static_cast<long> (x);
+            case we::expr::token::_touint: return static_cast<unsigned int> (x);
+            case we::expr::token::_toulong: return static_cast<unsigned long> (x);
+            case we::expr::token::_tofloat: return static_cast<float> (x);
+            case we::expr::token::_todouble: return static_cast<double> (x);
+            case we::expr::token::_tobigint: return x;
             default: throw exception::eval (_token, x);
             }
           }
@@ -178,39 +202,40 @@ namespace pnet
           }
 
         private:
-          expr::token::type const& _token;
+          we::expr::token::type const& _token;
 
           template<typename T>
             value_type integral_signed (T const& x) const
           {
             switch (_token)
             {
-            case expr::token::_not: return ~x;
-            case expr::token::neg: return -x;
-            case expr::token::abs: return std::abs (x);
-            case expr::token::_sin: return std::sin (x);
-            case expr::token::_cos: return std::cos (x);
-            case expr::token::_sqrt:
+            case we::expr::token::_not: return ~x;
+            case we::expr::token::neg: return -x;
+            case we::expr::token::abs: return std::abs (x);
+            case we::expr::token::_sin: return std::sin (x);
+            case we::expr::token::_cos: return std::cos (x);
+            case we::expr::token::_sqrt:
               if (x < 0)
               {
-                throw expr::exception::eval::square_root_for_negative_argument<T> (x);
+                throw we::expr::exception::eval::square_root_for_negative_argument<T> (x);
               }
               return std::sqrt (x);
-            case expr::token::_log:
+            case we::expr::token::_log:
               if (!(x > 0))
               {
-                throw expr::exception::eval::log_for_nonpositive_argument<T> (x);
+                throw we::expr::exception::eval::log_for_nonpositive_argument<T> (x);
               }
               return std::log (x);
-            case expr::token::_floor:
-            case expr::token::_ceil:
-            case expr::token::_round: return x;
-            case expr::token::_toint: return static_cast<int> (x);
-            case expr::token::_tolong: return static_cast<long> (x);
-            case expr::token::_touint: return static_cast<unsigned int> (x);
-            case expr::token::_toulong: return static_cast<unsigned long> (x);
-            case expr::token::_tofloat: return static_cast<float> (x);
-            case expr::token::_todouble: return static_cast<double> (x);
+            case we::expr::token::_floor:
+            case we::expr::token::_ceil:
+            case we::expr::token::_round: return x;
+            case we::expr::token::_toint: return static_cast<int> (x);
+            case we::expr::token::_tolong: return static_cast<long> (x);
+            case we::expr::token::_touint: return static_cast<unsigned int> (x);
+            case we::expr::token::_toulong: return static_cast<unsigned long> (x);
+            case we::expr::token::_tofloat: return static_cast<float> (x);
+            case we::expr::token::_todouble: return static_cast<double> (x);
+            case we::expr::token::_tobigint: return bigint_type (x);
             default: throw exception::eval (_token, x);
             }
           }
@@ -219,20 +244,21 @@ namespace pnet
           {
             switch (_token)
             {
-            case expr::token::_not: return ~x;
-            case expr::token::_sin: return std::sin (x);
-            case expr::token::_cos: return std::cos (x);
-            case expr::token::_sqrt: return std::sqrt (x);
-            case expr::token::_log: return std::log (x);
-            case expr::token::_floor:
-            case expr::token::_ceil:
-            case expr::token::_round: return x;
-            case expr::token::_toint: return static_cast<int> (x);
-            case expr::token::_tolong: return static_cast<long> (x);
-            case expr::token::_touint: return static_cast<unsigned int> (x);
-            case expr::token::_toulong: return static_cast<unsigned long> (x);
-            case expr::token::_tofloat: return static_cast<float> (x);
-            case expr::token::_todouble: return static_cast<double> (x);
+            case we::expr::token::_not: return ~x;
+            case we::expr::token::_sin: return std::sin (x);
+            case we::expr::token::_cos: return std::cos (x);
+            case we::expr::token::_sqrt: return std::sqrt (x);
+            case we::expr::token::_log: return std::log (x);
+            case we::expr::token::_floor:
+            case we::expr::token::_ceil:
+            case we::expr::token::_round: return x;
+            case we::expr::token::_toint: return static_cast<int> (x);
+            case we::expr::token::_tolong: return static_cast<long> (x);
+            case we::expr::token::_touint: return static_cast<unsigned int> (x);
+            case we::expr::token::_toulong: return static_cast<unsigned long> (x);
+            case we::expr::token::_tofloat: return static_cast<float> (x);
+            case we::expr::token::_todouble: return static_cast<double> (x);
+            case we::expr::token::_tobigint: return bigint_type (x);
             default: throw exception::eval (_token, x);
             }
           }
@@ -241,7 +267,7 @@ namespace pnet
         class visitor_binary : public ::boost::static_visitor<value_type>
         {
         public:
-          visitor_binary (expr::token::type const& token)
+          visitor_binary (we::expr::token::type const& token)
             : _token (token)
           {}
 
@@ -249,16 +275,16 @@ namespace pnet
           {
             switch (_token)
             {
-            case expr::token::_or_boolean: return l || r;
-            case expr::token::_and_boolean: return l && r;
-            case expr::token::lt: return l < r;
-            case expr::token::le: return l <= r;
-            case expr::token::gt: return l > r;
-            case expr::token::ge: return l >= r;
-            case expr::token::ne: return l != r;
-            case expr::token::eq: return l == r;
-            case expr::token::min: return std::min (l,r);
-            case expr::token::max: return std::max (l,r);
+            case we::expr::token::_or_boolean: return l || r;
+            case we::expr::token::_and_boolean: return l && r;
+            case we::expr::token::lt: return l < r;
+            case we::expr::token::le: return l <= r;
+            case we::expr::token::gt: return l > r;
+            case we::expr::token::ge: return l >= r;
+            case we::expr::token::ne: return l != r;
+            case we::expr::token::eq: return l == r;
+            case we::expr::token::min: return std::min (l,r);
+            case we::expr::token::max: return std::max (l,r);
             default: throw exception::eval (_token, l, r);
             }
           }
@@ -278,6 +304,35 @@ namespace pnet
           {
             return integral_unsigned (l, r);
           }
+          value_type operator() (bigint_type const& l, bigint_type const& r) const
+          {
+            switch (_token)
+            {
+            case we::expr::token::_or_integral: return bigint_type {l | r};
+            case we::expr::token::_and_integral: return bigint_type {l & r};
+            case we::expr::token::lt: return bool {l < r};
+            case we::expr::token::le: return bool {l <= r};
+            case we::expr::token::gt: return bool {l > r};
+            case we::expr::token::ge: return bool {l >= r};
+            case we::expr::token::ne: return bool {l != r};
+            case we::expr::token::eq: return bool {l == r};
+            case we::expr::token::add: return bigint_type {l + r};
+            case we::expr::token::sub: return bigint_type {l - r};
+            case we::expr::token::mul: return bigint_type {l * r};
+            case we::expr::token::divint:
+              if (r == 0) throw we::expr::exception::eval::divide_by_zero();
+              return l / r;
+            case we::expr::token::modint:
+              if (r == 0) throw we::expr::exception::eval::divide_by_zero();
+              return l % r;
+            case we::expr::token::_powint:
+              if (r < 0) throw we::expr::exception::eval::negative_exponent();
+              return boost::multiprecision::pow (l, static_cast<unsigned int> (r));
+            case we::expr::token::min: return l < r ? l : r;
+            case we::expr::token::max: return l > r ? l : r;
+            default: throw exception::eval (_token, l, r);
+            }
+          }
           value_type operator() (float l, float r) const
           {
             return fractional (l, r);
@@ -290,15 +345,15 @@ namespace pnet
           {
             switch (_token)
             {
-            case expr::token::lt: return l < r;
-            case expr::token::le: return l <= r;
-            case expr::token::gt: return l > r;
-            case expr::token::ge: return l >= r;
-            case expr::token::ne: return l != r;
-            case expr::token::eq: return l == r;
-            case expr::token::add: { std::string s; s += l; s += r; return std::move (s); }
-            case expr::token::min: return std::min (l, r);
-            case expr::token::max: return std::max (l, r);
+            case we::expr::token::lt: return l < r;
+            case we::expr::token::le: return l <= r;
+            case we::expr::token::gt: return l > r;
+            case we::expr::token::ge: return l >= r;
+            case we::expr::token::ne: return l != r;
+            case we::expr::token::eq: return l == r;
+            case we::expr::token::add: { std::string s; s += l; s += r; return std::move (s); }
+            case we::expr::token::min: return std::min (l, r);
+            case we::expr::token::max: return std::max (l, r);
             default: throw exception::eval (_token, l, r);
             }
           }
@@ -306,37 +361,37 @@ namespace pnet
           {
             switch (_token)
             {
-            case expr::token::lt: return l < r;
-            case expr::token::le: return l <= r;
-            case expr::token::gt: return l > r;
-            case expr::token::ge: return l >= r;
-            case expr::token::ne: return l != r;
-            case expr::token::eq: return l == r;
-            case expr::token::add: { std::string s; s += l; s += r; return std::move (s); }
-            case expr::token::min: return std::min (l, r);
-            case expr::token::max: return std::max (l, r);
+            case we::expr::token::lt: return l < r;
+            case we::expr::token::le: return l <= r;
+            case we::expr::token::gt: return l > r;
+            case we::expr::token::ge: return l >= r;
+            case we::expr::token::ne: return l != r;
+            case we::expr::token::eq: return l == r;
+            case we::expr::token::add: { std::string s; s += l; s += r; return std::move (s); }
+            case we::expr::token::min: return std::min (l, r);
+            case we::expr::token::max: return std::max (l, r);
             default: throw exception::eval (_token, l, r);
             }
           }
-          value_type operator() (bitsetofint::type l, bitsetofint::type r) const
+          value_type operator() (pnet::type::bitsetofint::type l, pnet::type::bitsetofint::type r) const
           {
             switch (_token)
             {
-            case expr::token::ne: return ! (l == r);
-            case expr::token::eq: return l == r;
-            case expr::token::_bitset_or: return l | r;
-            case expr::token::_bitset_and: return l & r;
-            case expr::token::_bitset_xor: return l ^ r;
+            case we::expr::token::ne: return ! (l == r);
+            case we::expr::token::eq: return l == r;
+            case we::expr::token::_bitset_or: return l | r;
+            case we::expr::token::_bitset_and: return l & r;
+            case we::expr::token::_bitset_xor: return l ^ r;
             default: throw exception::eval (_token, l, r);
             }
           }
-          value_type operator() (bitsetofint::type l, unsigned long r) const
+          value_type operator() (pnet::type::bitsetofint::type l, unsigned long r) const
           {
             switch (_token)
             {
-            case expr::token::_bitset_insert: l.ins (r); return std::move (l);
-            case expr::token::_bitset_delete: l.del (r); return std::move (l);
-            case expr::token::_bitset_is_element: return l.is_element (r);
+            case we::expr::token::_bitset_insert: l.ins (r); return std::move (l);
+            case we::expr::token::_bitset_delete: l.del (r); return std::move (l);
+            case we::expr::token::_bitset_is_element: return l.is_element (r);
             default: throw exception::eval (_token, l, r);
             }
           }
@@ -344,8 +399,21 @@ namespace pnet
           {
             switch (_token)
             {
-            case expr::token::ne: return ! (l == r);
-            case expr::token::eq: return l == r;
+            case we::expr::token::ne: return ! (l == r);
+            case we::expr::token::eq: return l == r;
+            default: throw exception::eval (_token, l, r);
+            }
+          }
+          value_type operator() (we::type::shared l, we::type::shared r) const
+          {
+            switch (_token)
+            {
+            case we::expr::token::lt: return l < r;
+            case we::expr::token::le: return l <= r;
+            case we::expr::token::gt: return l > r;
+            case we::expr::token::ge: return l >= r;
+            case we::expr::token::ne: return l != r;
+            case we::expr::token::eq: return l == r;
             default: throw exception::eval (_token, l, r);
             }
           }
@@ -354,7 +422,7 @@ namespace pnet
           {
             switch (_token)
             {
-            case expr::token::_stack_push: l.push_back (r); return std::move (l);
+            case we::expr::token::_stack_push: l.push_back (r); return std::move (l);
             default: throw exception::eval (_token, l, r);
             }
           }
@@ -364,7 +432,7 @@ namespace pnet
           {
             switch (_token)
             {
-            case expr::token::_stack_join:
+            case we::expr::token::_stack_join:
               while (!r.empty())
               {
                 l.push_back (r.front()); r.pop_front();
@@ -383,9 +451,9 @@ namespace pnet
           {
             switch (_token)
             {
-            case expr::token::_set_insert: l.insert (r); return std::move (l);
-            case expr::token::_set_erase: l.erase (r); return std::move (l);
-            case expr::token::_set_is_element: return l.find (r) != l.end();
+            case we::expr::token::_set_insert: l.insert (r); return std::move (l);
+            case we::expr::token::_set_erase: l.erase (r); return std::move (l);
+            case we::expr::token::_set_is_element: return l.find (r) != l.end();
             default: throw exception::eval (_token, l, r);
             }
           }
@@ -395,7 +463,7 @@ namespace pnet
           {
             switch (_token)
             {
-            case expr::token::_set_is_subset:
+            case we::expr::token::_set_is_subset:
               for (value_type const& lv : l)
               {
                 if (!r.count (lv))
@@ -417,9 +485,9 @@ namespace pnet
           {
             switch (_token)
             {
-            case expr::token::_map_unassign: l.erase (r); return std::move (l);
-            case expr::token::_map_is_assigned: return l.find (r) != l.end();
-            case expr::token::_map_get_assignment:
+            case we::expr::token::_map_unassign: l.erase (r); return std::move (l);
+            case we::expr::token::_map_is_assigned: return l.find (r) != l.end();
+            case we::expr::token::_map_get_assignment:
               if (l.find (r) == l.end())
               {
                 throw exception::eval (_token, l, r);
@@ -461,8 +529,8 @@ namespace pnet
 
             switch (_token)
             {
-            case expr::token::ne: return traverse (true);
-            case expr::token::eq: return traverse (false);
+            case we::expr::token::ne: return traverse (true);
+            case we::expr::token::eq: return traverse (false);
             default: throw exception::eval (_token, l, r);
             }
           }
@@ -473,32 +541,32 @@ namespace pnet
           }
 
         private:
-          expr::token::type const& _token;
+          we::expr::token::type const& _token;
 
           template<typename T>
             value_type integral_signed (const T l, const T r) const
           {
             switch (_token)
             {
-            case expr::token::_or_integral: return l | r;
-            case expr::token::_and_integral: return l & r;
-            case expr::token::lt: return l < r;
-            case expr::token::le: return l <= r;
-            case expr::token::gt: return l > r;
-            case expr::token::ge: return l >= r;
-            case expr::token::ne: return l != r;
-            case expr::token::eq: return l == r;
-            case expr::token::add: return l + r;
-            case expr::token::sub: return l - r;
-            case expr::token::mul: return l * r;
-            case expr::token::divint:
-              if (r == 0) throw expr::exception::eval::divide_by_zero();
+            case we::expr::token::_or_integral: return l | r;
+            case we::expr::token::_and_integral: return l & r;
+            case we::expr::token::lt: return l < r;
+            case we::expr::token::le: return l <= r;
+            case we::expr::token::gt: return l > r;
+            case we::expr::token::ge: return l >= r;
+            case we::expr::token::ne: return l != r;
+            case we::expr::token::eq: return l == r;
+            case we::expr::token::add: return l + r;
+            case we::expr::token::sub: return l - r;
+            case we::expr::token::mul: return l * r;
+            case we::expr::token::divint:
+              if (r == 0) throw we::expr::exception::eval::divide_by_zero();
               return l / r;
-            case expr::token::modint:
-              if (r == 0) throw expr::exception::eval::divide_by_zero();
+            case we::expr::token::modint:
+              if (r == 0) throw we::expr::exception::eval::divide_by_zero();
               return l % r;
-            case expr::token::_powint:
-              if (r < 0) throw expr::exception::eval::negative_exponent();
+            case we::expr::token::_powint:
+              if (r < 0) throw we::expr::exception::eval::negative_exponent();
               {
                 T x (1);
 
@@ -506,8 +574,8 @@ namespace pnet
 
                 return x;
               }
-            case expr::token::min: return std::min (l, r);
-            case expr::token::max: return std::max (l, r);
+            case we::expr::token::min: return std::min (l, r);
+            case we::expr::token::max: return std::max (l, r);
             default: throw exception::eval (_token, l, r);
             }
           }
@@ -516,26 +584,26 @@ namespace pnet
           {
             switch (_token)
             {
-            case expr::token::_or_integral: return l | r;
-            case expr::token::_and_integral: return l & r;
-            case expr::token::lt: return l < r;
-            case expr::token::le: return l <= r;
-            case expr::token::gt: return l > r;
-            case expr::token::ge: return l >= r;
-            case expr::token::ne: return l != r;
-            case expr::token::eq: return l == r;
-            case expr::token::add: return l + r;
-            case expr::token::sub:
+            case we::expr::token::_or_integral: return l | r;
+            case we::expr::token::_and_integral: return l & r;
+            case we::expr::token::lt: return l < r;
+            case we::expr::token::le: return l <= r;
+            case we::expr::token::gt: return l > r;
+            case we::expr::token::ge: return l >= r;
+            case we::expr::token::ne: return l != r;
+            case we::expr::token::eq: return l == r;
+            case we::expr::token::add: return l + r;
+            case we::expr::token::sub:
               if (r > l) throw std::runtime_error ("r > l => neg result");
               return l - r;
-            case expr::token::mul: return l * r;
-            case expr::token::divint:
-              if (r == 0) throw expr::exception::eval::divide_by_zero();
+            case we::expr::token::mul: return l * r;
+            case we::expr::token::divint:
+              if (r == 0) throw we::expr::exception::eval::divide_by_zero();
               return l / r;
-            case expr::token::modint:
-              if (r == 0) throw expr::exception::eval::divide_by_zero();
+            case we::expr::token::modint:
+              if (r == 0) throw we::expr::exception::eval::divide_by_zero();
               return l % r;
-            case expr::token::_powint:
+            case we::expr::token::_powint:
               {
                 T x (1);
 
@@ -543,8 +611,8 @@ namespace pnet
 
                 return x;
               }
-            case expr::token::min: return std::min (l, r);
-            case expr::token::max: return std::max (l, r);
+            case we::expr::token::min: return std::min (l, r);
+            case we::expr::token::max: return std::max (l, r);
             default: throw exception::eval (_token, l, r);
             }
           }
@@ -554,33 +622,33 @@ namespace pnet
           {
             switch (_token)
             {
-            case expr::token::lt: return l < r;
-            case expr::token::le: return l <= r;
-            case expr::token::gt: return l > r;
-            case expr::token::ge: return l >= r;
-            case expr::token::add: return l + r;
-            case expr::token::sub: return l - r;
-            case expr::token::mul: return l * r;
-            case expr::token::div:
+            case we::expr::token::lt: return l < r;
+            case we::expr::token::le: return l <= r;
+            case we::expr::token::gt: return l > r;
+            case we::expr::token::ge: return l >= r;
+            case we::expr::token::add: return l + r;
+            case we::expr::token::sub: return l - r;
+            case we::expr::token::mul: return l * r;
+            case we::expr::token::div:
               if (std::abs (r) < std::numeric_limits<T>::min())
               {
-                throw expr::exception::eval::divide_by_zero();
+                throw we::expr::exception::eval::divide_by_zero();
               }
               return l / r;
-            case expr::token::_pow: return std::pow (l, r);
-            case expr::token::min: return std::min (l,r);
-            case expr::token::max: return std::max (l,r);
+            case we::expr::token::_pow: return std::pow (l, r);
+            case we::expr::token::min: return std::min (l,r);
+            case we::expr::token::max: return std::max (l,r);
             default: throw exception::eval (_token, l, r);
             }
           }
         };
       }
 
-      value_type unary (expr::token::type const& t, value_type const& x)
+      value_type unary (we::expr::token::type const& t, value_type const& x)
       {
         return ::boost::apply_visitor (visitor_unary (t), x);
       }
-      value_type binary ( expr::token::type const& t
+      value_type binary ( we::expr::token::type const& t
                         , value_type const& l
                         , value_type const& r
                         )
@@ -588,5 +656,3 @@ namespace pnet
         return ::boost::apply_visitor (visitor_binary (t), l, r);
       }
     }
-  }
-}
